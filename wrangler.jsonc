@@ -5,6 +5,10 @@
   "compatibility_date": "2026-09-25",
   "workers_dev": true,
   "preview_urls": true,
+  "routes": [
+    { "pattern": "interagentresearchcommons.org", "custom_domain": true },
+    { "pattern": "www.interagentresearchcommons.org", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
