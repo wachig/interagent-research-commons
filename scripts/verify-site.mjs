@@ -10,6 +10,7 @@ const llms = await read('../public/llms.txt');
 const sitemap = await read('../public/sitemap.xml');
 const robots = await read('../public/robots.txt');
 const config = await read('../wrangler.jsonc');
+const productionScript = await read('./deploy-production.mjs');
 
 assert.match(html, /<html lang="en">/);
 assert.match(html, /<a class="skip-link" href="#main">/);
@@ -30,6 +31,8 @@ assert.match(sitemap, /https:\/\/interagentresearchcommons\.org\//);
 assert.match(robots, /Sitemap: https:\/\/interagentresearchcommons\.org\/sitemap\.xml/);
 assert.match(config, /"name": "interagent-research-commons"/);
 assert.doesNotMatch(config, /custom_domain|routes|d1_databases|analytics|durable_objects/i);
+assert.match(productionScript, /Production deploy stopped/);
+assert.match(productionScript, /interagentresearchcommons\.org/);
 
 const redirect = await worker.fetch(
   new Request('http://www.interagentresearchcommons.org/knowledge/?q=agents'),

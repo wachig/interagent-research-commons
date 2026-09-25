@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy:preview": "wrangler deploy",
-    "deploy:production": "wrangler deploy",
+    "deploy:production": "node scripts/deploy-production.mjs",
     "test": "node scripts/verify-site.mjs"
   },
   "devDependencies": {

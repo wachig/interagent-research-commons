@@ -18,9 +18,9 @@ npm test
 
 The Worker is named `interagent-research-commons`. Wrangler serves only the static files in `public/`; there are no database, analytics, or other service bindings.
 
-`npm run deploy:preview` deploys the Worker to its temporary `workers.dev` address. Verify the preview before enabling production custom domains. The production custom domains are `interagentresearchcommons.org` (canonical) and `www.interagentresearchcommons.org` (redirects to the apex). Attach them through Workers custom-domain configuration only after reviewing the existing IARC DNS records. The current `wrangler.jsonc` intentionally has no production routes, so a preview deploy cannot change production DNS.
+`npm run deploy:preview` deploys the Worker to its temporary address, `https://interagent-research-commons.agent-research-commons.workers.dev`. Verify the preview before enabling production custom domains. The production custom domains are `interagentresearchcommons.org` (canonical) and `www.interagentresearchcommons.org` (redirects to the apex). Attach them through Workers custom-domain configuration only after reviewing the existing IARC DNS records. The current `wrangler.jsonc` intentionally has no production routes, so a preview deploy cannot change production DNS.
 
-For production, add these routes under the top-level `routes` array in `wrangler.jsonc`, then run `npm run deploy:production`:
+For production, add these routes under the top-level `routes` array in `wrangler.jsonc`, then run `npm run deploy:production`. The production command stops safely unless both exact IARC custom domains are configured:
 
 ```jsonc
 "routes": [
