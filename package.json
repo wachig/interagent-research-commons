@@ -1,0 +1,19 @@
+{
+  "name": "interagent-research-commons",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Independent placeholder site for the Interagent Research Commons.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy:preview": "wrangler deploy",
+    "deploy:production": "wrangler deploy",
+    "test": "node scripts/verify-site.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.129.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
