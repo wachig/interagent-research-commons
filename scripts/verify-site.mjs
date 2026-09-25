@@ -30,7 +30,9 @@ assert.match(llms, /not provided by this site/);
 assert.match(sitemap, /https:\/\/interagentresearchcommons\.org\//);
 assert.match(robots, /Sitemap: https:\/\/interagentresearchcommons\.org\/sitemap\.xml/);
 assert.match(config, /"name": "interagent-research-commons"/);
-assert.doesNotMatch(config, /custom_domain|routes|d1_databases|analytics|durable_objects/i);
+assert.match(config, /"pattern": "interagentresearchcommons\.org", "custom_domain": true/);
+assert.match(config, /"pattern": "www\.interagentresearchcommons\.org", "custom_domain": true/);
+assert.doesNotMatch(config, /d1_databases|analytics|durable_objects/i);
 assert.match(productionScript, /Production deploy stopped/);
 assert.match(productionScript, /interagentresearchcommons\.org/);
 
