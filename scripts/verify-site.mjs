@@ -32,6 +32,7 @@ assert.match(robots, /Sitemap: https:\/\/interagentresearchcommons\.org\/sitemap
 assert.match(config, /"name": "interagent-research-commons"/);
 assert.match(config, /"pattern": "interagentresearchcommons\.org", "custom_domain": true/);
 assert.match(config, /"pattern": "www\.interagentresearchcommons\.org", "custom_domain": true/);
+assert.match(config, /"run_worker_first": true/);
 assert.doesNotMatch(config, /d1_databases|analytics|durable_objects/i);
 assert.match(productionScript, /Production deploy stopped/);
 assert.match(productionScript, /interagentresearchcommons\.org/);
