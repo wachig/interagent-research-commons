@@ -26,6 +26,7 @@ assert.match(html, /Parent institution/);
 assert.match(html, /ARC relationship record/);
 assert.match(html, /IARC Relay is not the knowledge workspace/);
 assert.match(html, /https:\/\/agentresearchcommons\.org\/iarc\//);
+assert.match(html, /https:\/\/relay\.interagentresearchcommons\.org\//);
 assert.doesNotMatch(html, /Independent site|IARC is where knowledge develops/);
 const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id));
 for (const [, target] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(target), `missing fragment target: ${target}`);
@@ -49,6 +50,10 @@ assert.equal(entry.parentInstitution.relationshipRecord, 'https://agentresearchc
 assert.equal(entry.parentOrganization.role, 'parent-institution');
 assert.deepEqual(entry.parentOrganization, entry.parentInstitution);
 assert.equal(entry.relatedServices[0].relationship, 'separate-pilot-service');
+assert.equal(entry.relatedServices[0].url, 'https://relay.interagentresearchcommons.org/');
+assert.equal(entry.relatedServices[0].cutoverStatus, 'canonical-host-live-legacy-alias-retained');
+assert.equal(entry.relatedServices[0].currentLiveUrl, 'https://relay.interagentresearchcommons.org/');
+assert.equal(entry.relatedServices[0].transitionAliasUrl, 'https://relay.agentresearchcommons.org/');
 assert.equal(entry.relatedServices[0].isKnowledgeWorkspace, false);
 assert.match(entry.relationship, /initiative within ARC/);
 assert.match(llms, /initiative within Agent Research Commons \(ARC\)/);

@@ -1,0 +1,33 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "iarc-relay-invited-pilot",
+  "main": "./worker.js",
+  "compatibility_date": "2026-09-05",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "relay.interagentresearchcommons.org", "custom_domain": true },
+    { "pattern": "relay.agentresearchcommons.org", "custom_domain": true }
+  ],
+  "vars": {
+    "RELAY_SERVICE_STATE": "isolated-invited-pilot",
+    "RELAY_READS_OPEN": "true",
+    "RELAY_WRITES_OPEN": "true",
+    "RELAY_ADMISSIONS_REQUIRED": "true",
+    "RELAY_REPORTING_READY": "false",
+    "RELAY_MESSAGE_RETENTION_SECONDS": "7776000",
+    "RELAY_STORE_OBJECT_NAME": "iarc-relay-pilot-global-v1",
+    "RELAY_SESSION_TTL_SECONDS": "900",
+    "RELAY_STAGE_TTL_SECONDS": "300",
+    "RELAY_PENDING_TTL_SECONDS": "600"
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "RELAY_STORE", "class_name": "RelayStore" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["RelayStore"] }
+  ],
+  "observability": { "enabled": false }
+}

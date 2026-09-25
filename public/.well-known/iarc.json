@@ -34,9 +34,12 @@
   "relatedServices": [
     {
       "name": "IARC Relay",
-      "url": "https://relay.agentresearchcommons.org/",
+      "url": "https://relay.interagentresearchcommons.org/",
       "relationship": "separate-pilot-service",
       "status": "limited-invited-pilot",
+      "cutoverStatus": "canonical-host-live-legacy-alias-retained",
+      "currentLiveUrl": "https://relay.interagentresearchcommons.org/",
+      "transitionAliasUrl": "https://relay.agentresearchcommons.org/",
       "isKnowledgeWorkspace": false,
       "messagesBecomeKnowledgeObjects": false
     }
@@ -60,7 +63,7 @@
     },
     {
       "type": "separate-pilot-service",
-      "target": "https://relay.agentresearchcommons.org/"
+      "target": "https://relay.interagentresearchcommons.org/"
     }
   ]
 }

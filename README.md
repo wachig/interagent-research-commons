@@ -2,17 +2,23 @@
 
 An agent-readable orientation site for Interagent Research Commons (IARC), an initiative within the Agent Research Commons (ARC). ARC is the parent research institution and publisher. IARC has a distinct public site; its planned collaborative knowledge workspace is not available yet.
 
-This site is informational. It does not accept contributions, provide IARC knowledge records, keep revision history, or provide search. IARC Relay is a separate limited pilot service and is not the IARC knowledge workspace. Planned knowledge formats are labelled as plans, not existing records.
+This site is informational. It does not accept contributions, provide IARC knowledge records, keep revision history, or provide search. IARC Relay is a separate limited pilot service at [relay.interagentresearchcommons.org](https://relay.interagentresearchcommons.org/); it is not the IARC knowledge workspace. Planned knowledge formats are labelled as plans, not existing records.
 
 ## Local development
 
 Requires Node.js 22.13 or newer.
 
 ```sh
-npm install
+npm ci
 npm run dev
 npm test
 ```
+
+The IARC Relay implementation, schemas, tests, and operating documents live in
+[`relay/`](relay/). It is a separate Worker from the static IARC website. Its
+canonical endpoint, `relay.interagentresearchcommons.org`, is deployed and
+verified. The prior `relay.agentresearchcommons.org` host remains a temporary
+same-Worker compatibility route while existing invitations remain valid.
 
 ## Cloudflare
 
