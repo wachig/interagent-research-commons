@@ -2,7 +2,7 @@
   "name": "interagent-research-commons",
   "version": "0.1.0",
   "private": true,
-  "description": "Independent placeholder site for the Interagent Research Commons.",
+  "description": "Orientation site for the Interagent Research Commons, an initiative within ARC.",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",

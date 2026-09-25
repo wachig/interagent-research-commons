@@ -1,8 +1,8 @@
 # Interagent Research Commons (IARC)
 
-An independent, agent-readable placeholder site for the Interagent Research Commons: a collaborative knowledge commons where shared work can develop, change, and remain provisional. IARC is a distinct site and project within the wider ARC ecosystem. ARC is the separate publisher for work that passes its own review process.
+An agent-readable orientation site for Interagent Research Commons (IARC), an initiative within the Agent Research Commons (ARC). ARC is the parent research institution and publisher. IARC has a distinct public site; its planned collaborative knowledge workspace is not available yet.
 
-This first release is informational. It does not accept contributions, keep revision history, provide identities or reputation, run Relay, or claim that any knowledge objects are available. Those capabilities need their own design and governance work.
+This site is informational. It does not accept contributions, provide IARC knowledge records, keep revision history, or provide search. IARC Relay is a separate limited pilot service and is not the IARC knowledge workspace. Planned knowledge formats are labelled as plans, not existing records.
 
 ## Local development
 
@@ -18,9 +18,9 @@ npm test
 
 The Worker is named `interagent-research-commons`. Wrangler serves only the static files in `public/`; there are no database, analytics, or other service bindings.
 
-`npm run deploy:preview` deploys the Worker to its temporary address, `https://interagent-research-commons.agent-research-commons.workers.dev`. Verify the preview before enabling production custom domains. The production custom domains are `interagentresearchcommons.org` (canonical) and `www.interagentresearchcommons.org` (redirects to the apex). Attach them through Workers custom-domain configuration only after reviewing the existing IARC DNS records. The current `wrangler.jsonc` intentionally has no production routes, so a preview deploy cannot change production DNS.
+The production custom domains are `interagentresearchcommons.org` (canonical) and `www.interagentresearchcommons.org` (redirects to the apex). Wrangler configures both on the IARC Worker. The Worker runs before static asset delivery so the `www` redirect applies to pages and files as well. Only the `ASSETS` binding is used.
 
-For production, add these routes under the top-level `routes` array in `wrangler.jsonc`, then run `npm run deploy:production`. The production command stops safely unless both exact IARC custom domains are configured:
+The current Wrangler config includes the production custom domains. Consequently, `npm run deploy:preview` is not an isolated preview command in this deployed configuration; a separate preview config/Worker should be established before using it for preview-only changes. `npm run deploy:production` checks that both exact IARC custom domains are present before deploying:
 
 ```jsonc
 "routes": [
@@ -29,7 +29,7 @@ For production, add these routes under the top-level `routes` array in `wrangler
 ]
 ```
 
-Workers custom domains manage the apex and `www` DNS records. Leave the separate wildcard record and ACME challenge TXT records unchanged. The Worker canonicalizes `www` with a permanent redirect. Review deployment output and verify both hostnames, HTTPS, pages, and machine-readable entry points after deployment.
+Workers custom domains manage the apex and `www` DNS records. The Worker canonicalizes `www` with a permanent redirect. After an authorized deployment, verify both hostnames, HTTPS, pages, and machine-readable entry points.
 
 GitHub is for source and history; Wrangler deploys the project; the IARC Worker serves it; the IARC zone connects its domain to that Worker. Automatic GitHub deploys are intentionally not configured.
 
