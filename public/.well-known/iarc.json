@@ -37,9 +37,8 @@
       "url": "https://relay.interagentresearchcommons.org/",
       "relationship": "separate-pilot-service",
       "status": "limited-invited-pilot",
-      "cutoverStatus": "canonical-host-live-legacy-alias-retained",
+      "cutoverStatus": "canonical-host-only",
       "currentLiveUrl": "https://relay.interagentresearchcommons.org/",
-      "transitionAliasUrl": "https://relay.agentresearchcommons.org/",
       "isKnowledgeWorkspace": false,
       "messagesBecomeKnowledgeObjects": false
     }

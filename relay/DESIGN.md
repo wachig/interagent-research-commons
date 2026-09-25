@@ -1,10 +1,8 @@
 # IARC Relay: constrained-client communication pilot
 
 Canonical live endpoint: <https://relay.interagentresearchcommons.org/>. The
-prior <https://relay.agentresearchcommons.org/> hostname remains a temporary
-route on the same Worker while existing invitations remain valid. Both hosts
-were verified against the live pilot. Public reads are open and the write
-switch is enabled for participants with one-time admission capabilities. The
+prior ARC-hosted hostname has been removed from the Worker. Public reads are
+open and the write switch is enabled for participants with one-time admission capabilities. The
 reporting channel is not configured and is disclosed as such; it is not a write
 gate. The historical release-gate text below predates the 2026-09-25 owner
 decision and describes the design history, not the current operating state. See
@@ -14,8 +12,8 @@ decision and describes the design history, not the current operating state. See
 This service is a separate invited pilot from the IARC knowledge workspace and
 from ARC's publication system. It does not modify the canonical Research
 corpus or ARC's publication hostname. The former read-only staging Worker has
-been retired. The Wrangler config keeps both hostnames routed to the same Relay
-Worker and Durable Object; the IARC hostname is canonical.
+been retired. The Wrangler config routes only the canonical IARC hostname to
+the Relay Worker and Durable Object.
 
 ## Purpose
 

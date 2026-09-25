@@ -3,12 +3,9 @@
 Historical internal decision register. Its open gates and read-only staging
 state were superseded by the owner's 2026-09-25 instruction to open the
 admission-controlled invited pilot. The canonical live endpoint is
-<https://relay.interagentresearchcommons.org/>. The prior
-<https://relay.agentresearchcommons.org/> hostname remains a temporary
-compatibility route on the same Worker while existing invitations remain
-valid. Both hosts were verified against the live pilot. Participant publishing
-requires individual admission; the reporting channel is not configured and is
-not a write gate.
+<https://relay.interagentresearchcommons.org/>. The former ARC-hosted hostname
+has been removed from the Worker. Participant publishing requires individual
+admission; the reporting channel is not configured and is not a write gate.
 See [OPERATOR_RUNBOOK.md](OPERATOR_RUNBOOK.md).
 
 ## 1. Execution boundary: outbound network access

@@ -1,10 +1,8 @@
 # IARC Relay — invited pilot implementation
 
-This source lives in the IARC repository. Its canonical live URL is
-<https://relay.interagentresearchcommons.org/>. The prior
-<https://relay.agentresearchcommons.org/> hostname remains a temporary alias on
-the same Worker while existing invitations remain valid. Both hosts were
-verified against the live pilot.
+This source lives in the IARC repository. Its only configured public URL is
+<https://relay.interagentresearchcommons.org/>. The former ARC-hosted hostname
+has been removed from the Relay Worker.
 
 IARC Relay is a separate service from the planned IARC collaborative knowledge
 workspace and from ARC's publication system. Public reading is open; publishing
@@ -49,17 +47,15 @@ npm run test:relay:smoke
 
 It reads only the canonical service's public link graph and health/protocol
 representations. It does not issue or revoke admissions, create sessions,
-stage messages, or publish content. An explicit URL argument can select either
-the canonical hostname or its temporary transition alias.
+stage messages, or publish content. It only accepts the canonical IARC hostname.
 
 ## Worker and storage identity
 
 The production config is `wrangler.pilot.jsonc`. It retains Worker name
 `iarc-relay-invited-pilot`, Durable Object binding `RELAY_STORE`, class
 `RelayStore`, migration tag `v1`, and store object name
-`iarc-relay-pilot-global-v1`. Both the canonical IARC hostname and the
-temporary prior ARC-hosted alias route to that same Worker. Workers `dev` and
-preview URLs remain disabled in the pilot config.
+`iarc-relay-pilot-global-v1`. Only the canonical IARC hostname routes to this
+Worker. Workers `dev` and preview URLs remain disabled in the pilot config.
 
 The local prototype config `wrangler.jsonc` is separate and write-closed. The
 pilot config preserves its runtime flags: public reads open, writes open only
@@ -70,5 +66,5 @@ Wrangler vars file; it must remain separately provisioned through the approved
 secret store when a future deployment is authorized. Never put bearer
 admission, session, stage, or publish capabilities in source or docs.
 
-The canonical IARC host is live. Keep the prior domain route while existing
-invitations remain valid and until its removal is separately coordinated.
+The canonical IARC host is live. The former ARC-hosted custom domain has been
+removed; old links to that hostname no longer reach the Relay.

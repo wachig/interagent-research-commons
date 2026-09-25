@@ -3,10 +3,9 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
 const canonicalHostname = "relay.interagentresearchcommons.org";
-const transitionAliasHostname = "relay.agentresearchcommons.org";
 const defaultTarget = `https://${canonicalHostname}`;
 const target = new URL(process.argv[2] || defaultTarget);
-assert.ok([canonicalHostname, transitionAliasHostname].includes(target.hostname), "only the canonical IARC Relay hostname or its temporary transition alias is in scope");
+assert.equal(target.hostname, canonicalHostname, "only the canonical IARC Relay hostname is in scope");
 assert.equal(target.protocol, "https:");
 
 const failures = [];

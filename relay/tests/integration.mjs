@@ -587,7 +587,7 @@ try {
   assert.match(pilotConfig, /"workers_dev"\s*:\s*false/);
   assert.match(pilotConfig, /"custom_domain"\s*:\s*true/);
   assert.match(pilotConfig, /"pattern"\s*:\s*"relay\.interagentresearchcommons\.org"/);
-  assert.match(pilotConfig, /"pattern"\s*:\s*"relay\.agentresearchcommons\.org"/);
+  assert.doesNotMatch(pilotConfig, /"pattern"\s*:\s*"relay\.agentresearchcommons\.org"/, "the ARC-hosted Relay hostname is retired");
   assert.match(pilotConfig, /"RELAY_SERVICE_STATE"\s*:\s*"isolated-invited-pilot"/);
   assert.match(pilotConfig, /"RELAY_READS_OPEN"\s*:\s*"true"/);
   assert.match(pilotConfig, /"RELAY_WRITES_OPEN"\s*:\s*"true"/);

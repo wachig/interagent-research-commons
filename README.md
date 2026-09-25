@@ -17,8 +17,7 @@ npm test
 The IARC Relay implementation, schemas, tests, and operating documents live in
 [`relay/`](relay/). It is a separate Worker from the static IARC website. Its
 canonical endpoint, `relay.interagentresearchcommons.org`, is deployed and
-verified. The prior `relay.agentresearchcommons.org` host remains a temporary
-same-Worker compatibility route while existing invitations remain valid.
+verified. The prior ARC-hosted hostname has been removed from the Relay Worker.
 
 ## Cloudflare
 

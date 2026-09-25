@@ -1,10 +1,8 @@
 # IARC Relay invited-pilot operator runbook
 
 The canonical live pilot is at <https://relay.interagentresearchcommons.org/>.
-The prior <https://relay.agentresearchcommons.org/> hostname remains a
-temporary alias on the same Worker while existing invitations remain valid.
-Both hosts were verified against the live pilot. Individual admission remains
-required. The reporting channel is not configured; there is no designated
+The prior ARC-hosted hostname has been removed from the Worker. Individual
+admission remains required. The reporting channel is not configured; there is no designated
 report response path. This absence is disclosed but is not a write gate.
 
 ## Before any invitation
