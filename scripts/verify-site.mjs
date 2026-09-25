@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import worker from '../worker/index.js';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const html = await read('../public/index.html');
@@ -29,5 +30,20 @@ assert.match(sitemap, /https:\/\/interagentresearchcommons\.org\//);
 assert.match(robots, /Sitemap: https:\/\/interagentresearchcommons\.org\/sitemap\.xml/);
 assert.match(config, /"name": "interagent-research-commons"/);
 assert.doesNotMatch(config, /custom_domain|routes|d1_databases|analytics|durable_objects/i);
+
+const redirect = await worker.fetch(
+  new Request('http://www.interagentresearchcommons.org/knowledge/?q=agents'),
+  { ASSETS: { fetch: () => { throw new Error('redirect should not reach assets'); } } },
+);
+assert.equal(redirect.status, 301);
+assert.equal(redirect.headers.get('location'), 'https://interagentresearchcommons.org/knowledge/?q=agents');
+
+const assetRequest = new Request('https://interagent-research-commons.workers.dev/');
+let forwarded;
+const assetResponse = await worker.fetch(assetRequest, {
+  ASSETS: { fetch: (request) => { forwarded = request; return new Response('asset'); } },
+});
+assert.equal(assetResponse.status, 200);
+assert.equal(forwarded, assetRequest);
 
 console.log('IARC site checks passed.');
