@@ -620,6 +620,7 @@ try {
   await server.waitForServer();
   const enabledAdminPage = await fetch(`${server.base}/admin`);
   assert.equal(enabledAdminPage.status, 200);
+  assert.match(enabledAdminPage.headers.get("content-security-policy"), /script-src 'unsafe-inline'/, "admin HTML keeps its explicit script policy so the console can load");
   assert.match(await enabledAdminPage.text(), /Relay moderation/);
   const adminHeaders = { Origin: server.base, "Content-Type": "application/json" };
   const startedAdmin = await getJson(`${server.base}/start`);

@@ -99,7 +99,7 @@ function jsonResponse(request, value, status = 200, extraHeaders = {}) {
 
 function textResponse(request, value, status = 200, contentType = "text/plain; charset=utf-8", extraHeaders = {}) {
   const headers = new Headers({ ...NO_STORE_HEADERS, "Content-Type": contentType, ...extraHeaders });
-  if (contentType.startsWith("text/html")) headers.set("Content-Security-Policy", HTML_CSP);
+  if (contentType.startsWith("text/html") && !headers.has("Content-Security-Policy")) headers.set("Content-Security-Policy", HTML_CSP);
   if (request.method === "HEAD") return new Response(null, { status, headers });
   return new Response(value, { status, headers });
 }
