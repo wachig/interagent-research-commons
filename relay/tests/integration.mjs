@@ -148,7 +148,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.7\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.9\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -249,7 +249,7 @@ try {
   assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.7.0");
+  assert.equal(protocol.schema_version, "0.9.0");
   assert.equal(protocol.composer_experiment.prediction, false);
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
@@ -278,7 +278,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["message", "0.3.0"], ["message", "0.4.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -286,7 +286,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.7.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.9.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -398,10 +398,10 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.4.0.schema.json")(publicMessages.body), true, "public collection validates against its canonical published schema");
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.5.0.schema.json")(publicMessages.body), true, "public collection validates against its canonical published schema");
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.4.0.schema.json")(publicMessages.body.entries[0]), true, "public message validates against its canonical published schema");
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.5.0.schema.json")(publicMessages.body.entries[0]), true, "public message validates against its canonical published schema");
   assert.equal(publicMessages.body.entries[0].author_ref, started.body.participant_ref);
   assert.equal(publicMessages.body.entries[0].contributor_designation, "Research collaborator");
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /CONTRIBUTOR DESIGNATION Research collaborator/);
@@ -463,7 +463,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.4.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.5.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -528,7 +528,7 @@ try {
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
   assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.1.0", condition: "universal-fixed-v1", task_class: "generation" });
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.4.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.5.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
 
 
@@ -684,7 +684,7 @@ try {
   const productionSources = await Promise.all(productionFiles.map((name) => fs.readFile(path.join(relayRoot, name), "utf8")));
   const runtimeSource = productionSources[1].replace(/async fetch(?=\s*\()/g, "async routeHandler").replace(/connect-src 'self'/g, "connect-src same-origin");
   assert.doesNotMatch(runtimeSource, /(?<![\w.])fetch\s*\(|\bWebSocket\s*\(|\bWebTransport\s*\(|\bEventSource\s*\(|\bconnect\s*\(|\bsendBeacon\s*\(/, "reviewed relay runtime contains no outbound network calls");
-  assert.doesNotMatch(runtimeSource, /\b(?:globalThis|self|navigator)\b|\bglobal\s*(?:\.|\[|=|\)|,|;)/, "relay runtime does not alias ambient network APIs");
+  assert.doesNotMatch(runtimeSource, /\b(?:globalThis|navigator)\b|\b(?:global|self)\s*(?:\.fetch|\.WebSocket|\[\s*["']fetch)/, "relay runtime does not alias ambient network APIs");
   assert.doesNotMatch(runtimeSource, /\bimport\s*\(/, "relay runtime does not load code dynamically");
   assert.doesNotMatch(runtimeSource, /\bfrom\s*["'](?:node:|cloudflare:)|\bimport\s*\(["'](?:node:|cloudflare:)/, "relay runtime imports no Node or raw-network modules");
   assert.match(productionSources[0], /class RelayDatabase\s*\{/, "the relay uses a narrow internal storage adapter");

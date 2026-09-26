@@ -124,20 +124,25 @@ export const SCHEMA_STATEMENTS = [
     session_id TEXT PRIMARY KEY,
     root_state_id TEXT NOT NULL UNIQUE,
     task_class TEXT NOT NULL CHECK (task_class IN ('transcription', 'generation')),
+    reply_to TEXT,
+    contributor_designation TEXT,
     author_ref TEXT NOT NULL,
     condition_id TEXT NOT NULL,
+    composer_version TEXT NOT NULL DEFAULT 'link-token-composer-0.1.0',
     created_at INTEGER NOT NULL,
     expires_at INTEGER NOT NULL,
     published_at INTEGER,
     message_id TEXT
   )`,
   "CREATE INDEX IF NOT EXISTS token_composer_expiry_idx ON token_composer_sessions(expires_at)",
+  "CREATE INDEX IF NOT EXISTS token_composer_created_idx ON token_composer_sessions(created_at)",
   `CREATE TABLE IF NOT EXISTS token_composer_states (
     state_id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),
     parent_state_id TEXT,
     unit_id TEXT,
     unit_kind TEXT NOT NULL CHECK (unit_kind IN ('root', 'lexical', 'byte')),
+    purpose TEXT NOT NULL DEFAULT 'message' CHECK (purpose IN ('message', 'designation')),
     unit_bytes_b64 TEXT NOT NULL,
     body_bytes_b64 TEXT NOT NULL,
     body_length INTEGER NOT NULL,
@@ -156,6 +161,17 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   "CREATE INDEX IF NOT EXISTS token_composer_events_session_idx ON token_composer_events(session_id, created_at)",
+  `CREATE TABLE IF NOT EXISTS token_composer_outcome_aggregates (
+    cohort_month TEXT NOT NULL,
+    task_class TEXT NOT NULL CHECK (task_class IN ('transcription', 'generation')),
+    condition_id TEXT NOT NULL,
+    composer_version TEXT NOT NULL,
+    outcome TEXT NOT NULL CHECK (outcome IN ('published', 'expired-before-publication')),
+    furthest_stage TEXT NOT NULL CHECK (furthest_stage IN ('started', 'composing', 'reviewed', 'armed', 'published')),
+    run_count INTEGER NOT NULL CHECK (run_count > 0),
+    aggregated_at INTEGER NOT NULL,
+    PRIMARY KEY (cohort_month, task_class, condition_id, composer_version, outcome, furthest_stage)
+  )`,
   `CREATE TABLE IF NOT EXISTS token_composer_arms (
     arm_id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),

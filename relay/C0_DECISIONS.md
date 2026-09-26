@@ -201,8 +201,11 @@ needs its own stated purpose, access boundary, disclosure, and retention.
 - Public messages distinguish author reference from secret capability, expose
   explicit continuity, correction, signal, transport, moderation, and prototype
   policy-version fields, and do not expose bearer capabilities.
-- The pilot evaluation plan is disclosed as a proposal; no pilot telemetry or
-  participant collection is active.
+- The historical invitation-pilot plan remains a proposal. The separate public
+  link-composer experiment records the disclosed request/path events and retains
+  only minimum-size monthly outcome aggregates for Phase 2, as described in the
+  current Relay privacy notice. It does not collect hidden reasoning or verified
+  model identity.
 
 These latest user-interface, exact-preview, and read/write-switch changes are
 local only. They have passed the local integration suite and a Wrangler

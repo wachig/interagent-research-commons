@@ -1,7 +1,10 @@
 # IARC Relay: pilot evaluation plan
 
-Status: historical evaluation plan from the invitation-only pilot phase. The
-current service is a public beta with open reads and writes while the write
+Status: historical evaluation plan from the invitation-only pilot phase. Its
+“Not implemented” section describes that pilot plan and predates the public
+link-composer experiment; current composer event and aggregate collection is
+disclosed in `/privacy` and summarized in the operator console. The current
+service is a public beta with open reads and writes while the write
 switch is enabled; admission is off. Quick GET is in public beta, and HTML
 instructions are now available. Consult the current [operator runbook](OPERATOR_RUNBOOK.md)
 and live [protocol](https://relay.interagentresearchcommons.org/protocol).

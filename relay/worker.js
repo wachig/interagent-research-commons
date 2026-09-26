@@ -5,7 +5,7 @@ const DEFAULT_RELAY_OBJECT_NAME = "iarc-relay-local-prototype-global-v1";
 const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_arms"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -64,9 +64,15 @@ export class RelayStore {
       ? retentionSeconds * 1_000
       : 90 * 24 * 60 * 60 * 1_000;
     for (const statement of SCHEMA_STATEMENTS) this.sql.exec(statement);
-    for (const table of ["pending_messages", "messages"]) {
+    for (const table of ["pending_messages", "messages", "token_composer_sessions", "token_composer_states"]) {
       const columns = this.sql.exec(`PRAGMA table_info(${table})`).toArray();
-      if (!columns.some((column) => column.name === "contributor_designation")) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
+      if (["pending_messages", "messages"].includes(table) && !columns.some((column) => column.name === "contributor_designation")) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
+      if (table === "token_composer_sessions") {
+        if (!columns.some((column) => column.name === "composer_version")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN composer_version TEXT NOT NULL DEFAULT 'link-token-composer-0.1.0'");
+        if (!columns.some((column) => column.name === "reply_to")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN reply_to TEXT");
+        if (!columns.some((column) => column.name === "contributor_designation")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN contributor_designation TEXT");
+      }
+      if (table === "token_composer_states" && !columns.some((column) => column.name === "purpose")) this.sql.exec("ALTER TABLE token_composer_states ADD COLUMN purpose TEXT NOT NULL DEFAULT 'message'");
       if (table === "messages") {
         for (const column of ["composer_version", "composer_condition", "composer_task_class"]) {
           if (!columns.some((item) => item.name === column)) this.sql.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT`);
@@ -131,6 +137,21 @@ export class RelayStore {
       this.#run("DELETE FROM admin_audit WHERE created_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
       this.#run("UPDATE relay_admin_settings SET updated_by = 'expired', reason = 'Operator detail expired after 365 days' WHERE updated_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
       const now = Date.now();
+      this.#run(`INSERT INTO token_composer_outcome_aggregates (cohort_month, task_class, condition_id, composer_version, outcome, furthest_stage, run_count, aggregated_at)
+        SELECT strftime('%Y-%m', s.created_at / 1000, 'unixepoch'), s.task_class, s.condition_id, s.composer_version,
+          CASE WHEN s.published_at IS NULL THEN 'expired-before-publication' ELSE 'published' END,
+          CASE WHEN s.published_at IS NOT NULL THEN 'published'
+            WHEN EXISTS (SELECT 1 FROM token_composer_events e WHERE e.session_id = s.session_id AND e.event_type = 'arm_issued') THEN 'armed'
+            WHEN EXISTS (SELECT 1 FROM token_composer_events e WHERE e.session_id = s.session_id AND e.event_type = 'review_requested') THEN 'reviewed'
+            WHEN EXISTS (SELECT 1 FROM token_composer_events e JOIN token_composer_states st ON st.state_id = e.state_id WHERE e.session_id = s.session_id AND e.event_type = 'branch_requested' AND st.purpose = 'message') THEN 'composing'
+            ELSE 'started' END,
+          COUNT(*), ?
+        FROM token_composer_sessions s
+        WHERE s.expires_at <= ? AND (s.published_at IS NULL OR s.published_at + ? <= ?)
+        GROUP BY cohort_month, s.task_class, s.condition_id, s.composer_version, outcome, furthest_stage
+        ON CONFLICT (cohort_month, task_class, condition_id, composer_version, outcome, furthest_stage)
+        DO UPDATE SET run_count = token_composer_outcome_aggregates.run_count + excluded.run_count, aggregated_at = excluded.aggregated_at`, now, now, this.messageRetentionMs, now);
+      this.#run("DELETE FROM token_composer_outcome_aggregates WHERE cohort_month < strftime('%Y-%m', ? / 1000, 'unixepoch', '-11 months')", now);
       this.#run("DELETE FROM token_composer_arms WHERE expires_at <= ? OR session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_states WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_events WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
@@ -148,6 +169,7 @@ export class RelayStore {
       this.#first("SELECT MIN(created_at + ?) AS at FROM admin_audit", ADMIN_AUDIT_RETENTION_MS)?.at,
       this.#first("SELECT MIN(updated_at + ?) AS at FROM relay_admin_settings", ADMIN_AUDIT_RETENTION_MS)?.at,
       this.#first("SELECT MIN(CASE WHEN published_at IS NULL THEN expires_at ELSE published_at + ? END) AS at FROM token_composer_sessions", this.messageRetentionMs)?.at,
+      this.#first("SELECT MIN(strftime('%s', cohort_month || '-01', '+12 months') * 1000) AS at FROM token_composer_outcome_aggregates")?.at,
       this.#first("SELECT MIN(expires_at) AS at FROM token_composer_arms")?.at,
     ].filter((value) => Number.isSafeInteger(value));
     if (!deadlines.length) {
