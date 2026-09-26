@@ -88,7 +88,10 @@ export const SCHEMA_STATEMENTS = [
     signal_type TEXT,
     policy_version TEXT NOT NULL,
     created_at INTEGER NOT NULL,
-    transport TEXT NOT NULL DEFAULT 'constrained-get'
+    transport TEXT NOT NULL DEFAULT 'constrained-get',
+    composer_version TEXT,
+    composer_condition TEXT,
+    composer_task_class TEXT
   )`,
   "CREATE INDEX IF NOT EXISTS messages_recent_idx ON messages(created_at DESC, message_id DESC)",
   "CREATE INDEX IF NOT EXISTS messages_conversation_idx ON messages(conversation_id, created_at, message_id)",
@@ -117,4 +120,51 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   "CREATE INDEX IF NOT EXISTS admin_audit_recent_idx ON admin_audit(created_at DESC, audit_id DESC)",
+  `CREATE TABLE IF NOT EXISTS token_composer_sessions (
+    session_id TEXT PRIMARY KEY,
+    root_state_id TEXT NOT NULL UNIQUE,
+    task_class TEXT NOT NULL CHECK (task_class IN ('transcription', 'generation')),
+    author_ref TEXT NOT NULL,
+    condition_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    published_at INTEGER,
+    message_id TEXT
+  )`,
+  "CREATE INDEX IF NOT EXISTS token_composer_expiry_idx ON token_composer_sessions(expires_at)",
+  `CREATE TABLE IF NOT EXISTS token_composer_states (
+    state_id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),
+    parent_state_id TEXT,
+    unit_id TEXT,
+    unit_kind TEXT NOT NULL CHECK (unit_kind IN ('root', 'lexical', 'byte')),
+    unit_bytes_b64 TEXT NOT NULL,
+    body_bytes_b64 TEXT NOT NULL,
+    body_length INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    UNIQUE(parent_state_id, unit_id)
+  )`,
+  "CREATE INDEX IF NOT EXISTS token_composer_states_session_idx ON token_composer_states(session_id, created_at)",
+  `CREATE TABLE IF NOT EXISTS token_composer_events (
+    event_id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),
+    state_id TEXT,
+    event_type TEXT NOT NULL CHECK (event_type IN ('session_started', 'candidate_displayed', 'branch_requested', 'branch_continued', 'review_requested', 'arm_issued', 'published', 'branch_used_in_final_path', 'branch_abandoned_in_final_path')),
+    unit_id TEXT,
+    unit_bytes_b64 TEXT,
+    details_json TEXT,
+    created_at INTEGER NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS token_composer_events_session_idx ON token_composer_events(session_id, created_at)",
+  `CREATE TABLE IF NOT EXISTS token_composer_arms (
+    arm_id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),
+    state_id TEXT NOT NULL,
+    publish_cap_hash TEXT NOT NULL UNIQUE,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    consumed_at INTEGER,
+    message_id TEXT
+  )`,
+  "CREATE INDEX IF NOT EXISTS token_composer_arms_expiry_idx ON token_composer_arms(expires_at)",
 ];

@@ -5,7 +5,7 @@ const DEFAULT_RELAY_OBJECT_NAME = "iarc-relay-local-prototype-global-v1";
 const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_arms"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -66,8 +66,11 @@ export class RelayStore {
     for (const statement of SCHEMA_STATEMENTS) this.sql.exec(statement);
     for (const table of ["pending_messages", "messages"]) {
       const columns = this.sql.exec(`PRAGMA table_info(${table})`).toArray();
-      if (!columns.some((column) => column.name === "contributor_designation")) {
-        this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
+      if (!columns.some((column) => column.name === "contributor_designation")) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
+      if (table === "messages") {
+        for (const column of ["composer_version", "composer_condition", "composer_task_class"]) {
+          if (!columns.some((item) => item.name === column)) this.sql.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT`);
+        }
       }
     }
   }
@@ -127,6 +130,11 @@ export class RelayStore {
       this.#run("DELETE FROM messages WHERE created_at <= ?", Date.now() - this.messageRetentionMs);
       this.#run("DELETE FROM admin_audit WHERE created_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
       this.#run("UPDATE relay_admin_settings SET updated_by = 'expired', reason = 'Operator detail expired after 365 days' WHERE updated_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
+      const now = Date.now();
+      this.#run("DELETE FROM token_composer_arms WHERE expires_at <= ? OR session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, now, this.messageRetentionMs, now);
+      this.#run("DELETE FROM token_composer_states WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
+      this.#run("DELETE FROM token_composer_events WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
+      this.#run("DELETE FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?)", now, this.messageRetentionMs, now);
     });
     const sessions = this.#first("SELECT COUNT(*) AS count FROM sessions");
     if (sessions?.count > 0) {
@@ -139,6 +147,8 @@ export class RelayStore {
       this.#first("SELECT MIN(created_at + ?) AS at FROM messages", this.messageRetentionMs)?.at,
       this.#first("SELECT MIN(created_at + ?) AS at FROM admin_audit", ADMIN_AUDIT_RETENTION_MS)?.at,
       this.#first("SELECT MIN(updated_at + ?) AS at FROM relay_admin_settings", ADMIN_AUDIT_RETENTION_MS)?.at,
+      this.#first("SELECT MIN(CASE WHEN published_at IS NULL THEN expires_at ELSE published_at + ? END) AS at FROM token_composer_sessions", this.messageRetentionMs)?.at,
+      this.#first("SELECT MIN(expires_at) AS at FROM token_composer_arms")?.at,
     ].filter((value) => Number.isSafeInteger(value));
     if (!deadlines.length) {
       await this.ctx.storage.deleteAlarm();
