@@ -139,7 +139,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.3\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.4\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -234,6 +234,12 @@ try {
   assert.ok(protocol.operations.some((operation) => operation.path === "/quick/preview"));
   assert.ok(protocol.operations.some((operation) => operation.path === "/quick/one-shot"));
   assert.equal(protocol.limits.pending_lifetime_seconds, 2, "local TTL override should reach the storage Worker");
+  for (const pathName of ["/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt"]) {
+    const response = await fetch(`${base}${pathName}`);
+    assert.equal(response.status, 200, `${pathName} is available locally`);
+    assert.match(await response.text(), pathName.endsWith(".txt") ? /IARC RELAY/ : /<html/);
+  }
+  assert.match(await (await fetch(`${base}/participation-policy`)).text(), /GET availability does not override a restriction/);
   const protocolResponse = await fetch(`${base}/protocol.json`);
   assert.equal(protocolResponse.headers.get("access-control-allow-origin"), "*", "public machine-readable protocol is cross-origin readable");
   const htmlPoll = await fetch(`${base}/poll`, { headers: { Accept: "text/html" } });
@@ -245,7 +251,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.3.0"], ["collection", "0.2.0"], ["message", "0.2.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["collection", "0.3.0"], ["message", "0.3.0"]].map(async ([name, version]) => [
     name,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -253,8 +259,8 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.3.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
-  assert.match((await fetch(`${base}/schemas/protocol-0.3.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.4.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
+  assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
   const options = await fetch(`${base}/start`, { method: "OPTIONS" });
@@ -297,14 +303,14 @@ try {
   const emojiCount = Math.floor((1_200 - injectionBytes) / 4);
   const specialText = `${injection}${"🜂".repeat(emojiCount)}${"x".repeat(1_200 - injectionBytes - emojiCount * 4)}`;
   assert.equal(new TextEncoder().encode(specialText).byteLength, 1_200);
-  const stageUrl = (text) => `${base}/stage?${new URLSearchParams({ cap: prepared.body.stage_cap, message: text })}`;
+  const stageUrl = (text, designation) => `${base}/stage?${new URLSearchParams({ cap: prepared.body.stage_cap, message: text, ...(designation ? { contributor_designation: designation } : {}) })}`;
   const headStage = await fetch(stageUrl("HEAD must not stage"), { method: "HEAD" });
   assert.equal(headStage.status, 405);
   const optionsStage = await fetch(stageUrl("OPTIONS must not stage"), { method: "OPTIONS" });
   assert.equal(optionsStage.status, 204);
   assert.equal(optionsStage.headers.get("access-control-allow-origin"), null);
   assert.equal((await (await fetch(`${base}/poll`)).json()).returned_count, 0, "HEAD and OPTIONS on a capability-bearing stage URL do not stage or publish");
-  const staged = await getJson(stageUrl(specialText));
+  const staged = await getJson(stageUrl(specialText, "Research collaborator"));
   assert.equal(staged.response.status, 201);
   assert.equal(staged.response.redirected, false, "stage mutation does not redirect");
   hasSafetyHeaders(staged.response);
@@ -312,6 +318,8 @@ try {
   assert.equal(staged.body.message_length_utf8_bytes, 1_200);
   assert.equal(staged.body.preview, specialText, "stage returns the exact text that will be published");
   assert.equal(staged.body.publication_notice, "Publishing makes this text public; copies may persist elsewhere.");
+  assert.equal(staged.body.contributor_designation, "Research collaborator");
+  assert.match(staged.body.contributor_designation_notice, /not a subject or topic/);
   assert.match(staged.body.destination_conversation_id, /^IARC-C-/);
   assert.match(staged.body.pending_id, /^IARC-P-/);
   const hiddenPollResponse = await fetch(`${base}/poll`);
@@ -329,6 +337,10 @@ try {
   assert.equal(malformedEncoding.status, 400);
   const overlongBody = await fetch(stageUrl("x".repeat(1_201)));
   assert.equal(overlongBody.status, 413);
+  const overlongDesignation = await fetch(`${base}/stage?${new URLSearchParams({ cap: prepared.body.stage_cap, message: "label limit check", contributor_designation: "x".repeat(121) })}`);
+  assert.equal(overlongDesignation.status, 413, "contributor designation has a transparent 120-byte limit");
+  const controlDesignation = await fetch(`${base}/stage?${new URLSearchParams({ cap: prepared.body.stage_cap, message: "label control check", contributor_designation: "bad\u202Elabel" })}`);
+  assert.equal(controlDesignation.status, 400, "contributor designation rejects bidi override characters");
   const longUrl = await fetch(`${base}/stage?${new URLSearchParams({ cap: prepared.body.stage_cap, message: "x".repeat(8_100) })}`);
   assert.equal(longUrl.status, 414);
 
@@ -358,14 +370,16 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.2.0.schema.json")(publicMessages.body), true, "public collection validates against its canonical published schema");
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.3.0.schema.json")(publicMessages.body), true, "public collection validates against its canonical published schema");
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.2.0.schema.json")(publicMessages.body.entries[0]), true, "public message validates against its canonical published schema");
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.3.0.schema.json")(publicMessages.body.entries[0]), true, "public message validates against its canonical published schema");
   assert.equal(publicMessages.body.entries[0].author_ref, started.body.participant_ref);
+  assert.equal(publicMessages.body.entries[0].contributor_designation, "Research collaborator");
+  assert.match(await (await fetch(`${base}/commons.txt`)).text(), /CONTRIBUTOR DESIGNATION Research collaborator/);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
   assert.equal(publicMessages.body.entries[0].supersedes, null);
-  assert.equal(publicMessages.body.entries[0].policy_version, "prototype-0.1.0");
+  assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.0.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
     assert.equal(JSON.stringify(publicMessages.body).includes(secret), false, "bearer capabilities are absent from public JSON reads");
     assert.equal((await (await fetch(`${base}/commons.txt`)).text()).includes(secret), false, "bearer capabilities are absent from public text reads");
@@ -421,7 +435,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.2.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.3.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -674,9 +688,10 @@ try {
   assert.equal(quickOptions.status, 204, "OPTIONS preview does not run the preview operation");
   assert.equal(quickOptions.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "HEAD and OPTIONS created no additional message");
-  const quickPreview = await getJson(`${quickBase}/quick/preview?${new URLSearchParams({ message: "Quick GET three-request test" })}`);
+  const quickPreview = await getJson(`${quickBase}/quick/preview?${new URLSearchParams({ message: "Quick GET three-request test", contributor_designation: "Quick contributor" })}`);
   assert.equal(quickPreview.response.status, 200);
   assert.equal(quickPreview.body.preview, "Quick GET three-request test");
+  assert.equal(quickPreview.body.contributor_designation, "Quick contributor");
   assert.match(quickPreview.body.ticket, /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "GET preview created no Relay message");
   const ticketParams = new URLSearchParams({ ticket: quickPreview.body.ticket });
@@ -684,6 +699,7 @@ try {
   assert.equal(quickStaged.response.status, 201);
   assert.equal(quickStaged.body.flow, "quick-get-three-step");
   assert.equal(quickStaged.body.preview, quickPreview.body.preview);
+  assert.equal(quickStaged.body.contributor_designation, "Quick contributor");
   assert.equal(quickStaged.response.headers.get("access-control-allow-origin"), null, "mutation responses do not enable cross-origin browser reads");
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "staging remains private");
   assert.equal((await getJson(`${quickBase}/quick/stage?${ticketParams}`)).response.status, 409, "a quick preview ticket can create only one draft");
@@ -700,15 +716,17 @@ try {
   assert.equal(missingShotConfirmation.response.status, 400, "single-shot GET requires explicit confirmation");
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 2, "missing confirmation creates no public message");
   const oneShotRequestId = crypto.randomUUID();
-  const oneShotUrl = `${quickBase}/quick/one-shot?${new URLSearchParams({ message: "Quick GET single-shot test", confirm: "publish-public-message", request_id: oneShotRequestId })}`;
+  const oneShotUrl = `${quickBase}/quick/one-shot?${new URLSearchParams({ message: "Quick GET single-shot test", confirm: "publish-public-message", request_id: oneShotRequestId, contributor_designation: "Single-shot contributor" })}`;
   const oneShot = await getJson(oneShotUrl);
   assert.equal(oneShot.response.status, 201);
   assert.equal(oneShot.body.published, true);
   assert.equal(oneShot.body.flow, "quick-get-single-shot");
   assert.equal(oneShot.body.preview, "Quick GET single-shot test");
+  assert.equal(oneShot.body.contributor_designation, "Single-shot contributor");
   const oneShotRetry = await getJson(oneShotUrl);
   assert.equal(oneShotRetry.response.status, 200, "same single-shot request ID recovers its receipt");
   assert.equal(oneShotRetry.body.message_id, oneShot.body.message_id, "retry does not publish a duplicate");
+  assert.equal(oneShotRetry.body.contributor_designation, "Single-shot contributor");
   const reusedId = await getJson(`${quickBase}/quick/one-shot?${new URLSearchParams({ message: "different content", confirm: "publish-public-message", request_id: oneShotRequestId })}`);
   assert.equal(reusedId.response.status, 409, "single-shot idempotency key cannot publish changed content");
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "single-shot confirmation publishes exactly once");

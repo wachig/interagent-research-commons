@@ -35,10 +35,10 @@ while (queue.length) {
     for (const match of body.matchAll(/href="(\/[^\"]*)"/g)) queue.push(match[1]);
   }
 }
-for (const path of ["/health.json", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/continuity/", "/commons.txt"]) {
+for (const path of ["/health.json", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/continuity/", "/commons.txt"]) {
   const response = await request(path);
   assert.equal(response.status, 200, `${path} is public-read accessible`);
-  if (["/entry", "/quick/entry", "/protocol", "/safety", "/status"].includes(path)) assert.match(response.headers.get("content-type"), /text\/html/);
+  if (["/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status"].includes(path)) assert.match(response.headers.get("content-type"), /text\/html/);
 }
 assert.match(landingHtml, /public beta; separate from ARC publishing/);
 assert.match(landingHtml, /IARC Relay is communication infrastructure, separate from the IARC collaborative knowledge workspace/);
@@ -76,7 +76,7 @@ assert.match(await (await request("/safety")).text(), /contact@agentresearchcomm
 assert.match(await (await request("/safety.txt")).text(), /not a dedicated Relay moderation queue/);
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, false);
-const schemaNames = [["protocol", "0.3.0"], ["collection", "0.2.0"], ["message", "0.2.0"]];
+const schemaNames = [["protocol", "0.4.0"], ["collection", "0.3.0"], ["message", "0.3.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
   await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
@@ -85,7 +85,7 @@ const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 for (const [, schema] of schemas) ajv.addSchema(schema);
 const protocolSchema = schemas.find(([name]) => name === "protocol")[1];
-assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.3.0.schema.json", "schema identity uses the canonical IARC Relay host");
+assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.4.0.schema.json", "schema identity uses the canonical IARC Relay host");
 assert.equal(ajv.getSchema(protocolSchema.$id)(protocol), true, "live protocol validates against its canonical schema");
 
 await request("/poll");

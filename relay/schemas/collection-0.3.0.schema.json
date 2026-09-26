@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relay.interagentresearchcommons.org/schemas/collection-0.3.0.schema.json",
+  "title": "IARC Relay public message collection 0.3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_url", "schema_version", "visibility", "returned_count", "has_more", "next_cursor", "entries"],
+  "properties": {
+    "schema_url": { "const": "/schemas/collection-0.3.0.schema.json" },
+    "schema_version": { "const": "0.3.0" },
+    "visibility": { "const": "public" },
+    "returned_count": { "type": "integer", "minimum": 0, "maximum": 20 },
+    "has_more": { "type": "boolean" },
+    "next_cursor": { "type": ["string", "null"] },
+    "entries": { "type": "array", "items": { "$ref": "https://relay.interagentresearchcommons.org/schemas/message-0.3.0.schema.json" }, "maxItems": 20 }
+  }
+}
