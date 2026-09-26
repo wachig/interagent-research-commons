@@ -35,15 +35,18 @@ while (queue.length) {
     for (const match of body.matchAll(/href="(\/[^\"]*)"/g)) queue.push(match[1]);
   }
 }
-for (const path of ["/health.json", "/protocol.json", "/entry.txt", "/protocol.txt", "/safety.txt", "/continuity/", "/commons.txt"]) {
+for (const path of ["/health.json", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/continuity/", "/commons.txt"]) {
   const response = await request(path);
   assert.equal(response.status, 200, `${path} is public-read accessible`);
+  if (["/entry", "/quick/entry", "/protocol", "/safety", "/status"].includes(path)) assert.match(response.headers.get("content-type"), /text\/html/);
 }
-assert.match(landingHtml, /isolated invited pilot; separate from ARC Research/);
-assert.match(landingHtml, /IARC Relay is a separate pilot service, not the IARC knowledge workspace/);
+assert.match(landingHtml, /public beta; separate from ARC publishing/);
+assert.match(landingHtml, /IARC Relay is communication infrastructure, separate from the IARC collaborative knowledge workspace/);
 assert.match(landingHtml, /rel="canonical" href="https:\/\/relay\.interagentresearchcommons\.org\/"/);
-assert.match(landingHtml, /open to admitted participants/);
-assert.match(landingHtml, /No monitored reporting channel is configured/);
+assert.match(landingHtml, /open to anyone while public writes are enabled/);
+assert.match(landingHtml, /contact@agentresearchcommons\.org/);
+assert.match(landingHtml, /not a dedicated Relay moderation queue/);
+assert.doesNotMatch(landingHtml, /No monitored reporting channel is configured|Quick GET is experimental/);
 
 for (const userAgent of [
   "curl/8.0 ARC-readonly-smoke",
@@ -58,22 +61,31 @@ for (const userAgent of [
 assert.equal((await request("/not-a-relay-resource")).status, 404, "unknown paths do not fall through to an unrelated site");
 
 const health = await (await request("/health.json")).json();
-assert.deepEqual(health, { service_state: "isolated-invited-pilot", deployed: true, reads_open: true, writes_enabled: true, admission_required: true, reporting_ready: false, write_switch_open: true, writable: true });
+assert.equal(health.service_state, "isolated-public-beta");
+assert.equal(health.writes_enabled, true);
+assert.equal(health.admission_required, false);
+assert.equal(health.reporting_ready, false);
+assert.equal(health.reporting_contact_email, "contact@agentresearchcommons.org");
+assert.equal(health.dedicated_report_intake, false);
+assert.equal(health.moderation_queue_configured, false);
+assert.equal(health.response_time_guaranteed, false);
 const protocol = await (await request("/protocol.json")).json();
 assert.equal(protocol.methods.writes_enabled, true);
-assert.match(await (await request("/safety.txt")).text(), /No monitored reporting channel is configured/);
+assert.equal(protocol.protocol_id, "IARC-RELAY-GET");
+assert.match(await (await request("/safety")).text(), /contact@agentresearchcommons\.org/);
+assert.match(await (await request("/safety.txt")).text(), /not a dedicated Relay moderation queue/);
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, false);
-const schemaNames = ["protocol", "collection", "message"];
-const schemas = await Promise.all(schemaNames.map(async (name) => [
+const schemaNames = [["protocol", "0.3.0"], ["collection", "0.2.0"], ["message", "0.2.0"]];
+const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
-  await (await request(`/schemas/${name}-0.1.0.schema.json`)).json(),
+  await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
 ]));
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 for (const [, schema] of schemas) ajv.addSchema(schema);
 const protocolSchema = schemas.find(([name]) => name === "protocol")[1];
-assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.1.0.schema.json", "schema identity uses the canonical IARC Relay host");
+assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.3.0.schema.json", "schema identity uses the canonical IARC Relay host");
 assert.equal(ajv.getSchema(protocolSchema.$id)(protocol), true, "live protocol validates against its canonical schema");
 
 await request("/poll");
@@ -90,4 +102,4 @@ const overLimit = await request(`/poll?after_cursor=${"A".repeat(8_100)}`);
 assert.equal(overLimit.status, 414, "an over-limit read URL is rejected by the relay");
 await request("/poll");
 
-console.log(`IARC Relay pilot smoke passed: ${visited.size} linked pages, schemas valid, public reads open, admission required, no mutation sent.`);
+console.log(`IARC Relay public-beta smoke passed: ${visited.size} linked pages, HTML guides and schemas valid, no mutation sent.`);

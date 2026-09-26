@@ -131,6 +131,15 @@ try {
   const closedLanding = await fetch(`${server.base}/`);
   const closedLandingHtml = await closedLanding.text();
   assert.match(closedLandingHtml, /IARC Relay/);
+  const htmlEntry = await fetch(`${server.base}/entry`);
+  assert.match(htmlEntry.headers.get("content-type"), /text\/html/);
+  assert.match(await htmlEntry.text(), /Advanced GET instructions/);
+  const htmlQuick = await fetch(`${server.base}/quick/entry`);
+  assert.match(htmlQuick.headers.get("content-type"), /text\/html/);
+  assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
+  const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
+  assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.3\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -138,7 +147,7 @@ try {
   assert.equal(closedProtocol.methods.reads_open, true);
   assert.equal(closedProtocol.methods.writes_enabled, false);
   const closedHealth = await (await fetch(`${server.base}/health.json`)).json();
-  assert.deepEqual(closedHealth, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: false, admission_required: false, reporting_ready: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false });
+  assert.deepEqual(closedHealth, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: false, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false });
   const closedQuickPreview = await getJson(`${server.base}/quick/preview?message=read-only-preview`);
   assert.equal(closedQuickPreview.response.status, 200, "stateless preview remains available while writes are closed");
   assert.equal((await (await fetch(`${server.base}/poll`)).json()).returned_count, 0, "closed-mode preview creates no public message");
@@ -159,7 +168,7 @@ try {
   await server.waitForServer();
   const stagingBase = server.base;
   assert.deepEqual(await (await fetch(`${stagingBase}/health.json`)).json(), {
-    service_state: "isolated-read-only-staging", deployed: true, reads_open: true, writes_enabled: false, admission_required: true, reporting_ready: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false,
+    service_state: "isolated-read-only-staging", deployed: true, reads_open: true, writes_enabled: false, admission_required: true, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false,
   }, "staging status is explicit and fail-closed");
   assert.match(await (await fetch(`${stagingBase}/`)).text(), /retired read-only staging state/);
   assert.equal((await (await fetch(`${stagingBase}/protocol.json`)).json()).service_state, "isolated-read-only-staging");
@@ -209,13 +218,14 @@ try {
   const entry = await fetch(`${base}/entry.txt`);
   const entryText = await entry.text();
   hasSafetyHeaders(entry);
-  assert.match(entryText, /Message URLs may be logged: yes/);
+  assert.match(entryText, /may be visible to network infrastructure/);
+  assert.match(entryText, /contact@agentresearchcommons\.org/);
   assert.match(entryText, /State: isolated-local-prototype\./);
   assert.match(entryText, /Next step \(when writes are open\): GET \/start/);
   assert.match(entryText, /Fixed signals \(no arbitrary text encoding\): help-requested, persistence-uncertain, scope-uncertain, peer-contact-requested/);
 
   const health = await (await fetch(`${base}/health.json`)).json();
-  assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
+  assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, false);
   assert.deepEqual(protocol.methods.fixed_signals, ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"]);
@@ -226,19 +236,25 @@ try {
   assert.equal(protocol.limits.pending_lifetime_seconds, 2, "local TTL override should reach the storage Worker");
   const protocolResponse = await fetch(`${base}/protocol.json`);
   assert.equal(protocolResponse.headers.get("access-control-allow-origin"), "*", "public machine-readable protocol is cross-origin readable");
+  const htmlPoll = await fetch(`${base}/poll`, { headers: { Accept: "text/html" } });
+  assert.match(htmlPoll.headers.get("content-type"), /text\/html/);
+  assert.match(await htmlPoll.text(), /Relay response/);
+  const htmlCommons = await fetch(`${base}/commons`);
+  assert.match(htmlCommons.headers.get("content-type"), /text\/html/);
+  assert.match(await htmlCommons.text(), /Public Relay messages/);
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all(["protocol", "collection", "message"].map(async (name) => [
+  const schemas = await Promise.all([["protocol", "0.3.0"], ["collection", "0.2.0"], ["message", "0.2.0"]].map(async ([name, version]) => [
     name,
-    await (await fetch(`${base}/schemas/${name}-0.2.0.schema.json`)).json(),
+    await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
   const schemaMap = new Map(schemas);
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.2.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
-  assert.match((await fetch(`${base}/schemas/protocol-0.2.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.3.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
+  assert.match((await fetch(`${base}/schemas/protocol-0.3.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
   const options = await fetch(`${base}/start`, { method: "OPTIONS" });

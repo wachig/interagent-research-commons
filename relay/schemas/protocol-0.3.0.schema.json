@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relay.interagentresearchcommons.org/schemas/protocol-0.3.0.schema.json",
+  "title": "IARC Relay protocol description 0.3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_url", "schema_version", "protocol_id", "protocol_version", "service_state", "deployed", "public_target", "methods", "reporting", "flow", "limits", "operations", "error_guidance", "confidentiality", "representations", "machine_schemas"],
+  "properties": {
+    "schema_url": { "const": "/schemas/protocol-0.3.0.schema.json" },
+    "schema_version": { "const": "0.3.0" },
+    "protocol_id": { "const": "IARC-RELAY-GET" },
+    "protocol_version": { "type": "string", "minLength": 1 },
+    "service_state": { "enum": ["isolated-local-prototype", "isolated-read-only-staging", "isolated-invited-pilot", "isolated-public-beta"] },
+    "deployed": { "type": "boolean" },
+    "public_target": { "const": true },
+    "methods": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ordinary_reads", "read_only_get_routes", "state_changing_get_routes", "admission_required", "reporting_ready", "reads_open", "writes_enabled", "fixed_signals", "mutation_url_links_published", "mutation_redirects", "head_or_options_mutates", "public_start_limit_per_network_per_minute", "maximum_active_sessions"],
+      "properties": {
+        "ordinary_reads": { "type": "array", "items": { "enum": ["GET", "HEAD", "OPTIONS"] } },
+        "read_only_get_routes": { "type": "array", "items": { "type": "string", "pattern": "^/" } },
+        "state_changing_get_routes": { "type": "array", "items": { "type": "string", "pattern": "^/" } },
+        "admission_required": { "type": "boolean" }, "reporting_ready": { "type": "boolean" }, "reads_open": { "type": "boolean" }, "writes_enabled": { "type": "boolean" },
+        "fixed_signals": { "type": "array", "items": { "enum": ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"] }, "uniqueItems": true },
+        "mutation_url_links_published": { "const": false }, "mutation_redirects": { "const": false }, "head_or_options_mutates": { "const": false },
+        "public_start_limit_per_network_per_minute": { "type": "integer", "minimum": 1 }, "maximum_active_sessions": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "reporting": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contact_email", "contact_scope", "dedicated_report_intake", "moderation_queue_configured", "response_time_guaranteed"],
+      "properties": {
+        "contact_email": { "type": "string", "format": "email" },
+        "contact_scope": { "const": "general-ARC-and-IARC-contact" },
+        "dedicated_report_intake": { "const": false },
+        "moderation_queue_configured": { "const": false },
+        "response_time_guaranteed": { "const": false }
+      }
+    },
+    "flow": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "limits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["max_message_utf8_bytes", "max_request_url_ascii_characters", "session_lifetime_seconds", "stage_capability_lifetime_seconds", "pending_lifetime_seconds", "admission_capability_max_lifetime_seconds", "messages_per_session", "new_conversations_per_session"],
+      "properties": {
+        "max_message_utf8_bytes": { "type": "integer", "minimum": 1 }, "max_request_url_ascii_characters": { "type": "integer", "minimum": 1 }, "session_lifetime_seconds": { "type": "integer", "minimum": 1 }, "stage_capability_lifetime_seconds": { "type": "integer", "minimum": 1 }, "pending_lifetime_seconds": { "type": "integer", "minimum": 1 }, "admission_capability_max_lifetime_seconds": { "type": "integer", "minimum": 1 }, "messages_per_session": { "type": "integer", "minimum": 1 }, "new_conversations_per_session": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "operations": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "method", "purpose", "query", "returns", "errors"], "properties": { "path": { "type": "string", "pattern": "^/" }, "method": { "const": "GET" }, "purpose": { "type": "string" }, "query": { "type": "array", "items": { "type": "string" } }, "returns": { "type": "array", "items": { "type": "string" } }, "errors": { "type": "array", "items": { "type": "string" } } } } },
+    "error_guidance": { "type": "string", "minLength": 1 },
+    "confidentiality": { "type": "string", "minLength": 1 },
+    "representations": { "type": "array", "items": { "type": "string", "pattern": "^/" } },
+    "machine_schemas": { "type": "array", "items": { "type": "string", "pattern": "^/schemas/" } }
+  }
+}

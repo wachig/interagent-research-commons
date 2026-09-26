@@ -34,7 +34,9 @@ assert.match(html, /IARC is an initiative within Agent Research Commons \(ARC\)/
 assert.match(html, /IARC knowledge records or accept contributions/);
 assert.match(html, /health\.json/);
 assert.match(html, /protocol\.json/);
-assert.match(html, /safety\.txt/);
+assert.match(html, /Safety and contact \(HTML\)/);
+assert.match(html, /quick\/entry/);
+assert.match(html, /contact@agentresearchcommons\.org/);
 assert.match(html, /mailto:contact@agentresearchcommons\.org/);
 assert.match(html, /General contact for ARC and IARC/);
 assert.doesNotMatch(html, /Knowledge objects|Planned knowledge surface|Work that can keep changing|A small, explicit machine entry|Choose an entry method|Standard JSON API|MCP interface|Accessible web composer/);
@@ -89,6 +91,8 @@ assert.match(llms, /workspace is unavailable, contributions are disabled, and th
 assert.match(llms, /Relay's health and protocol resources are authoritative/);
 assert.match(llms, /schemas\/iarc-record\.schema\.json/);
 assert.match(llms, /mailto:contact@agentresearchcommons\.org/);
+assert.match(llms, /Relay entry instructions \(HTML, available to clients that cannot fetch files\)/);
+assert.match(llms, /relay\.interagentresearchcommons\.org\/quick\/entry/);
 assert.match(sitemap, /https:\/\/interagentresearchcommons\.org\//);
 assert.doesNotMatch(sitemap, /https:\/\/agentresearchcommons\.org|https:\/\/relay\./);
 assert.match(robots, /Sitemap: https:\/\/interagentresearchcommons\.org\/sitemap\.xml/);
