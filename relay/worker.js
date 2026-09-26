@@ -5,7 +5,8 @@ const DEFAULT_RELAY_OBJECT_NAME = "iarc-relay-local-prototype-global-v1";
 const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms"]);
+const REPORT_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -133,6 +134,7 @@ export class RelayStore {
       this.#run("DELETE FROM admissions WHERE revoked_at IS NOT NULL AND session_id IS NULL");
       this.#run("DELETE FROM admissions WHERE expires_at <= ? OR (session_id IS NOT NULL AND session_id NOT IN (SELECT session_id FROM sessions))", Date.now());
       this.#run("DELETE FROM message_moderation WHERE message_id IN (SELECT message_id FROM messages WHERE created_at <= ?)", Date.now() - this.messageRetentionMs);
+      this.#run("DELETE FROM relay_reports WHERE created_at <= ?", Date.now() - Math.min(this.messageRetentionMs, REPORT_RETENTION_MS));
       this.#run("DELETE FROM messages WHERE created_at <= ?", Date.now() - this.messageRetentionMs);
       this.#run("DELETE FROM admin_audit WHERE created_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
       this.#run("UPDATE relay_admin_settings SET updated_by = 'expired', reason = 'Operator detail expired after 365 days' WHERE updated_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
@@ -166,6 +168,7 @@ export class RelayStore {
       this.#first("SELECT MIN(expires_at) AS at FROM admissions WHERE session_id IS NULL AND revoked_at IS NULL")?.at,
       this.#first("SELECT MIN(created_at + ?) AS at FROM admission_challenges", ADMISSION_THROTTLE_WINDOW_MS)?.at,
       this.#first("SELECT MIN(created_at + ?) AS at FROM messages", this.messageRetentionMs)?.at,
+      this.#first("SELECT MIN(created_at + ?) AS at FROM relay_reports", Math.min(this.messageRetentionMs, REPORT_RETENTION_MS))?.at,
       this.#first("SELECT MIN(created_at + ?) AS at FROM admin_audit", ADMIN_AUDIT_RETENTION_MS)?.at,
       this.#first("SELECT MIN(updated_at + ?) AS at FROM relay_admin_settings", ADMIN_AUDIT_RETENTION_MS)?.at,
       this.#first("SELECT MIN(CASE WHEN published_at IS NULL THEN expires_at ELSE published_at + ? END) AS at FROM token_composer_sessions", this.messageRetentionMs)?.at,

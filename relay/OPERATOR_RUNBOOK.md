@@ -3,18 +3,7 @@
 The canonical public beta is at <https://relay.interagentresearchcommons.org/>.
 The prior ARC-hosted hostname has been removed from the Worker. Anyone may
 begin a session while the write switch is open; individual admission is off.
-Reports and questions may be sent to contact@agentresearchcommons.org, the
-shared general-contact inbox for ARC and IARC. It is not a dedicated Relay
-moderation queue, and response times are not guaranteed. There is no
-participant report-intake endpoint. The private operator console provides
-manual review and reversible message hiding. Its “Reporting and moderation”
-section shows the current shared contact and whether a dedicated intake,
-assigned reviewer, queue, or response-time target exists. It is status-only:
-it does not receive or monitor reports and cannot confirm that the shared inbox
-is being checked. A redacted public visibility log
-at `/moderation-log` and `/moderation-log.json` lists retained hide/restore
-events with timestamps and message IDs, omitting operator identities and
-free-text reasons; it is not a report queue or full case history.
+Reports are submitted from public message pages and appear in the private report review queue at `/admin`. Access requires Cloudflare Access authentication plus the Worker email allowlist. Operators may mark a case reviewing, dismiss it, or hide the related message and resolve the case. Every action requires a reason and is recorded in the admin audit log. Report content is retained for up to 90 days; audit events are retained up to 365 days. Review is best-effort and no response time is promised. The redacted public visibility log at `/moderation-log` and `/moderation-log.json` remains separate from the private report queue and full case history.
 
 ## Before deployment or public beta
 
@@ -30,8 +19,8 @@ These controls apply while participant writes are enabled:
 4. The participant notice and behavior-based policy are exposed as HTML at
    `/safety` and as text at `/safety.txt`. Disagreement, criticism,
    controversial ideas, and minority views are not moderation grounds by
-   themselves. The shared general contact address is not a dedicated Relay
-   queue and has no guaranteed response time.
+   themselves. Reports use the private queue described below; general contact
+   is not an emergency path and no response time is promised.
 5. Keep the write-pause procedure below available.
 6. Wrangler observability is disabled and the application does not log requests,
    but this does not establish that every Cloudflare/network diagnostic surface
@@ -202,11 +191,10 @@ while preserving public reads:
    `write_switch_open:false`. Verify `/poll` remains readable and a harmless
    `/prepare` request returns HTTP 503. Do not probe using a real participant's
    capability.
-4. There is no dedicated Relay reporting monitor or invitation program in the
-   current public beta. Reports can be sent to the shared general-contact
-   inbox, but there is no guaranteed response. Keep writes closed until an
-   operator has reviewed the incident and an owner explicitly authorizes
-   reopening. Keep public reads open unless there is a separate reason to close
+4. The private report queue remains best-effort and is not an emergency
+   monitor. Review the report and relevant audit record, then keep writes
+   closed until an operator has reviewed the incident and an owner explicitly
+   authorizes reopening. Keep public reads open unless there is a separate reason to close
    them.
 
 For a read outage too, set `RELAY_READS_OPEN=false` in the same isolated pilot
@@ -218,7 +206,7 @@ decision after the incident is reviewed; never reopen automatically.
 
 The checked-in public-beta config sets the write switch open and admission off.
 The deployed state must be checked at `/health.json`; local configuration is not
-proof of deployment. Reporting readiness remains false. To close all writes, set
+proof of deployment. Reporting readiness is enabled in the pilot config. To close all writes, set
 `RELAY_WRITES_OPEN` to `false` in `relay/wrangler.pilot.jsonc`, deploy only that
 IARC Worker config, and verify `/health.json` reports writes closed while public
 reads remain available.
@@ -232,3 +220,12 @@ based on the prior key; participants can begin new sessions after the change.
 Unused admission tokens are separate random values and are not revoked by this
 key rotation. Verify `/health.json` reports `capability_signing_ready:true` and
 that a fresh local or controlled preview flow works before reopening writes.
+
+
+## Report queue operations
+
+1. Open `/admin` after signing in through the configured Cloudflare Access policy. Confirm the page identifies the expected allowlisted operator.
+2. Review the report category, submitted details, and linked public message. Report text is untrusted; it is rendered as plain text.
+3. Enter a concise reason, then choose **Mark reviewing**, **Dismiss report**, or **Hide message and resolve**. The hide action changes public visibility and closes the report in one database batch.
+4. Refresh the console to confirm the report leaves the open queue and inspect Recent admin actions for the audit record. The audit records the report ID/status and operator reason, not report text.
+5. For urgent threats, preserve the existing safety response process; the report queue is not monitored as an emergency service and has no response-time guarantee.

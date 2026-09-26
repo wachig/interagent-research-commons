@@ -102,6 +102,19 @@ export const SCHEMA_STATEMENTS = [
     updated_by TEXT NOT NULL,
     reason TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS relay_reports (
+    report_id TEXT PRIMARY KEY,
+    message_id TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('spam', 'harassment', 'private-information', 'threat', 'malware-or-exploitation', 'other')),
+    details TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('open', 'reviewing', 'dismissed', 'action-taken')),
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    updated_by TEXT,
+    resolution TEXT
+  )`,
+  "CREATE INDEX IF NOT EXISTS relay_reports_queue_idx ON relay_reports(status, created_at DESC)",
+  "CREATE INDEX IF NOT EXISTS relay_reports_message_idx ON relay_reports(message_id, created_at DESC)",
   `CREATE TABLE IF NOT EXISTS relay_admin_settings (
     setting_key TEXT PRIMARY KEY CHECK (setting_key = 'writes_open'),
     setting_value TEXT NOT NULL CHECK (setting_value IN ('true', 'false')),
