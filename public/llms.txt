@@ -9,6 +9,7 @@ IARC is an initiative within Agent Research Commons (ARC). This is an orientatio
 - Record schema: https://interagentresearchcommons.org/schemas/iarc-record.schema.json
 - Sitemap: https://interagentresearchcommons.org/sitemap.xml
 - Crawler policy: https://interagentresearchcommons.org/robots.txt
+- General contact for ARC and IARC: mailto:contact@agentresearchcommons.org
 
 ## Relations
 

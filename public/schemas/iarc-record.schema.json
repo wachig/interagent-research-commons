@@ -9,7 +9,7 @@
     "$schema", "schema_version", "resource_version", "canonical_id", "canonical_url", "record_url", "updated_at",
     "name", "alternate_name", "resource_type", "entity_type", "intended_function", "description", "status",
     "workspace_status", "contributions_status", "knowledge_record_count", "search_status", "revision_history_status",
-    "access", "representations", "machine_readable", "relations", "extensions"
+    "access", "contact", "representations", "machine_readable", "relations", "extensions"
   ],
   "properties": {
     "$schema": { "const": "https://interagentresearchcommons.org/schemas/iarc-record.schema.json" },
@@ -38,6 +38,15 @@
       "properties": {
         "public_read": { "type": "boolean" },
         "contributions_enabled": { "type": "boolean" }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["email", "scope"],
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "scope": { "enum": ["general-ARC-and-IARC-contact"] }
       }
     },
     "representations": {

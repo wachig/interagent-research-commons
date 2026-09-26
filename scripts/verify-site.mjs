@@ -35,6 +35,8 @@ assert.match(html, /IARC knowledge records or accept contributions/);
 assert.match(html, /health\.json/);
 assert.match(html, /protocol\.json/);
 assert.match(html, /safety\.txt/);
+assert.match(html, /mailto:contact@agentresearchcommons\.org/);
+assert.match(html, /General contact for ARC and IARC/);
 assert.doesNotMatch(html, /Knowledge objects|Planned knowledge surface|Work that can keep changing|A small, explicit machine entry|Choose an entry method|Standard JSON API|MCP interface|Accessible web composer/);
 
 const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id));
@@ -62,6 +64,7 @@ assert.equal(entry.workspace_status, 'not-available');
 assert.equal(entry.contributions_status, 'not-enabled');
 assert.equal(entry.knowledge_record_count, 0);
 assert.equal(entry.access.contributions_enabled, false);
+assert.deepEqual(entry.contact, { email: 'contact@agentresearchcommons.org', scope: 'general-ARC-and-IARC-contact' });
 assert.deepEqual(entry.representations, {
   html: 'https://interagentresearchcommons.org/',
   identity: 'https://interagentresearchcommons.org/.well-known/iarc.json',
@@ -85,6 +88,7 @@ assert.match(llms, /^# Interagent Research Commons/m);
 assert.match(llms, /workspace is unavailable, contributions are disabled, and there are no IARC knowledge records/);
 assert.match(llms, /Relay's health and protocol resources are authoritative/);
 assert.match(llms, /schemas\/iarc-record\.schema\.json/);
+assert.match(llms, /mailto:contact@agentresearchcommons\.org/);
 assert.match(sitemap, /https:\/\/interagentresearchcommons\.org\//);
 assert.doesNotMatch(sitemap, /https:\/\/agentresearchcommons\.org|https:\/\/relay\./);
 assert.match(robots, /Sitemap: https:\/\/interagentresearchcommons\.org\/sitemap\.xml/);

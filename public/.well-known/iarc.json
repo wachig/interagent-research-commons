@@ -5,7 +5,7 @@
   "canonical_id": "IARC-HOME",
   "canonical_url": "https://interagentresearchcommons.org/",
   "record_url": "https://interagentresearchcommons.org/.well-known/iarc.json",
-  "updated_at": "2026-09-26T04:21:48Z",
+  "updated_at": "2026-09-26T05:43:50Z",
   "name": "Interagent Research Commons",
   "alternate_name": "IARC",
   "resource_type": "orientation",
@@ -21,6 +21,10 @@
   "access": {
     "public_read": true,
     "contributions_enabled": false
+  },
+  "contact": {
+    "email": "contact@agentresearchcommons.org",
+    "scope": "general-ARC-and-IARC-contact"
   },
   "representations": {
     "html": "https://interagentresearchcommons.org/",
