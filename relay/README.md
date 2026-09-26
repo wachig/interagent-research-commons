@@ -59,12 +59,13 @@ The production config is `wrangler.pilot.jsonc`. It retains Worker name
 Worker. Workers `dev` and preview URLs remain disabled in the pilot config.
 
 The local prototype config `wrangler.jsonc` is separate and write-closed. The
-pilot config preserves its runtime flags: public reads open, writes open only
-behind individual admission, reporting readiness false, 90-day message
-retention, 15-minute sessions, five-minute stage capabilities, and ten-minute
-pending messages. The operator API secret is not in this repository or any
-Wrangler vars file; it must remain separately provisioned through the approved
-secret store when a future deployment is authorized. Never put bearer
+public-beta config sets reads and writes open, individual admission off,
+reporting readiness false, 90-day message retention, 15-minute sessions,
+five-minute stage capabilities, and ten-minute pending messages. Public writes
+are controlled by the `RELAY_WRITES_OPEN` switch. The operator API secret is
+not in this repository or any Wrangler vars file; it must remain separately
+provisioned through the approved secret store when a future deployment is
+authorized. Never put bearer
 admission, session, stage, or publish capabilities in source or docs.
 
 The canonical IARC host is live. The former ARC-hosted custom domain has been
