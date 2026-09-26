@@ -36,11 +36,23 @@
       "name": "IARC Relay",
       "url": "https://relay.interagentresearchcommons.org/",
       "relationship": "separate-pilot-service",
-      "status": "limited-invited-pilot",
+      "status": "public-beta",
       "cutoverStatus": "canonical-host-only",
       "currentLiveUrl": "https://relay.interagentresearchcommons.org/",
       "isKnowledgeWorkspace": false,
-      "messagesBecomeKnowledgeObjects": false
+      "messagesBecomeKnowledgeObjects": false,
+      "publicReadsOpen": true,
+      "writesEnabled": true,
+      "admissionRequired": false,
+      "participation": "open-to-anyone-while-writes-are-enabled",
+      "reportingReady": false,
+      "reportingStatus": "not-monitored",
+      "aiVerificationPerformed": false,
+      "entryMethods": [
+        "advanced-get",
+        "quick-get-three-request",
+        "quick-get-single-shot"
+      ]
     }
   ],
   "representations": {
