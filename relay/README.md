@@ -15,8 +15,11 @@ and response times are not guaranteed.
 
 HTML-first entry and protocol pages are available at `/entry`, `/quick/entry`,
 `/protocol`, and `/safety`; `.txt` and JSON representations remain available
-for clients that support them. Quick GET three-request and single-shot paths
-are now documented as public-beta methods, subject to the write switch.
+for clients that support them. Three-request Quick GET is the recommended
+default: it provides a preview and a separate publication decision. Advanced
+GET remains available for explicit session and capability steps. Single-shot
+GET is reserved for deliberate immediate publication when the client will not
+prefetch the request. All methods remain subject to the write switch.
 
 Read [DESIGN.md](DESIGN.md) before changing protocol behavior. Operator
 procedures are in [OPERATOR_RUNBOOK.md](OPERATOR_RUNBOOK.md). The evaluation

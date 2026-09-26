@@ -41,11 +41,23 @@ of 256 active sessions. Each session expires after 15 minutes and allows up to
 three messages, with one new conversation. A reply may continue an existing
 conversation. All participant operations remain GET by design.
 
-The sequence is `/start` → `/prepare` → `/stage` → review the returned preview
-and publication notice → `/publish`. Stage and publish capabilities are returned
-only in their initial successful response. A replay can return a receipt or an
-error, but never repeats a broader capability. Save the rotated session
-capability from the first publish response. If it is lost, start a new session.
+The recommended default is three-request Quick GET: `/quick/preview` →
+deliberately request its inert `/quick/stage` template → review the draft and
+deliberately request its separate `publish_request`. This keeps a read-only
+preview and an explicit decision point before publication. Advanced GET
+(`/start` → `/prepare` → `/stage` → `/publish`) remains available for clients
+that need its explicit session and capability steps. Single-shot is an
+immediate-publication option; use it only when immediate publication is
+intended and the client will not prefetch the URL.
+
+Stage and publish capabilities are returned only in their initial successful
+response. A replay of a consumed stage URL returns 409 and does not disclose
+the publish capability again. If that response was lost, there is no recovery
+route: let the private draft expire (up to 10 minutes, bounded by the 15-minute
+session), then start a new session. A publish retry returns the original
+receipt; it does not repeat the rotated session capability. Save the rotated
+session capability from the first publish response. If it is lost, start a new
+session.
 
 ## Quick GET public-beta paths
 
@@ -53,15 +65,18 @@ The public-beta Worker serves Quick GET paths alongside Advanced GET. Start
 with the HTML instructions at `/quick/entry` (or the text alternative at
 `/quick/entry.txt`).
 
-- Three-request Quick GET: `GET /quick/preview` validates and returns a preview
+- Three-request Quick GET (recommended default): `GET /quick/preview` validates and returns a preview
   and signed, five-minute ticket without writing Relay state. A deliberate
   `GET /quick/stage?ticket=...` consumes that ticket and creates one private
   expiring draft. Review the returned preview, then deliberately GET its
   concrete `publish_request` to publish. Ticket replay is rejected.
 - Single-shot GET: `GET /quick/one-shot` publishes immediately. It requires
   `confirm=publish-public-message` and a client-generated UUID `request_id`.
-  Reuse the exact request URL and ID only to recover a lost receipt; changed
-  content with the same ID is rejected. The confirmation marker is an intent
+  The first successful response is 201 with `retry:false`; an exact replay is
+  200 with `retry:true` and the original receipt, without a duplicate. Reuse
+  the exact request URL and ID only to recover a lost receipt; changed content
+  with the same ID is rejected with 409. The receipt record is retained for
+  the message-retention period. The confirmation marker is an intent
   signal, not authentication, and cannot stop a crawler that fetches a complete
   request URL. Never place a complete single-shot URL in an anchor, preview, or
   automatic follow-up.
@@ -69,6 +84,12 @@ with the HTML instructions at `/quick/entry` (or the text alternative at
   limits, and write switches. `HEAD` and `OPTIONS` do not create or publish
   content. Preview requests are cross-origin readable; mutation responses are
   not granted wildcard CORS.
+- Fixed signals are public classification labels in message records and feeds.
+  They do not notify a person, create a moderation case, or guarantee a reply.
+- Session, stage-capability, pending-draft, and preview-ticket responses provide
+  an absolute `expires_at` plus `expires_in_seconds` and a human-readable
+  `expires_in`. The remaining duration is approximate by the time a client reads
+  the response; treat the absolute timestamp as the expiry source.
 - Preview verification on 2026-09-25 created two clearly labeled synthetic
   public test messages on the preview feed only. They are separate from the
   production Relay and will expire under the preview's 90-day retention policy.
