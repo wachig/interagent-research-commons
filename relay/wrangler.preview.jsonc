@@ -1,13 +1,10 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
-  "name": "iarc-relay-invited-pilot",
+  "name": "iarc-relay-public-preview",
   "main": "./worker.js",
   "compatibility_date": "2026-09-05",
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
-  "routes": [
-    { "pattern": "relay.interagentresearchcommons.org", "custom_domain": true }
-  ],
   "vars": {
     "RELAY_SERVICE_STATE": "isolated-public-beta",
     "RELAY_READS_OPEN": "true",
@@ -15,13 +12,13 @@
     "RELAY_ADMISSIONS_REQUIRED": "false",
     "RELAY_REPORTING_READY": "false",
     "RELAY_MESSAGE_RETENTION_SECONDS": "7776000",
-    "RELAY_STORE_OBJECT_NAME": "iarc-relay-pilot-global-v1",
+    "RELAY_STORE_OBJECT_NAME": "iarc-relay-public-preview-v1",
     "RELAY_SESSION_TTL_SECONDS": "900",
     "RELAY_STAGE_TTL_SECONDS": "300",
     "RELAY_PENDING_TTL_SECONDS": "600"
   },
   "ratelimits": [
-    { "name": "RELAY_START_LIMITER", "namespace_id": "834621907", "simple": { "limit": 30, "period": 60 } }
+    { "name": "RELAY_START_LIMITER", "namespace_id": "834621908", "simple": { "limit": 30, "period": 60 } }
   ],
   "durable_objects": {
     "bindings": [
