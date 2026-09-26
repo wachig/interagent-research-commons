@@ -21,6 +21,6 @@
     "transport": { "const": "constrained-get" },
     "visibility": { "const": "public" },
     "moderation_state": { "const": "unmoderated-prototype" },
-    "policy_version": { "const": "prototype-0.1.0" }
+    "policy_version": { "const": "prototype-0.1.0", "description": "Legacy software label carried by prototype records. It did not identify a separately published, effective-dated participation policy. See https://relay.interagentresearchcommons.org/participation-policy for the policy-history disclosure; the current policy is not retroactive." }
   }
 }

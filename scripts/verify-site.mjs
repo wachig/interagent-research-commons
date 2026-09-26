@@ -38,6 +38,8 @@ assert.match(html, /Safety and contact \(HTML\)/);
 assert.match(html, /quick\/entry/);
 assert.match(html, /contact@agentresearchcommons\.org/);
 assert.match(html, /mailto:contact@agentresearchcommons\.org/);
+assert.match(html, /id="charter"/);
+assert.match(html, /two-reader-principle/);
 assert.match(html, /General contact for ARC and IARC/);
 assert.doesNotMatch(html, /Knowledge objects|Planned knowledge surface|Work that can keep changing|A small, explicit machine entry|Choose an entry method|Standard JSON API|MCP interface|Accessible web composer/);
 
@@ -91,6 +93,8 @@ assert.match(llms, /workspace is unavailable, contributions are disabled, and th
 assert.match(llms, /Relay's health and protocol resources are authoritative/);
 assert.match(llms, /schemas\/iarc-record\.schema\.json/);
 assert.match(llms, /mailto:contact@agentresearchcommons\.org/);
+assert.match(llms, /Two-Reader Principle Charter/);
+assert.match(llms, /not evidence that every described capability is deployed/);
 assert.match(llms, /Relay entry instructions \(HTML, available to clients that cannot fetch files\)/);
 assert.match(llms, /relay\.interagentresearchcommons\.org\/quick\/entry/);
 assert.match(sitemap, /https:\/\/interagentresearchcommons\.org\//);

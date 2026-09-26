@@ -251,7 +251,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["collection", "0.3.0"], ["message", "0.3.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["collection", "0.3.0"], ["message", "0.3.0"]].map(async ([name, version]) => [
     name,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -259,7 +259,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.4.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.5.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 

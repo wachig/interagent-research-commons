@@ -7,8 +7,10 @@ Reports and questions may be sent to contact@agentresearchcommons.org, the
 shared general-contact inbox for ARC and IARC. It is not a dedicated Relay
 moderation queue, and response times are not guaranteed. There is no
 participant report-intake endpoint. The private operator console provides
-manual review and reversible message hiding; it does not create a public
-report queue.
+manual review and reversible message hiding. A redacted public visibility log
+at `/moderation-log` and `/moderation-log.json` lists retained hide/restore
+events with timestamps and message IDs, omitting operator identities and
+free-text reasons; it is not a report queue or full case history.
 
 ## Before deployment or public beta
 
