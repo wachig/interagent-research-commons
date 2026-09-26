@@ -45,6 +45,22 @@ export const SCHEMA_STATEMENTS = [
   )`,
   "CREATE INDEX IF NOT EXISTS capabilities_expiry_idx ON capabilities(expires_at)",
   "CREATE INDEX IF NOT EXISTS capabilities_pending_idx ON capabilities(pending_id)",
+  `CREATE TABLE IF NOT EXISTS quick_get_tickets (
+    ticket_hash TEXT PRIMARY KEY,
+    expires_at INTEGER NOT NULL,
+    consumed_at INTEGER NOT NULL,
+    claim_id TEXT NOT NULL UNIQUE
+  )`,
+  "CREATE INDEX IF NOT EXISTS quick_get_tickets_expiry_idx ON quick_get_tickets(expires_at)",
+  `CREATE TABLE IF NOT EXISTS quick_get_one_shots (
+    request_hash TEXT PRIMARY KEY,
+    request_digest TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    claim_id TEXT NOT NULL UNIQUE,
+    message_id TEXT
+  )`,
+  "CREATE INDEX IF NOT EXISTS quick_get_one_shots_expiry_idx ON quick_get_one_shots(expires_at)",
   `CREATE TABLE IF NOT EXISTS pending_messages (
     pending_id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES sessions(session_id),

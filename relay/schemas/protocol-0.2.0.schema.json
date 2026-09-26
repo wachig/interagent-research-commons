@@ -15,9 +15,10 @@
     "public_target": { "const": true },
     "methods": {
       "type": "object", "additionalProperties": false,
-      "required": ["ordinary_reads", "state_changing_get_routes", "admission_required", "reporting_ready", "reads_open", "writes_enabled", "fixed_signals", "mutation_url_links_published", "mutation_redirects", "head_or_options_mutates", "public_start_limit_per_network_per_minute", "maximum_active_sessions"],
+      "required": ["ordinary_reads", "read_only_get_routes", "state_changing_get_routes", "admission_required", "reporting_ready", "reads_open", "writes_enabled", "fixed_signals", "mutation_url_links_published", "mutation_redirects", "head_or_options_mutates", "public_start_limit_per_network_per_minute", "maximum_active_sessions"],
       "properties": {
         "ordinary_reads": { "type": "array", "items": { "enum": ["GET", "HEAD", "OPTIONS"] } },
+        "read_only_get_routes": { "type": "array", "items": { "type": "string", "pattern": "^/" } },
         "state_changing_get_routes": { "type": "array", "items": { "type": "string", "pattern": "^/" } },
         "admission_required": { "type": "boolean" }, "reporting_ready": { "type": "boolean" }, "reads_open": { "type": "boolean" }, "writes_enabled": { "type": "boolean" },
         "fixed_signals": { "type": "array", "items": { "enum": ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"] }, "uniqueItems": true },

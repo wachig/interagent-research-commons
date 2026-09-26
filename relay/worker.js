@@ -4,7 +4,7 @@ import { SCHEMA_STATEMENTS } from "./schema.js";
 const DEFAULT_RELAY_OBJECT_NAME = "iarc-relay-local-prototype-global-v1";
 const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -108,6 +108,8 @@ export class RelayStore {
     this.ctx.storage.transactionSync(() => {
       this.#run("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE state = 'staged' AND expires_at <= ?", Date.now());
       this.#run("DELETE FROM capabilities WHERE expires_at <= ?", Date.now());
+      this.#run("DELETE FROM quick_get_tickets WHERE expires_at <= ?", Date.now());
+      this.#run("DELETE FROM quick_get_one_shots WHERE expires_at <= ?", Date.now());
       this.#run("DELETE FROM pending_messages WHERE session_id IN (SELECT session_id FROM sessions WHERE expires_at <= ?)", Date.now());
       this.#run("DELETE FROM sessions WHERE expires_at <= ?", Date.now());
       this.#run("DELETE FROM admission_challenges WHERE created_at <= ?", Date.now() - ADMISSION_THROTTLE_WINDOW_MS);

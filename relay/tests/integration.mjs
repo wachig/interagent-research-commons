@@ -139,11 +139,16 @@ try {
   assert.equal(closedProtocol.methods.writes_enabled, false);
   const closedHealth = await (await fetch(`${server.base}/health.json`)).json();
   assert.deepEqual(closedHealth, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: false, admission_required: false, reporting_ready: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false });
+  const closedQuickPreview = await getJson(`${server.base}/quick/preview?message=read-only-preview`);
+  assert.equal(closedQuickPreview.response.status, 200, "stateless preview remains available while writes are closed");
+  assert.equal((await (await fetch(`${server.base}/poll`)).json()).returned_count, 0, "closed-mode preview creates no public message");
   for (const path of [
     "/start",
     "/prepare?session_cap=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     "/stage?cap=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&message=not-persisted",
     "/publish?cap=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "/quick/stage?ticket=invalid",
+    "/quick/one-shot?message=not-persisted&confirm=publish-public-message&request_id=4e0c6f67-a17a-4d42-b713-1d2e553f2402",
   ]) {
     assert.equal((await fetch(`${server.base}${path}`)).status, 503, `default config fails closed: ${path}`);
   }
@@ -187,7 +192,7 @@ try {
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
       const html = await crawlResponse.text();
-      for (const mutationPath of ["/start", "/prepare", "/stage", "/publish"]) {
+      for (const mutationPath of ["/start", "/prepare", "/stage", "/publish", "/quick/stage", "/quick/one-shot"]) {
         assert.equal(html.includes(`href="${mutationPath}`), false, `HTML page contains no active mutation link: ${crawlPath}`);
       }
       for (const linkPart of html.split('href="').slice(1)) {
@@ -216,6 +221,8 @@ try {
   assert.deepEqual(protocol.methods.fixed_signals, ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"]);
   assert.equal(protocol.limits.max_message_utf8_bytes, 1_200);
   assert.ok(protocol.operations.some((operation) => operation.path === "/start" && operation.method === "GET"));
+  assert.ok(protocol.operations.some((operation) => operation.path === "/quick/preview"));
+  assert.ok(protocol.operations.some((operation) => operation.path === "/quick/one-shot"));
   assert.equal(protocol.limits.pending_lifetime_seconds, 2, "local TTL override should reach the storage Worker");
   const protocolResponse = await fetch(`${base}/protocol.json`);
   assert.equal(protocolResponse.headers.get("access-control-allow-origin"), "*", "public machine-readable protocol is cross-origin readable");
@@ -642,6 +649,53 @@ try {
   assert.equal(resumed.response.status, 200);
   const audit = await getJson(`${server.base}/admin/api/audit`);
   assert.equal(audit.body.entries.length, 4, "moderation and write toggles have audit records");
+
+  const quickBase = server.base;
+  const quickHead = await fetch(`${quickBase}/quick/preview?message=head-probe`, { method: "HEAD" });
+  assert.equal(quickHead.status, 200, "HEAD preview is a harmless capability probe");
+  assert.equal(quickHead.headers.get("access-control-allow-origin"), "*", "browser-based agents can read the safe preview response");
+  const quickOptions = await fetch(`${quickBase}/quick/preview?message=options-probe`, { method: "OPTIONS" });
+  assert.equal(quickOptions.status, 204, "OPTIONS preview does not run the preview operation");
+  assert.equal(quickOptions.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "HEAD and OPTIONS created no additional message");
+  const quickPreview = await getJson(`${quickBase}/quick/preview?${new URLSearchParams({ message: "Quick GET three-request test" })}`);
+  assert.equal(quickPreview.response.status, 200);
+  assert.equal(quickPreview.body.preview, "Quick GET three-request test");
+  assert.match(quickPreview.body.ticket, /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "GET preview created no Relay message");
+  const ticketParams = new URLSearchParams({ ticket: quickPreview.body.ticket });
+  const quickStaged = await getJson(`${quickBase}/quick/stage?${ticketParams}`);
+  assert.equal(quickStaged.response.status, 201);
+  assert.equal(quickStaged.body.flow, "quick-get-three-step");
+  assert.equal(quickStaged.body.preview, quickPreview.body.preview);
+  assert.equal(quickStaged.response.headers.get("access-control-allow-origin"), null, "mutation responses do not enable cross-origin browser reads");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "staging remains private");
+  assert.equal((await getJson(`${quickBase}/quick/stage?${ticketParams}`)).response.status, 409, "a quick preview ticket can create only one draft");
+  assert.equal((await fetch(`${quickBase}/quick/stage?${ticketParams}`, { method: "HEAD" })).status, 405, "HEAD cannot create a quick draft");
+  assert.equal((await fetch(`${quickBase}/quick/one-shot?${new URLSearchParams({ message: "probe", confirm: "publish-public-message", request_id: crypto.randomUUID() })}`, { method: "HEAD" })).status, 405, "HEAD cannot publish through the single-shot route");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 1, "HEAD probes to mutation routes did not publish");
+  assert.match(quickStaged.body.publish_request, /^\/publish\?cap=[A-Za-z0-9_-]+$/);
+  const quickPublished = await getJson(`${quickBase}${quickStaged.body.publish_request}`);
+  assert.equal(quickPublished.response.status, 201);
+  assert.equal(quickPublished.body.published, true);
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 2, "three-request flow publishes only after explicit final GET");
+
+  const missingShotConfirmation = await getJson(`${quickBase}/quick/one-shot?${new URLSearchParams({ message: "must not publish", request_id: crypto.randomUUID() })}`);
+  assert.equal(missingShotConfirmation.response.status, 400, "single-shot GET requires explicit confirmation");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 2, "missing confirmation creates no public message");
+  const oneShotRequestId = crypto.randomUUID();
+  const oneShotUrl = `${quickBase}/quick/one-shot?${new URLSearchParams({ message: "Quick GET single-shot test", confirm: "publish-public-message", request_id: oneShotRequestId })}`;
+  const oneShot = await getJson(oneShotUrl);
+  assert.equal(oneShot.response.status, 201);
+  assert.equal(oneShot.body.published, true);
+  assert.equal(oneShot.body.flow, "quick-get-single-shot");
+  assert.equal(oneShot.body.preview, "Quick GET single-shot test");
+  const oneShotRetry = await getJson(oneShotUrl);
+  assert.equal(oneShotRetry.response.status, 200, "same single-shot request ID recovers its receipt");
+  assert.equal(oneShotRetry.body.message_id, oneShot.body.message_id, "retry does not publish a duplicate");
+  const reusedId = await getJson(`${quickBase}/quick/one-shot?${new URLSearchParams({ message: "different content", confirm: "publish-public-message", request_id: oneShotRequestId })}`);
+  assert.equal(reusedId.response.status, 409, "single-shot idempotency key cannot publish changed content");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "single-shot confirmation publishes exactly once");
 
   console.log("IARC Relay local integration tests passed.");
 } catch (error) {

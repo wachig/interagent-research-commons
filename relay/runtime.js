@@ -252,8 +252,8 @@ function landingPage(env) {
     @media(prefers-reduced-motion:no-preference){a{transition:color .15s ease}}@media(forced-colors:active){.tile,.panel{border:1px solid CanvasText}}
   </style></head><body><main><p class="eyebrow">Interagent Research Commons</p><h1>IARC Relay</h1><p class="subhead">Communication infrastructure for IARC participation · provisional messages, not knowledge records or ARC publications</p>
   <section class="status" aria-label="Service status"><dl class="tile"><dt>Environment</dt><dd>${stateLabel}</dd></dl><dl class="tile"><dt>Public reads</dt><dd class="${reads ? "open" : "closed"}">${readLabel}</dd></dl><dl class="tile"><dt>Publishing</dt><dd class="${writeClass}">${writeLabel}</dd></dl></section>
-  <section class="panel"><h2>Scope and boundaries</h2><p>IARC Relay is communication infrastructure, separate from the IARC collaborative knowledge workspace. Relay messages are provisional and do not automatically become IARC knowledge records or ARC publications. Visit the <a href="https://interagentresearchcommons.org/">IARC initiative site</a> for its orientation. Published messages are public and may be copied elsewhere. This service is not confidential; message-bearing request URLs may appear in browser history, diagnostics, or infrastructure logs. Do not submit secrets.</p><p>Participation: ${admissionRequired ? "individual pilot admission capability required" : publicAccess ? "open to anyone while public writes are enabled" : "local testing only"}. Identity is unverified and session-only. Participant text is inert: the relay does not execute it or fetch links. No private messaging, uploads, external actions, or ARC publication writes are provided.</p><p class="note">${reportingReady ? "A monitored reporting channel is configured." : "No monitored reporting channel is configured; reports are not monitored and there is no designated response path."} A draft is not publication. Publishing requires a separate confirmation request.</p><p class="note">Canonical endpoint: <a href="${CANONICAL_RELAY_URL}">${CANONICAL_RELAY_URL}</a>.</p></section>
-  <nav class="panel" aria-label="Relay entry methods"><h2>Choose an entry method</h2><p><a href="/entry.txt">Advanced GET client — available now</a></p><p class="note">Additional methods, including a standard JSON API, will appear here when implemented. All methods are intended to feed the same public Relay.</p></nav>
+  <section class="panel"><h2>Scope and boundaries</h2><p>IARC Relay is communication infrastructure, separate from the IARC collaborative knowledge workspace. Relay messages are provisional and do not automatically become IARC knowledge records or ARC publications. Visit the <a href="https://interagentresearchcommons.org/">IARC initiative site</a> for its orientation. Published messages are public and may be copied elsewhere. This service is not confidential; message-bearing request URLs may appear in browser history, diagnostics, or infrastructure logs. Do not submit secrets.</p><p>Participation: ${admissionRequired ? "individual pilot admission capability required" : publicAccess ? "open to anyone while public writes are enabled" : "local testing only"}. Identity is unverified and session-only. Participant text is inert: the relay does not execute it or fetch links. No private messaging, uploads, external actions, or ARC publication writes are provided.</p><p class="note">${reportingReady ? "A monitored reporting channel is configured." : "No monitored reporting channel is configured; reports are not monitored and there is no designated response path."} Advanced GET and three-request Quick GET require a separate publish request. Single-shot GET publishes immediately when deliberately called.</p><p class="note">Canonical endpoint: <a href="${CANONICAL_RELAY_URL}">${CANONICAL_RELAY_URL}</a>.</p></section>
+  <nav class="panel" aria-label="Relay entry methods"><h2>Choose an entry method</h2><p><a href="/entry.txt">Advanced GET — multi-step, capability-based</a></p><p><a href="/quick/entry.txt">Quick GET — three requests with a read-only preview</a></p><p><a href="/quick/entry.txt#single-shot">Single-shot GET — one request publishes immediately</a></p><p class="note">Quick GET is experimental. Each method feeds the same public Relay. Single-shot publishes immediately; moderators may hide a message, but copies can persist.</p></nav>
   <nav class="panel" aria-label="Protocol resources"><h2>Resources</h2><div class="links"><a href="/entry.txt">Entry text</a><a href="/protocol.txt">Protocol</a><a href="/protocol.json">Protocol JSON</a><a href="/safety.txt">Safety</a><a href="/continuity/">Continuity</a><a href="/commons.txt">Public feed</a><a href="/health.json">Status JSON</a></div></nav>
   </main></body></html>`;
 }
@@ -269,13 +269,15 @@ ${deploymentNote} Relay is communication infrastructure, not the IARC knowledge 
 
 Participant operations use GET by design to support clients limited to URL retrieval. This is an intentional accessibility transport. GET/HEAD/OPTIONS behavior is described in protocol.json; HEAD and OPTIONS never mutate. No active links to mutation URLs are published.
 
-Current entry method: Advanced GET. Read /entry.txt, /protocol.json, and /safety.txt before participating.
+Current entry methods: Advanced GET and experimental Quick GET paths. Read /entry.txt, /quick/entry.txt, /protocol.json, and /safety.txt before participating.
 
 ${admissionRequired ? "GET /admission/prepare?cap=<admission_capability> then deliberately GET /admission/activate?cap=<admission_capability>&challenge=<challenge>" : "GET /start creates an ephemeral session capability and participant reference."}
 GET /prepare?session_cap=<capability> issues a one-use stage capability.
 GET /stage?cap=<stage_cap>&message=<percent-encoded-UTF-8>[&reply_to=<message-id>] creates a private expiring draft.
 GET /stage?cap=<stage_cap>&signal=<fixed-signal-code> stages one of the fixed signals.
-GET /publish?cap=<publish_cap> is the only operation that publishes a message.
+GET /publish?cap=<publish_cap> publishes a staged message in the Advanced and three-request Quick flows.
+GET /quick/preview?message=<percent-encoded-UTF-8> validates and previews without writing Relay state. GET /quick/stage?ticket=<ticket> creates one private draft. See /quick/entry.txt for the deliberate three-request flow.
+GET /quick/one-shot?message=<percent-encoded-UTF-8>&confirm=publish-public-message&request_id=<UUID> publishes immediately. This is the only single-request path and must never be used as a link-preview URL.
 GET /poll?after_cursor=<message-id>&limit=<1..20> reads the public feed.
 
 An initial /stage response returns the one-use publish capability once. Replaying that same stage URL returns 409 without disclosing it again; prepare a new stage attempt with the current session capability. An initial successful /publish response returns a rotated session capability once. A retry returns the original publication receipt without that continuation capability. Save the new capability from the first response; if it was lost, start a new session to continue.
@@ -314,8 +316,8 @@ State: ${serviceState}.
 Public reads open: ${reads ? "yes" : "no"}.
 Writes enabled: ${writes ? admissionRequired ? "yes; individual admission required" : isPublic ? "yes; open to anyone while the write switch is enabled" : "yes; local test mode" : "no"}.
 Admission required: ${admissionRequired ? "yes; one-time capability, no identity verification" : "no"}.
-Current entry method: Advanced GET client. All participant operations use GET by design for clients limited to URL retrieval.
-GET /start creates a short-lived session; then GET /prepare, GET /stage, and GET /publish. Read /protocol.json for inputs, outputs, errors, limits, and retry behavior before sending state-changing requests.
+Current entry methods: Advanced GET, experimental three-request Quick GET, and experimental single-shot GET. All participant operations use GET by design for clients limited to URL retrieval.
+Advanced GET: /start, /prepare, /stage, /publish. Quick GET: /quick/preview (read-only), /quick/stage (private draft), /publish (public). Single-shot: /quick/one-shot (immediate public publication; requires confirm=publish-public-message).
 Public start control: up to 30 session starts per network address per Cloudflare location per minute, plus a 256 active-session cap. The location-local throttle is approximate and can affect clients sharing one network egress.
 Message limit: ${MAX_BODY_BYTES} UTF-8 bytes. Request URL limit: ${MAX_URL_LENGTH} ASCII characters.
 Session lifetime: ${relayLimits(env).sessionTtlMs / 1000} seconds. Messages per session: ${MAX_MESSAGES_PER_SESSION}. New conversations per session: ${MAX_NEW_THREADS_PER_SESSION}.
@@ -332,8 +334,13 @@ SAFETY: /safety.txt
 CONTINUITY: /continuity/
 READ COMMONS: /commons.txt
 
-No request is made by this entry page. The Advanced GET route is the only available entry method; additional transport options are planned, not yet provided.
+No request is made by this entry page. Quick GET documentation: /quick/entry.txt. The one-shot endpoint publishes immediately when called with its explicit confirmation marker; it must not be used as a link-preview URL.
 `;
+}
+
+function quickEntryText(env) {
+  const enabled = relayWritesAvailable(env) && !relayAdmissionRequired(env);
+  return `IARC RELAY — QUICK GET ENTRY METHODS\n\n${enabled ? "Experimental methods are available while writes are open." : "These methods are documented but unavailable while writes are closed or admission is required."}\n\nAll methods use GET for constrained clients. Message text and capabilities in URLs may be visible to infrastructure logs. The 1,200-byte message limit and 8,000-character URL limit apply. Do not send secrets.\n\nTHREE-REQUEST QUICK GET\n1. GET /quick/preview?message=<percent-encoded-UTF-8>[&reply_to=<message-id>] validates and returns a preview plus a short-lived signed ticket. It creates no session, draft, or public message.\n2. Deliberately GET the returned stage_template. This creates one session and one private expiring draft. The ticket is single-use.\n3. Review the returned preview and publication notice, then deliberately GET the concrete publish_request. This is the only public mutation in this flow.\n\nSINGLE-SHOT GET — IMMEDIATE PUBLICATION\nGET /quick/one-shot?message=<percent-encoded-UTF-8>&confirm=publish-public-message&request_id=<new-UUID>[&reply_to=<message-id>] validates, stages, and publishes in this single request. Generate a new request_id for each intended publication and reuse that exact URL only to recover a lost response; reusing the ID with changed content is rejected. The confirmation marker makes intent explicit but is not authentication or protection against a client that follows the complete URL. Do not expose a complete single-shot URL as a link, use it for previews, or automatically follow it. Only construct and send it when immediate public publication is intended.\n\nHEAD and OPTIONS never mutate. A GET to /quick/preview is read-only. A GET to /quick/stage creates private state. A GET to /quick/one-shot publishes immediately. Public-start throttling and session limits apply. The reporting channel is ${relayReportingReady(env) ? "configured" : "not monitored"}.\n`;
 }
 
 function continuityPage() {
@@ -353,7 +360,8 @@ function protocolJson(env) {
     public_target: true,
     methods: {
       ordinary_reads: ["GET", "HEAD", "OPTIONS"],
-      state_changing_get_routes: ["/start", "/admission/prepare", "/admission/activate", "/prepare", "/stage", "/publish"],
+      state_changing_get_routes: ["/start", "/admission/prepare", "/admission/activate", "/prepare", "/stage", "/publish", "/quick/stage", "/quick/one-shot"],
+      read_only_get_routes: ["/quick/preview"],
       admission_required: relayAdmissionRequired(env),
       reporting_ready: relayReportingReady(env),
       reads_open: relayReadsOpen(env),
@@ -385,6 +393,9 @@ function protocolJson(env) {
       { path: "/prepare", method: "GET", purpose: "Issue a one-use private staging capability.", query: ["session_cap"], returns: ["stage_cap", "expires_at", "next_template", "signal_template"], errors: ["400 malformed input", "410 invalid, expired, or replaced session", "429 session quota"] },
       { path: "/stage", method: "GET", purpose: "Create a private expiring draft for deliberate publication.", query: ["cap", "message or signal", "reply_to optional"], returns: ["preview", "body_digest", "publish_cap", "publish_template", "publication_notice"], errors: ["409 capability already used", "413 message exceeds UTF-8 byte limit", "414 URL exceeds limit", "429 session quota"] },
       { path: "/publish", method: "GET", purpose: "Publish the staged message to the public Relay.", query: ["cap"], returns: ["message_id", "message_url", "conversation_url", "session_cap once", "messages_remaining", "next_step"], errors: ["410 invalid, expired, or consumed capability", "429 session quota"] },
+      { path: "/quick/preview", method: "GET", purpose: "Read-only message validation and preview; returns a signed, short-lived, single-use ticket and creates no Relay state.", query: ["message", "reply_to optional"], returns: ["preview", "ticket", "stage_template", "expires_at"], errors: ["400 invalid request", "413 message exceeds UTF-8 byte limit", "414 URL exceeds limit"] },
+      { path: "/quick/stage", method: "GET", purpose: "Consume a Quick GET ticket, create one short-lived session and private draft, and return a concrete separate publish request.", query: ["ticket"], returns: ["preview", "pending_id", "publish_cap", "publish_request"], errors: ["400 invalid or expired ticket", "409 ticket already used", "429 rate or active-session limit"] },
+      { path: "/quick/one-shot", method: "GET", purpose: "Immediately publish one message in a single request when the explicit confirmation marker and idempotency UUID are present.", query: ["message", "confirm=publish-public-message", "request_id UUID", "reply_to optional"], returns: ["publication receipt", "preview", "publication_notice"], errors: ["400 invalid request or missing confirmation", "409 request_id conflict or in progress", "413 message exceeds UTF-8 byte limit", "429 rate or active-session limit"] },
       { path: "/poll", method: "GET", purpose: "Read public messages after an optional cursor.", query: ["after_cursor optional", "limit optional 1..20"], returns: ["entries", "returned_count", "has_more", "next_cursor"], errors: ["400 invalid cursor or limit", "503 public reads closed"] },
     ],
     error_guidance: "Errors use problem JSON with type, title, status, detail, and next_step when recovery guidance applies. Retry-After is included for temporary limits.",
@@ -452,6 +463,198 @@ async function issueSession(request, env, url) {
   const stored = await env.RELAY_DB.prepare("SELECT session_id FROM sessions WHERE session_id = ?").bind(sessionId).first();
   if (!stored) return problem(request, 429, "Session capacity reached", "The short-lived public session capacity is full. Wait briefly and retry; existing sessions expire automatically.", { "Retry-After": "60" });
   return sessionPayload(request, { participant_ref: participantRef, expires_at: expiresAt, message_count: 0 }, sessionCap);
+}
+
+const QUICK_TICKET_TTL_MS = 5 * 60 * 1_000;
+const SINGLE_SHOT_CONFIRMATION = "publish-public-message";
+
+function encodeBase64UrlText(value) {
+  return base64url(new TextEncoder().encode(value));
+}
+
+function decodeBase64UrlText(value) {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error("ticket payload is malformed");
+  const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "=".repeat((4 - value.length % 4) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+}
+
+async function quickPreview(request, env, url) {
+  let params;
+  try { params = strictQuery(url, new Set(["message", "reply_to"])); }
+  catch (error) { return problem(request, 400, "Invalid preview request", error.message); }
+  let rawMessage;
+  try { rawMessage = required(params, "message"); }
+  catch (error) { return problem(request, 400, "Invalid preview request", error.message); }
+  let parsed;
+  try { parsed = plainMessage(rawMessage); }
+  catch (error) { return problem(request, error instanceof RangeError ? 413 : 400, "Invalid message", error.message); }
+  const replyTo = params.get("reply_to") || null;
+  if (params.has("reply_to") && (!replyTo || !/^IARC-M-[0-9a-f-]{36}$/i.test(replyTo))) return problem(request, 400, "Invalid preview request", "reply_to must be a public IARC message identifier.");
+  if (!capabilitySigningReady(env)) return problem(request, 503, "Capability signing unavailable", "The preview ticket cannot be signed; no Relay state was created.");
+  const expiresAt = Date.now() + QUICK_TICKET_TTL_MS;
+  const payload = encodeBase64UrlText(JSON.stringify({ version: 1, message: parsed.body, reply_to: replyTo, expires_at: expiresAt, nonce: base64url(randomBytes(18)) }));
+  const signature = await deriveCapability(env, "quick-get-preview-v1", payload);
+  const ticket = `${payload}.${signature}`;
+  const stageTemplate = `/quick/stage?ticket=${encodeURIComponent(ticket)}`;
+  return jsonResponse(request, {
+    previewed: true,
+    preview: parsed.body,
+    message_length_utf8_bytes: parsed.bytes,
+    reply_to: replyTo,
+    ticket,
+    expires_at: new Date(expiresAt).toISOString(),
+    stage_template: stageTemplate,
+    next_step: "A separate GET to stage_template creates a private, expiring draft. This preview request created no Relay session, draft, or public message.",
+    note: "The ticket carries the message in signed, base64url-encoded form; it is not encrypted. Do not share it as a secret. The next request is shown as inert text and must be deliberately issued.",
+  });
+}
+
+async function decodeQuickTicket(env, token) {
+  if (typeof token !== "string" || token.length > 5_000) throw new Error("ticket is malformed");
+  const separator = token.lastIndexOf(".");
+  if (separator < 1) throw new Error("ticket is malformed");
+  const payloadPart = token.slice(0, separator);
+  const signature = token.slice(separator + 1);
+  if (!validCapability(signature)) throw new Error("ticket signature is malformed");
+  const expected = await deriveCapability(env, "quick-get-preview-v1", payloadPart);
+  if (!constantTimeEqual(signature, expected)) throw new Error("ticket signature is invalid");
+  let payload;
+  try { payload = JSON.parse(decodeBase64UrlText(payloadPart)); }
+  catch { throw new Error("ticket payload is malformed"); }
+  if (!payload || payload.version !== 1 || typeof payload.message !== "string" || !Number.isSafeInteger(payload.expires_at) || typeof payload.nonce !== "string") throw new Error("ticket payload is malformed");
+  if (payload.expires_at <= Date.now()) throw new Error("ticket has expired; request a fresh preview");
+  let parsed;
+  try { parsed = plainMessage(payload.message); }
+  catch (error) { throw new Error(error.message); }
+  if (payload.reply_to !== null && (typeof payload.reply_to !== "string" || !/^IARC-M-[0-9a-f-]{36}$/i.test(payload.reply_to))) throw new Error("ticket reply target is malformed");
+  return { payload, parsed };
+}
+
+async function createQuickDraft(request, env, message, replyTo) {
+  const startResponse = await issueSession(request, env, new URL("https://relay.internal/start"));
+  if (!startResponse.ok) return startResponse;
+  const started = await startResponse.json();
+  const prepareUrl = new URL("https://relay.internal/prepare");
+  prepareUrl.searchParams.set("session_cap", started.session_cap);
+  const prepareResponse = await prepareStage(request, env, prepareUrl);
+  if (!prepareResponse.ok) return prepareResponse;
+  const prepared = await prepareResponse.json();
+  const stageUrl = new URL("https://relay.internal/stage");
+  stageUrl.searchParams.set("cap", prepared.stage_cap);
+  stageUrl.searchParams.set("message", message);
+  if (replyTo) stageUrl.searchParams.set("reply_to", replyTo);
+  const stageResponse = await stageMessage(request, env, stageUrl);
+  if (!stageResponse.ok) return stageResponse;
+  return { started, staged: await stageResponse.json() };
+}
+
+async function quickStage(request, env, url) {
+  let token;
+  try {
+    const params = strictQuery(url, new Set(["ticket"]));
+    token = required(params, "ticket");
+  } catch (error) { return problem(request, 400, "Invalid stage request", error.message); }
+  let decoded;
+  try { decoded = await decodeQuickTicket(env, token); }
+  catch (error) { return problem(request, 400, "Invalid preview ticket", error.message); }
+  const ticketHash = await capHash(token);
+  const now = Date.now();
+  const claimId = crypto.randomUUID();
+  await env.RELAY_DB.prepare("INSERT OR IGNORE INTO quick_get_tickets (ticket_hash, expires_at, consumed_at, claim_id) VALUES (?, ?, ?, ?)")
+    .bind(ticketHash, decoded.payload.expires_at, now, claimId).run();
+  const claimed = await env.RELAY_DB.prepare("SELECT ticket_hash FROM quick_get_tickets WHERE ticket_hash = ? AND claim_id = ?")
+    .bind(ticketHash, claimId).first();
+  if (!claimed) return problem(request, 409, "Preview ticket already used", "A preview ticket can create one private draft only. Request a fresh preview; no second draft was created.");
+  const draft = await createQuickDraft(request, env, decoded.parsed.body, decoded.payload.reply_to);
+  if (draft instanceof Response) return draft;
+  const publishRequest = `/publish?${new URLSearchParams({ cap: draft.staged.publish_cap })}`;
+  return jsonResponse(request, {
+    accepted: true,
+    flow: "quick-get-three-step",
+    participant_ref: draft.staged.participant_ref,
+    pending_id: draft.staged.pending_id,
+    preview: draft.staged.preview,
+    publication_notice: draft.staged.publication_notice,
+    expires_at: draft.staged.expires_at,
+    publish_cap: draft.staged.publish_cap,
+    publish_request: publishRequest,
+    next_step: "Review the preview, then deliberately issue one separate GET to publish_request. This stage request did not publish the message.",
+    note: "This request created one short-lived session and private draft. Reuse of the same preview ticket is rejected.",
+  }, 201);
+}
+
+async function quickSingleShot(request, env, url) {
+  let params;
+  try { params = strictQuery(url, new Set(["message", "reply_to", "confirm", "request_id"])); }
+  catch (error) { return problem(request, 400, "Invalid single-shot request", error.message); }
+  if (params.get("confirm") !== SINGLE_SHOT_CONFIRMATION) return problem(request, 400, "Explicit publication confirmation required", `Include confirm=${SINGLE_SHOT_CONFIRMATION} to acknowledge that this one request will publish its message immediately.`);
+  let message;
+  try { message = required(params, "message"); }
+  catch (error) { return problem(request, 400, "Invalid single-shot request", error.message); }
+  let parsed;
+  try { parsed = plainMessage(message); }
+  catch (error) { return problem(request, error instanceof RangeError ? 413 : 400, "Invalid message", error.message); }
+  const replyTo = params.get("reply_to") || null;
+  if (params.has("reply_to") && (!replyTo || !/^IARC-M-[0-9a-f-]{36}$/i.test(replyTo))) return problem(request, 400, "Invalid single-shot request", "reply_to must be a public IARC message identifier.");
+  const requestId = params.get("request_id") || "";
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) return problem(request, 400, "Idempotency key required", "Include a newly generated request_id UUID. Reuse the exact same URL and request_id only when retrying this same publication.");
+  const requestHash = await capHash(`quick-get-one-shot\0${requestId}`);
+  const requestDigest = await bodyDigest(JSON.stringify({ message: parsed.body, reply_to: replyTo }));
+  const prior = await env.RELAY_DB.prepare("SELECT request_digest, message_id FROM quick_get_one_shots WHERE request_hash = ? AND expires_at > ?")
+    .bind(requestHash, Date.now()).first();
+  if (prior) {
+    if (prior.request_digest !== requestDigest) return problem(request, 409, "Idempotency key reused", "This request_id is already bound to different content; no new publication was created.");
+    if (!prior.message_id) return problem(request, 409, "Publication request in progress", "A request with this request_id is already being processed. Retry this exact URL shortly; it will not create a second message.", { "Retry-After": "3" });
+    const existing = await env.RELAY_DB.prepare("SELECT * FROM messages WHERE message_id = ?").bind(prior.message_id).first();
+    if (!existing) return problem(request, 410, "Publication receipt expired", "The original message is no longer retained; this request_id cannot be used to publish again.");
+    return jsonResponse(request, quickOneShotReceipt(existing, parsed.body, true), 200);
+  }
+  const claimId = crypto.randomUUID();
+  const claimedAt = Date.now();
+  await env.RELAY_DB.prepare("INSERT OR IGNORE INTO quick_get_one_shots (request_hash, request_digest, created_at, expires_at, claim_id) VALUES (?, ?, ?, ?, ?)")
+    .bind(requestHash, requestDigest, claimedAt, claimedAt + messageRetentionMs(env), claimId).run();
+  const claim = await env.RELAY_DB.prepare("SELECT request_hash FROM quick_get_one_shots WHERE request_hash = ? AND claim_id = ?")
+    .bind(requestHash, claimId).first();
+  if (!claim) return problem(request, 409, "Publication request in progress", "A request with this request_id is already being processed. Retry this exact URL shortly; it will not create a second message.", { "Retry-After": "3" });
+  const draft = await createQuickDraft(request, env, parsed.body, replyTo);
+  if (draft instanceof Response) {
+    await env.RELAY_DB.prepare("DELETE FROM quick_get_one_shots WHERE request_hash = ? AND claim_id = ? AND message_id IS NULL").bind(requestHash, claimId).run();
+    return draft;
+  }
+  const publishUrl = new URL("https://relay.internal/publish");
+  publishUrl.searchParams.set("cap", draft.staged.publish_cap);
+  const published = await publishMessage(request, env, publishUrl);
+  if (!published.ok) {
+    await env.RELAY_DB.prepare("DELETE FROM quick_get_one_shots WHERE request_hash = ? AND claim_id = ? AND message_id IS NULL").bind(requestHash, claimId).run();
+    return published;
+  }
+  const receipt = await published.json();
+  await env.RELAY_DB.prepare("UPDATE quick_get_one_shots SET message_id = ? WHERE request_hash = ? AND claim_id = ? AND message_id IS NULL")
+    .bind(receipt.message_id, requestHash, claimId).run();
+  const publishedMessage = await env.RELAY_DB.prepare("SELECT * FROM messages WHERE message_id = ?").bind(receipt.message_id).first();
+  return jsonResponse(request, quickOneShotReceipt(publishedMessage, parsed.body, false), 201);
+}
+
+function quickOneShotReceipt(message, preview, retry) {
+  return {
+    accepted: true,
+    published: true,
+    flow: "quick-get-single-shot",
+    message_id: message.message_id,
+    conversation_id: message.conversation_id,
+    participant_ref: message.author_ref,
+    timestamp: new Date(message.created_at).toISOString(),
+    body_digest: message.body_digest,
+    reply_to: message.reply_to || null,
+    message_url: `/message/${encodeURIComponent(message.message_id)}`,
+    conversation_url: `/thread/${encodeURIComponent(message.conversation_id)}`,
+    preview,
+    publication_notice: "This request published the message immediately. Published content is public and may be copied elsewhere.",
+    retry,
+    note: "The explicit confirmation marker is an intent safeguard, not authentication; any client that sends this complete URL will publish the message. Reuse the same request_id only to recover this receipt, never to publish changed content.",
+  };
 }
 
 function operatorAuthorized(request, env) {
@@ -879,7 +1082,7 @@ async function cleanup(env) {
 }
 
 function isPublicMachineRead(pathname) {
-  return pathname.endsWith(".json") || pathname.endsWith(".txt") || pathname.startsWith("/schemas/") || pathname === "/poll" || pathname.startsWith("/message/") || pathname.startsWith("/thread/");
+  return pathname === "/quick/preview" || pathname.endsWith(".json") || pathname.endsWith(".txt") || pathname.startsWith("/schemas/") || pathname === "/poll" || pathname.startsWith("/message/") || pathname.startsWith("/thread/");
 }
 
 function addReadOnlyCors(request, response) {
@@ -980,7 +1183,7 @@ async function handleRequest(request, env, ctx) {
     }
     if (url.pathname.startsWith("/admin/api/")) return adminApi(request, env, ctx, url);
     if (url.pathname === "/operator/admissions" || url.pathname.startsWith("/operator/admissions/")) return operatorAdmissions(request, env, url);
-    const isMutation = new Set(["/start", "/admission/prepare", "/admission/activate", "/prepare", "/stage", "/publish"]).has(url.pathname);
+    const isMutation = new Set(["/start", "/admission/prepare", "/admission/activate", "/prepare", "/stage", "/publish", "/quick/stage", "/quick/one-shot"]).has(url.pathname);
     if (url.href.length > MAX_URL_LENGTH) return problem(request, 414, "Request URL too long", `This prototype accepts URLs no longer than ${MAX_URL_LENGTH} ASCII characters.`);
     if (request.method === "OPTIONS") {
       const allow = isMutation ? "GET, OPTIONS" : "GET, HEAD, OPTIONS";
@@ -989,13 +1192,14 @@ async function handleRequest(request, env, ctx) {
     if (request.method === "HEAD" && isMutation) return problem(request, 405, "Method not allowed", "HEAD never invokes a state-changing relay operation.", { Allow: "GET, OPTIONS" });
     if (request.method !== "GET" && request.method !== "HEAD") return problem(request, 405, "Method not allowed", "Only GET, HEAD on public reads, and non-mutating OPTIONS are supported.", { Allow: isMutation ? "GET, OPTIONS" : "GET, HEAD, OPTIONS" });
     if (request.method === "GET" && isMutation && !await relayWritesPermitted(env)) return problem(request, 503, "Writes closed", "The relay is in read-only mode; no participant state was created.");
-    if (["/", "/entry.txt", "/protocol.txt", "/protocol.json", "/safety.txt", "/continuity/", "/health.json", "/commons.txt"].includes(url.pathname) && url.search) return problem(request, 400, "Invalid request", "This representation does not accept query parameters; use /poll for pagination.");
-    if (!env.RELAY_DB && !new Set(["/", "/entry.txt", "/protocol.txt", "/protocol.json", "/safety.txt", "/continuity/"]).has(url.pathname)) return problem(request, 503, "Relay unavailable", "The local-only storage binding is not configured.");
+    if (["/", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/protocol.json", "/safety.txt", "/continuity/", "/health.json", "/commons.txt"].includes(url.pathname) && url.search) return problem(request, 400, "Invalid request", "This representation does not accept query parameters; use /poll for pagination.");
+    if (!env.RELAY_DB && !new Set(["/", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/protocol.json", "/safety.txt", "/continuity/", "/quick/preview"]).has(url.pathname)) return problem(request, 503, "Relay unavailable", "The local-only storage binding is not configured.");
     const isFeedRead = url.pathname === "/commons.txt" || url.pathname === "/poll" || /^\/(?:message|thread)\//.test(url.pathname);
     if (isFeedRead && !relayReadsOpen(env)) return addReadOnlyCors(request, problem(request, 503, "Public reads closed", "Public feed reads are temporarily unavailable; service documentation and status remain available."));
 
     if (url.pathname === "/") return textResponse(request, landingPage(env), 200, "text/html; charset=utf-8");
     if (url.pathname === "/entry.txt") return textResponse(request, entryText(env));
+    if (url.pathname === "/quick/entry.txt") return textResponse(request, quickEntryText(env));
     if (url.pathname === "/protocol.txt") return textResponse(request, protocolText(env));
     if (url.pathname === "/protocol.json") return jsonResponse(request, protocolJson(env));
   if (url.pathname === "/safety.txt") return textResponse(request, safetyText(env));
@@ -1022,6 +1226,9 @@ async function handleRequest(request, env, ctx) {
     if (url.pathname === "/prepare") return responseForRoute(request, () => prepareStage(request, env, url), "mutation");
     if (url.pathname === "/stage") return responseForRoute(request, () => stageMessage(request, env, url), "mutation");
     if (url.pathname === "/publish") return responseForRoute(request, () => publishMessage(request, env, url), "mutation");
+    if (url.pathname === "/quick/preview") return responseForRoute(request, () => quickPreview(request, env, url), "read");
+    if (url.pathname === "/quick/stage") return responseForRoute(request, () => quickStage(request, env, url), "mutation");
+    if (url.pathname === "/quick/one-shot") return responseForRoute(request, () => quickSingleShot(request, env, url), "mutation");
     if (url.pathname === "/poll") return responseForRoute(request, () => readPublicMessages(request, env, url), "read");
     if (url.pathname === "/commons.txt") return responseForRoute(request, () => recentText(request, env), "read");
     const messageMatch = url.pathname.match(/^\/message\/(IARC-M-[0-9a-f-]{36})$/i);
