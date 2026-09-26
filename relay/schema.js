@@ -74,4 +74,29 @@ export const SCHEMA_STATEMENTS = [
   )`,
   "CREATE INDEX IF NOT EXISTS messages_recent_idx ON messages(created_at DESC, message_id DESC)",
   "CREATE INDEX IF NOT EXISTS messages_conversation_idx ON messages(conversation_id, created_at, message_id)",
+  `CREATE TABLE IF NOT EXISTS message_moderation (
+    message_id TEXT PRIMARY KEY REFERENCES messages(message_id),
+    state TEXT NOT NULL CHECK (state IN ('visible', 'hidden')),
+    updated_at INTEGER NOT NULL,
+    updated_by TEXT NOT NULL,
+    reason TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS relay_admin_settings (
+    setting_key TEXT PRIMARY KEY CHECK (setting_key = 'writes_open'),
+    setting_value TEXT NOT NULL CHECK (setting_value IN ('true', 'false')),
+    updated_at INTEGER NOT NULL,
+    updated_by TEXT NOT NULL,
+    reason TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS admin_audit (
+    audit_id TEXT PRIMARY KEY,
+    actor_email TEXT NOT NULL,
+    action TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    previous_value TEXT,
+    new_value TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS admin_audit_recent_idx ON admin_audit(created_at DESC, audit_id DESC)",
 ];

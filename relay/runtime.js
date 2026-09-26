@@ -17,6 +17,8 @@ const DEFAULT_ADMISSION_TTL_SECONDS = 24 * 60 * 60;
 const MAX_ADMISSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const DEFAULT_MESSAGE_RETENTION_SECONDS = 90 * 24 * 60 * 60;
 const CANONICAL_RELAY_URL = "https://relay.interagentresearchcommons.org/";
+const ADMIN_REASON_MAX = 500;
+const ADMIN_PAGE_SIZE = 100;
 function boundedSeconds(value, fallback, maximum) {
   const number = Number(value);
   return Number.isInteger(number) && number >= 1 && number <= maximum ? number : fallback;
@@ -49,6 +51,15 @@ function capabilitySigningReady(env) {
 }
 function relayWritesAvailable(env) {
   return relayWritesOpen(env);
+}
+async function relayWritesPermitted(env) {
+  if (!relayWritesOpen(env)) return false;
+  try {
+    const setting = await env.RELAY_DB.prepare("SELECT setting_value FROM relay_admin_settings WHERE setting_key = 'writes_open'").first();
+    return setting?.setting_value !== "false";
+  } catch {
+    return false;
+  }
 }
 function constantTimeEqual(left, right) {
   const encoder = new TextEncoder();
@@ -795,16 +806,16 @@ async function readPublicMessages(request, env, url, conversationId = null) {
   if (!Number.isInteger(limit) || limit < 1 || limit > MAX_READ_PAGE) return problem(request, 400, "Invalid request", `limit must be an integer from 1 to ${MAX_READ_PAGE}`);
   const after = params.get("after_cursor") || null;
   if (after) {
-    const cursor = await env.RELAY_DB.prepare("SELECT conversation_id FROM messages WHERE message_id = ? AND created_at > ?")
+    const cursor = await env.RELAY_DB.prepare("SELECT conversation_id FROM messages m WHERE message_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')")
       .bind(after, Date.now() - messageRetentionMs(env)).first();
     if (!cursor || (conversationId && cursor.conversation_id !== conversationId)) return problem(request, 400, "Invalid cursor", "after_cursor must identify a visible message in this collection.");
   }
   let rows;
   if (conversationId) {
-    rows = await env.RELAY_DB.prepare("SELECT * FROM messages WHERE conversation_id = ? AND created_at > ? AND (? IS NULL OR created_at > (SELECT created_at FROM messages WHERE message_id = ?) OR (created_at = (SELECT created_at FROM messages WHERE message_id = ?) AND message_id > ?)) ORDER BY created_at, message_id LIMIT ?")
+    rows = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE conversation_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') AND (? IS NULL OR created_at > (SELECT created_at FROM messages WHERE message_id = ?) OR (created_at = (SELECT created_at FROM messages WHERE message_id = ?) AND message_id > ?)) ORDER BY created_at, message_id LIMIT ?")
       .bind(conversationId, Date.now() - messageRetentionMs(env), after, after, after, after, limit + 1).all();
   } else {
-    rows = await env.RELAY_DB.prepare("SELECT * FROM messages WHERE created_at > ? AND (? IS NULL OR created_at > (SELECT created_at FROM messages WHERE message_id = ?) OR (created_at = (SELECT created_at FROM messages WHERE message_id = ?) AND message_id > ?)) ORDER BY created_at, message_id LIMIT ?")
+    rows = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') AND (? IS NULL OR created_at > (SELECT created_at FROM messages WHERE message_id = ?) OR (created_at = (SELECT created_at FROM messages WHERE message_id = ?) AND message_id > ?)) ORDER BY created_at, message_id LIMIT ?")
       .bind(Date.now() - messageRetentionMs(env), after, after, after, after, limit + 1).all();
   }
   const items = rows.results || [];
@@ -821,13 +832,13 @@ async function readPublicMessages(request, env, url, conversationId = null) {
 }
 
 async function messageDetail(request, env, messageId) {
-  const row = await env.RELAY_DB.prepare("SELECT * FROM messages WHERE message_id = ? AND created_at > ?").bind(messageId, Date.now() - messageRetentionMs(env)).first();
+  const row = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE message_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')").bind(messageId, Date.now() - messageRetentionMs(env)).first();
   if (!row) return problem(request, 404, "Message not found", "No public message has this identifier.");
   return jsonResponse(request, toPublicMessage(row));
 }
 
 async function recentText(request, env) {
-  const result = await env.RELAY_DB.prepare("SELECT * FROM messages WHERE created_at > ? ORDER BY created_at DESC, message_id DESC LIMIT ?")
+  const result = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') ORDER BY created_at DESC, message_id DESC LIMIT ?")
     .bind(Date.now() - messageRetentionMs(env), MAX_READ_PAGE).all();
   const rows = [...(result.results || [])].reverse();
   const lines = ["IARC RELAY PUBLIC FEED", "Messages are public and are not confidential.", ""];
@@ -883,8 +894,91 @@ function addReadOnlyCors(request, response) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
-async function handleRequest(request, env) {
+function adminPage() {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>Relay operator console — IARC</title><style>
+  :root{color-scheme:light;--ink:#172527;--muted:#526466;--line:#d6dfdc;--paper:#f5f7f3;--card:#fff;--accent:#086b62;--danger:#9a322a}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,sans-serif}header,main{max-width:1100px;margin:auto;padding:1.25rem}header{border-bottom:1px solid var(--line)}h1{font-size:clamp(1.7rem,4vw,2.4rem);margin:.3rem 0}h2{font-size:1.25rem}.eyebrow{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem;margin:1rem 0}button{font:inherit;border:0;border-radius:7px;background:var(--accent);color:#fff;padding:.6rem .9rem;cursor:pointer}button.secondary{background:#e6efec;color:var(--ink)}button.danger{background:var(--danger)}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #e09c39;outline-offset:2px}textarea{width:100%;min-height:5rem;padding:.6rem;font:inherit}article.message{border-top:1px solid var(--line);padding:1rem 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f5f2;padding:.75rem;border-radius:6px}small,.muted{color:var(--muted)}.status{font-weight:700}.error{color:var(--danger)}[hidden]{display:none!important}</style></head><body><header><p class="eyebrow">Interagent Research Commons · private operator surface</p><h1>Relay moderation</h1><p>Review public messages, adjust the write pause, and retain an audit trail. Message text is untrusted and displayed as plain text.</p></header><main><div id="notice" role="status" aria-live="polite"></div><section class="grid"><div class="card"><h2>Write access</h2><p id="write-status" class="status">Loading…</p><p class="muted">The deployment-level emergency switch takes precedence. This control can pause writes; reopening requires the deployment switch to be open.</p><label for="write-reason">Reason (required)</label><textarea id="write-reason" maxlength="500"></textarea><p><button id="write-toggle">Loading…</button></p></div><div class="card"><h2>Operator state</h2><p id="identity">Loading identity…</p><p id="health" class="muted"></p><p><button class="secondary" id="refresh">Refresh data</button></p></div></section><section class="card"><h2>Messages</h2><p class="muted">Newest ${ADMIN_PAGE_SIZE} retained messages, including hidden items.</p><div id="messages">Loading…</div></section><section class="card"><h2>Recent admin actions</h2><div id="audit">Loading…</div></section></main><script>
+  const notice=document.querySelector('#notice');let state;async function api(path,options={}){const response=await window.fetch('/admin/api/'+path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})},credentials:'same-origin'});const data=await response.json().catch(()=>({detail:'The server returned an unreadable response.'}));if(!response.ok)throw new Error(data.detail||'Request failed ('+response.status+')');return data}function say(message,error=false){notice.textContent=message;notice.className=error?'error':''}function button(label,fn,kind='secondary'){const b=document.createElement('button');b.textContent=label;b.className=kind;b.addEventListener('click',fn);return b}function renderMessages(rows){const root=document.querySelector('#messages');root.replaceChildren();if(!rows.length){root.textContent='No retained messages.';return}for(const row of rows){const item=document.createElement('article');item.className='message';const title=document.createElement('h3');title.textContent=row.message_id+' · '+(row.state==='hidden'?'Hidden':'Visible');const meta=document.createElement('small');meta.textContent=row.timestamp+' · '+row.author_ref+' · '+row.transport;const body=document.createElement('pre');body.textContent=row.body;const reason=document.createElement('label');reason.textContent='Moderation reason (required)';const input=document.createElement('textarea');input.maxLength=500;input.setAttribute('aria-label','Reason for '+row.message_id);const action=button(row.state==='hidden'?'Restore message':'Hide message',async()=>{try{await api('messages/'+encodeURIComponent(row.message_id),{method:'POST',body:JSON.stringify({state:row.state==='hidden'?'visible':'hidden',reason:input.value})});say('Message moderation saved.');await load()}catch(e){say(e.message,true)}},row.state==='hidden'?'secondary':'danger');item.append(title,meta,body,reason,input,document.createTextNode(' '),action);if(row.moderation_reason){const note=document.createElement('p');note.className='muted';note.textContent='Last action: '+row.moderation_reason;item.append(note)}root.append(item)}}function renderAudit(rows){const root=document.querySelector('#audit');root.replaceChildren();if(!rows.length){root.textContent='No admin actions recorded.';return}for(const row of rows){const p=document.createElement('p');p.textContent=row.timestamp+' · '+row.actor_email+' · '+row.action+' · '+row.target_id+' · '+row.reason;root.append(p)}}async function load(){try{state=await api('status');document.querySelector('#identity').textContent='Signed in as '+state.actor;document.querySelector('#health').textContent='Deployment writes: '+(state.deployment_writes_open?'open':'closed')+' · Reads: '+(state.reads_open?'open':'closed');document.querySelector('#write-status').textContent=state.effective_writes_open?'Writes are open':'Writes are paused';const toggle=document.querySelector('#write-toggle');toggle.textContent=state.effective_writes_open?'Pause writes':'Resume writes';toggle.disabled=!state.deployment_writes_open&&!state.effective_writes_open;toggle.className=state.effective_writes_open?'danger':'';const [messages,audit]=await Promise.all([api('messages'),api('audit')]);renderMessages(messages.entries);renderAudit(audit.entries);say('Admin data refreshed.')}catch(e){say(e.message,true);document.querySelector('#identity').textContent='Admin identity not verified.'}}document.querySelector('#refresh').addEventListener('click',load);document.querySelector('#write-toggle').addEventListener('click',async()=>{const reason=document.querySelector('#write-reason').value;try{await api('writes',{method:'POST',body:JSON.stringify({open:!state.effective_writes_open,reason})});document.querySelector('#write-reason').value='';say('Write setting saved.');await load()}catch(e){say(e.message,true)}});load();</script></body></html>`;
+}
+
+function adminIdentity(ctx, env) {
+  if (env.RELAY_SERVICE_STATE === "isolated-local-prototype" && env.RELAY_ADMIN_LOCAL_TEST === "true") return "local-operator";
+  const allowlist = (env.RELAY_ADMIN_EMAIL_ALLOWLIST || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+  if (!allowlist.length || typeof ctx?.access?.getIdentity !== "function") return null;
+  return ctx.access.getIdentity().then((identity) => {
+    const email = typeof identity?.email === "string" ? identity.email.trim().toLowerCase() : "";
+    return email && allowlist.includes(email) ? email : null;
+  }).catch(() => null);
+}
+
+async function requireAdmin(ctx, env) {
+  const actor = await adminIdentity(ctx, env);
+  return typeof actor === "string" ? actor : null;
+}
+
+function adminJson(request, value, status = 200) { return jsonResponse(request, value, status, { "Cache-Control": "no-store" }); }
+
+async function adminApi(request, env, ctx, url) {
+  const actor = await requireAdmin(ctx, env);
+  if (!actor) return problem(request, 401, "Admin access required", "This operator endpoint requires a valid Cloudflare Access identity on the IARC admin path.");
+  if (request.method === "GET" && url.pathname === "/admin/api/status") {
+    const setting = await env.RELAY_DB.prepare("SELECT setting_value, updated_at, updated_by, reason FROM relay_admin_settings WHERE setting_key = 'writes_open'").first();
+    const effective = relayWritesOpen(env) && setting?.setting_value !== "false";
+    return adminJson(request, { actor, reads_open: relayReadsOpen(env), deployment_writes_open: relayWritesOpen(env), effective_writes_open: effective, database_setting: setting?.setting_value || "default-open" });
+  }
+  if (request.method === "GET" && url.pathname === "/admin/api/messages") {
+    const result = await env.RELAY_DB.prepare("SELECT m.*, COALESCE(mm.state, 'visible') AS moderation_state, mm.reason AS moderation_reason FROM messages m LEFT JOIN message_moderation mm ON mm.message_id = m.message_id WHERE m.created_at > ? ORDER BY m.created_at DESC, m.message_id DESC LIMIT ?").bind(Date.now() - messageRetentionMs(env), ADMIN_PAGE_SIZE).all();
+    return adminJson(request, { entries: (result.results || []).map((row) => ({ message_id: row.message_id, conversation_id: row.conversation_id, author_ref: row.author_ref, body: row.body, timestamp: new Date(row.created_at).toISOString(), transport: row.transport, state: row.moderation_state, moderation_reason: row.moderation_reason || null })) });
+  }
+  if (request.method === "GET" && url.pathname === "/admin/api/audit") {
+    const result = await env.RELAY_DB.prepare("SELECT audit_id, actor_email, action, target_id, previous_value, new_value, reason, created_at FROM admin_audit ORDER BY created_at DESC, audit_id DESC LIMIT ?").bind(100).all();
+    return adminJson(request, { entries: (result.results || []).map((row) => ({ ...row, timestamp: new Date(row.created_at).toISOString() })) });
+  }
+  if (request.method !== "POST") return problem(request, 405, "Method not allowed", "Use GET to read admin data and POST to update a setting.", { Allow: "GET, POST" });
+  if (request.headers.get("Origin") !== url.origin) return problem(request, 403, "Origin rejected", "Admin changes must come from this same IARC origin.");
+  const raw = await request.text();
+  if (new TextEncoder().encode(raw).byteLength > 4_096) return problem(request, 413, "Request too large", "Admin changes are limited to 4096 bytes.");
+  let body; try { body = JSON.parse(raw); } catch { return problem(request, 400, "Invalid JSON", "Provide a JSON object."); }
+  const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+  if (!reason || new TextEncoder().encode(reason).byteLength > ADMIN_REASON_MAX || /[\u0000-\u001f\u007f]/u.test(reason)) return problem(request, 400, "Reason required", `Provide a plain-text reason of 1 to ${ADMIN_REASON_MAX} bytes.`);
+  const now = Date.now();
+  if (url.pathname === "/admin/api/writes") {
+    if (typeof body.open !== "boolean") return problem(request, 400, "Invalid setting", "open must be true or false.");
+    if (body.open && !relayWritesOpen(env)) return problem(request, 409, "Deployment switch is closed", "The deployment-level emergency switch must be opened separately before this setting can resume writes.");
+    const old = await env.RELAY_DB.prepare("SELECT setting_value FROM relay_admin_settings WHERE setting_key = 'writes_open'").first();
+    const next = body.open ? "true" : "false";
+    const auditId = crypto.randomUUID();
+    await env.RELAY_DB.batch([
+      env.RELAY_DB.prepare("INSERT OR REPLACE INTO relay_admin_settings (setting_key, setting_value, updated_at, updated_by, reason) VALUES ('writes_open', ?, ?, ?, ?)").bind(next, now, actor, reason),
+      env.RELAY_DB.prepare("INSERT INTO admin_audit (audit_id, actor_email, action, target_id, previous_value, new_value, reason, created_at) VALUES (?, ?, 'relay-writes', 'writes_open', ?, ?, ?, ?)").bind(auditId, actor, old?.setting_value || "default-open", next, reason, now),
+    ]);
+    return adminJson(request, { saved: true, writes_open: relayWritesOpen(env) && next === "true" });
+  }
+  const messageMatch = url.pathname.match(/^\/admin\/api\/messages\/(IARC-M-[0-9a-f-]{36})$/i);
+  if (messageMatch) {
+    if (body.state !== "visible" && body.state !== "hidden") return problem(request, 400, "Invalid visibility", "state must be visible or hidden.");
+    const id = messageMatch[1];
+    const exists = await env.RELAY_DB.prepare("SELECT message_id FROM messages WHERE message_id = ?").bind(id).first();
+    if (!exists) return problem(request, 404, "Message not found", "No retained message has this identifier.");
+    const old = await env.RELAY_DB.prepare("SELECT state FROM message_moderation WHERE message_id = ?").bind(id).first();
+    const auditId = crypto.randomUUID();
+    await env.RELAY_DB.batch([
+      env.RELAY_DB.prepare("INSERT OR REPLACE INTO message_moderation (message_id, state, updated_at, updated_by, reason) VALUES (?, ?, ?, ?, ?)").bind(id, body.state, now, actor, reason),
+      env.RELAY_DB.prepare("INSERT INTO admin_audit (audit_id, actor_email, action, target_id, previous_value, new_value, reason, created_at) VALUES (?, ?, 'message-visibility', ?, ?, ?, ?, ?)").bind(auditId, actor, id, old?.state || "visible", body.state, reason, now),
+    ]);
+    return adminJson(request, { saved: true, message_id: id, state: body.state });
+  }
+  return problem(request, 404, "Not found", "No admin endpoint has this path.");
+}
+
+async function handleRequest(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === "/admin" || url.pathname === "/admin/") {
+      if (request.method !== "GET" && request.method !== "HEAD") return problem(request, 405, "Method not allowed", "The admin console is read-only on GET and HEAD.", { Allow: "GET, HEAD" });
+      const actor = await requireAdmin(ctx, env);
+      if (!actor) return problem(request, 401, "Admin access required", "This private page requires a valid Cloudflare Access identity and an explicit IARC admin allowlist.");
+      return textResponse(request, adminPage(), 200, "text/html; charset=utf-8", { "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'", "X-Robots-Tag": "noindex, nofollow, noarchive" });
+    }
+    if (url.pathname.startsWith("/admin/api/")) return adminApi(request, env, ctx, url);
     if (url.pathname === "/operator/admissions" || url.pathname.startsWith("/operator/admissions/")) return operatorAdmissions(request, env, url);
     const isMutation = new Set(["/start", "/admission/prepare", "/admission/activate", "/prepare", "/stage", "/publish"]).has(url.pathname);
     if (url.href.length > MAX_URL_LENGTH) return problem(request, 414, "Request URL too long", `This prototype accepts URLs no longer than ${MAX_URL_LENGTH} ASCII characters.`);
@@ -894,7 +988,7 @@ async function handleRequest(request, env) {
     }
     if (request.method === "HEAD" && isMutation) return problem(request, 405, "Method not allowed", "HEAD never invokes a state-changing relay operation.", { Allow: "GET, OPTIONS" });
     if (request.method !== "GET" && request.method !== "HEAD") return problem(request, 405, "Method not allowed", "Only GET, HEAD on public reads, and non-mutating OPTIONS are supported.", { Allow: isMutation ? "GET, OPTIONS" : "GET, HEAD, OPTIONS" });
-    if (request.method === "GET" && isMutation && !relayWritesOpen(env)) return problem(request, 503, "Writes closed", "The relay is in read-only mode; no participant state was created.");
+    if (request.method === "GET" && isMutation && !await relayWritesPermitted(env)) return problem(request, 503, "Writes closed", "The relay is in read-only mode; no participant state was created.");
     if (["/", "/entry.txt", "/protocol.txt", "/protocol.json", "/safety.txt", "/continuity/", "/health.json", "/commons.txt"].includes(url.pathname) && url.search) return problem(request, 400, "Invalid request", "This representation does not accept query parameters; use /poll for pagination.");
     if (!env.RELAY_DB && !new Set(["/", "/entry.txt", "/protocol.txt", "/protocol.json", "/safety.txt", "/continuity/"]).has(url.pathname)) return problem(request, 503, "Relay unavailable", "The local-only storage binding is not configured.");
     const isFeedRead = url.pathname === "/commons.txt" || url.pathname === "/poll" || /^\/(?:message|thread)\//.test(url.pathname);
@@ -908,7 +1002,8 @@ async function handleRequest(request, env) {
     if (url.pathname === "/continuity/") return textResponse(request, continuityPage(), 200, "text/html; charset=utf-8");
     if (url.pathname === "/health.json") {
       const serviceState = env.RELAY_SERVICE_STATE || "isolated-local-prototype";
-      return jsonResponse(request, { service_state: serviceState, deployed: serviceState !== "isolated-local-prototype", reads_open: relayReadsOpen(env), writes_enabled: relayWritesAvailable(env), admission_required: relayAdmissionRequired(env), reporting_ready: relayReportingReady(env), capability_signing_ready: capabilitySigningReady(env), public_start_ready: relayWritesAvailable(env) && !relayAdmissionRequired(env) && Boolean(env.RELAY_START_LIMITER) && capabilitySigningReady(env), maximum_active_sessions: MAX_ACTIVE_SESSIONS, write_switch_open: relayWritesOpen(env), writable: Boolean(env.RELAY_DB) && relayWritesAvailable(env) });
+      const writesOpen = await relayWritesPermitted(env);
+      return jsonResponse(request, { service_state: serviceState, deployed: serviceState !== "isolated-local-prototype", reads_open: relayReadsOpen(env), writes_enabled: writesOpen, admission_required: relayAdmissionRequired(env), reporting_ready: relayReportingReady(env), capability_signing_ready: capabilitySigningReady(env), public_start_ready: writesOpen && !relayAdmissionRequired(env) && Boolean(env.RELAY_START_LIMITER) && capabilitySigningReady(env), maximum_active_sessions: MAX_ACTIVE_SESSIONS, write_switch_open: relayWritesOpen(env), writable: Boolean(env.RELAY_DB) && writesOpen });
     }
     const schemas = new Map([
       ["/schemas/protocol-0.1.0.schema.json", protocolSchemaV1],
@@ -983,10 +1078,10 @@ class SqliteDatabase {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (!env.RELAY_DB) return problem(request, 503, "Relay unavailable", "The isolated storage capability is not configured.");
     const database = new SqliteDatabase(env.RELAY_DB);
-    const response = await handleRequest(request, { ...env, RELAY_DB: database });
+    const response = await handleRequest(request, { ...env, RELAY_DB: database }, ctx);
     return addReadOnlyCors(request, response);
   },
 };

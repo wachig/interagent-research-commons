@@ -4,7 +4,7 @@ import { SCHEMA_STATEMENTS } from "./schema.js";
 const DEFAULT_RELAY_OBJECT_NAME = "iarc-relay-local-prototype-global-v1";
 const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "pending_messages", "messages"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "pending_messages", "messages", "message_moderation", "relay_admin_settings", "admin_audit"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -135,9 +135,9 @@ export class RelayStore {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (!env.RELAY_STORE) return jsonResponse({ type: "about:blank", title: "Relay unavailable", status: 503 }, 503);
     const relayEnv = { ...env, RELAY_DB: new RelayDatabase(env.RELAY_STORE, env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME) };
-    return protocolRuntime.fetch(request, relayEnv);
+    return protocolRuntime.fetch(request, relayEnv, ctx);
   },
 };

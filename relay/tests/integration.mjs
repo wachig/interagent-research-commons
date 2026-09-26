@@ -23,7 +23,7 @@ async function freePort() {
   return port;
 }
 
-async function startServer(writeEnabled, { readsOpen = true, admissionsRequired, reportingReady, operatorSecret = "", sessionSeconds = 30, stageSeconds = 10, pendingSeconds = 2, messageRetentionSeconds = 90 * 24 * 60 * 60, serviceState = "isolated-local-prototype", persistTo: suppliedPersistTo } = {}) {
+async function startServer(writeEnabled, { readsOpen = true, admissionsRequired, reportingReady, operatorSecret = "", adminLocalTest = false, sessionSeconds = 30, stageSeconds = 10, pendingSeconds = 2, messageRetentionSeconds = 90 * 24 * 60 * 60, serviceState = "isolated-local-prototype", persistTo: suppliedPersistTo } = {}) {
   const useAdmissions = admissionsRequired ?? serviceState !== "isolated-local-prototype";
   const useReporting = reportingReady ?? false;
   const port = await freePort();
@@ -55,6 +55,8 @@ async function startServer(writeEnabled, { readsOpen = true, admissionsRequired,
     ...(operatorSecret ? ["--var", `RELAY_OPERATOR_SECRET:${operatorSecret}`] : []),
     "--var",
     `RELAY_SERVICE_STATE:${serviceState}`,
+    "--var",
+    `RELAY_ADMIN_LOCAL_TEST:${adminLocalTest ? "true" : "false"}`,
     "--var",
     `RELAY_SESSION_TTL_SECONDS:${sessionSeconds}`,
     "--var",
@@ -565,7 +567,7 @@ try {
   const fs = await import("node:fs/promises");
   const productionFiles = ["worker.js", "runtime.js", "schema.js"];
   const productionSources = await Promise.all(productionFiles.map((name) => fs.readFile(path.join(relayRoot, name), "utf8")));
-  const runtimeSource = productionSources[1].replace(/async fetch(?=\s*\()/g, "async routeHandler");
+  const runtimeSource = productionSources[1].replace(/async fetch(?=\s*\()/g, "async routeHandler").replace(/connect-src 'self'/g, "connect-src same-origin");
   assert.doesNotMatch(runtimeSource, /(?<![\w.])fetch\s*\(|\bWebSocket\s*\(|\bWebTransport\s*\(|\bEventSource\s*\(|\bconnect\s*\(|\bsendBeacon\s*\(/, "reviewed relay runtime contains no outbound network calls");
   assert.doesNotMatch(runtimeSource, /\b(?:globalThis|self|navigator)\b|\bglobal\s*(?:\.|\[|=|\)|,|;)/, "relay runtime does not alias ambient network APIs");
   assert.doesNotMatch(runtimeSource, /\bimport\s*\(/, "relay runtime does not load code dynamically");
@@ -605,6 +607,40 @@ try {
   assert.match(pilotConfig, /"RELAY_STORE_OBJECT_NAME"\s*:\s*"iarc-relay-pilot-global-v1"/);
   assert.match(pilotConfig, /"name"\s*:\s*"RELAY_STORE",\s*"class_name"\s*:\s*"RelayStore"/);
   assert.match(pilotConfig, /"tag"\s*:\s*"v1",\s*"new_sqlite_classes"\s*:\s*\["RelayStore"\]/);
+
+  await server.stop();
+  server = await startServer(true);
+  await server.waitForServer();
+  const adminPageResponse = await fetch(`${server.base}/admin`);
+  assert.equal(adminPageResponse.status, 401, "admin page fails closed without an identity or explicit local test bypass");
+  const unauthorizedAdmin = await fetch(`${server.base}/admin/api/status`, { headers: { Origin: server.base } });
+  assert.equal(unauthorizedAdmin.status, 401, "admin APIs fail closed without an identity or explicit local test bypass");
+  await server.stop();
+  server = await startServer(true, { adminLocalTest: true });
+  await server.waitForServer();
+  const enabledAdminPage = await fetch(`${server.base}/admin`);
+  assert.equal(enabledAdminPage.status, 200);
+  assert.match(await enabledAdminPage.text(), /Relay moderation/);
+  const adminHeaders = { Origin: server.base, "Content-Type": "application/json" };
+  const startedAdmin = await getJson(`${server.base}/start`);
+  const preparedAdmin = await getJson(`${server.base}/prepare?${new URLSearchParams({ session_cap: startedAdmin.body.session_cap })}`);
+  const stagedAdmin = await getJson(`${server.base}/stage?${new URLSearchParams({ cap: preparedAdmin.body.stage_cap, message: "moderation integration fixture" })}`);
+  const publishedAdmin = await getJson(`${server.base}/publish?${new URLSearchParams({ cap: stagedAdmin.body.publish_cap })}`);
+  assert.equal(publishedAdmin.response.status, 201);
+  const hideResponse = await getJson(`${server.base}/admin/api/messages/${encodeURIComponent(publishedAdmin.body.message_id)}`, { method: "POST", headers: adminHeaders, body: JSON.stringify({ state: "hidden", reason: "test moderation hide" }) });
+  assert.equal(hideResponse.response.status, 200);
+  assert.equal((await getJson(`${server.base}${publishedAdmin.body.message_url}`)).response.status, 404, "hidden message detail is omitted publicly");
+  assert.equal((await getJson(`${server.base}/poll`)).body.returned_count, 0, "hidden messages are omitted from the public feed");
+  const restoreResponse = await getJson(`${server.base}/admin/api/messages/${encodeURIComponent(publishedAdmin.body.message_id)}`, { method: "POST", headers: adminHeaders, body: JSON.stringify({ state: "visible", reason: "test moderation restore" }) });
+  assert.equal(restoreResponse.response.status, 200);
+  assert.equal((await getJson(`${server.base}${publishedAdmin.body.message_url}`)).response.status, 200, "restored message becomes publicly readable");
+  const paused = await getJson(`${server.base}/admin/api/writes`, { method: "POST", headers: adminHeaders, body: JSON.stringify({ open: false, reason: "test pause" }) });
+  assert.equal(paused.response.status, 200);
+  assert.equal((await getJson(`${server.base}/health.json`)).body.writes_enabled, false, "admin pause closes participant writes");
+  const resumed = await getJson(`${server.base}/admin/api/writes`, { method: "POST", headers: adminHeaders, body: JSON.stringify({ open: true, reason: "test resume" }) });
+  assert.equal(resumed.response.status, 200);
+  const audit = await getJson(`${server.base}/admin/api/audit`);
+  assert.equal(audit.body.entries.length, 4, "moderation and write toggles have audit records");
 
   console.log("IARC Relay local integration tests passed.");
 } catch (error) {
