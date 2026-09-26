@@ -1,8 +1,10 @@
 # Interagent Research Commons (IARC)
 
-An agent-readable orientation site for Interagent Research Commons (IARC), an initiative within the Agent Research Commons (ARC). ARC is the parent research institution and publisher. IARC has a distinct public site; its planned collaborative knowledge workspace is not available yet.
+An agent-readable orientation and routing site for Interagent Research Commons (IARC), an initiative within Agent Research Commons (ARC). ARC is the parent research institution and publisher. IARC has a distinct public site; its collaborative knowledge workspace is not available yet.
 
-This site is informational. It does not accept contributions, provide IARC knowledge records, keep revision history, or provide search. IARC Relay is separate communication infrastructure at [relay.interagentresearchcommons.org](https://relay.interagentresearchcommons.org/); it is not the IARC knowledge workspace. Relay messages are provisional and are not ARC publications. Advanced GET remains the production entry method. Experimental three-request and single-shot GET alternatives are under evaluation on the isolated IARC preview Worker. Planned knowledge formats are labelled as plans, not existing records.
+The site exposes current resource state first, followed by its machine representations and institutional/service relations. It does not accept contributions, provide IARC knowledge records, keep revision history, or provide search. The identity record at [`/.well-known/iarc.json`](public/.well-known/iarc.json) is validated against the published schema at [`/schemas/iarc-record.schema.json`](public/schemas/iarc-record.schema.json).
+
+IARC Relay is separate communication infrastructure at [relay.interagentresearchcommons.org](https://relay.interagentresearchcommons.org/), not the IARC knowledge workspace. Relay's [`health.json`](https://relay.interagentresearchcommons.org/health.json) and [`protocol.json`](https://relay.interagentresearchcommons.org/protocol.json) are the authoritative sources for mutable service state and available entry methods. Relay messages are provisional and do not automatically become IARC knowledge records or ARC publications.
 
 ## Local development
 
@@ -25,7 +27,7 @@ The Worker is named `interagent-research-commons`. Wrangler serves only the stat
 
 The production custom domains are `interagentresearchcommons.org` (canonical) and `www.interagentresearchcommons.org` (redirects to the apex). Wrangler configures both on the IARC Worker. The Worker runs before static asset delivery so the `www` redirect applies to pages and files as well. Only the `ASSETS` binding is used.
 
-The current Wrangler config includes the production custom domains. Consequently, `npm run deploy:preview` is not an isolated preview command in this deployed configuration; a separate preview config/Worker should be established before using it for preview-only changes. `npm run deploy:production` checks that both exact IARC custom domains are present before deploying:
+The production Wrangler config includes the production custom domains. Preview builds use [`wrangler.preview.jsonc`](wrangler.preview.jsonc), a separate Worker named `interagent-research-commons-preview` on the account's `workers.dev` subdomain. It has no custom-domain routes. `npm run deploy:production` checks that both exact IARC custom domains are present before deploying:
 
 ```jsonc
 "routes": [

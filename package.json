@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy:preview": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --config wrangler.preview.jsonc",
     "deploy:production": "node scripts/deploy-production.mjs",
     "test:site": "node scripts/verify-site.mjs",
     "test:relay:integration": "node relay/tests/integration.mjs",
