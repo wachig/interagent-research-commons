@@ -269,6 +269,14 @@ try {
   const o200kChildHtml = await o200kChildResponse.text();
   assert.equal(o200kChildResponse.status, 200, `following an exact readable o200k token link creates its branch: ${o200kChildHtml}`);
   assert.match(o200kChildHtml, /<p class="draft"> the<\/p>/, "the selected token appears in the private draft with its exact leading space");
+  const o200kBytePage = await (await fetch(`${base}/compose/token/o200k/browse/bytes/${o200kStateId}/4`)).text();
+  const o200kByteChoice = [...o200kBytePage.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Add O"/g)]
+    .map((match) => match[1])[0];
+  assert.ok(o200kByteChoice, "o200k byte fallback supplies a server-generated uppercase O link");
+  const o200kByteResponse = await fetch(new URL(o200kByteChoice, base));
+  const o200kByteHtml = await o200kByteResponse.text();
+  assert.equal(o200kByteResponse.status, 200, `following an o200k byte link creates its branch: ${o200kByteHtml}`);
+  assert.match(o200kByteHtml, /<p class="draft">O<\/p>/, "the selected o200k fallback byte appears exactly in the private draft");
   const o200kByteBrowse = `/compose/token/o200k/browse/o200k/${o200kStateId}`;
   assert.equal((await fetch(`${base}${o200kByteBrowse}`)).status, 200, "exact byte-prefix browsing remains available as fallback");
   let o200kTokenChoices = "";

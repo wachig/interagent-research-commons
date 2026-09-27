@@ -574,7 +574,9 @@ async function requestedBranch(env, parentId, unitId, signature, conditionId = C
   const parent = await loadState(env, parentId);
   if (!parent || parent.condition_id !== config.conditionId || parent.session_expires_at <= Date.now() || parent.published_at) return null;
   const unit = conditionId === O200K_CONDITION_ID
-    ? await o200kUnitFromLink(env, unitId, unitHex || "")
+    ? (/^b[0-9a-f]{2}$/.test(unitId) && unitHex === null
+      ? { id: unitId, kind: "byte", bytes: new Uint8Array([Number.parseInt(unitId.slice(1), 16)]) }
+      : await o200kUnitFromLink(env, unitId, unitHex || ""))
     : LEXICAL_UNITS.find((item) => item.id === unitId) || (/^b[0-9a-f]{2}$/.test(unitId) ? { id: unitId, kind: "byte", bytes: new Uint8Array([Number.parseInt(unitId.slice(1), 16)]) } : null);
   if (!unit) return null;
   const child = await ensureChild(env, parent, unit);
@@ -752,6 +754,10 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
     if (segments[0] === "state" && segments.length === 2) {
       const stateId = decodeRouteToken(segments[1]);
       return stateId ? renderState(request, env, await loadState(env, stateId)) : page("Branch unavailable", "<p>This branch link is malformed.</p>", 404);
+    }
+    if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 4) {
+      const child = await requestedBranch(env, segments[1], segments[2], segments[3], mode);
+      return child ? renderState(request, env, child) : expiredPage("Branch unavailable", "This byte branch link is invalid, expired, or no longer available.", `${O200K_PREFIX}/`, "Continue with the o200k composer");
     }
     if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 5) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[4], mode, segments[3]);
