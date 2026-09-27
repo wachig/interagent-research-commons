@@ -339,7 +339,7 @@ async function browseReadableTokens(env, stateId, group = null, pageNumber = 0) 
     const labels = { space: "Space-prefixed tokens", letter: "Letter-prefixed tokens", digit: "Digit-prefixed tokens", symbol: "Punctuation and other visible tokens" };
     await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-readable-groups-v1", candidates: Object.keys(manifest.groups) } });
     const links = Object.entries(manifest.groups).map(([key, info]) => `<p>${link(`${O200K_PREFIX}/browse/words/${routeToken(stateId)}/${key}/0`, `${labels[key]} (${info.entries.toLocaleString("en-US")})`, "choice")}</p>`).join("");
-    return page("Readable o200k token choices", `<p>Choose actual readable entries from the published o200k_base vocabulary. The list is ordered by the vocabulary's published rank; this is not a claim about your model's tokenizer or a prediction. Selecting a token adds its exact bytes to a new draft branch. Spaces are shown as <code>␠</code>. Browsing pages records events but does not change the draft.</p><section class="panel"><h2>Token groups</h2>${links}</section><p>${link(stateHref("state", stateId, state.condition_id), "Return to this branch")}</p>`);
+    return page("Readable o200k token choices", `<p>Choose actual readable entries from the published o200k_base vocabulary. These are real tokenizer tokens, including word pieces; they are not a hand-picked phrase list. The list is ordered by published rank, not predicted from your model. Selecting a token adds its exact bytes to a new draft branch. Spaces are shown as <code>␠</code>; whitespace-only and one-character letter tokens are omitted to make the choices easier to scan. Browsing pages records events but does not change the draft.</p><section class="panel"><h2>Start with common word tokens</h2><p>Space-prefixed entries often represent a word with its preceding space.</p><p>${link(`${O200K_PREFIX}/browse/words/${routeToken(stateId)}/space/0`, `Browse common space-prefixed tokens · page 1 of ${manifest.groups.space.pages}`, "choice")}</p></section><section class="panel"><h2>Other token groups</h2>${links}</section><p>${link(stateHref("state", stateId, state.condition_id), "Return to this branch")}</p>`);
   }
   if (!Object.hasOwn(manifest.groups, group) || !/^\d{1,4}$/.test(String(pageNumber))) return page("Token page unavailable", "<p>Choose a supplied token group and page.</p>", 404);
   const info = manifest.groups[group];
@@ -351,9 +351,10 @@ async function browseReadableTokens(env, stateId, group = null, pageNumber = 0) 
   for (const [rank, token] of rows) {
     const tokenBytes = new TextEncoder().encode(token);
     if (state.body_length + tokenBytes.length > budget) continue;
-    const bytesHex = hex(tokenBytes);
+    const bytesHex = [...tokenBytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     const href = await edgeHref(env, stateId, `o${rank}`, state.condition_id, bytesHex);
-    choices.push(`<div class="unit-choice"><a class="choice" rel="nofollow noreferrer" href="${esc(href)}"><code>${esc(token.replaceAll(" ", "␠").replaceAll("\n", "↵").replaceAll("\r", "␍"))}</code></a></div>`);
+    const accessibleLabel = token.startsWith(" ") ? `Use token with leading space: ${token.trimStart()}` : `Use token: ${token}`;
+    choices.push(`<div class="unit-choice"><a class="choice" rel="nofollow noreferrer" href="${esc(href)}" aria-label="${esc(accessibleLabel)}"><code>${esc(token.replaceAll(" ", "␠").replaceAll("\n", "↵").replaceAll("\r", "␍"))}</code></a></div>`);
   }
   await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-readable-${group}-${pageIndex}`, candidates: rows.map(([rank]) => `o${rank}`) } });
   const title = { space: "Space-prefixed", letter: "Letter-prefixed", digit: "Digit-prefixed", symbol: "Punctuation and other" }[group];
@@ -754,7 +755,7 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
     }
     if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 5) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[4], mode, segments[3]);
-      return child ? renderState(request, env, child) : expiredPage("Branch unavailable", "This branch link is invalid, expired, or no longer available.");
+      return child ? renderState(request, env, child) : expiredPage("Branch unavailable", "This branch link is invalid, expired, or no longer available.", `${O200K_PREFIX}/`, "Continue with the o200k composer");
     }
     if (segments[0] === "branch" && mode === CONDITION_ID && segments.length === 4) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[3], mode);

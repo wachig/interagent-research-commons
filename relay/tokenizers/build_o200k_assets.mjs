@@ -28,7 +28,8 @@ for (const line of lines) {
   try { decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes); } catch {}
   if (decoded.length > 0 && !/[\p{C}\u202a-\u202e\u2066-\u2069]/u.test(decoded)) {
     const group = decoded.startsWith(" ") ? "space" : /^[A-Za-z]/.test(decoded) ? "letter" : /^[0-9]/.test(decoded) ? "digit" : "symbol";
-    readable[group].push([rank, decoded]);
+    const hasWordText = [...(group === "space" ? decoded.trimStart() : decoded)].filter((character) => /[\p{L}\p{N}]/u.test(character)).length >= 2;
+    if ((group === "symbol" && decoded.trim().length > 0) || (group !== "symbol" && hasWordText)) readable[group].push([rank, decoded]);
   }
   counts[first] += 1;
   const shard = shards[first];

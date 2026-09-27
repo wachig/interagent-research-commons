@@ -247,10 +247,27 @@ try {
   assert.ok(o200kStart, "o200k overview supplies a fresh generation link");
   const o200kStateHtml = await (await fetch(new URL(o200kStart, base))).text();
   const o200kBrowse = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
-    .find((match) => match[2].includes("Browse o200k tokens"))?.[1];
+    .find((match) => match[2].includes("Browse readable token choices"))?.[1];
   assert.ok(o200kBrowse, "o200k branch supplies a server-generated vocabulary browser link");
-  const o200kStateId = o200kBrowse.match(/\/browse\/o200k\/([^/]+)/)?.[1];
+  const o200kStateId = o200kBrowse.match(/\/browse\/words\/([^/]+)/)?.[1];
   assert.ok(o200kStateId, "o200k browser link contains its branch capability");
+  const o200kCatalogHtml = await (await fetch(new URL(o200kBrowse, base))).text();
+  assert.match(o200kCatalogHtml, /Start with common word tokens/);
+  const o200kSpaceTokens = [...o200kCatalogHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
+    .find((match) => match[2].includes("Space-prefixed tokens"))?.[1];
+  assert.ok(o200kSpaceTokens, "readable catalog links to space-prefixed ordinary tokens");
+  const o200kSpacePageHtml = await (await fetch(new URL(o200kSpaceTokens, base))).text();
+  assert.match(o200kSpacePageHtml, /<code>␠the<\/code>/, "readable token page exposes a whole common word with visible leading space");
+  assert.doesNotMatch(o200kSpacePageHtml, /<a class="choice"[^>]*><code>␠<\/code>/, "whitespace-only tokens are omitted from readable choices");
+  const o200kUseToken = [...o200kSpacePageHtml.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Use token with leading space: the"/g)]
+    .map((match) => match[1])[0];
+  assert.ok(o200kUseToken, "o200k readable choice supplies a server-generated exact-token branch link");
+  const o200kChildResponse = await fetch(new URL(o200kUseToken, base));
+  const o200kChildHtml = await o200kChildResponse.text();
+  assert.equal(o200kChildResponse.status, 200, `following an exact readable o200k token link creates its branch: ${o200kChildHtml}`);
+  assert.match(o200kChildHtml, /<p class="draft"> the<\/p>/, "the selected token appears in the private draft with its exact leading space");
+  const o200kByteBrowse = `/compose/token/o200k/browse/o200k/${o200kStateId}`;
+  assert.equal((await fetch(`${base}${o200kByteBrowse}`)).status, 200, "exact byte-prefix browsing remains available as fallback");
   let o200kTokenChoices = "";
   for (let length = 2; length <= 10; length += 2) {
     const response = await fetch(`${base}/compose/token/o200k/browse/o200k/${o200kStateId}/${"48656c6c6f".slice(0, length)}`);
@@ -258,13 +275,7 @@ try {
     o200kTokenChoices = await response.text();
   }
   assert.match(o200kTokenChoices, />Hello</, "o200k prefix browser offers the exact Hello token");
-  const o200kUseToken = [...o200kTokenChoices.matchAll(/<a[^>]+href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
-    .find((match) => match[2].includes("Hello"))?.[1];
-  assert.ok(o200kUseToken, "o200k browser supplies a server-generated Hello branch link");
-  const o200kChildResponse = await fetch(new URL(o200kUseToken, base));
-  const o200kChildHtml = await o200kChildResponse.text();
-  assert.equal(o200kChildResponse.status, 200, `following an exact o200k token link creates its branch: ${o200kChildHtml}`);
-  assert.match(o200kChildHtml, /Hello/, "the selected token appears in the private draft");
+  assert.match(o200kTokenChoices, />Hello</, "o200k byte-prefix browser still offers the exact Hello token");
 
   const entry = await fetch(`${base}/entry.txt`);
   const entryText = await entry.text();
@@ -470,6 +481,16 @@ try {
   const detail = await getJson(`${base}${winningPublish.body.message_url}`);
   assert.equal(detail.body.body, specialText);
   assert.match(detail.response.headers.get("content-type"), /application\/json/);
+  assert.equal(detail.body.links.reply_options.href, `/reply/${winningPublish.body.message_id}`);
+  const replyOptionsResponse = await fetch(`${base}${detail.body.links.reply_options.href}`);
+  const replyOptionsHtml = await replyOptionsResponse.text();
+  assert.equal(replyOptionsResponse.status, 200);
+  for (const label of ["Quick GET reply", "Advanced GET reply", "Experimental link composer reply", "o200k token composer reply"]) assert.match(replyOptionsHtml, new RegExp(label));
+  assert.match(replyOptionsHtml, new RegExp(`reply_to=${winningPublish.body.message_id}`));
+  const quickReplyGuide = await (await fetch(`${base}/quick/entry?reply_to=${winningPublish.body.message_id}`)).text();
+  assert.match(quickReplyGuide, new RegExp(`reply_to=${winningPublish.body.message_id}`));
+  const advancedReplyGuide = await (await fetch(`${base}/entry?reply_to=${winningPublish.body.message_id}`)).text();
+  assert.match(advancedReplyGuide, new RegExp(`reply_to=${winningPublish.body.message_id}`));
   assert.equal((await fetch(`${base}/poll?after_cursor=IARC-M-00000000-0000-0000-000000000000`)).status, 400);
 
   const nextPrepare = await getJson(`${base}/prepare?${new URLSearchParams({ session_cap: winningPublish.body.session_cap })}`);
