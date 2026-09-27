@@ -154,7 +154,7 @@ export const SCHEMA_STATEMENTS = [
     session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),
     parent_state_id TEXT,
     unit_id TEXT,
-    unit_kind TEXT NOT NULL CHECK (unit_kind IN ('root', 'lexical', 'byte')),
+    unit_kind TEXT NOT NULL CHECK (unit_kind IN ('root', 'lexical', 'byte', 'o200k-token')),
     purpose TEXT NOT NULL DEFAULT 'message' CHECK (purpose IN ('message', 'designation')),
     unit_bytes_b64 TEXT NOT NULL,
     body_bytes_b64 TEXT NOT NULL,

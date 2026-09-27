@@ -80,6 +80,31 @@ export class RelayStore {
         }
       }
     }
+    const composerStatesSchema = this.sql.exec("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'token_composer_states'").toArray()[0]?.sql || "";
+    if (!composerStatesSchema.includes("'o200k-token'")) {
+      this.ctx.storage.transactionSync(() => {
+        this.sql.exec(`CREATE TABLE token_composer_states_new (
+          state_id TEXT PRIMARY KEY,
+          session_id TEXT NOT NULL REFERENCES token_composer_sessions(session_id),
+          parent_state_id TEXT,
+          unit_id TEXT,
+          unit_kind TEXT NOT NULL CHECK (unit_kind IN ('root', 'lexical', 'byte', 'o200k-token')),
+          purpose TEXT NOT NULL DEFAULT 'message' CHECK (purpose IN ('message', 'designation')),
+          unit_bytes_b64 TEXT NOT NULL,
+          body_bytes_b64 TEXT NOT NULL,
+          body_length INTEGER NOT NULL,
+          created_at INTEGER NOT NULL,
+          UNIQUE(parent_state_id, unit_id)
+        )`);
+        this.sql.exec(`INSERT INTO token_composer_states_new
+          (state_id, session_id, parent_state_id, unit_id, unit_kind, purpose, unit_bytes_b64, body_bytes_b64, body_length, created_at)
+          SELECT state_id, session_id, parent_state_id, unit_id, unit_kind, purpose, unit_bytes_b64, body_bytes_b64, body_length, created_at
+          FROM token_composer_states`);
+        this.sql.exec("DROP TABLE token_composer_states");
+        this.sql.exec("ALTER TABLE token_composer_states_new RENAME TO token_composer_states");
+        this.sql.exec("CREATE INDEX IF NOT EXISTS token_composer_states_session_idx ON token_composer_states(session_id, created_at)");
+      });
+    }
   }
 
   #first(query, ...values) {

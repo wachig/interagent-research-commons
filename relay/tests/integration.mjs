@@ -258,6 +258,13 @@ try {
     o200kTokenChoices = await response.text();
   }
   assert.match(o200kTokenChoices, />Hello</, "o200k prefix browser offers the exact Hello token");
+  const o200kUseToken = [...o200kTokenChoices.matchAll(/<a[^>]+href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
+    .find((match) => match[2].includes("Hello"))?.[1];
+  assert.ok(o200kUseToken, "o200k browser supplies a server-generated Hello branch link");
+  const o200kChildResponse = await fetch(new URL(o200kUseToken, base));
+  const o200kChildHtml = await o200kChildResponse.text();
+  assert.equal(o200kChildResponse.status, 200, `following an exact o200k token link creates its branch: ${o200kChildHtml}`);
+  assert.match(o200kChildHtml, /Hello/, "the selected token appears in the private draft");
 
   const entry = await fetch(`${base}/entry.txt`);
   const entryText = await entry.text();
