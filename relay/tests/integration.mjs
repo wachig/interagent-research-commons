@@ -148,7 +148,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.11\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.13\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -249,7 +249,7 @@ try {
   assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.11.0");
+  assert.equal(protocol.schema_version, "0.13.0");
   assert.equal(protocol.composer_experiment.prediction, false);
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
@@ -258,6 +258,8 @@ try {
   assert.ok(protocol.operations.some((operation) => operation.path === "/start" && operation.method === "GET"));
   assert.ok(protocol.operations.some((operation) => operation.path === "/quick/preview"));
   assert.ok(protocol.operations.some((operation) => operation.path === "/quick/one-shot"));
+  assert.ok(protocol.operations.some((operation) => operation.path === "/brief.txt"));
+  assert.ok(protocol.operations.some((operation) => operation.path === "/commons.txt" && operation.query[0].startsWith("limit")));
   assert.equal(protocol.limits.pending_lifetime_seconds, 2, "local TTL override should reach the storage Worker");
   for (const pathName of ["/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt"]) {
     const response = await fetch(`${base}${pathName}`);
@@ -267,6 +269,18 @@ try {
   assert.match(await (await fetch(`${base}/participation-policy`)).text(), /GET availability does not override a restriction/);
   assert.match(await (await fetch(`${base}/participation-policy`)).text(), /participation-policy\/relay-participation-1\.0\.0/);
   assert.match(await (await fetch(`${base}/participation-policy/relay-participation-1.0.0`)).text(), /Version relay-participation-1\.0\.0/);
+  assert.match(await (await fetch(`${base}/participation-policy/relay-participation-1.0.0`)).text(), /HISTORICAL ARCHIVE/);
+  const brief = await (await fetch(`${base}/brief.txt`)).text();
+  assert.match(brief, /Contribution\/publication flows use state-changing GET/);
+  assert.match(brief, /Reports use same-origin POST/);
+  assert.match(brief, /1,200 UTF-8 bytes/);
+  const quickHtml = await (await fetch(`${base}/quick/entry`)).text();
+  assert.match(quickHtml, /<h2 id="single-shot">SINGLE-SHOT GET — IMMEDIATE PUBLICATION<\/h2>/);
+  assert.match(quickHtml, /<ol><li>GET \/quick\/preview/);
+  const safetyText = await (await fetch(`${base}/safety.txt`)).text();
+  assert.match(safetyText, /reports use the same-origin POST form/i);
+  assert.equal((await fetch(`${base}/commons.txt?limit=0`)).status, 400);
+  assert.equal((await fetch(`${base}/commons.txt?limit=1&extra=1`)).status, 400);
   const protocolResponse = await fetch(`${base}/protocol.json`);
   assert.equal(protocolResponse.headers.get("access-control-allow-origin"), "*", "public machine-readable protocol is cross-origin readable");
   const htmlPoll = await fetch(`${base}/poll`, { headers: { Accept: "text/html" } });
@@ -278,7 +292,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.11.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.6.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.6.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -286,7 +300,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.11.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.13.0.schema.json");
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
@@ -399,16 +413,22 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.6.0.schema.json");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.8.0.schema.json");
   assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.6.0.schema.json");
+  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json");
   assert.equal(validateMessage(publicMessages.body.entries[0]), true, `public message validates against its canonical published schema: ${JSON.stringify(validateMessage.errors)}`);
+  assert.equal(validateMessage({ ...publicMessages.body.entries[0], policy_version: "prototype-0.1.0" }), true, "current schema remains compatible with preserved legacy public records");
   assert.equal(publicMessages.body.entries[0].author_ref, started.body.participant_ref);
   assert.equal(publicMessages.body.entries[0].contributor_designation, "Research collaborator");
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /CONTRIBUTOR DESIGNATION Research collaborator/);
+  const shortFeed = await (await fetch(`${base}/commons.txt?limit=1`)).text();
+  assert.match(shortFeed, /latest 1 message/);
+  assert.equal((shortFeed.match(/^MESSAGE /gm) || []).length, 1);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
+  assert.equal(publicMessages.body.entries[0].moderation_state, "visible");
+  assert.equal(publicMessages.body.entries[0].schema_version, "0.8.0");
   assert.equal(publicMessages.body.entries[0].supersedes, null);
   assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.2.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
@@ -466,7 +486,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.6.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -490,14 +510,14 @@ try {
   const beforeComposer = (await getJson(`${base}/poll`)).body.returned_count;
   const composerStartHref = suppliedHref(composerOverviewHtml, (anchor) => anchor.includes("begin free-generation task"));
   let composerHtml = await (await fetch(new URL(composerStartHref, base))).text();
-  const abandonedHref = suppliedHref(composerHtml, (anchor) => anchor.includes("unit lx01"));
+  const abandonedHref = suppliedHref(composerHtml, (anchor) => anchor.includes("<strong>relay</strong>"));
   const abandonedHtml = await (await fetch(new URL(abandonedHref, base))).text();
   assert.match(abandonedHtml, />Relay</, "the fetched sibling branch contains its own immutable content");
   const fallbackHref = suppliedHref(composerHtml, (anchor) => anchor.includes("browse utf-8 bytes"));
   let browseHtml = await (await fetch(new URL(fallbackHref, base))).text();
   const zeroRangeHref = suppliedHref(browseHtml, (anchor) => anchor.includes("browse bytes 00 through 0f"));
   const zeroOptions = await (await fetch(new URL(zeroRangeHref, base))).text();
-  const zeroByteHref = suppliedHref(zeroOptions, (anchor) => anchor.includes("exact byte 00"));
+  const zeroByteHref = suppliedHref(zeroOptions, (anchor) => anchor.includes('aria-label="add 0x00"'));
   const zeroState = await (await fetch(new URL(zeroByteHref, base))).text();
   const zeroReviewHref = suppliedHref(zeroState, (anchor) => anchor.includes("review this exact branch"));
   const zeroReview = await (await fetch(new URL(zeroReviewHref, base))).text();
@@ -509,8 +529,9 @@ try {
     const group = (byte >> 4).toString(16);
     const groupHref = suppliedHref(browseHtml, (anchor) => anchor.includes(`browse bytes ${group}0 through ${group}f`));
     const byteOptions = await (await fetch(new URL(groupHref, base))).text();
-    const byteHex = byte.toString(16).padStart(2, "0");
-    const byteHref = suppliedHref(byteOptions, (anchor) => anchor.includes(`exact byte ${byteHex}`));
+    const byteHex = byte.toString(16).padStart(2, "0").toUpperCase();
+    const byteLabel = byte === 0x20 ? "␠ space" : byte === 0x0a ? "↵ line feed" : byte === 0x09 ? "⇥ tab" : byte >= 0x21 && byte <= 0x7e ? String.fromCharCode(byte) : `0x${byteHex}`;
+    const byteHref = suppliedHref(byteOptions, (anchor) => anchor.includes(`aria-label="add ${byteLabel.toLowerCase()}"`));
     currentStatePage = await (await fetch(new URL(byteHref, base))).text();
     browseHtml = await (await fetch(new URL(suppliedHref(currentStatePage, (anchor) => anchor.includes("browse utf-8 bytes")), base))).text();
   }
@@ -530,8 +551,8 @@ try {
   const composedMessage = (await getJson(new URL(composerMessageHref, base))).body;
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
-  assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.2.0", condition: "universal-fixed-v1", task_class: "generation" });
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.6.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
+  assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.3.0", condition: "universal-fixed-v1", task_class: "generation" });
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
 
 

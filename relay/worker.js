@@ -6,7 +6,7 @@ const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
 const REPORT_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms", "token_composer_arm_expiry_observations", "token_composer_arm_expiry_aggregates"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -154,7 +154,15 @@ export class RelayStore {
         ON CONFLICT (cohort_month, task_class, condition_id, composer_version, outcome, furthest_stage)
         DO UPDATE SET run_count = token_composer_outcome_aggregates.run_count + excluded.run_count, aggregated_at = excluded.aggregated_at`, now, now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_outcome_aggregates WHERE cohort_month < strftime('%Y-%m', ? / 1000, 'unixepoch', '-11 months')", now);
-      this.#run("DELETE FROM token_composer_arms WHERE expires_at <= ? OR session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, now, this.messageRetentionMs, now);
+      this.#run(`INSERT INTO token_composer_arm_expiry_aggregates (cohort_month, task_class, condition_id, composer_version, observed_attempts, aggregated_at)
+        SELECT cohort_month, task_class, condition_id, composer_version, COUNT(*), ?
+        FROM token_composer_arm_expiry_observations WHERE observed_at <= ?
+        GROUP BY cohort_month, task_class, condition_id, composer_version
+        ON CONFLICT (cohort_month, task_class, condition_id, composer_version)
+        DO UPDATE SET observed_attempts = token_composer_arm_expiry_aggregates.observed_attempts + excluded.observed_attempts, aggregated_at = excluded.aggregated_at`, now, now - 60_000);
+      this.#run("DELETE FROM token_composer_arm_expiry_observations WHERE observed_at <= ?", now - 60_000);
+      this.#run("DELETE FROM token_composer_arm_expiry_aggregates WHERE cohort_month < strftime('%Y-%m', ? / 1000, 'unixepoch', '-11 months')", now);
+      this.#run("DELETE FROM token_composer_arms WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_states WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_events WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?)", now, this.messageRetentionMs, now);
@@ -173,7 +181,8 @@ export class RelayStore {
       this.#first("SELECT MIN(updated_at + ?) AS at FROM relay_admin_settings", ADMIN_AUDIT_RETENTION_MS)?.at,
       this.#first("SELECT MIN(CASE WHEN published_at IS NULL THEN expires_at ELSE published_at + ? END) AS at FROM token_composer_sessions", this.messageRetentionMs)?.at,
       this.#first("SELECT MIN(strftime('%s', cohort_month || '-01', '+12 months') * 1000) AS at FROM token_composer_outcome_aggregates")?.at,
-      this.#first("SELECT MIN(expires_at) AS at FROM token_composer_arms")?.at,
+      this.#first("SELECT MIN(strftime('%s', cohort_month || '-01', '+12 months') * 1000) AS at FROM token_composer_arm_expiry_aggregates")?.at,
+      this.#first("SELECT MIN(observed_at + 60000) AS at FROM token_composer_arm_expiry_observations")?.at,
     ].filter((value) => Number.isSafeInteger(value));
     if (!deadlines.length) {
       await this.ctx.storage.deleteAlarm();

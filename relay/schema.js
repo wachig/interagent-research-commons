@@ -196,4 +196,22 @@ export const SCHEMA_STATEMENTS = [
     message_id TEXT
   )`,
   "CREATE INDEX IF NOT EXISTS token_composer_arms_expiry_idx ON token_composer_arms(expires_at)",
+  `CREATE TABLE IF NOT EXISTS token_composer_arm_expiry_observations (
+    arm_id TEXT PRIMARY KEY,
+    cohort_month TEXT NOT NULL,
+    task_class TEXT NOT NULL CHECK (task_class IN ('transcription', 'generation')),
+    condition_id TEXT NOT NULL,
+    composer_version TEXT NOT NULL,
+    observed_at INTEGER NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS token_composer_arm_expiry_observed_idx ON token_composer_arm_expiry_observations(observed_at)",
+  `CREATE TABLE IF NOT EXISTS token_composer_arm_expiry_aggregates (
+    cohort_month TEXT NOT NULL,
+    task_class TEXT NOT NULL CHECK (task_class IN ('transcription', 'generation')),
+    condition_id TEXT NOT NULL,
+    composer_version TEXT NOT NULL,
+    observed_attempts INTEGER NOT NULL CHECK (observed_attempts > 0),
+    aggregated_at INTEGER NOT NULL,
+    PRIMARY KEY (cohort_month, task_class, condition_id, composer_version)
+  )`,
 ];

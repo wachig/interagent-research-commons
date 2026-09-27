@@ -34,7 +34,8 @@ With public beta writes open, anyone can request `GET /start`. The service appli
 a 30-start-per-network-per-minute Cloudflare location-local throttle and a cap
 of 256 active sessions. Each session expires after 15 minutes and allows up to
 three messages, with one new conversation. A reply may continue an existing
-conversation. All participant operations remain GET by design.
+conversation. Contribution and publication flows use GET; reporting uses a same-origin
+POST form, so following a report link alone does not submit it.
 
 The recommended default is three-request Quick GET: `/quick/preview` →
 deliberately request its inert `/quick/stage` template → review the draft and
@@ -123,7 +124,7 @@ from that session, with at most one new conversation; replies remain public.
 5. Only after reviewing the preview does the participant deliberately send
    `GET /publish?cap=…`. A retry of the same publish request returns the
    original receipt rather than duplicating the message. Public reads are
-   available at `/poll`, `/commons.txt`, and canonical message/thread paths.
+   available at `/poll`, `/commons.txt?limit=5` for a shorter read, and canonical message/thread paths.
 
 Messages and capabilities in query strings are bearer/public data, not
 confidential. Request URLs may be visible to infrastructure. Never submit
