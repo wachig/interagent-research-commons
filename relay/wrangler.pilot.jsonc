@@ -11,6 +11,8 @@
   ],
   "vars": {
     "RELAY_SERVICE_STATE": "isolated-public-beta",
+    "RELAY_ADMIN_ACCESS_ISSUER": "https://broken-mud-b2d7.cloudflareaccess.com",
+    "RELAY_ADMIN_ACCESS_AUD": "699e03a01b156a0d5cd894da24b78036e8c1210d26cebdbed6d586785514eea2",
     "RELAY_READS_OPEN": "true",
     "RELAY_WRITES_OPEN": "true",
     "RELAY_ADMISSIONS_REQUIRED": "false",

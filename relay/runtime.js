@@ -1562,25 +1562,79 @@ function adminPage() {
   const notice=document.querySelector('#notice');let state;async function api(path,options={}){const response=await window.fetch('/admin/api/'+path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})},credentials:'same-origin'});const data=await response.json().catch(()=>({detail:'The server returned an unreadable response.'}));if(!response.ok)throw new Error(data.detail||'Request failed ('+response.status+')');return data}function say(message,error=false){notice.textContent=message;notice.className=error?'error':''}function button(label,fn,kind='secondary'){const b=document.createElement('button');b.textContent=label;b.className=kind;b.addEventListener('click',fn);return b}function renderReportingStatus(reporting){const root=document.querySelector('#reporting-status');root.replaceChildren();const entries=[['Current contact',reporting.contact_email+' (shared ARC and IARC general inbox)'],['Dedicated Relay reporting intake',reporting.dedicated_report_intake_configured?'Configured':'Not configured'],['Reviewer assigned to Relay reports',reporting.report_reviewer_assigned?'Yes':'No'],['Moderation queue',reporting.moderation_queue_configured?'Configured':'Not configured'],['Response-time target',reporting.response_time_target_defined?'Defined':'Not defined'],['Response time guaranteed',reporting.response_time_guaranteed?'Yes':'No'],['Reports received by this console',reporting.console_receives_reports?'Yes':'No']];for(const [label,value] of entries){const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;root.append(dt,dd)}}function renderReports(rows){const root=document.querySelector('#reports');root.replaceChildren();if(!rows.length){root.textContent='No open reports.';return}for(const row of rows){const item=document.createElement('article');item.className='message';const title=document.createElement('h3');title.textContent=row.report_id+' · '+row.status;const meta=document.createElement('p');meta.className='muted';meta.textContent=row.created_at+' · '+row.category+' · message '+row.message_id;const detail=document.createElement('pre');detail.textContent=row.details;const contextLabel=document.createElement('p');contextLabel.className='muted';contextLabel.textContent='Reported message ('+(row.message_state==='hidden'?'currently hidden':'public content')+')';const context=document.createElement('pre');context.textContent=row.message_body===null?'The source message is no longer retained.':row.message_body;const link=document.createElement('p');const a=document.createElement('a');a.href='/message/'+encodeURIComponent(row.message_id);a.textContent='Open reported public message';link.append(a);const label=document.createElement('label');label.textContent='Review/action reason (required)';const reason=document.createElement('textarea');reason.maxLength=500;reason.setAttribute('aria-label','Reason for '+row.report_id);const actions=document.createElement('p');for(const [action,text,kind] of [['review','Mark reviewing','secondary'],['dismiss','Dismiss report','secondary'],['hide','Hide message and resolve','danger']]){const b=button(text,async()=>{try{await api('reports/'+encodeURIComponent(row.report_id),{method:'POST',body:JSON.stringify({action,reason:reason.value})});say('Report action saved and audited.');await load()}catch(e){say(e.message,true)}},kind);b.style.margin='.25rem';if(action==='hide'&&row.message_body===null)b.disabled=true;actions.append(b)}item.append(title,meta,detail,contextLabel,context,link,label,reason,actions);root.append(item)}}function renderReportHistory(rows){const root=document.querySelector('#report-history');root.replaceChildren();if(!rows.length){root.textContent='No resolved reports in the retained history.';return}for(const row of rows){const item=document.createElement('article');item.className='message';const title=document.createElement('h3');title.textContent=row.report_id+' · '+row.status;const meta=document.createElement('p');meta.className='muted';meta.textContent=row.updated_at+' · '+row.category+' · message '+row.message_id+' · operator '+row.updated_by;const detail=document.createElement('pre');detail.textContent=row.details;const resolution=document.createElement('p');resolution.textContent='Decision reason: '+(row.resolution||'not recorded');item.append(title,meta,detail,resolution);root.append(item)}}function renderComposerAnalytics(rows){const root=document.querySelector('#composer-analytics');root.replaceChildren();if(!rows.length){root.textContent='No reportable cohorts yet. Results appear after a cohort reaches five runs.';return}const wrap=document.createElement('div');wrap.className='table-wrap';const table=document.createElement('table');table.style.width='100%';table.style.borderCollapse='collapse';const headers=['Cohort month','Task','Condition / composer','Runs','Published','In progress','Expired before publication','Expired publish links opened','Expired furthest stage'];const thead=document.createElement('thead');const headerRow=document.createElement('tr');for(const label of headers){const th=document.createElement('th');th.scope='col';th.textContent=label;th.style.textAlign='left';th.style.padding='.5rem';headerRow.append(th)}thead.append(headerRow);const tbody=document.createElement('tbody');for(const row of rows){const tr=document.createElement('tr');const values=[row.cohort_month,row.task_class,row.condition_id+' / '+row.composer_version,row.run_count,row.published,row.in_progress,row.expired_before_publication,row.arm_capability_expiry_attempts,['started '+row.expired_stages.started,'composing '+row.expired_stages.composing,'reviewed '+row.expired_stages.reviewed,'armed '+row.expired_stages.armed].filter(value=>!value.endsWith(' 0')).join(' · ')||'none'];for(const value of values){const td=document.createElement('td');td.textContent=String(value);td.style.padding='.5rem';td.style.borderTop='1px solid #d6dfdc';tr.append(td)}tbody.append(tr)}table.append(thead,tbody);wrap.append(table);root.append(wrap)}function renderMessages(rows){const root=document.querySelector('#messages');root.replaceChildren();if(!rows.length){root.textContent='No retained messages.';return}for(const row of rows){const item=document.createElement('article');item.className='message';const title=document.createElement('h3');title.textContent=row.message_id+' · '+(row.state==='hidden'?'Hidden':'Visible');const meta=document.createElement('small');meta.textContent=row.timestamp+' · '+row.author_ref+' · '+row.transport;const byline=document.createElement('p');byline.className='muted';byline.textContent='Contributor designation: '+(row.contributor_designation||'none')+' (unverified speaker byline; not subject)';const body=document.createElement('pre');body.textContent=row.body;const reason=document.createElement('label');reason.textContent='Moderation reason (required)';const input=document.createElement('textarea');input.maxLength=500;input.setAttribute('aria-label','Reason for '+row.message_id);const action=button(row.state==='hidden'?'Restore message':'Hide message',async()=>{try{await api('messages/'+encodeURIComponent(row.message_id),{method:'POST',body:JSON.stringify({state:row.state==='hidden'?'visible':'hidden',reason:input.value})});say('Message moderation saved.');await load()}catch(e){say(e.message,true)}},row.state==='hidden'?'secondary':'danger');item.append(title,meta,byline,body,reason,input,document.createTextNode(' '),action);if(row.moderation_reason){const note=document.createElement('p');note.className='muted';note.textContent='Last action: '+row.moderation_reason;item.append(note)}root.append(item)}}function renderAudit(rows){const root=document.querySelector('#audit');root.replaceChildren();if(!rows.length){root.textContent='No admin actions recorded.';return}for(const row of rows){const p=document.createElement('p');p.textContent=row.timestamp+' · '+row.actor_email+' · '+row.action+' · '+row.target_id+' · '+row.reason;root.append(p)}}async function load(){try{state=await api('status');document.querySelector('#identity').textContent='Signed in as '+state.actor;renderReportingStatus(state.reporting);document.querySelector('#health').textContent='Deployment writes: '+(state.deployment_writes_open?'open':'closed')+' · Reads: '+(state.reads_open?'open':'closed');document.querySelector('#write-status').textContent=state.effective_writes_open?'Writes are open':'Writes are paused';const toggle=document.querySelector('#write-toggle');toggle.textContent=state.effective_writes_open?'Pause writes':'Resume writes';toggle.disabled=!state.deployment_writes_open&&!state.effective_writes_open;toggle.className=state.effective_writes_open?'danger':'';const [reports,history,messages,audit,analytics]=await Promise.all([api('reports'),api('reports/history'),api('messages'),api('audit'),api('composer-analytics')]);renderReports(reports.entries);renderReportHistory(history.entries);renderMessages(messages.entries);renderAudit(audit.entries);renderComposerAnalytics(analytics.cohorts);say('Admin data refreshed.')}catch(e){say(e.message,true);document.querySelector('#identity').textContent='Admin identity not verified.'}}document.querySelector('#refresh').addEventListener('click',load);document.querySelector('#write-toggle').addEventListener('click',async()=>{const reason=document.querySelector('#write-reason').value;try{await api('writes',{method:'POST',body:JSON.stringify({open:!state.effective_writes_open,reason})});document.querySelector('#write-reason').value='';say('Write setting saved.');await load()}catch(e){say(e.message,true)}});load();</script></body></html>`;
 }
 
-function adminIdentity(ctx, env) {
-  if (env.RELAY_SERVICE_STATE === "isolated-local-prototype" && env.RELAY_ADMIN_LOCAL_TEST === "true") return "local-operator";
-  const allowlist = (env.RELAY_ADMIN_EMAIL_ALLOWLIST || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
-  if (!allowlist.length || typeof ctx?.access?.getIdentity !== "function") return null;
-  return ctx.access.getIdentity().then((identity) => {
-    const email = typeof identity?.email === "string" ? identity.email.trim().toLowerCase() : "";
-    return email && allowlist.includes(email) ? email : null;
-  }).catch(() => null);
+let adminAccessJwksCache = new Map();
+
+function decodeBase64Url(value) {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=")), (char) => char.charCodeAt(0));
 }
 
-async function requireAdmin(ctx, env) {
-  const actor = await adminIdentity(ctx, env);
+function decodeJwtPart(value) {
+  return JSON.parse(new TextDecoder().decode(decodeBase64Url(value)));
+}
+
+async function accessJwks(issuer, fetcher, now, forceRefresh = false) {
+  const cached = adminAccessJwksCache.get(issuer);
+  if (!forceRefresh && cached && cached.expiresAt > now) return cached.keys;
+  const response = await fetcher(`${issuer}/cdn-cgi/access/certs`, { signal: AbortSignal.timeout(4_000) });
+  if (!response.ok) throw new Error("Access signing keys unavailable");
+  const body = await response.json();
+  if (!Array.isArray(body?.keys) || body.keys.length < 1 || body.keys.length > 8) throw new Error("Access signing keys invalid");
+  const keys = body.keys.filter((key) => key?.kty === "RSA" && key?.alg === "RS256" && key?.use === "sig" && typeof key.kid === "string" && typeof key.n === "string" && typeof key.e === "string");
+  if (!keys.length) throw new Error("Access signing keys invalid");
+  adminAccessJwksCache.set(issuer, { keys, expiresAt: now + 10 * 60_000 });
+  return keys;
+}
+
+export async function verifyAccessIdentity(request, env, fetcher = fetch, now = Date.now()) {
+  const issuer = typeof env.RELAY_ADMIN_ACCESS_ISSUER === "string" ? env.RELAY_ADMIN_ACCESS_ISSUER.replace(/\/$/, "") : "";
+  const audience = typeof env.RELAY_ADMIN_ACCESS_AUD === "string" ? env.RELAY_ADMIN_ACCESS_AUD.trim() : "";
+  const token = request.headers.get("cf-access-jwt-assertion");
+  if (!issuer || !audience || !/^https:\/\/[a-z0-9-]+\.cloudflareaccess\.com$/.test(issuer) || !token || token.length > 16_384) return null;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const header = decodeJwtPart(parts[0]);
+    const claims = decodeJwtPart(parts[1]);
+    if (header?.alg !== "RS256" || typeof header.kid !== "string" || claims?.iss !== issuer || claims?.type !== "app") return null;
+    const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+    const nowSeconds = Math.floor(now / 1_000);
+    if (!audiences.includes(audience) || !Number.isFinite(claims.exp) || claims.exp <= nowSeconds || (Number.isFinite(claims.nbf) && claims.nbf > nowSeconds)) return null;
+    let key = (await accessJwks(issuer, fetcher, now)).find((candidate) => candidate.kid === header.kid);
+    if (!key) key = (await accessJwks(issuer, fetcher, now, true)).find((candidate) => candidate.kid === header.kid);
+    if (!key) return null;
+    const cryptoKey = await crypto.subtle.importKey("jwk", key, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+    const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", cryptoKey, decodeBase64Url(parts[2]), new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
+    return valid && typeof claims.email === "string" ? claims.email.trim().toLowerCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+async function adminIdentity(ctx, env, request) {
+  if (env.RELAY_SERVICE_STATE === "isolated-local-prototype" && env.RELAY_ADMIN_LOCAL_TEST === "true") return "local-operator";
+  const allowlist = (env.RELAY_ADMIN_EMAIL_ALLOWLIST || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+  if (!allowlist.length) return null;
+  let email = "";
+  if (typeof ctx?.access?.getIdentity === "function") {
+    try {
+      const identity = await ctx.access.getIdentity();
+      email = typeof identity?.email === "string" ? identity.email.trim().toLowerCase() : "";
+    } catch {}
+  }
+  if (!email) email = await verifyAccessIdentity(request, env);
+  return email && allowlist.includes(email) ? email : null;
+}
+
+async function requireAdmin(ctx, env, request) {
+  const actor = await adminIdentity(ctx, env, request);
   return typeof actor === "string" ? actor : null;
 }
 
 function adminJson(request, value, status = 200) { return jsonResponse(request, value, status, { "Cache-Control": "no-store" }); }
 
 async function adminApi(request, env, ctx, url) {
-  const actor = await requireAdmin(ctx, env);
+  const actor = await requireAdmin(ctx, env, request);
   if (!actor) return problem(request, 401, "Admin access required", "This operator endpoint requires a valid Cloudflare Access identity on the IARC admin path.");
   if (request.method === "GET" && url.pathname === "/admin/api/status") {
     const setting = await env.RELAY_DB.prepare("SELECT setting_value, updated_at, updated_by, reason FROM relay_admin_settings WHERE setting_key = 'writes_open'").first();
@@ -1717,7 +1771,7 @@ async function handleRequest(request, env, ctx) {
     }
     if (url.pathname === "/admin" || url.pathname === "/admin/") {
       if (request.method !== "GET" && request.method !== "HEAD") return problem(request, 405, "Method not allowed", "The admin console is read-only on GET and HEAD.", { Allow: "GET, HEAD" });
-      const actor = await requireAdmin(ctx, env);
+      const actor = await requireAdmin(ctx, env, request);
       if (!actor) return problem(request, 401, "Admin access required", "This private page requires a valid Cloudflare Access identity and an explicit IARC admin allowlist.");
       return textResponse(request, adminPage(), 200, "text/html; charset=utf-8", { "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'", "X-Robots-Tag": "noindex, nofollow, noarchive" });
     }

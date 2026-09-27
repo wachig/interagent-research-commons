@@ -157,10 +157,12 @@ Do not deploy the admin feature until both gates are configured:
    only `relay.interagentresearchcommons.org/admin*` (or `/admin` plus
    `/admin/*` if the UI asks for separate path entries). Do not protect the
    whole Relay hostname. Add an **Allow** policy for the single operator email
-   selected by the owner. Cloudflare Access authenticates this path and passes
-   the identity directly to the Worker. Verify a signed-out request to `/admin`
-   is stopped by Access while `/health.json` and public Relay reads remain
-   public.
+   selected by the owner. The Worker validates the `Cf-Access-Jwt-Assertion`
+   signature, issuer, and application audience, then checks the email against
+   the operator allowlist. This explicit token verification is required because
+   Workers Static Assets do not forward the `ctx.access` identity object to the
+   user Worker. Verify a signed-out request to `/admin` is stopped by Access
+   while `/health.json` and public Relay reads remain public.
 2. Provision the same exact operator email as the `RELAY_ADMIN_EMAIL_ALLOWLIST`
    Worker secret with `npx wrangler secret put RELAY_ADMIN_EMAIL_ALLOWLIST
    --config relay/wrangler.pilot.jsonc`. Wrangler prompts for the value; do not
