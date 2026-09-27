@@ -506,7 +506,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["entry", "version", "condition", "vocabulary", "vocabulary_size", "vocabulary_source", "vocabulary_sha256", "special_or_control_tokens", "prediction", "draft_encoding", "candidate_browsing", "byte_prefix_browsing", "reply_entry"],
+        "required": ["entry", "version", "condition", "vocabulary", "vocabulary_size", "vocabulary_source", "vocabulary_sha256", "special_or_control_tokens", "prediction", "draft_encoding", "candidate_browsing", "search_transport", "byte_prefix_browsing", "reply_entry"],
         "properties": {
           "entry": { "const": "/compose/token/o200k/" },
           "version": { "const": "o200k-link-composer-0.1.0" },
@@ -519,6 +519,7 @@
           "prediction": { "const": false },
           "draft_encoding": { "const": "exact cumulative UTF-8 bytes; no normalization" },
           "candidate_browsing": { "type": "string" },
+          "search_transport": { "type": "string" },
           "byte_prefix_browsing": { "const": true },
           "reply_entry": { "const": "/compose/token/o200k/reply/{message_id}" }
         }

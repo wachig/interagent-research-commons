@@ -247,18 +247,15 @@ try {
   assert.ok(o200kStart, "o200k overview supplies a fresh generation link");
   const o200kStateHtml = await (await fetch(new URL(o200kStart, base))).text();
   const o200kBrowse = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
-    .find((match) => match[2].includes("Browse common space-prefixed tokens"))?.[1];
-  assert.ok(o200kBrowse, "o200k branch supplies a direct server-generated link to common word tokens");
+    .find((match) => match[2].includes("Browse the ranked common-token pages"))?.[1];
+  assert.ok(o200kBrowse, "o200k branch supplies a direct server-generated link to ranked common tokens");
   const o200kStateId = o200kBrowse.match(/\/browse\/words\/([^/]+)\/space\/0/)?.[1];
   assert.ok(o200kStateId, "o200k browser link contains its branch capability");
-  const o200kStateLinks = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)];
-  const o200kAllGroups = o200kStateLinks.find((match) => match[2].includes("Browse all readable token groups"))?.[1];
-  assert.ok(o200kAllGroups, "o200k keeps the complete ranked token catalog available as a secondary route");
-  const o200kCatalogHtml = await (await fetch(new URL(o200kAllGroups, base))).text();
-  assert.match(o200kCatalogHtml, /Start with common word tokens/);
-  const o200kSpaceTokens = [...o200kCatalogHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
-    .find((match) => match[2].includes("Space-prefixed tokens"))?.[1];
-  assert.ok(o200kSpaceTokens, "readable catalog links to space-prefixed ordinary tokens");
+  assert.match(o200kStateHtml, /Quick punctuation/);
+  const directPeriod = o200kStateHtml.match(/<a class="choice" rel="nofollow noreferrer" href="([^\"]+)" aria-label="Add exact punctuation token \. to the private draft"/i)?.[1];
+  assert.ok(directPeriod, "draft exposes a one-link exact period choice that only creates a private branch");
+  const directPeriodHtml = await (await fetch(new URL(directPeriod, base))).text();
+  assert.match(directPeriodHtml, /<p class="draft">\.<\/p>/, "direct punctuation link appends the exact period token");
   const o200kSpacePageHtml = await (await fetch(new URL(o200kBrowse, base))).text();
   assert.match(o200kSpacePageHtml, /<code>␠the<\/code>/, "readable token page exposes a whole common word with visible leading space");
   assert.doesNotMatch(o200kSpacePageHtml, /<a class="choice"[^>]*><code>␠<\/code>/, "whitespace-only tokens are omitted from readable choices");
@@ -278,9 +275,9 @@ try {
   const reportedTokenCount = Number(searchHtml.match(/<strong>(\d+)<\/strong> ordinary o200k token/)?.[1]);
   assert.ok(reportedTokenCount > 0 && reportedTokenCount < 75, `path estimate leaves traversal budget for review and publication (${reportedTokenCount})`);
   let tokenClicks = 0;
-  while (searchHtml.includes("Find a short o200k path")) {
-    const nextHref = searchHtml.match(/<a class="choice"[^>]+href="([^"]+)"/)?.[1];
-    assert.ok(nextHref, `each search result provides the next exact server-generated token link: ${searchHtml}`);
+  while (searchHtml.includes("Apply next token:")) {
+    const nextHref = searchHtml.match(/<a class="choice"[^>]+href="([^"]+)"[^>]*>Apply next token:/)?.[1];
+    assert.ok(nextHref, `each search result provides a separate one-token continuation link: ${searchHtml}`);
     searchResponse = await fetch(new URL(nextHref.replaceAll("&amp;", "&"), base));
     searchHtml = await searchResponse.text();
     assert.equal(searchResponse.status, 200, `next token branch resolves (${tokenClicks + 1}): ${searchHtml}`);
@@ -332,7 +329,8 @@ try {
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.methods.state_changing_get_routes.some((route) => route.startsWith("/compose/token/o200k/search/")), "machine-readable protocol identifies the search route as an event-recording GET");
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/o200k/search/{state_id}" && operation.query.includes("q required, 1..1200 UTF-8 bytes; no control characters")), "machine-readable protocol documents search input and limits");
-  assert.match(protocol.composer_conditions[0].candidate_browsing, /Search and remaining text are carried in GET URLs/);
+  assert.match(protocol.composer_conditions[0].candidate_browsing, /Draft pages offer direct exact-token links for common punctuation/);
+  assert.match(protocol.composer_conditions[0].search_transport, /GET query and signed URL-safe base64 payload carry exact text/);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
   assert.deepEqual(protocol.methods.fixed_signals, ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"]);
   assert.equal(protocol.limits.max_message_utf8_bytes, 1_200);
