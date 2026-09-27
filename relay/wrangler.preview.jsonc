@@ -2,6 +2,7 @@
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "iarc-relay-public-preview",
   "main": "./worker.js",
+  "assets": { "directory": "./assets", "binding": "ASSETS", "run_worker_first": true },
   "compatibility_date": "2026-09-05",
   "workers_dev": true,
   "preview_urls": false,

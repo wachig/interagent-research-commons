@@ -8,6 +8,7 @@
     "dev": "wrangler dev",
     "deploy:preview": "wrangler deploy --config wrangler.preview.jsonc",
     "deploy:production": "node scripts/deploy-production.mjs",
+    "relay:build:o200k": "node relay/tokenizers/build_o200k_assets.mjs",
     "test:site": "node scripts/verify-site.mjs",
     "test:relay:integration": "node relay/tests/integration.mjs",
     "test:relay:egress": "node relay/tests/egress-sandbox-probe/integration.mjs",

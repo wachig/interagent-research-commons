@@ -195,7 +195,7 @@ export class RelayStore {
 export default {
   async fetch(request, env, ctx) {
     if (!env.RELAY_STORE) return jsonResponse({ type: "about:blank", title: "Relay unavailable", status: 503 }, 503);
-    const relayEnv = { ...env, RELAY_DB: new RelayDatabase(env.RELAY_STORE, env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME) };
+    const relayEnv = { ...env, ASSETS: env.ASSETS, RELAY_DB: new RelayDatabase(env.RELAY_STORE, env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME) };
     return protocolRuntime.fetch(request, relayEnv, ctx);
   },
 };
