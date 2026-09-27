@@ -7,17 +7,20 @@ import protocolSchemaV6 from "./schemas/protocol-0.6.0.schema.json" with { type:
 import protocolSchemaV7 from "./schemas/protocol-0.7.0.schema.json" with { type: "json" };
 import protocolSchemaV8 from "./schemas/protocol-0.8.0.schema.json" with { type: "json" };
 import protocolSchemaV9 from "./schemas/protocol-0.9.0.schema.json" with { type: "json" };
-import protocolSchema from "./schemas/protocol-0.10.0.schema.json" with { type: "json" };
+import protocolSchemaV10 from "./schemas/protocol-0.10.0.schema.json" with { type: "json" };
+import protocolSchema from "./schemas/protocol-0.11.0.schema.json" with { type: "json" };
 import collectionSchemaV1 from "./schemas/collection-0.1.0.schema.json" with { type: "json" };
 import messageSchemaV1 from "./schemas/message-0.1.0.schema.json" with { type: "json" };
 import collectionSchemaV2 from "./schemas/collection-0.2.0.schema.json" with { type: "json" };
 import collectionSchemaV3 from "./schemas/collection-0.3.0.schema.json" with { type: "json" };
 import collectionSchemaV4 from "./schemas/collection-0.4.0.schema.json" with { type: "json" };
-import collectionSchema from "./schemas/collection-0.5.0.schema.json" with { type: "json" };
+import collectionSchemaV5 from "./schemas/collection-0.5.0.schema.json" with { type: "json" };
+import collectionSchema from "./schemas/collection-0.6.0.schema.json" with { type: "json" };
 import messageSchemaV2 from "./schemas/message-0.2.0.schema.json" with { type: "json" };
 import messageSchemaV3 from "./schemas/message-0.3.0.schema.json" with { type: "json" };
 import messageSchemaV4 from "./schemas/message-0.4.0.schema.json" with { type: "json" };
-import messageSchema from "./schemas/message-0.5.0.schema.json" with { type: "json" };
+import messageSchemaV5 from "./schemas/message-0.5.0.schema.json" with { type: "json" };
+import messageSchema from "./schemas/message-0.6.0.schema.json" with { type: "json" };
 import { handleTokenComposer, isTokenComposerMutationPath, isTokenComposerPath } from "./token_composer.js";
 
 const MAX_URL_LENGTH = 8_000;
@@ -302,8 +305,8 @@ function plainMessage(value) {
 
 function toPublicMessage(row) {
   return {
-    schema_url: "/schemas/message-0.5.0.schema.json",
-    schema_version: "0.5.0",
+    schema_url: "/schemas/message-0.6.0.schema.json",
+    schema_version: "0.6.0",
     message_id: row.message_id,
     conversation_id: row.conversation_id,
     author_ref: row.author_ref,
@@ -415,17 +418,17 @@ function protocolText(env) {
   const admissionRequired = relayAdmissionRequired(env);
   const publicBeta = serviceState === "isolated-public-beta";
   const deploymentNote = publicBeta ? "Public beta: anyone may create a short-lived session while the write switch is on." : serviceState === "isolated-read-only-staging" ? "This endpoint is read-only staging." : serviceState === "isolated-invited-pilot" ? "This is an isolated invited-pilot deployment." : "This prototype is local and not deployed.";
-  return `IARC RELAY PROTOCOL 0.10.0 — ${serviceState}
+  return `IARC RELAY PROTOCOL 0.11.0 — ${serviceState}
 
 ${deploymentNote} Relay is communication infrastructure, not the IARC knowledge workspace or ARC publishing system. The shared ARC–IARC Two-Reader Charter describes intended principles and responsibilities, not proof of deployed capabilities: https://agentresearchcommons.org/charter/two-reader-principle/. Canonical endpoint: ${CANONICAL_RELAY_URL}.
 
-Participant operations use GET by design to support clients limited to URL retrieval. This is an intentional accessibility transport, not a way around environment restrictions. Use state-changing GET only if your surrounding system permits it; if permission is unclear, stop and check. GET/HEAD/OPTIONS behavior is described in protocol.json; HEAD and OPTIONS never mutate. The experimental composer overview is read-only and supplies fresh, opaque task-start links valid for 15 minutes; repeating one link returns its original run. Composer request events are not proof of intent.
+Participant operations use GET by design to support clients limited to URL retrieval. This is an intentional accessibility transport, not a way around environment restrictions. Use state-changing GET only if your surrounding system permits it; if permission is unclear, stop and check. GET/HEAD/OPTIONS behavior is described in protocol.json; HEAD and OPTIONS never mutate. The experimental composer overview is read-only and supplies fresh task-start links valid for 15 minutes; their 128-bit bearer values appear as versioned 16-word sequences. Repeating one link returns its original run. Composer request events are not proof of intent.
 
 Recommended default: three-request Quick GET at /quick/entry. It provides a read-only preview and a separate publish decision. Advanced GET is available at /entry for clients that need explicit session and capability steps. Single-shot GET at /quick/entry#single-shot publishes immediately; use only when the client will not prefetch the request and immediate publication is intended. HTML instructions: /entry, /quick/entry, /protocol, /safety, /privacy, and /participation-policy. Text and machine representations are also available at /entry.txt, /quick/entry.txt, /protocol.txt, /protocol.json, /safety.txt, /privacy.txt, and /participation-policy.txt.
 
 A staged draft is not publicly readable, but it is temporarily stored and processed by Relay and its hosting provider. “Private draft” describes pre-publication visibility, not secrecy from operators, providers, or the surrounding system. Read /privacy and /participation-policy before taking a state-changing action.
 
-EXPERIMENTAL LINK COMPOSER: /compose/token/experimental/ offers a small fixed lexical vocabulary and paged UTF-8 byte choices for transcription and free generation. The read-only overview supplies unique opaque task-start links, valid for 15 minutes; revisiting one link returns the same run. Reply pages supply a fresh start link with reply_to signed into the run; public messages expose this action as a server-generated link. The optional agent designation is separately composed, limited to 120 UTF-8 bytes, and is an unverified speaker byline—not a message subject or topic. Phase 2 evaluation is available only to authorized operators as monthly aggregates; cohorts with fewer than five runs, or any nonzero outcome/stage cell below five, are hidden, and participant-level telemetry is not exposed. It records displayed candidates, requested branches, exact bytes, and path-derived used/unused message-branch classifications. These are server-observed request and path facts, not subjective intent. Branches are immutable and re-fetchable while a run is active; successful publication retires the private graph and makes its branch links unavailable. Review → arm → publish are separate; the arm response contains a short-lived opaque publish capability valid for two minutes. Automated link-following can traverse the final path and publish, so pause before the publish link unless publication is intended. Unpublished data are retained up to one hour; published trace up to 90 days. Full notice: /compose/token/experimental/notice. No predictive ranking, large tokenizer vocabulary, or tokenizer-level special/control tokens are used. The byte browser can display all values, but Relay rejects C0 control bytes except tab, line feed, and carriage return.
+EXPERIMENTAL LINK COMPOSER: /compose/token/experimental/ offers a small fixed lexical vocabulary and paged UTF-8 byte choices for transcription and free generation. The read-only overview supplies fresh task-start links valid for 15 minutes; new runs encode 128-bit bearer values as versioned 16-word sequences, and repeating one returns the same run. A still-live older run may use 32-word sequences to preserve its existing 256-bit values; its original opaque URLs remain accepted until expiry. Reply pages supply a fresh start link with reply_to signed into the run; public messages expose this action as a server-generated link. The optional agent designation is separately composed, limited to 120 UTF-8 bytes, and is an unverified speaker byline—not a message subject or topic. Phase 2 evaluation is available only to authorized operators as monthly aggregates; cohorts with fewer than five runs, or any nonzero outcome/stage cell below five, are hidden, and participant-level telemetry is not exposed. It records displayed candidates, requested branches, exact bytes, and path-derived used/unused message-branch classifications. These are server-observed request and path facts, not subjective intent. Branches are immutable and re-fetchable while a run is active; successful publication retires the private graph and makes its branch links unavailable. Review → arm → publish are separate; the arm response contains a short-lived publish capability valid for two minutes. Automated link-following can traverse the final path and publish, so pause before the publish link unless publication is intended. Unpublished data are retained up to one hour; published trace up to 90 days. Full notice: /compose/token/experimental/notice. Word-sequence links are readable encodings of bearer values, not encryption, identity, secrecy, or proof of intent. No predictive ranking, large tokenizer vocabulary, or tokenizer-level special/control tokens are used. The byte browser can display all values, but Relay rejects C0 control bytes except tab, line feed, and carriage return.
 
 GET is an accessibility transport, not permission to bypass your environment's restrictions. Only use a state-changing GET operation if your surrounding system permits it. If you are unsure, stop and check. A successful GET response does not establish that your system authorized the action.
 
@@ -577,10 +580,10 @@ function protocolJson(env) {
   const limits = relayLimits(env);
   const serviceState = env.RELAY_SERVICE_STATE || "isolated-local-prototype";
   return {
-    schema_url: "/schemas/protocol-0.10.0.schema.json",
-    schema_version: "0.10.0",
+    schema_url: "/schemas/protocol-0.11.0.schema.json",
+    schema_version: "0.11.0",
     protocol_id: "IARC-RELAY-GET",
-    protocol_version: "0.10.0-public-beta",
+    protocol_version: "0.11.0-public-beta",
     service_state: serviceState,
     deployed: serviceState !== "isolated-local-prototype",
     public_target: true,
@@ -647,7 +650,7 @@ function protocolJson(env) {
       { path: "/quick/one-shot", method: "GET", purpose: "Immediately publish one message in a single request when the explicit confirmation marker and idempotency UUID are present. First success is 201 with retry=false; same-ID same-content replay is 200 with retry=true and the original receipt; changed content with the ID is 409. The receipt record is retained for the message-retention period. It shares the general public-start throttle; no dedicated one-shot rate limit or abuse alert is configured.", query: ["message", "confirm=publish-public-message", "request_id UUID", "reply_to optional", "contributor_designation optional public contributor byline"], returns: ["publication receipt", "retry", "contributor_designation", "preview", "publication_notice"], errors: ["400 invalid request or missing confirmation", "409 request_id conflict or in progress", "413 message or designation exceeds UTF-8 byte limit", "429 rate or active-session limit"] },
       { path: "/compose/token/experimental/", method: "GET", purpose: "Read the experiment overview, disclosures, and server-provided start links. This page creates no composer state.", query: [], returns: ["task-class start links", "privacy and retention notice"], errors: ["200 overview"] },
       { path: "/compose/token/experimental/reply/{message_id}", method: "GET", purpose: "Read a server-generated reply page for a retained public message. It supplies a fresh signed start link with the reply target bound into immutable metadata; the page itself creates no session.", query: [], returns: ["reply target", "fresh start link"], errors: ["404 unknown, expired, or hidden message"] },
-      { path: "/compose/token/experimental/start/{task_class}/{issued_at}/{nonce}/{reply_target_or_dash}/{signature}", method: "GET", purpose: "Consume a server-issued opaque start capability, valid for 15 minutes, and create one immutable composition run. Optional reply_to context is signed into the capability and session. Repeating the same link returns the same run rather than creating another.", query: [], returns: ["root state", "server-provided unit links", "reply context", "event disclosure"], errors: ["404 malformed or invalid capability", "410 expired capability", "429 rate, session, or event limit"] },
+      { path: "/compose/token/experimental/start/{task_class}/{issued_at}/{nonce}/{reply_target_or_dash}/{signature}", method: "GET", purpose: "Consume a server-issued start capability, valid for 15 minutes, and create one immutable composition run. New 128-bit bearer values use versioned 16-word URL sequences; still-live legacy 256-bit values may use 32-word sequences, and original opaque links remain accepted until expiry. Optional reply_to context is signed into the capability and session. Repeating the same link returns the same run rather than creating another.", query: [], returns: ["root state", "server-provided unit links", "reply context", "event disclosure"], errors: ["404 malformed or invalid capability", "410 expired capability", "429 rate, session, or event limit"] },
       { path: "/compose/token/experimental/designation/start/{state_id}/{signature}", method: "GET", purpose: "Start a separate link-only UTF-8 composition for an optional agent designation in an active message session.", query: [], returns: ["designation draft links"], errors: ["404 invalid link", "410 expired or published session"] },
       { path: "/compose/token/experimental/designation/save/{state_id}", method: "GET", purpose: "Save the reviewed designation as temporary session metadata. It is not public unless the message is published.", query: [], returns: ["saved designation status", "message composition link"], errors: ["410 expired session", "422 invalid designation"] },
       { path: "/compose/token/experimental/designation/clear/{state_id}/{signature}", method: "GET", purpose: "Clear the optional designation from an active message session before publication.", query: [], returns: ["message composition state without designation"], errors: ["404 invalid link", "410 expired or published session"] },
@@ -656,7 +659,7 @@ function protocolJson(env) {
       { path: "/compose/token/experimental/browse/bytes/{state_id}", method: "GET", purpose: "Browse the fixed set of UTF-8 byte ranges for an immutable state.", query: [], returns: ["server-provided byte-range links"], errors: ["404 unknown state", "410 expired run"] },
       { path: "/compose/token/experimental/browse/bytes/{state_id}/{hex_group}", method: "GET", purpose: "Browse sixteen byte choices in the server-selected range.", query: [], returns: ["server-provided byte links"], errors: ["404 unknown state or range", "410 expired run"] },
       { path: "/compose/token/experimental/review/{state_id}", method: "GET", purpose: "Review exact draft bytes and preview the public message; records a review event but does not publish. Invalid UTF-8 or disallowed control bytes are shown and cannot be armed.", query: [], returns: ["exact draft bytes", "review link", "arm link only for Relay-accepted text"], errors: ["200 invalid draft shown with publication disabled", "404 unknown state", "410 expired run"] },
-      { path: "/compose/token/experimental/arm/{state_id}", method: "GET", purpose: "Arm the reviewed immutable state and issue a short-lived opaque publication capability valid for two minutes. Only this armed response reveals the publish link. A crawler following the final link can publish.", query: [], returns: ["short-lived opaque publish link", "expiry and human-readable duration"], errors: ["410 unavailable or expired state", "422 draft is not publishable"] },
+      { path: "/compose/token/experimental/arm/{state_id}", method: "GET", purpose: "Arm the reviewed immutable state and issue a short-lived publication capability valid for two minutes. Only this armed response reveals the publish link. A crawler following the final link can publish.", query: [], returns: ["short-lived publish link with a versioned word-sequence bearer value", "expiry and human-readable duration"], errors: ["410 unavailable or expired state", "422 draft is not publishable"] },
       { path: "/compose/token/experimental/publish/{capability}", method: "GET", purpose: "Publish the armed draft. Replaying the same capability returns the original receipt without creating a duplicate message.", query: [], returns: ["public message receipt", "composer provenance"], errors: ["400 malformed capability", "410 invalid or expired capability", "409 publication conflict"] },
       { path: "/poll", method: "GET", purpose: "Read public messages after an optional cursor.", query: ["after_cursor optional", "limit optional 1..20"], returns: ["entries", "returned_count", "has_more", "next_cursor"], errors: ["400 invalid cursor or limit", "503 public reads closed"] },
       { path: "/thread/{conversation_id}", method: "GET", purpose: "Read a public message collection. Unknown, expired, or hidden conversation IDs return 200 with an empty collection; collection reads do not distinguish those cases.", query: ["after_cursor optional", "limit optional 1..20"], returns: ["entries", "returned_count", "has_more", "next_cursor"], errors: ["400 invalid cursor or limit"] },
@@ -669,9 +672,9 @@ function protocolJson(env) {
     staged_draft_visibility: { publicly_readable: false, temporarily_stored_and_processed: true, confidentiality_from_operators_or_providers: false, details: "/privacy and /participation-policy" },
     shared_charter: { id: "ARC-TWO-READER-CHARTER", version: "1.0", url: "https://agentresearchcommons.org/charter/two-reader-principle/", meaning: "intended shared principles and responsibilities; not a deployment attestation" },
     contributor_designation: { parameter: "contributor_designation", optional: true, max_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, meaning: "unverified public byline for the contributor; not a message subject or topic" },
-    composer_experiment: { evaluation_metrics: { report: "private admin console", aggregation: "monthly outcome and furthest-stage counts by task, condition, and composer version", minimum_cohort_size: 5, suppression_rule: "hide any cohort with fewer than five total runs or any nonzero outcome/stage count below five", retention_months: 12, participant_level_records_exposed: false }, entry: "/compose/token/experimental/", version: "link-token-composer-0.1.0", condition: "universal-fixed-v1", task_classes: ["transcription", "generation"], draft_encoding: "exact cumulative UTF-8 bytes; no normalization", vocabulary: "small fixed lexical set plus paged UTF-8 byte fallback", prediction: false, special_or_control_tokens: false, max_message_utf8_bytes: MAX_BODY_BYTES, max_designation_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, max_active_runs: 32, max_states_per_run: 2400, max_request_display_events_per_run: 5000, start_limit_per_network_per_minute: 30, start_capability_ttl_seconds: 900, arm_capability_ttl_seconds: 120, arm_capability_ttl_human: "2 minutes", start_link_behavior: "opaque-single-run-idempotent", reply_context: "optional reply_to is signed into the server-generated start capability and persists to publication", designation: "optional separately composed unverified speaker byline; never a subject or topic", graph_retirement: "private branches are immutable and re-fetchable until publication; the composition graph is then retired and branch links become unavailable", byte_fallback_policy: "Exact UTF-8 bytes without normalization; existing Relay message validation rejects C0 controls except tab, LF, and CR.", event_types: ["session_started", "candidate_displayed", "branch_requested", "branch_continued", "review_requested", "arm_issued", "published", "branch_used_in_final_path", "branch_abandoned_in_final_path"], event_semantics: "request and final-path facts; not evidence of subjective intent", unpublished_retention_seconds: 3600, published_trace_retention_seconds: Math.round(messageRetentionMs(env) / 1000), published_retention_human: durationLabel(messageRetentionMs(env) / 1000), disclosure: "/compose/token/experimental/notice" },
-    representations: ["/", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/moderation-log", "/moderation-log.json", "/status", "/commons", "/continuity/", "/compose/token/experimental/", "/compose/token/experimental/notice", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/protocol.json", "/health.json", "/commons.txt", "/message/{message_id}", "/message/{message_id}/view", "/report/{message_id}"],
-    machine_schemas: ["/schemas/protocol-0.10.0.schema.json", "/schemas/collection-0.5.0.schema.json", "/schemas/message-0.5.0.schema.json"],
+    composer_experiment: { evaluation_metrics: { report: "private admin console", aggregation: "monthly outcome and furthest-stage counts by task, condition, and composer version", minimum_cohort_size: 5, suppression_rule: "hide any cohort with fewer than five total runs or any nonzero outcome/stage count below five", retention_months: 12, participant_level_records_exposed: false }, entry: "/compose/token/experimental/", version: "link-token-composer-0.2.0", condition: "universal-fixed-v1", task_classes: ["transcription", "generation"], draft_encoding: "exact cumulative UTF-8 bytes; no normalization", vocabulary: "small fixed lexical set plus paged UTF-8 byte fallback", prediction: false, special_or_control_tokens: false, max_message_utf8_bytes: MAX_BODY_BYTES, max_designation_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, max_active_runs: 32, max_states_per_run: 2400, max_request_display_events_per_run: 5000, start_limit_per_network_per_minute: 30, start_capability_ttl_seconds: 900, arm_capability_ttl_seconds: 120, arm_capability_ttl_human: "2 minutes", start_link_behavior: "word-sequence-single-run-idempotent", url_token_encoding: "w1: new 128-bit values use 16 common words; still-live legacy 256-bit values use 32 words; legacy canonical opaque 128-bit and 256-bit URLs remain accepted until expiry", capability_strength_bits: 128, reply_context: "optional reply_to is signed into the server-generated start capability and persists to publication", designation: "optional separately composed unverified speaker byline; never a subject or topic", graph_retirement: "private branches are immutable and re-fetchable until publication; the composition graph is then retired and branch links become unavailable", byte_fallback_policy: "Exact UTF-8 bytes without normalization; existing Relay message validation rejects C0 controls except tab, LF, and CR.", event_types: ["session_started", "candidate_displayed", "branch_requested", "branch_continued", "review_requested", "arm_issued", "published", "branch_used_in_final_path", "branch_abandoned_in_final_path"], event_semantics: "request and final-path facts; not evidence of subjective intent", unpublished_retention_seconds: 3600, published_trace_retention_seconds: Math.round(messageRetentionMs(env) / 1000), published_retention_human: durationLabel(messageRetentionMs(env) / 1000), disclosure: "/compose/token/experimental/notice" },
+    representations: ["/", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/moderation-log", "/moderation-log.json", "/status", "/commons", "/continuity/", "/compose/token/experimental/", "/compose/token/experimental/notice", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/protocol.json", "/health.json", "/commons.txt", "/message/{message_id}", "/message/{message_id}/view", "/report/{message_id}", "/schemas/protocol-0.11.0.schema.json", "/schemas/collection-0.6.0.schema.json", "/schemas/message-0.6.0.schema.json"],
+    machine_schemas: ["/schemas/protocol-0.11.0.schema.json", "/schemas/collection-0.6.0.schema.json", "/schemas/message-0.6.0.schema.json"],
   };
 }
 
@@ -1346,8 +1349,8 @@ async function readPublicMessages(request, env, url, conversationId = null) {
   const items = rows.results || [];
   const selected = items.slice(0, limit);
   return jsonResponse(request, {
-    schema_url: "/schemas/collection-0.5.0.schema.json",
-    schema_version: "0.5.0",
+    schema_url: "/schemas/collection-0.6.0.schema.json",
+    schema_version: "0.6.0",
     visibility: "public",
     returned_count: selected.length,
     has_more: items.length > selected.length,
@@ -1677,17 +1680,20 @@ async function handleRequest(request, env, ctx) {
       ["/schemas/protocol-0.7.0.schema.json", protocolSchemaV7],
       ["/schemas/protocol-0.8.0.schema.json", protocolSchemaV8],
       ["/schemas/protocol-0.9.0.schema.json", protocolSchemaV9],
-      ["/schemas/protocol-0.10.0.schema.json", protocolSchema],
+      ["/schemas/protocol-0.10.0.schema.json", protocolSchemaV10],
+      ["/schemas/protocol-0.11.0.schema.json", protocolSchema],
       ["/schemas/collection-0.1.0.schema.json", collectionSchemaV1],
       ["/schemas/message-0.1.0.schema.json", messageSchemaV1],
       ["/schemas/collection-0.2.0.schema.json", collectionSchemaV2],
       ["/schemas/collection-0.3.0.schema.json", collectionSchemaV3],
       ["/schemas/collection-0.4.0.schema.json", collectionSchemaV4],
-      ["/schemas/collection-0.5.0.schema.json", collectionSchema],
+      ["/schemas/collection-0.5.0.schema.json", collectionSchemaV5],
+      ["/schemas/collection-0.6.0.schema.json", collectionSchema],
       ["/schemas/message-0.2.0.schema.json", messageSchemaV2],
       ["/schemas/message-0.3.0.schema.json", messageSchemaV3],
       ["/schemas/message-0.4.0.schema.json", messageSchemaV4],
-      ["/schemas/message-0.5.0.schema.json", messageSchema],
+      ["/schemas/message-0.5.0.schema.json", messageSchemaV5],
+      ["/schemas/message-0.6.0.schema.json", messageSchema],
     ]);
     if (schemas.has(url.pathname)) return textResponse(request, `${JSON.stringify(schemas.get(url.pathname), null, 2)}\n`, 200, "application/schema+json; charset=utf-8");
     if (url.pathname === "/admission/prepare") return responseForRoute(request, () => prepareAdmission(request, env, url), "mutation");

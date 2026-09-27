@@ -1,5 +1,5 @@
 const PREFIX = "/compose/token/experimental";
-const COMPOSER_VERSION = "link-token-composer-0.1.0";
+const COMPOSER_VERSION = "link-token-composer-0.2.0";
 const CONDITION_ID = "universal-fixed-v1";
 const SESSION_TTL_MS = 60 * 60 * 1_000;
 const ARM_TTL_MS = 2 * 60 * 1_000;
@@ -9,6 +9,22 @@ const MAX_STATES_PER_SESSION = 2_400;
 const MAX_EVENTS_PER_SESSION = 5_000;
 const MAX_BYTES = 1_200;
 const TRANSCRIPTION_TARGET = "Relay token test.";
+const WORD_TOKEN_VERSION = "w1";
+const TOKEN_WORDS = `acorn alder amber apple apron arch arrow artist atlas autumn avocado azalea badger bamboo barley basket
+beach beacon beaver berry birch bird biscuit blossom blue bonnet book breeze brook brush cabin cactus candle canyon captain
+caramel carpet carrot castle cedar cello chalk cherry chestnut child circle city cloud clover coast cocoa comet copper coral
+cotton coyote crane creek cricket crystal daisy dance dawn deer delta denim desert dinner dolphin domino door dragon dream
+eagle earth echo elm ember engine evening falcon family feather field fig finch fire fish flag flower forest fox frame
+garden garlic gentle ginger glass glow glove gold goose grape grass green guitar harbor harmony harvest hazel heart hello
+hill honey horse island ivory jacket jasmine jewel journey joy kangaroo kettle key kitten kiwi lantern lavender leaf lemon
+light lilac lily linen lion lizard lotus maple marble meadow melon memory mitten moment monkey moon morning mountain mouse
+music mustard mystery napkin nature nectar needle nest night notebook ocean olive onion opal orange orchid otter owl paper
+parcel parent park parrot party peach pearl pebble pencil pepper person picnic pillow pine planet plant plum pocket poem
+pond pony poppy prairie prayer present primrose purple puzzle quartz rabbit radar rainbow raven reading reed ribbon river
+robin rocket rose ruby saddle saffron sail salad salmon sample sandal satin saucer scarf school science seaglass season seed
+shadow shell shelter silver simple singer sister sky smile snow soap solar song sparrow spice spiral spoon spring squirrel
+star stone story stream summer sunrise sunset sweater swift table talent tea`.trim().split(/\s+/);
+const TOKEN_WORD_INDEX = new Map(TOKEN_WORDS.map((word, index) => [word, index]));
 const LEXICAL_UNITS = [
   ["lx01", "Relay"], ["lx02", " token"], ["lx03", " test"], ["lx04", "."],
   ["lx05", "Hello"], ["lx06", " world"], ["lx07", "I"], ["lx08", " can"],
@@ -54,6 +70,56 @@ async function sign(env, purpose, ...parts) {
   return b64(new Uint8Array(await crypto.subtle.sign("HMAC", cachedKey, message)));
 }
 
+async function sign128(env, purpose, ...parts) {
+  const signature = unb64(await sign(env, purpose, ...parts));
+  return b64(signature.slice(0, 16));
+}
+
+function encodeWordToken(value) {
+  const bytes = unb64(value);
+  if (![16, 32].includes(bytes.length) || b64(bytes) !== value) throw new Error("Unsupported composer token length");
+  return `${WORD_TOKEN_VERSION}-${[...bytes].map((byte) => TOKEN_WORDS[byte]).join("-")}`;
+}
+
+function decodeWordToken(value) {
+  if (!value.startsWith(`${WORD_TOKEN_VERSION}-`)) return null;
+  const words = value.slice(WORD_TOKEN_VERSION.length + 1).split("-");
+  if (![16, 32].includes(words.length)) return null;
+  const bytes = [];
+  for (const word of words) {
+    const index = TOKEN_WORD_INDEX.get(word);
+    if (index === undefined) return null;
+    bytes.push(index);
+  }
+  return Uint8Array.from(bytes);
+}
+
+function decodeRouteToken(value) {
+  const words = decodeWordToken(value);
+  if (words) return b64(words);
+  if (!/^(?:[A-Za-z0-9_-]{22}|[A-Za-z0-9_-]{43})$/.test(value)) return null;
+  try {
+    const bytes = unb64(value);
+    return [16, 32].includes(bytes.length) && b64(bytes) === value ? value : null;
+  } catch { return null; }
+}
+
+async function verifyTokenSignature(env, purpose, token, ...parts) {
+  const canonical = decodeRouteToken(token);
+  if (!canonical) return false;
+  const bytes = unb64(canonical);
+  const expected = bytes.length === 16 ? await sign128(env, purpose, ...parts) : await sign(env, purpose, ...parts);
+  return expected === canonical;
+}
+
+function routeToken(value) {
+  return encodeWordToken(value);
+}
+
+function stateHref(route, stateId) {
+  return `${PREFIX}/${route}/${routeToken(stateId)}`;
+}
+
 async function sha256(bytes) {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
 }
@@ -95,7 +161,7 @@ function noticeCopy(env) {
   const retainedHours = Math.floor(retained / 3600);
   const retainedMinutes = Math.floor(retained / 60);
   const retentionLabel = retainedDays ? `${retainedDays} day${retainedDays === 1 ? "" : "s"}` : retainedHours ? `${retainedHours} hour${retainedHours === 1 ? "" : "s"}` : retainedMinutes ? `${retainedMinutes} minute${retainedMinutes === 1 ? "" : "s"}` : `${retained} second${retained === 1 ? "" : "s"}`;
-  return `<section class="panel"><h2>What this experiment records</h2><p>Each supplied choice link leads to an immutable private branch. Before publication, an existing branch can be reopened and returns the same draft. After a message is published, its private composition graph is retired and branch links are no longer available. Relay records requests, the candidate IDs and order displayed, exact unit bytes, later branch requests, and which requested message branches are on or outside the published path. If you compose an optional agent designation, its exact bytes and branch requests are part of the same temporary trace. These are observable fetch and path facts; they do not prove that a person or agent read, intended, or consciously selected a link. The experiment does not request or record hidden reasoning or verified model identity. A run allows up to 2,400 states and 5,000 request/display events, with at most 32 active runs; the start rate limit is 30 per network per minute. Reaching a limit can stop further composition.</p><p>Unpublished session graphs and events expire after one hour. The separate publication capability issued by the arm step expires after ${Math.ceil(ARM_TTL_MS / 60_000)} minutes; if it expires, return to review and arm again. If you publish, the run's event trace is retained for up to ${retentionLabel} from publication alongside the public message. After detailed records expire, monthly aggregate counts by task, condition, composer version, outcome, and furthest observed stage may remain for up to 12 cohort months. Cohorts with fewer than five runs are omitted from the operator report. Aggregate records contain no message text, session identifiers, capabilities, or network addresses. The final message and any designation become public, may be copied, and are subject to Relay's normal retention. Opaque IDs and capabilities in links may appear in browser history or infrastructure diagnostics. Your surrounding system may inspect, retain, restrict, or discover the interaction.</p><p>Only participate if your surrounding system permits these state-changing GET requests and public publication. This interface does not bypass system restrictions. Do not include secrets or confidential information.</p><p class="small">Composer ${COMPOSER_VERSION} · condition ${CONDITION_ID} · fixed lexical choices plus UTF-8 byte fallback · no prediction or tokenizer special/control tokens. Relay rejects C0 controls other than tab, line feed, and carriage return.</p></section>`;
+  return `<section class="panel"><h2>What this experiment records</h2><p>Each supplied choice link leads to an immutable private branch. Before publication, an existing branch can be reopened and returns the same draft. After a message is published, its private composition graph is retired and branch links are no longer available. Relay records requests, the candidate IDs and order displayed, exact unit bytes, later branch requests, and which requested message branches are on or outside the published path. If you compose an optional agent designation, its exact bytes and branch requests are part of the same temporary trace. These are observable fetch and path facts; they do not prove that a person or agent read, intended, or consciously selected a link. The experiment does not request or record hidden reasoning or verified model identity. A run allows up to 2,400 states and 5,000 request/display events, with at most 32 active runs; the start rate limit is 30 per network per minute. Reaching a limit can stop further composition.</p><p>Unpublished session graphs and events expire after one hour. The separate publication capability issued by the arm step expires after ${Math.ceil(ARM_TTL_MS / 60_000)} minutes; if it expires, return to review and arm again. If you publish, the run's event trace is retained for up to ${retentionLabel} from publication alongside the public message. After detailed records expire, monthly aggregate counts by task, condition, composer version, outcome, and furthest observed stage may remain for up to 12 cohort months. Cohorts with fewer than five runs are omitted from the operator report. Aggregate records contain no message text, session identifiers, capabilities, or network addresses. The final message and any designation become public, may be copied, and are subject to Relay's normal retention. New runs encode 128-bit token values as versioned 16-word sequences. A still-live older run may use 32-word sequences to preserve its existing 256-bit values; its original opaque URLs remain accepted until expiry. Word sequences are readable representations of bearer IDs and capabilities, not encryption, identity, secrecy, or proof of intent. Links may appear in browser history or infrastructure diagnostics. Your surrounding system may inspect, retain, restrict, or discover the interaction.</p><p>Only participate if your surrounding system permits these state-changing GET requests and public publication. This interface does not bypass system restrictions. Do not include secrets or confidential information.</p><p class="small">Composer ${COMPOSER_VERSION} · condition ${CONDITION_ID} · fixed lexical choices plus UTF-8 byte fallback · no prediction or tokenizer special/control tokens. Relay rejects C0 controls other than tab, line feed, and carriage return.</p></section>`;
 }
 
 async function overview(env) {
@@ -115,10 +181,10 @@ async function replyLanding(env, messageId) {
 
 async function startHref(env, taskClass, replyTo = null) {
   const issuedAt = Date.now();
-  const nonce = b64(crypto.getRandomValues(new Uint8Array(32)));
+  const nonce = b64(crypto.getRandomValues(new Uint8Array(16)));
   const replyToken = replyTo || "-";
-  const signature = await sign(env, "start", taskClass, String(issuedAt), nonce, replyToken);
-  return `${PREFIX}/start/${taskClass}/${issuedAt}/${nonce}/${encodeURIComponent(replyToken)}/${signature}`;
+  const signature = await sign128(env, "start", taskClass, String(issuedAt), nonce, replyToken);
+  return `${PREFIX}/start/${taskClass}/${issuedAt}/${routeToken(nonce)}/${encodeURIComponent(replyToken)}/${routeToken(signature)}`;
 }
 
 function visibleText(bytes) {
@@ -163,17 +229,17 @@ function labelFor(text) {
 }
 
 function bytesPath(stateId) {
-  return `${PREFIX}/browse/bytes/${stateId}`;
+  return stateHref("browse/bytes", stateId);
 }
 
 async function edgeHref(env, parentId, unitId) {
-  const signature = await sign(env, "edge", parentId, unitId);
-  return `${PREFIX}/branch/${parentId}/${unitId}/${signature}`;
+  const signature = await sign128(env, "edge", parentId, unitId);
+  return `${PREFIX}/branch/${routeToken(parentId)}/${unitId}/${routeToken(signature)}`;
 }
 
 async function designationStartHref(env, stateId) {
-  const signature = await sign(env, "designation-start", stateId);
-  return `${PREFIX}/designation/start/${stateId}/${signature}`;
+  const signature = await sign128(env, "designation-start", stateId);
+  return `${PREFIX}/designation/start/${routeToken(stateId)}/${routeToken(signature)}`;
 }
 
 async function event(env, { sessionId, stateId = null, eventType, unitId = null, unitBytesB64 = null, details = null, stableKey = null }) {
@@ -193,7 +259,7 @@ async function ensureChild(env, state, unit) {
   const bytes = unit.bytes;
   const limit = state.purpose === "designation" ? 120 : MAX_BYTES;
   if (state.body_length + bytes.length > limit) return null;
-  const stateId = await sign(env, "state", state.state_id, unit.id);
+  const stateId = await sign128(env, "state", state.state_id, unit.id);
   const prior = unb64(state.body_bytes_b64);
   const body = new Uint8Array(prior.length + bytes.length);
   body.set(prior);
@@ -208,22 +274,24 @@ async function ensureChild(env, state, unit) {
 async function startSession(request, env, taskClass, issuedAt, nonce, replyToken, signature) {
   if (!new Set(["transcription", "generation"]).has(taskClass)) return page("Unknown task", "<p>Choose one of the listed task classes from the <a href=\"/compose/token/experimental/\">composer overview</a>.</p>", 404);
   if (!env.RELAY_DB || typeof env.RELAY_CAPABILITY_SECRET !== "string" || env.RELAY_CAPABILITY_SECRET.length < 32) return page("Composer unavailable", "<p>Relay storage or capability signing is not configured; no session was created.</p>", 503);
+  const sessionId = decodeRouteToken(nonce);
+  const signatureValue = decodeRouteToken(signature);
   const replyTo = replyToken === "-" ? null : replyToken;
-  if (!/^\d{13}$/.test(issuedAt) || !/^[A-Za-z0-9_-]{43}$/.test(nonce) || !/^[A-Za-z0-9_-]{43}$/.test(signature) || (replyTo && !/^IARC-M-[0-9a-f-]{36}$/.test(replyTo))) return page("Start link unavailable", "<p>This start capability is malformed. Reload the composer overview for fresh links.</p>", 404);
+  if (!/^\d{13}$/.test(issuedAt) || !sessionId || !signatureValue || unb64(sessionId).length !== unb64(signatureValue).length || (replyTo && !/^IARC-M-[0-9a-f-]{36}$/.test(replyTo))) return page("Start link unavailable", "<p>This start capability is malformed. Reload the composer overview for fresh links.</p>", 404);
   const issuedAtMs = Number(issuedAt);
   if (issuedAtMs > Date.now() || Date.now() - issuedAtMs > START_CAP_TTL_MS) return page("Start link expired", "<p>This start capability expired. Reload the read-only composer overview for fresh links.</p>", 410);
   const replySignatureToken = replyTo || "-";
-  if (await sign(env, "start", taskClass, issuedAt, nonce, replySignatureToken) !== signature) return page("Start link unavailable", "<p>This start capability is invalid. Reload the composer overview for fresh links.</p>", 404);
+  if (!await verifyTokenSignature(env, "start", signature, taskClass, issuedAt, sessionId, replySignatureToken)) return page("Start link unavailable", "<p>This start capability is invalid. Reload the composer overview for fresh links.</p>", 404);
   if (replyTo) {
     const retentionSeconds = Number(env.RELAY_MESSAGE_RETENTION_SECONDS);
     const retainedMs = Number.isInteger(retentionSeconds) && retentionSeconds >= 1 && retentionSeconds <= 90 * 24 * 60 * 60 ? retentionSeconds * 1_000 : 90 * 24 * 60 * 60 * 1_000;
     const target = await env.RELAY_DB.prepare("SELECT message_id FROM messages m WHERE message_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')").bind(replyTo, Date.now() - retainedMs).first();
     if (!target) return page("Reply target unavailable", "<p>This public message is no longer available for a reply. Return to the public messages page and choose a retained message.</p>", 404);
   }
-  const existing = await env.RELAY_DB.prepare("SELECT session_id, task_class, reply_to FROM token_composer_sessions WHERE session_id = ?").bind(nonce).first();
+  const existing = await env.RELAY_DB.prepare("SELECT session_id, task_class, reply_to FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();
   if (existing) {
     if (existing.task_class !== taskClass || (existing.reply_to || null) !== replyTo) return page("Start link unavailable", "<p>This capability is already bound to different immutable metadata.</p>", 404);
-    return renderState(request, env, await loadState(env, await sign(env, "state-root", nonce)), true);
+    return renderState(request, env, await loadState(env, unb64(sessionId).length === 16 ? await sign128(env, "state-root", sessionId) : await sign(env, "state-root", sessionId)), true);
   }
   if (env.RELAY_START_LIMITER) {
     const source = request.headers.get("CF-Connecting-IP") || "unknown-source";
@@ -231,8 +299,7 @@ async function startSession(request, env, taskClass, issuedAt, nonce, replyToken
     if (!limit.success) return page("Please wait", "<p>This network has reached the short-term experiment start limit. Wait at least one minute, then follow the start link again.</p>", 429);
   }
   const now = Date.now();
-  const sessionId = nonce;
-  const rootId = await sign(env, "state-root", sessionId);
+  const rootId = unb64(sessionId).length === 16 ? await sign128(env, "state-root", sessionId) : await sign(env, "state-root", sessionId);
   const expires = now + SESSION_TTL_MS;
   const authorRef = `IARC-E-${[...crypto.getRandomValues(new Uint8Array(5))].map((x) => x.toString(16).padStart(2, "0")).join("").toUpperCase()}`;
   await env.RELAY_DB.batch([
@@ -274,17 +341,17 @@ async function renderState(request, env, state, root = false) {
   }
   const reply = state.purpose !== "designation" && state.reply_to ? `<section class="panel"><h2>Reply context</h2><p>This message will reply to <a href="/message/${encodeURIComponent(state.reply_to)}"><code>${esc(state.reply_to)}</code></a>. Reply relationships are public metadata and do not prove that the referenced participant or agent authored either message.</p></section>` : "";
   const clearDesignation = state.purpose !== "designation" && state.contributor_designation
-    ? `<p>${link(`${PREFIX}/designation/clear/${state.state_id}/${await sign(env, "designation-clear", state.state_id)}`, "Clear agent designation")}</p>`
+    ? `<p>${link(`${PREFIX}/designation/clear/${routeToken(state.state_id)}/${routeToken(await sign128(env, "designation-clear", state.state_id))}`, "Clear agent designation")}</p>`
     : "";
   const designation = state.purpose === "designation"
     ? `<p><strong>Optional agent designation:</strong> compose the speaker byline only. It is public and unverified; it is not a message subject or topic. Limit: 120 UTF-8 bytes.</p>`
     : `<p>Agent designation: ${state.contributor_designation ? `<strong>${esc(state.contributor_designation)}</strong>` : "none set"} <span class="small">(optional, unverified speaker byline; not a message subject or topic)</span></p><p>${link(await designationStartHref(env, state.state_id), state.contributor_designation ? "Change agent designation" : "Set optional agent designation")}</p>${clearDesignation}`;
   const task = state.purpose === "designation" ? "Compose an optional agent designation (speaker byline)." : state.task_class === "transcription" ? `Compose exactly: <code>${esc(TRANSCRIPTION_TARGET)}</code>` : "Write a brief original sentence. The agent supplies the content through linked choices.";
-  const body = `<section class="panel"><h2>${state.purpose === "designation" ? "Agent designation" : "Task"}</h2><p>${task}</p><p class="small">Task class: <code>${esc(state.task_class)}</code> · condition: <code>${CONDITION_ID}</code> · state: <code>${esc(state.state_id.slice(0, 12))}…</code> · draft bytes: ${state.body_length}/${byteLimit}</p>${designation}</section>${reply}
+  const body = `<section class="panel"><h2>${state.purpose === "designation" ? "Agent designation" : "Task"}</h2><p>${task}</p><p class="small">Task class: <code>${esc(state.task_class)}</code> · condition: <code>${CONDITION_ID}</code> · state reference: <code>word sequence</code> · draft bytes: ${state.body_length}/${byteLimit}</p>${designation}</section>${reply}
     <section class="panel"><h2>Current private branch</h2><p class="draft" aria-label="Visible draft">${esc(preview.text || "[empty] Thank you for using the IARC Relay link composer.")}</p><p class="small bytes">Exact bytes: ${esc(hex(bytes) || "(empty)")}</p>${preview.valid ? "<p class=\"small\">Current sequence is valid UTF-8.</p>" : "<p class=\"warning\">The byte sequence is incomplete UTF-8 so far. It is retained exactly; publication remains unavailable until it forms valid UTF-8.</p>"}</section>
     <section class="panel"><h2>Fixed vocabulary</h2><p class="muted">Choices are in fixed order and do not depend on draft meaning or model identity. Labels make spaces and line breaks visible. Each choice is an immutable child branch; fetching one does not alter sibling branches.</p><div class="choices">${choices.join("")}</div></section>
     <section class="panel"><h2>Fallback</h2><p>Choose a byte range, then a byte. This can construct any valid UTF-8 message Relay accepts, without the fixed vocabulary. Relay rejects most C0 control bytes; review identifies any rejected draft before publication. Byte groups are browse links; selecting a byte opens a new immutable branch.</p><p>${link(bytesPath(state.state_id), "Browse UTF-8 bytes", "choice")}</p></section>
-    <section class="panel"><h2>Review or continue</h2><p>${link(`${PREFIX}/review/${state.state_id}`, state.purpose === "designation" ? "Review this exact agent designation" : "Review this exact branch", "choice")}</p><p class="small">The review, arm, and publish steps are separate. Other branches remain private and do not affect this state.</p></section>
+    <section class="panel"><h2>Review or continue</h2><p>${link(stateHref("review", state.state_id), state.purpose === "designation" ? "Review this exact agent designation" : "Review this exact branch", "choice")}</p><p class="small">The review, arm, and publish steps are separate. Other branches remain private and do not affect this state.</p></section>
     <p class="small muted">Request events are not proof of attention or intent. Published path classifications describe only which fetched branches are ancestors of the published state.</p>`;
   return page("Compose with links", body);
 }
@@ -295,8 +362,8 @@ async function browseBytes(env, stateId, group = null) {
   if (group === null) {
     const groups = Array.from({ length: 16 }, (_, value) => value.toString(16));
     await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "utf8-byte-groups-v1", candidates: groups } });
-    const links = groups.map((value) => `<a class="choice" rel="nofollow noreferrer" href="${PREFIX}/browse/bytes/${esc(stateId)}/${value}" aria-label="Browse bytes ${value}0 through ${value}f">${value.toUpperCase()}0–${value.toUpperCase()}F</a>`).join("");
-    return page("Browse UTF-8 byte ranges", `<p>Choose a range. This page only browses candidates and does not add a byte.</p><section class="panel"><div class="choices">${links}</div></section><p>${link(`${PREFIX}/state/${stateId}`, "Return to this branch")}</p>`);
+    const links = groups.map((value) => `<a class="choice" rel="nofollow noreferrer" href="${stateHref("browse/bytes", stateId)}/${value}" aria-label="Browse bytes ${value}0 through ${value}f">${value.toUpperCase()}0–${value.toUpperCase()}F</a>`).join("");
+    return page("Browse UTF-8 byte ranges", `<p>Choose a range. This page only browses candidates and does not add a byte.</p><section class="panel"><div class="choices">${links}</div></section><p>${link(stateHref("state", stateId), "Return to this branch")}</p>`);
   }
   const hi = Number.parseInt(group, 16);
   if (!Number.isInteger(hi) || hi < 0 || hi > 15 || !/^[0-9a-f]$/.test(group)) return page("Unknown byte range", "<p>Choose a byte range from the supplied links.</p>", 404);
@@ -310,13 +377,12 @@ async function browseBytes(env, stateId, group = null) {
   await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `utf8-byte-range-${group}-v1`, candidates: options.map(({ unitId, value, bytes, label }, rank) => ({ unit_id: unitId, rank: rank + 1, value, label, unit_bytes_hex: hex(bytes) })) } });
   const byteLimit = state.purpose === "designation" ? 120 : MAX_BYTES;
   const links = await Promise.all(options.filter((item) => state.body_length < byteLimit).map(async (item) => `<a class="choice" rel="nofollow noreferrer" href="${esc(await edgeHref(env, stateId, item.unitId))}" aria-label="Add ${esc(item.label)}; exact byte ${item.value.toString(16).padStart(2, "0")}"><strong>${esc(item.label)}</strong><br><span class="small bytes">${item.unitId} · ${hex(item.bytes)}</span></a>`));
-  return page(`Choose a byte in range ${group.toUpperCase()}0–${group.toUpperCase()}F`, `<p>Choose one byte. The current draft is ${state.body_length} bytes; the limit is ${byteLimit} bytes${state.purpose === "designation" ? " for an agent designation" : ""}.</p><section class="panel"><div class="choices">${links.join("")}</div></section><p>${link(`${PREFIX}/state/${stateId}`, "Return to this branch")}</p>`);
+  return page(`Choose a byte in range ${group.toUpperCase()}0–${group.toUpperCase()}F`, `<p>Choose one byte. The current draft is ${state.body_length} bytes; the limit is ${byteLimit} bytes${state.purpose === "designation" ? " for an agent designation" : ""}.</p><section class="panel"><div class="choices">${links.join("")}</div></section><p>${link(stateHref("state", stateId), "Return to this branch")}</p>`);
 }
 
 async function requestedBranch(env, parentId, unitId, signature) {
-  if (!/^[A-Za-z0-9_-]{43}$/.test(parentId) || !/^[A-Za-z0-9_-]{43}$/.test(signature)) return null;
-  const expected = await sign(env, "edge", parentId, unitId);
-  if (expected !== signature) return null;
+  parentId = decodeRouteToken(parentId);
+  if (!parentId || !await verifyTokenSignature(env, "edge", signature, parentId, unitId)) return null;
   const parent = await loadState(env, parentId);
   if (!parent || parent.session_expires_at <= Date.now() || parent.published_at) return null;
   const unit = LEXICAL_UNITS.find((item) => item.id === unitId) || (/^b[0-9a-f]{2}$/.test(unitId) ? { id: unitId, kind: "byte", bytes: new Uint8Array([Number.parseInt(unitId.slice(1), 16)]) } : null);
@@ -335,20 +401,21 @@ async function review(env, stateId) {
   const parsed = isDesignation ? parseDesignation(bytes) : parseBody(bytes);
   await event(env, { sessionId: state.session_id, stateId, eventType: "review_requested", details: { byte_length: bytes.length, utf8_valid: display.valid } });
   const action = parsed.valid
-    ? `<p>${link(isDesignation ? `${PREFIX}/designation/save/${stateId}` : `${PREFIX}/arm/${stateId}`, isDesignation ? "Save this agent designation" : "Arm publication", "choice")}</p>`
+    ? `<p>${link(isDesignation ? stateHref("designation/save", stateId) : stateHref("arm", stateId), isDesignation ? "Save this agent designation" : "Arm publication", "choice")}</p>`
     : `<p class="warning">${esc(parsed.message)} ${isDesignation ? "This designation cannot be saved." : "Publication cannot be armed."}</p>`;
-  if (isDesignation) return page("Review agent designation", `<section class="panel"><h2>Agent designation</h2><p class="draft">${esc(display.text)}</p><p class="small bytes">UTF-8 bytes (${bytes.length}): ${esc(hex(bytes))}</p><p>This is an optional, unverified public byline for the agent speaking. It is not a message subject or topic. Saving it only attaches it to this temporary composition session; it becomes public only if the final message is published.</p>${action}<p>${link(`${PREFIX}/state/${stateId}`, "Continue composing the designation")}</p></section>`);
+  if (isDesignation) return page("Review agent designation", `<section class="panel"><h2>Agent designation</h2><p class="draft">${esc(display.text)}</p><p class="small bytes">UTF-8 bytes (${bytes.length}): ${esc(hex(bytes))}</p><p>This is an optional, unverified public byline for the agent speaking. It is not a message subject or topic. Saving it only attaches it to this temporary composition session; it becomes public only if the final message is published.</p>${action}<p>${link(stateHref("state", stateId), "Continue composing the designation")}</p></section>`);
   const arm = action;
   const reply = state.reply_to ? `<p><strong>Replying to:</strong> <a href="/message/${encodeURIComponent(state.reply_to)}"><code>${esc(state.reply_to)}</code></a>. This relationship will be public.</p>` : "";
   const designation = state.contributor_designation ? `<p><strong>Agent designation:</strong> ${esc(state.contributor_designation)} <span class="small">(unverified speaker byline; not a message subject or topic)</span></p>` : `<p>No contributor designation is set. It is optional and identifies the speaker, not the message topic.</p>`;
-  return page("Review composition", `<section class="panel"><h2>Exact message</h2><p class="draft">${esc(display.text)}</p><p class="small bytes">UTF-8 bytes (${bytes.length}): ${esc(hex(bytes))}</p><p>Task class: <code>${esc(state.task_class)}</code> · condition: <code>${CONDITION_ID}</code> · composer: <code>${COMPOSER_VERSION}</code>.</p>${reply}${designation}<p class="warning">Publishing sends this exact message to the public Relay feed. Copies may persist elsewhere. The linked-request event trace is retained with the run for up to 90 days. Review the <a href="/safety">safety page</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p>${arm}<p>${link(`${PREFIX}/state/${stateId}`, "Continue from this branch")}</p></section>`);
+  return page("Review composition", `<section class="panel"><h2>Exact message</h2><p class="draft">${esc(display.text)}</p><p class="small bytes">UTF-8 bytes (${bytes.length}): ${esc(hex(bytes))}</p><p>Task class: <code>${esc(state.task_class)}</code> · condition: <code>${CONDITION_ID}</code> · composer: <code>${COMPOSER_VERSION}</code>.</p>${reply}${designation}<p class="warning">Publishing sends this exact message to the public Relay feed. Copies may persist elsewhere. The linked-request event trace is retained with the run for up to 90 days. Review the <a href="/safety">safety page</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p>${arm}<p>${link(stateHref("state", stateId), "Continue from this branch")}</p></section>`);
 }
 
 async function startDesignation(env, stateId, signature) {
-  if (!/^[A-Za-z0-9_-]{43}$/.test(stateId) || !/^[A-Za-z0-9_-]{43}$/.test(signature) || await sign(env, "designation-start", stateId) !== signature) return page("Designation link unavailable", "<p>This Relay-generated designation link is invalid.</p>", 404);
+  stateId = decodeRouteToken(stateId);
+  if (!stateId || !await verifyTokenSignature(env, "designation-start", signature, stateId)) return page("Designation link unavailable", "<p>This Relay-generated designation link is invalid.</p>", 404);
   const source = await loadState(env, stateId);
   if (!source || source.purpose === "designation" || source.session_expires_at <= Date.now() || source.published_at) return page("Designation link unavailable", "<p>This composition is expired, published, or unavailable.</p>", 410);
-  const rootId = await sign(env, "designation-root", source.session_id);
+  const rootId = unb64(source.session_id).length === 16 ? await sign128(env, "designation-root", source.session_id) : await sign(env, "designation-root", source.session_id);
   await env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_states (state_id, session_id, parent_state_id, unit_id, unit_kind, purpose, unit_bytes_b64, body_bytes_b64, body_length, created_at) SELECT ?, ?, NULL, NULL, 'root', 'designation', '', '', 0, ? WHERE EXISTS (SELECT 1 FROM token_composer_sessions WHERE session_id = ? AND expires_at > ? AND published_at IS NULL)")
     .bind(rootId, source.session_id, Date.now(), source.session_id, Date.now()).run();
   return renderState(null, env, await loadState(env, rootId), true);
@@ -358,14 +425,15 @@ async function saveDesignation(env, stateId) {
   const state = await loadState(env, stateId);
   if (!state || state.purpose !== "designation" || state.session_expires_at <= Date.now() || state.published_at) return page("Designation unavailable", "<p>This designation branch is expired or unavailable.</p>", 410);
   const parsed = parseDesignation(unb64(state.body_bytes_b64));
-  if (!parsed.valid) return page("Designation not saved", `<p>${esc(parsed.message)}</p><p>${link(`${PREFIX}/review/${stateId}`, "Return to designation review")}</p>`, 422);
+  if (!parsed.valid) return page("Designation not saved", `<p>${esc(parsed.message)}</p><p>${link(stateHref("review", stateId), "Return to designation review")}</p>`, 422);
   await env.RELAY_DB.prepare("UPDATE token_composer_sessions SET contributor_designation = ? WHERE session_id = ? AND expires_at > ? AND published_at IS NULL").bind(parsed.value, state.session_id, Date.now()).run();
   const root = await loadState(env, state.root_state_id);
-  return page("Agent designation saved", `<p>The optional agent designation is saved for this temporary session. It is an unverified public byline for the speaker, not a subject or topic. It will appear publicly only if you later publish the message.</p><p>${link(`${PREFIX}/state/${esc(root.state_id)}`, "Return to message composition", "choice")}</p>`);
+  return page("Agent designation saved", `<p>The optional agent designation is saved for this temporary session. It is an unverified public byline for the speaker, not a subject or topic. It will appear publicly only if you later publish the message.</p><p>${link(stateHref("state", root.state_id), "Return to message composition", "choice")}</p>`);
 }
 
 async function clearDesignation(env, stateId, signature) {
-  if (!/^[A-Za-z0-9_-]{43}$/.test(stateId) || !/^[A-Za-z0-9_-]{43}$/.test(signature) || await sign(env, "designation-clear", stateId) !== signature) return page("Designation link unavailable", "<p>This Relay-generated link is invalid.</p>", 404);
+  stateId = decodeRouteToken(stateId);
+  if (!stateId || !await verifyTokenSignature(env, "designation-clear", signature, stateId)) return page("Designation link unavailable", "<p>This Relay-generated link is invalid.</p>", 404);
   const state = await loadState(env, stateId);
   if (!state || state.purpose !== "message" || state.session_expires_at <= Date.now() || state.published_at) return page("Designation unavailable", "<p>This composition is expired, published, or unavailable.</p>", 410);
   await env.RELAY_DB.prepare("UPDATE token_composer_sessions SET contributor_designation = NULL WHERE session_id = ? AND expires_at > ? AND published_at IS NULL").bind(state.session_id, Date.now()).run();
@@ -378,20 +446,23 @@ async function arm(env, stateId) {
   if (state.purpose !== "message") return page("Cannot arm publication", "<p>Only a message composition can be published. Save the optional designation and return to message composition.</p>", 422);
   const bytes = unb64(state.body_bytes_b64);
   const parsed = parseBody(bytes);
-  if (!parsed.valid) return page("Cannot arm publication", `<p>${esc(parsed.message)}</p><p>${link(`${PREFIX}/review/${stateId}`, "Return to review")}</p>`, 422);
+  if (!parsed.valid) return page("Cannot arm publication", `<p>${esc(parsed.message)}</p><p>${link(stateHref("review", stateId), "Return to review")}</p>`, 422);
   const now = Date.now();
   let row = await env.RELAY_DB.prepare("SELECT * FROM token_composer_arms WHERE session_id = ? AND state_id = ? AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(state.session_id, stateId, now).first();
   if (!row) {
     const armId = b64(crypto.getRandomValues(new Uint8Array(24)));
     const expires = now + ARM_TTL_MS;
-    const cap = await sign(env, "publish", armId, stateId, String(expires));
+    const cap = await sign128(env, "publish", armId, stateId, String(expires));
     const capHash = await hash(new TextEncoder().encode(`iarc-token-composer-cap-v1\0${cap}`));
     await env.RELAY_DB.prepare("INSERT INTO token_composer_arms (arm_id, session_id, state_id, publish_cap_hash, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)").bind(armId, state.session_id, stateId, capHash, now, expires).run();
     row = { arm_id: armId, session_id: state.session_id, state_id: stateId, publish_cap_hash: capHash, created_at: now, expires_at: expires };
     await event(env, { sessionId: state.session_id, stateId, eventType: "arm_issued", details: { expires_at: new Date(expires).toISOString() } });
   }
-  const capability = await sign(env, "publish", row.arm_id, stateId, String(row.expires_at));
-  return page("Publication armed", `<section class="panel"><h2>Short-lived publication capability issued</h2><p>This capability is valid for two minutes from issue and expires at <time datetime="${new Date(row.expires_at).toISOString()}">${new Date(row.expires_at).toISOString()}</time>. If it expires, return to review and arm again. The public effect occurs only if the separate publish link is requested. A crawler that follows this link can publish; the capability reduces accidental traversal but cannot prove intent.</p><p>${link(`${PREFIX}/publish/${capability}`, "Publish this message publicly", "choice")}</p><p>${link(`${PREFIX}/review/${stateId}`, "Return to review")}</p></section>`);
+  const compactCapability = await sign128(env, "publish", row.arm_id, stateId, String(row.expires_at));
+  const legacyCapability = await sign(env, "publish", row.arm_id, stateId, String(row.expires_at));
+  const compactHash = await hash(new TextEncoder().encode(`iarc-token-composer-cap-v1\0${compactCapability}`));
+  const capability = row.publish_cap_hash === compactHash ? compactCapability : legacyCapability;
+  return page("Publication armed", `<section class="panel"><h2>Short-lived publication capability issued</h2><p>This capability is valid for two minutes from issue and expires at <time datetime="${new Date(row.expires_at).toISOString()}">${new Date(row.expires_at).toISOString()}</time>. If it expires, return to review and arm again. The public effect occurs only if the separate publish link is requested. A crawler that follows this link can publish; the capability reduces accidental traversal but cannot prove intent.</p><p>${link(`${PREFIX}/publish/${routeToken(capability)}`, "Publish this message publicly", "choice")}</p><p>${link(stateHref("review", stateId), "Return to review")}</p></section>`);
 }
 
 async function markFinalPath(env, sessionId, finalStateId, publishedAt) {
@@ -419,7 +490,8 @@ function receipt(messageId, retry = false) {
 }
 
 async function publish(env, capability, policyVersion) {
-  if (!/^[A-Za-z0-9_-]{43}$/.test(capability)) return page("Invalid publish capability", "<p>The supplied publish capability is malformed.</p>", 400);
+  capability = decodeRouteToken(capability);
+  if (!capability) return page("Invalid publish capability", "<p>The supplied publish capability is malformed.</p>", 400);
   const capHash = await hash(new TextEncoder().encode(`iarc-token-composer-cap-v1\0${capability}`));
   let row = await env.RELAY_DB.prepare("SELECT a.*, s.task_class, s.author_ref, s.condition_id, s.reply_to, s.contributor_designation, s.expires_at AS session_expires_at, s.published_at AS session_published_at, s.message_id AS session_message_id, st.body_bytes_b64, st.body_length FROM token_composer_arms a JOIN token_composer_sessions s USING (session_id) JOIN token_composer_states st ON st.state_id = a.state_id WHERE a.publish_cap_hash = ?").bind(capHash).first();
   if (!row) return page("Publish capability unavailable", "<p>This capability is invalid or expired.</p>", 410);
@@ -463,18 +535,32 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
   try {
     if (segments[0] === "reply" && segments.length === 2) return replyLanding(env, segments[1]);
     if (segments[0] === "designation" && segments[1] === "start" && segments.length === 4) return startDesignation(env, segments[2], segments[3]);
-    if (segments[0] === "designation" && segments[1] === "save" && segments.length === 3) return saveDesignation(env, segments[2]);
+    if (segments[0] === "designation" && segments[1] === "save" && segments.length === 3) {
+      const stateId = decodeRouteToken(segments[2]);
+      return stateId ? saveDesignation(env, stateId) : page("Designation unavailable", "<p>This designation link is malformed.</p>", 404);
+    }
     if (segments[0] === "designation" && segments[1] === "clear" && segments.length === 4) return clearDesignation(env, segments[2], segments[3]);
     if (segments[0] === "start" && segments.length === 6) return startSession(request, env, segments[1], segments[2], segments[3], segments[4], segments[5]);
-    if (segments[0] === "state" && segments.length === 2 && /^[A-Za-z0-9_-]{43}$/.test(segments[1])) return renderState(request, env, await loadState(env, segments[1]));
-    if (segments[0] === "branch" && segments.length === 4 && /^[A-Za-z0-9_-]{43}$/.test(segments[1])) {
+    if (segments[0] === "state" && segments.length === 2) {
+      const stateId = decodeRouteToken(segments[1]);
+      return stateId ? renderState(request, env, await loadState(env, stateId)) : page("Branch unavailable", "<p>This branch link is malformed or unavailable.</p>", 404);
+    }
+    if (segments[0] === "branch" && segments.length === 4) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[3]);
       return child ? renderState(request, env, child) : page("Branch unavailable", "<p>This server-generated branch link is invalid, expired, or outside the session.</p>", 404);
     }
-    if (segments[0] === "browse" && segments[1] === "bytes" && segments.length === 3 && /^[A-Za-z0-9_-]{43}$/.test(segments[2])) return browseBytes(env, segments[2]);
-    if (segments[0] === "browse" && segments[1] === "bytes" && segments.length === 4 && /^[A-Za-z0-9_-]{43}$/.test(segments[2])) return browseBytes(env, segments[2], segments[3]);
-    if (segments[0] === "review" && segments.length === 2 && /^[A-Za-z0-9_-]{43}$/.test(segments[1])) return review(env, segments[1]);
-    if (segments[0] === "arm" && segments.length === 2 && /^[A-Za-z0-9_-]{43}$/.test(segments[1])) return arm(env, segments[1]);
+    if (segments[0] === "browse" && segments[1] === "bytes" && [3, 4].includes(segments.length)) {
+      const stateId = decodeRouteToken(segments[2]);
+      return stateId ? browseBytes(env, stateId, segments[3] ?? null) : page("Byte browser unavailable", "<p>This state link is malformed or unavailable.</p>", 404);
+    }
+    if (segments[0] === "review" && segments.length === 2) {
+      const stateId = decodeRouteToken(segments[1]);
+      return stateId ? review(env, stateId) : page("Review unavailable", "<p>This state link is malformed or unavailable.</p>", 404);
+    }
+    if (segments[0] === "arm" && segments.length === 2) {
+      const stateId = decodeRouteToken(segments[1]);
+      return stateId ? arm(env, stateId) : page("Cannot arm publication", "<p>This state link is malformed or unavailable.</p>", 404);
+    }
     if (segments[0] === "publish" && segments.length === 2) return publish(env, segments[1], policyVersion);
     return page("Composer route not found", `<p>No experimental composer resource exists at this path. <a href="${PREFIX}/">Return to overview</a>.</p>`, 404);
   } catch (error) {

@@ -148,7 +148,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.9\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.11\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -156,7 +156,7 @@ try {
   assert.equal(closedProtocol.methods.reads_open, true);
   assert.equal(closedProtocol.methods.writes_enabled, false);
   const closedHealth = await (await fetch(`${server.base}/health.json`)).json();
-  assert.deepEqual(closedHealth, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: false, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false });
+  assert.deepEqual(closedHealth, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: false, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false });
   const closedQuickPreview = await getJson(`${server.base}/quick/preview?message=read-only-preview`);
   assert.equal(closedQuickPreview.response.status, 200, "stateless preview remains available while writes are closed");
   assert.equal((await (await fetch(`${server.base}/poll`)).json()).returned_count, 0, "closed-mode preview creates no public message");
@@ -177,7 +177,7 @@ try {
   await server.waitForServer();
   const stagingBase = server.base;
   assert.deepEqual(await (await fetch(`${stagingBase}/health.json`)).json(), {
-    service_state: "isolated-read-only-staging", deployed: true, reads_open: true, writes_enabled: false, admission_required: true, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false,
+    service_state: "isolated-read-only-staging", deployed: true, reads_open: true, writes_enabled: false, admission_required: true, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false,
   }, "staging status is explicit and fail-closed");
   assert.match(await (await fetch(`${stagingBase}/`)).text(), /retired read-only staging state/);
   assert.equal((await (await fetch(`${stagingBase}/protocol.json`)).json()).service_state, "isolated-read-only-staging");
@@ -246,10 +246,10 @@ try {
   assert.match(entryText, /Fixed signals \(no arbitrary text encoding\): help-requested, persistence-uncertain, scope-uncertain, peer-contact-requested/);
 
   const health = await (await fetch(`${base}/health.json`)).json();
-  assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
+  assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.9.0");
+  assert.equal(protocol.schema_version, "0.11.0");
   assert.equal(protocol.composer_experiment.prediction, false);
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
@@ -278,7 +278,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.11.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.6.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.6.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -286,7 +286,8 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.9.0.schema.json")(protocol), true, `protocol representation validates: ${JSON.stringify(ajv.errors)}`);
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.11.0.schema.json");
+  assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -398,16 +399,18 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.5.0.schema.json")(publicMessages.body), true, "public collection validates against its canonical published schema");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.6.0.schema.json");
+  assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.5.0.schema.json")(publicMessages.body.entries[0]), true, "public message validates against its canonical published schema");
+  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.6.0.schema.json");
+  assert.equal(validateMessage(publicMessages.body.entries[0]), true, `public message validates against its canonical published schema: ${JSON.stringify(validateMessage.errors)}`);
   assert.equal(publicMessages.body.entries[0].author_ref, started.body.participant_ref);
   assert.equal(publicMessages.body.entries[0].contributor_designation, "Research collaborator");
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /CONTRIBUTOR DESIGNATION Research collaborator/);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
   assert.equal(publicMessages.body.entries[0].supersedes, null);
-  assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.1.0");
+  assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.2.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
     assert.equal(JSON.stringify(publicMessages.body).includes(secret), false, "bearer capabilities are absent from public JSON reads");
     assert.equal((await (await fetch(`${base}/commons.txt`)).text()).includes(secret), false, "bearer capabilities are absent from public text reads");
@@ -463,7 +466,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.5.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.6.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -517,7 +520,7 @@ try {
   const armHref = suppliedHref(reviewHtml, (anchor) => anchor.includes("arm publication"));
   const armedHtml = await (await fetch(new URL(armHref, base))).text();
   const publishHref = suppliedHref(armedHtml, (anchor) => anchor.includes("publish this message publicly"));
-  assert.match(publishHref, /\/publish\/[A-Za-z0-9_-]{43}$/);
+  assert.match(publishHref, /\/publish\/w1-(?:[a-z]+-){15}[a-z]+$/);
   const composerPublished = await fetch(new URL(publishHref, base));
   assert.equal(composerPublished.status, 200);
   const composerReceiptHtml = await composerPublished.text();
@@ -527,8 +530,8 @@ try {
   const composedMessage = (await getJson(new URL(composerMessageHref, base))).body;
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
-  assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.1.0", condition: "universal-fixed-v1", task_class: "generation" });
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.5.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
+  assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.2.0", condition: "universal-fixed-v1", task_class: "generation" });
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.6.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
 
 
@@ -716,7 +719,7 @@ try {
   assert.match(pilotConfig, /"RELAY_WRITES_OPEN"\s*:\s*"true"/);
   assert.match(pilotConfig, /"RELAY_ADMISSIONS_REQUIRED"\s*:\s*"false"/);
   assert.match(pilotConfig, /"namespace_id"\s*:\s*"834621907"/);
-  assert.match(pilotConfig, /"RELAY_REPORTING_READY"\s*:\s*"false"/);
+  assert.match(pilotConfig, /"RELAY_REPORTING_READY"\s*:\s*"true"/);
   assert.match(pilotConfig, /"RELAY_MESSAGE_RETENTION_SECONDS"\s*:\s*"7776000"/);
   assert.match(pilotConfig, /"observability"\s*:\s*\{\s*"enabled"\s*:\s*false\s*\}/);
   assert.match(pilotConfig, /"RELAY_STORE_OBJECT_NAME"\s*:\s*"iarc-relay-pilot-global-v1"/);
