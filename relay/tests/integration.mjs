@@ -148,7 +148,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.13\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.14\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -210,13 +210,14 @@ try {
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
       const html = await crawlResponse.text();
-      if (!crawlPath.startsWith("/compose/token/experimental")) {
+      const isComposerPage = crawlPath.startsWith("/compose/token/experimental") || crawlPath.startsWith("/compose/token/o200k");
+      if (!isComposerPage) {
         for (const mutationPath of ["/start", "/prepare", "/stage", "/publish", "/quick/stage", "/quick/one-shot"]) {
           assert.equal(html.includes(`href="${mutationPath}`), false, `HTML page contains no active mutation link: ${crawlPath}`);
         }
       } else {
         assert.equal(html.includes("/publish/"), false, "composer overview never exposes a publication capability");
-        if (crawlPath === "/compose/token/experimental/") continue;
+        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/") continue;
       }
       for (const linkPart of html.split('href="').slice(1)) {
         const href = linkPart.split('"')[0];
