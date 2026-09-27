@@ -236,6 +236,28 @@ try {
   assert.doesNotMatch(composerOverviewHtml, /\/publish\/[A-Za-z0-9_-]{43}/, "overview does not expose a publish capability");
   assert.equal((await fetch(`${base}/compose/token/experimental/notice`)).status, 200);
   assert.equal((await fetch(`${base}/compose/token/experimental/?ignored=1`)).status, 400, "composer rejects caller-added query parameters");
+  const o200kOverviewResponse = await fetch(`${base}/compose/token/o200k/`);
+  const o200kOverviewHtml = await o200kOverviewResponse.text();
+  assert.equal(o200kOverviewResponse.status, 200);
+  assert.match(o200kOverviewHtml, /199,998<\/strong> ordinary entries/);
+  assert.match(o200kOverviewHtml, /Harmony message markers, special tokens, and all other control tokens/);
+  assert.equal((await fetch(`${base}/compose/token/o200k/notice`)).status, 200);
+  const o200kStart = [...o200kOverviewHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
+    .find((match) => match[2].includes("Begin free-generation task"))?.[1];
+  assert.ok(o200kStart, "o200k overview supplies a fresh generation link");
+  const o200kStateHtml = await (await fetch(new URL(o200kStart, base))).text();
+  const o200kBrowse = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
+    .find((match) => match[2].includes("Browse o200k tokens"))?.[1];
+  assert.ok(o200kBrowse, "o200k branch supplies a server-generated vocabulary browser link");
+  const o200kStateId = o200kBrowse.match(/\/browse\/o200k\/([^/]+)/)?.[1];
+  assert.ok(o200kStateId, "o200k browser link contains its branch capability");
+  let o200kTokenChoices = "";
+  for (let length = 2; length <= 10; length += 2) {
+    const response = await fetch(`${base}/compose/token/o200k/browse/o200k/${o200kStateId}/${"48656c6c6f".slice(0, length)}`);
+    assert.equal(response.status, 200, "o200k static prefix index resolves through the Worker asset binding");
+    o200kTokenChoices = await response.text();
+  }
+  assert.match(o200kTokenChoices, />Hello</, "o200k prefix browser offers the exact Hello token");
 
   const entry = await fetch(`${base}/entry.txt`);
   const entryText = await entry.text();
@@ -251,6 +273,8 @@ try {
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
   assert.equal(protocol.schema_version, "0.14.0");
+  assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
+  assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));

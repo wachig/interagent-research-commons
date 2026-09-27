@@ -14,6 +14,7 @@ const fixedReadPaths = new Set([
   "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/brief.txt",
   "/status", "/moderation-log", "/continuity/",
   "/compose/token/experimental/", "/compose/token/experimental/notice",
+  "/compose/token/o200k/", "/compose/token/o200k/notice",
 ]);
 function isSafeReadPath(pathname) {
   return fixedReadPaths.has(pathname)
@@ -50,7 +51,7 @@ while (queue.length) {
     }
   }
 }
-for (const path of ["/health.json", "/brief.txt", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/continuity/", "/commons", "/commons.txt", "/compose/token/experimental/", "/compose/token/experimental/notice"]) {
+for (const path of ["/health.json", "/brief.txt", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/continuity/", "/commons", "/commons.txt", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice"]) {
   const response = await request(path);
   assert.equal(response.status, 200, `${path} is public-read accessible`);
   if (["/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status"].includes(path)) assert.match(response.headers.get("content-type"), /text\/html/);
@@ -94,6 +95,9 @@ assert.match(await (await request("/safety.txt")).text(), /report .* POST form/i
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, true);
 assert.equal(protocol.schema_version, "0.14.0");
+assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
+assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
+assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
 assert.equal(protocol.composer_experiment.version, "link-token-composer-0.3.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
 const schemaNames = [["protocol", "0.14.0"], ["collection", "0.8.0"], ["message", "0.8.0"]];
