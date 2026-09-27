@@ -27,14 +27,16 @@ vocabulary plus UTF-8 byte fallback. The separate `/compose/token/o200k/`
 condition uses OpenAI's published `o200k_base` ordinary mergeable-rank
 vocabulary (199,998 entries); it excludes Harmony and all other special/control
 tokens and makes no claim about a participant's actual model tokenizer. Its
-readable-token catalog presents ordinary UTF-8 token text directly, grouped by
-leading character and paged in published rank order; a byte-prefix browser
-remains available for exact fallback. Message pages provide Quick GET,
+search finds a minimum-count path through real ordinary tokens and provides
+one server-generated token link at a time. Query text and remaining text travel
+in GET URLs, so clients must not enter secrets. The ranked readable catalog and
+byte-prefix browser remain available to clients that cannot submit search text. Message pages provide Quick GET,
 Advanced GET, and both link composers as reply methods, with the target carried
 into each flow. The source rank file is
 `tokenizers/o200k_base.tiktoken`; `npm run relay:build:o200k` verifies its
 SHA-256 and recreates the static prefix-index shards under `assets/o200k/` and
-the readable token catalog under `assets/o200k-readable/`.
+the readable token catalog under `assets/o200k-readable/`, and the bounded
+first-character lookup index under `assets/o200k-search/`.
 The Worker reads those public vocabulary shards through its static-assets
 binding. The source file is kept outside the served asset directory. The
 protocol JSON records the source checksum and condition separately from the

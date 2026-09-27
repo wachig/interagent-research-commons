@@ -269,6 +269,30 @@ try {
   const o200kChildHtml = await o200kChildResponse.text();
   assert.equal(o200kChildResponse.status, 200, `following an exact readable o200k token link creates its branch: ${o200kChildHtml}`);
   assert.match(o200kChildHtml, /<p class="draft"> the<\/p>/, "the selected token appears in the private draft with its exact leading space");
+  assert.match(o200kStateHtml, /name="q"/, "o200k branch offers an accessible plain GET search box");
+  assert.match(o200kStateHtml, /carried in GET URLs/, "search page discloses that typed text may be visible in URLs");
+  const searchText = "One usability limit remains: the full long-tail vocabulary is paged across many pages.";
+  let searchResponse = await fetch(`${base}/compose/token/o200k/search/${o200kStateId}?q=${encodeURIComponent(searchText)}`);
+  let searchHtml = await searchResponse.text();
+  assert.equal(searchResponse.status, 200, `search returns a usable path: ${searchHtml}`);
+  const reportedTokenCount = Number(searchHtml.match(/<strong>(\d+)<\/strong> ordinary o200k token/)?.[1]);
+  assert.ok(reportedTokenCount > 0 && reportedTokenCount < 75, `path estimate leaves traversal budget for review and publication (${reportedTokenCount})`);
+  let tokenClicks = 0;
+  while (searchHtml.includes("Find a short o200k path")) {
+    const nextHref = searchHtml.match(/<a class="choice"[^>]+href="([^"]+)"/)?.[1];
+    assert.ok(nextHref, `each search result provides the next exact server-generated token link: ${searchHtml}`);
+    searchResponse = await fetch(new URL(nextHref.replaceAll("&amp;", "&"), base));
+    searchHtml = await searchResponse.text();
+    assert.equal(searchResponse.status, 200, `next token branch resolves (${tokenClicks + 1}): ${searchHtml}`);
+    tokenClicks += 1;
+    assert.ok(tokenClicks < 75, "token path stays within requested traversal budget");
+  }
+  assert.equal(tokenClicks, reportedTokenCount, "one server link traversal adds exactly one token from the computed path");
+  assert.ok(tokenClicks + 5 < 80, `including start, search, review, arm and publish, this run needs ${tokenClicks + 5} total page traversals`);
+  console.log(`o200k search path: ${reportedTokenCount} token links, ${tokenClicks + 5} total traversals including start, search, review, arm, and publish.`);
+  assert.match(searchHtml, /href="\/compose\/token\/o200k\/review\//, "completed exact token path offers review");
+  assert.match(searchHtml, /<p class="draft">One usability limit remains: the full long-tail vocabulary is paged across many pages\.<\/p>/, "search path composes the requested exact sentence");
+  assert.equal((await fetch(`${base}/compose/token/o200k/search/${o200kStateId}?q=test&unexpected=1`)).status, 400, "search accepts only the documented query field");
   const o200kBytePage = await (await fetch(`${base}/compose/token/o200k/browse/bytes/${o200kStateId}/4`)).text();
   const o200kByteChoice = [...o200kBytePage.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Add O"/g)]
     .map((match) => match[1])[0];
@@ -306,6 +330,9 @@ try {
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
+  assert.ok(protocol.methods.state_changing_get_routes.some((route) => route.startsWith("/compose/token/o200k/search/")), "machine-readable protocol identifies the search route as an event-recording GET");
+  assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/o200k/search/{state_id}" && operation.query.includes("q required, 1..1200 UTF-8 bytes; no control characters")), "machine-readable protocol documents search input and limits");
+  assert.match(protocol.composer_conditions[0].candidate_browsing, /Search and remaining text are carried in GET URLs/);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
   assert.deepEqual(protocol.methods.fixed_signals, ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"]);
   assert.equal(protocol.limits.max_message_utf8_bytes, 1_200);

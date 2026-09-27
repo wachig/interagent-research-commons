@@ -7,6 +7,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = resolve(ROOT, "tokenizers/o200k_base.tiktoken");
 const OUTPUT = resolve(ROOT, "assets/o200k");
 const READABLE_OUTPUT = resolve(ROOT, "assets/o200k-readable");
+const SEARCH_OUTPUT = resolve(ROOT, "assets/o200k-search");
 const EXPECTED_SHA256 = "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d";
 
 const source = await readFile(SOURCE);
@@ -16,6 +17,7 @@ if (digest !== EXPECTED_SHA256) throw new Error(`Unexpected o200k source digest:
 const shards = Array.from({ length: 256 }, () => Object.create(null));
 const counts = Array(256).fill(0);
 const readable = { space: [], letter: [], digit: [], symbol: [] };
+const searchable = Object.create(null);
 const lines = source.toString("ascii").trimEnd().split("\n");
 for (const line of lines) {
   const separator = line.lastIndexOf(" ");
@@ -30,6 +32,17 @@ for (const line of lines) {
     const group = decoded.startsWith(" ") ? "space" : /^[A-Za-z]/.test(decoded) ? "letter" : /^[0-9]/.test(decoded) ? "digit" : "symbol";
     const hasWordText = [...(group === "space" ? decoded.trimStart() : decoded)].filter((character) => /[\p{L}\p{N}]/u.test(character)).length >= 2;
     if ((group === "symbol" && decoded.trim().length > 0) || (group !== "symbol" && hasWordText)) readable[group].push([rank, decoded]);
+    if (decoded.trim().length > 0) {
+      const firstVisible = [...(decoded.startsWith(" ") ? decoded.slice(1) : decoded)][0];
+      if (firstVisible) {
+        const initial = firstVisible.toLowerCase();
+        const otherByte = Buffer.from(firstVisible, "utf8")[0].toString(16).padStart(2, "0");
+        const bucket = decoded.startsWith(" ") && /^[a-z0-9]$/.test(initial) ? `space-${initial}`
+          : /^[a-z]$/.test(initial) ? `letter-${initial}`
+            : /^[0-9]$/.test(initial) ? `digit-${initial}` : `other-${otherByte}`;
+        (searchable[bucket] ||= []).push([rank, decoded]);
+      }
+    }
   }
   counts[first] += 1;
   const shard = shards[first];
@@ -53,6 +66,8 @@ await rm(OUTPUT, { recursive: true, force: true });
 await mkdir(OUTPUT, { recursive: true });
 await rm(READABLE_OUTPUT, { recursive: true, force: true });
 await mkdir(READABLE_OUTPUT, { recursive: true });
+await rm(SEARCH_OUTPUT, { recursive: true, force: true });
+await mkdir(SEARCH_OUTPUT, { recursive: true });
 await writeFile(resolve(OUTPUT, "manifest.json"), `${JSON.stringify({
   dataset: "o200k_base",
   source: "https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken",
@@ -78,4 +93,11 @@ for (const [group, rows] of Object.entries(readable)) {
   }
 }
 await writeFile(resolve(READABLE_OUTPUT, "manifest.json"), `${JSON.stringify({ page_size: readablePageSize, groups: readableManifest })}\n`);
-console.log(JSON.stringify({ entries: lines.length, sourceBytes: source.length, assets: counts.filter(Boolean).length + 1, readable: readableManifest }));
+const searchableManifest = {};
+for (const [bucket, rows] of Object.entries(searchable)) {
+  rows.sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : a[0] - b[0]);
+  searchableManifest[bucket] = rows.length;
+  await writeFile(resolve(SEARCH_OUTPUT, `${bucket}.json`), `${JSON.stringify(rows)}\n`);
+}
+await writeFile(resolve(SEARCH_OUTPUT, "manifest.json"), `${JSON.stringify({ source: "o200k_base ordinary mergeable-rank entries", entries: Object.values(searchableManifest).reduce((sum, count) => sum + count, 0), buckets: searchableManifest })}\n`);
+console.log(JSON.stringify({ entries: lines.length, sourceBytes: source.length, assets: counts.filter(Boolean).length + 1, readable: readableManifest, searchableBuckets: Object.keys(searchableManifest).length, searchableEntries: Object.values(searchableManifest).reduce((sum, count) => sum + count, 0) }));
