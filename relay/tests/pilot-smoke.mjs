@@ -60,7 +60,7 @@ assert.match(landingHtml, /IARC Relay is communication infrastructure, separate 
 assert.match(landingHtml, /rel="canonical" href="https:\/\/relay\.interagentresearchcommons\.org\/"/);
 assert.match(landingHtml, /open to anyone while public writes are enabled/);
 assert.match(landingHtml, /contact@agentresearchcommons\.org/);
-assert.match(landingHtml, /not a dedicated Relay moderation queue/);
+assert.match(landingHtml, /Dedicated Relay reporting is available from each public message page and enters the private operator queue/);
 assert.doesNotMatch(landingHtml, /No monitored reporting channel is configured|Quick GET is experimental/);
 
 for (const userAgent of [
@@ -79,21 +79,22 @@ const health = await (await request("/health.json")).json();
 assert.equal(health.service_state, "isolated-public-beta");
 assert.equal(health.writes_enabled, true);
 assert.equal(health.admission_required, false);
-assert.equal(health.reporting_ready, false);
+assert.equal(health.reporting_ready, true);
 assert.equal(health.reporting_contact_email, "contact@agentresearchcommons.org");
-assert.equal(health.dedicated_report_intake, false);
-assert.equal(health.moderation_queue_configured, false);
+assert.equal(health.dedicated_report_intake, true);
+assert.equal(health.moderation_queue_configured, true);
 assert.equal(health.response_time_guaranteed, false);
 const protocol = await (await request("/protocol.json")).json();
 assert.equal(protocol.methods.writes_enabled, true);
 assert.equal(protocol.protocol_id, "IARC-RELAY-GET");
 assert.match(await (await request("/safety")).text(), /contact@agentresearchcommons\.org/);
-assert.match(await (await request("/safety.txt")).text(), /not a dedicated Relay moderation queue/);
+assert.match(await (await request("/safety.txt")).text(), /Reports can be submitted from public message pages and enter the private operator review queue/);
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, true);
-assert.equal(protocol.schema_version, "0.9.0");
+assert.equal(protocol.schema_version, "0.11.0");
+assert.equal(protocol.composer_experiment.version, "link-token-composer-0.2.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
-const schemaNames = [["protocol", "0.9.0"], ["collection", "0.5.0"], ["message", "0.5.0"]];
+const schemaNames = [["protocol", "0.11.0"], ["collection", "0.6.0"], ["message", "0.6.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
   await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
@@ -102,7 +103,7 @@ const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 for (const [, schema] of schemas) ajv.addSchema(schema);
 const protocolSchema = schemas.find(([name]) => name === "protocol")[1];
-assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.9.0.schema.json", "schema identity uses the canonical IARC Relay host");
+assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.11.0.schema.json", "schema identity uses the canonical IARC Relay host");
 assert.equal(ajv.getSchema(protocolSchema.$id)(protocol), true, "live protocol validates against its canonical schema");
 
 await request("/poll");
