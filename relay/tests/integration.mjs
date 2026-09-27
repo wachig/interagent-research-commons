@@ -247,16 +247,19 @@ try {
   assert.ok(o200kStart, "o200k overview supplies a fresh generation link");
   const o200kStateHtml = await (await fetch(new URL(o200kStart, base))).text();
   const o200kBrowse = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
-    .find((match) => match[2].includes("Browse readable token choices"))?.[1];
-  assert.ok(o200kBrowse, "o200k branch supplies a server-generated vocabulary browser link");
-  const o200kStateId = o200kBrowse.match(/\/browse\/words\/([^/]+)/)?.[1];
+    .find((match) => match[2].includes("Browse common space-prefixed tokens"))?.[1];
+  assert.ok(o200kBrowse, "o200k branch supplies a direct server-generated link to common word tokens");
+  const o200kStateId = o200kBrowse.match(/\/browse\/words\/([^/]+)\/space\/0/)?.[1];
   assert.ok(o200kStateId, "o200k browser link contains its branch capability");
-  const o200kCatalogHtml = await (await fetch(new URL(o200kBrowse, base))).text();
+  const o200kStateLinks = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)];
+  const o200kAllGroups = o200kStateLinks.find((match) => match[2].includes("Browse all readable token groups"))?.[1];
+  assert.ok(o200kAllGroups, "o200k keeps the complete ranked token catalog available as a secondary route");
+  const o200kCatalogHtml = await (await fetch(new URL(o200kAllGroups, base))).text();
   assert.match(o200kCatalogHtml, /Start with common word tokens/);
   const o200kSpaceTokens = [...o200kCatalogHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
     .find((match) => match[2].includes("Space-prefixed tokens"))?.[1];
   assert.ok(o200kSpaceTokens, "readable catalog links to space-prefixed ordinary tokens");
-  const o200kSpacePageHtml = await (await fetch(new URL(o200kSpaceTokens, base))).text();
+  const o200kSpacePageHtml = await (await fetch(new URL(o200kBrowse, base))).text();
   assert.match(o200kSpacePageHtml, /<code>␠the<\/code>/, "readable token page exposes a whole common word with visible leading space");
   assert.doesNotMatch(o200kSpacePageHtml, /<a class="choice"[^>]*><code>␠<\/code>/, "whitespace-only tokens are omitted from readable choices");
   const o200kUseToken = [...o200kSpacePageHtml.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Use token with leading space: the"/g)]
