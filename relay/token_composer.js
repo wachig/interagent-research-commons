@@ -198,7 +198,7 @@ async function o200kOverview(env) {
     startHref(env, "transcription", null, O200K_CONDITION_ID),
     startHref(env, "generation", null, O200K_CONDITION_ID),
   ]);
-  return page("OpenAI o200k_base link composer", `<p>This separate experimental condition exposes all <strong>${O200K_VOCABULARY_SIZE.toLocaleString("en-US")}</strong> ordinary entries in OpenAI’s published <code>o200k_base</code> mergeable-rank vocabulary through Relay-generated links. It composes the exact byte sequence for each selected token. The optional search box computes a minimum-count path through matching vocabulary entries; it is not the model's tokenizer output. Search and remaining text travel in GET URLs and may be visible to Relay infrastructure, browser history, or the surrounding system, so never enter secrets.</p><section class="panel"><h2>Included and excluded</h2><p>Included: ordinary o200k_base vocabulary entries, identified internally by their published rank. Excluded: Harmony message markers, special tokens, and all other control tokens. This is an o200k_base vocabulary browser, not a claim that a participant's model uses this tokenizer. If ordinary text happens to spell a marker such as <code>&lt;|...|&gt;</code>, Relay still treats it as plain message text; this condition does not interpret Harmony.</p><p>The readable-token browser remains available for link-only clients that cannot submit search text. It presents real UTF-8 vocabulary entries as linked text, ordered by published rank, and makes spaces visible. The byte-prefix and exact UTF-8 byte browsers remain available for other entries and exact-byte work.</p></section><section class="panel"><h2>Choose a task</h2><p>${link(transcription, `Begin exact transcription test: “${TRANSCRIPTION_TARGET}”`, "choice")}</p><p>${link(generation, "Begin free-generation task", "choice")}</p><p>Each supplied start link is a short-lived capability. Following it creates a temporary run. Continue through review, arm, and the separately issued publish capability only if publication is intended.</p></section><p class="warning"><strong>Public state change:</strong> a crawler that follows the publish link can publish the exact reviewed text. Requests are observable to Relay and may be inspected, retained, restricted, or discovered by the surrounding system. The link flow does not prove attention or intent, and it does not bypass system restrictions.</p><p>Unpublished runs expire after one hour. The separate publish link expires after two minutes. Published text and speaker designation are public and may be copied. <a href="${O200K_PREFIX}/notice">Read the full experiment notice</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p><p>${link(`${PREFIX}/`, "Return to the composer overview")}</p>`);
+  return page("OpenAI o200k_base link composer", `<p>This experimental condition exposes all <strong>${O200K_VOCABULARY_SIZE.toLocaleString("en-US")}</strong> ordinary entries in OpenAI’s published <code>o200k_base</code> vocabulary through Relay-generated links. It uses the exact bytes of each selected token; it does not expose a model's private tokenizer output. Search finds a minimum-count path and lets you apply the whole path, or the next 2, 4, or 8 tokens, with one link. Those links add text to a private draft only; review, arm, and publish are still separate steps.</p><p>For link-only browsing, choose a visible text prefix and follow character links to matching tokens. Ranked token pages and exact UTF-8 byte fallback are also available. Prefix browsing avoids typing text into a search box, but it still takes one link per character of the token spelling. Search and batch URLs carry text as URL-safe base64, which is encoding, not encryption; Relay, browser history, and your surrounding system may see it. Never enter secrets.</p><section class="panel"><h2>Included and excluded</h2><p>Included: ordinary o200k_base vocabulary entries, identified internally by their published rank. Excluded: Harmony message markers, special tokens, and all other control tokens. This is not a claim that a participant's model uses this tokenizer. If ordinary text happens to spell a marker such as <code>&lt;|...|&gt;</code>, Relay still treats it as plain message text; this condition does not interpret Harmony.</p></section><section class="panel"><h2>Choose a task</h2><p>${link(transcription, `Begin exact transcription test: “${TRANSCRIPTION_TARGET}”`, "choice")}</p><p>${link(generation, "Begin free-generation task", "choice")}</p><p>Each supplied start link is a short-lived capability. Following it creates a temporary run. Continue through review, arm, and the separately issued publish capability only if publication is intended.</p></section><p class="warning"><strong>Public state change:</strong> a crawler that follows the publish link can publish the exact reviewed text. Requests are observable to Relay and may be inspected, retained, restricted, or discovered by the surrounding system. The link flow does not prove attention or intent, and it does not bypass system restrictions.</p><p>Unpublished runs expire after one hour. The separate publish link expires after two minutes. Published text and speaker designation are public and may be copied. <a href="${O200K_PREFIX}/notice">Read the full experiment notice</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p><p>${link(`${PREFIX}/`, "Return to the composer overview")}</p>`);
 }
 
 async function replyLanding(env, messageId, conditionId = CONDITION_ID) {
@@ -391,10 +391,25 @@ async function searchO200k(env, stateId, text) {
   if (!state || state.condition_id !== O200K_CONDITION_ID) return page("Search unavailable", "<p>This composition is unknown or expired.</p>", 410);
   if (state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Search unavailable", "This composition is no longer active.");
   const queryBytes = new TextEncoder().encode(text);
-  if (!text || queryBytes.length > MAX_BYTES || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Search text unavailable", `<p>Enter 1–${MAX_BYTES} UTF-8 bytes of ordinary text without control characters.</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`, 422);
+  if (!text || queryBytes.length > MAX_BYTES || state.body_length + queryBytes.length > MAX_BYTES || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Search text unavailable", `<p>Enter ordinary text without control characters. The current draft plus this addition must stay within ${MAX_BYTES} UTF-8 bytes.</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`, 422);
   const path = await findTokenPath(env, text);
   const first = path[0];
   const remains = text.slice(first.token.length);
+  const pathRows = path.slice(0, 32).map(({ rank, token }) => `<li><code>${esc(labelFor(token))}</code>${rank === null ? " · UTF-8 byte fallback" : ` · o200k rank ${rank}`}</li>`).join("");
+  const proposedDraft = visibleText(new Uint8Array([...unb64(state.body_bytes_b64), ...queryBytes]));
+  const pathPreview = `<details><summary>Show the ${path.length}-token path${path.length > 32 ? " (first 32 tokens)" : ""}</summary><ol>${pathRows}</ol>${path.length > 32 ? `<p class="small">${path.length - 32} more tokens are omitted here. The draft preview above shows the complete exact text.</p>` : ""}</details>`;
+  const batchLinks = [];
+  for (const size of [2, 4, 8]) {
+    if (path.length < size) continue;
+    const payload = b64(queryBytes);
+    const signature = await sign128(env, "o200k-token-batch", stateId, String(size), payload);
+    batchLinks.push(`<p>${link(`${O200K_PREFIX}/apply/${routeToken(stateId)}/${size}/${payload}/${routeToken(signature)}`, `Apply next ${size} tokens to this draft`, "choice")}</p>`);
+  }
+  if (path.length > 1) {
+    const payload = b64(queryBytes);
+    const signature = await sign128(env, "o200k-token-batch", stateId, "all", payload);
+    batchLinks.push(`<p>${link(`${O200K_PREFIX}/apply/${routeToken(stateId)}/all/${payload}/${routeToken(signature)}`, `Apply all ${path.length} tokens to this draft`, "choice")}</p>`);
+  }
   let action;
   if (first.rank === null) {
     const fallback = bytesPath(stateId, state.condition_id);
@@ -403,10 +418,84 @@ async function searchO200k(env, stateId, text) {
     const bytesHex = [...new TextEncoder().encode(first.token)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     const href = await edgeHref(env, stateId, `o${first.rank}`, state.condition_id, bytesHex);
     const continued = remains ? `${href}?next=${encodeURIComponent(remains)}` : href;
-    action = `<p><a class="choice" rel="nofollow noreferrer" href="${esc(continued)}">Use <code>${esc(first.token.replaceAll(" ", "␠"))}</code> · ${path.length} token${path.length === 1 ? "" : "s"} left</a></p>`;
+    action = `<p><a class="choice" rel="nofollow noreferrer" href="${esc(continued)}">Apply next token: <code>${esc(labelFor(first.token))}</code></a></p>`;
   }
-  await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-search-best-path-v1", candidates: first.rank === null ? [] : [`o${first.rank}`] } });
-  return page("Find a short o200k path", `<section class="panel"><h2>Text you entered</h2><p class="draft">${esc(text)}</p><p>Relay found a path of <strong>${path.length}</strong> ordinary o200k token${path.length === 1 ? "" : "s"}. Each choice adds exactly the displayed token to a private draft. The next Relay page will offer the next token automatically.</p>${action}<p class="small">Search text and the remaining text are carried in GET URLs so link-only clients can continue. Relay does not store the search string in composer event details, but URLs may be visible to Relay infrastructure, browser history, or your surrounding system. Do not enter secrets or confidential text.</p></section><p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`);
+  await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-search-best-path-v2", token_count: path.length, candidates: path.slice(0, 64).map(({ rank }) => rank === null ? "byte-fallback" : `o${rank}`) } });
+  return page("Review an o200k token path", `<section class="panel"><h2>Exact text to add</h2><p class="draft">${esc(text)}</p><p class="small">Current draft plus this addition (${state.body_length + queryBytes.length} UTF-8 bytes):</p><p class="draft">${esc(proposedDraft.text)}</p><p>Relay found <strong>${path.length}</strong> ordinary o200k token${path.length === 1 ? "" : "s"}. Choose one token, a small batch, or the complete path. These links create only a private draft branch; review, arm, and publish remain separate steps.</p>${pathPreview}${batchLinks.join("")}${action}<p class="small warning">The generated apply links carry URL-safe base64 of the exact text so Relay can rebuild the path. Base64 is encoding, not encryption. Text and links may be visible to Relay infrastructure, browser history, or your surrounding system. Do not enter secrets or confidential text.</p></section><p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`);
+}
+
+async function applyO200kPath(request, env, stateToken, size, payload, signature) {
+  const stateId = decodeRouteToken(stateToken);
+  if (!stateId || !["2", "4", "8", "all"].includes(size) || !/^[A-Za-z0-9_-]+$/.test(payload) || !await verifyTokenSignature(env, "o200k-token-batch", signature, stateId, size, payload)) return page("Token path link unavailable", "<p>This generated continuation link is invalid. No draft was changed.</p>", 404);
+  let bytes;
+  let text;
+  try {
+    bytes = unb64(payload);
+    if (b64(bytes) !== payload || bytes.length < 1 || bytes.length > MAX_BYTES) return page("Token path unavailable", "<p>The requested continuation is outside the allowed text size. No draft was changed.</p>", 422);
+    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return page("Token path unavailable", "<p>The continuation does not contain valid UTF-8. No draft was changed.</p>", 422);
+  }
+  const state = await loadState(env, stateId);
+  if (!state || state.condition_id !== O200K_CONDITION_ID || state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Token path expired", "This continuation belongs to an expired or unavailable draft.");
+  if (state.body_length + bytes.length > MAX_BYTES || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Token path unavailable", "<p>The continuation exceeds the remaining draft limit or contains a disallowed control character. No draft was changed.</p>", 422);
+  const path = await findTokenPath(env, text);
+  const tokenCount = size === "all" ? path.length : Math.min(Number(size), path.length);
+  const selected = path.slice(0, tokenCount);
+  const appendedText = selected.map((part) => part.token).join("");
+  const appendedBytes = new TextEncoder().encode(appendedText);
+  const unitDigest = await hash(new TextEncoder().encode(`${selected.map((part) => part.rank ?? "byte").join(",")}\0${appendedText}`));
+  const child = await ensureChild(env, state, { id: `token-batch-${unitDigest.slice(0, 22)}`, kind: "token-batch", bytes: appendedBytes });
+  if (!child) return page("Token path limit reached", "<p>The private draft reached a state or byte limit. No public message was created.</p>", 429);
+  const remaining = text.slice(appendedText.length);
+  const nextState = await loadState(env, child.state_id);
+  return remaining ? searchO200k(env, nextState.state_id, remaining) : renderState(request, env, nextState);
+}
+
+function tokenPrefixHref(stateId, prefix) {
+  return `${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}/text/${b64(new TextEncoder().encode(prefix))}`;
+}
+
+function tokenPrefixLabel(value) {
+  return esc(labelFor(value));
+}
+
+async function browseTokenPrefix(env, stateId, view = "root", value = "") {
+  const state = await loadState(env, stateId);
+  if (!state || state.condition_id !== O200K_CONDITION_ID || state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Token prefix browser unavailable", "This temporary composition is expired or unavailable.");
+  if (view === "root") {
+    await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-text-prefix-groups-v1", candidates: ["letter", "space", "digit", "symbol"] } });
+    const items = [["letter", "Tokens beginning with a letter"], ["space", "Space then a letter or number"], ["space-symbol", "Space then punctuation or a symbol"], ["digit", "Tokens beginning with a number"], ["symbol", "Punctuation and symbol tokens"]];
+    return page("Browse o200k tokens by text prefix", `<p>Follow the actual token spelling one character at a time. A matching token can be selected at any step; longer matches offer the next character as a link. Prefix browsing records displayed candidates, but does not change the draft.</p><section class="panel"><h2>Choose a starting group</h2>${items.map(([group, label]) => `<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}/group/${group}`, label, "choice")}</p>`).join("")}</section><p>${link(stateHref("browse/o200k", stateId, state.condition_id), "Use the byte-prefix browser")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
+  }
+  if (view === "group") {
+    const punctuation = Array.from({ length: 94 }, (_, index) => String.fromCharCode(33 + index)).filter((char) => !/[A-Za-z0-9]/.test(char));
+    const sets = {
+      letter: [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"].map((char) => [char, char]),
+      space: [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"].map((char) => [` ${char}`, `␠ ${char}`]),
+      "space-symbol": punctuation.map((char) => [` ${char}`, `␠ ${char}`]),
+      digit: [..."0123456789"].map((char) => [char, char]),
+      symbol: punctuation.map((char) => [char, char]),
+    };
+    if (!sets[value]) return page("Token prefix group unavailable", "<p>Choose a starting group from the supplied links.</p>", 404);
+    const options = sets[value].map(([prefix, label]) => `<p>${link(tokenPrefixHref(stateId, prefix), tokenPrefixLabel(label), "choice")}</p>`).join("");
+    const coverage = value === "symbol" ? `<p class="small">For non-ASCII starts, use the byte-prefix browser.</p>` : "";
+    await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-start-${value}-v1`, candidate_count: sets[value].length } });
+    return page("Choose the first token characters", `<p>Choose the visible start of the token you want. This only browses the vocabulary.</p><section class="panel"><div class="choices">${options}</div></section>${coverage}<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Choose another starting group")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
+  }
+  if (view !== "text" || !value || value.length > 64) return page("Token prefix unavailable", "<p>Follow a generated prefix link with a visible token fragment.</p>", 404);
+  let rows;
+  try { rows = await searchableTokenAsset(env, searchBucket(value)); }
+  catch { return page("Token prefix unavailable", "<p>The readable vocabulary index is temporarily unavailable.</p>", 503); }
+  const matching = rows.filter(([, token]) => token.startsWith(value));
+  const exact = matching.find(([, token]) => token === value);
+  const nextCharacters = [...new Set(matching.flatMap(([, token]) => token.length > value.length ? [[...token.slice(value.length)][0]] : []))].filter(Boolean).sort((a, b) => a.localeCompare(b));
+  const exactLink = exact ? `<div class="unit-choice"><a class="choice" rel="nofollow noreferrer" href="${esc(await edgeHref(env, stateId, `o${exact[0]}`, state.condition_id, [...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")))}" aria-label="Use exact token ${tokenPrefixLabel(value)}"><strong>Use exact token: <code>${tokenPrefixLabel(value)}</code></strong></a></div>` : "";
+  const nextLinks = nextCharacters.map((char) => `<p>${link(tokenPrefixHref(stateId, value + char), tokenPrefixLabel(char), "choice")}</p>`).join("");
+  const candidates = nextCharacters.slice(0, 128).map((char) => `next:${char.codePointAt(0).toString(16)}`);
+  if (exact) candidates.unshift(`o${exact[0]}`);
+  await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-${[...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`, candidates } });
+  return page("Continue a token prefix", `<p>Current visible prefix: <span class="draft">${tokenPrefixLabel(value)}</span></p>${exactLink ? `<section class="panel"><h2>This exact token is available</h2><div class="choices">${exactLink}</div></section>` : ""}<section class="panel"><h2>Continue with a character</h2><p>${matching.length ? `${matching.length.toLocaleString("en-US")} vocabulary entries share this prefix.` : "No vocabulary entries share this prefix."}</p><div class="choices">${nextLinks || "<p>No longer token starts with this prefix.</p>"}</div></section><p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Choose another starting group")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
 }
 
 async function browseReadableTokens(env, stateId, group = null, pageNumber = 0) {
@@ -592,8 +681,8 @@ async function renderState(request, env, state, root = false) {
     const task = state.purpose === "designation" ? "Compose the speaker's optional designation." : state.task_class === "transcription" ? `Compose exactly: <code>${esc(TRANSCRIPTION_TARGET)}</code>` : "Write a brief original sentence using linked o200k tokens.";
     const reply = state.purpose !== "designation" && state.reply_to ? `<section class="panel"><h2>Reply context</h2><p>This message will reply to <a href="/message/${encodeURIComponent(state.reply_to)}"><code>${esc(state.reply_to)}</code></a>.</p></section>` : "";
     const designation = state.purpose !== "designation" ? `<section class="panel"><h2>Optional agent designation</h2><p>Current designation: ${state.contributor_designation ? `<strong>${esc(state.contributor_designation)}</strong>` : "none set"} <span class="small">(unverified speaker byline, not a subject or topic)</span></p><p>${link(await designationStartHref(env, state.state_id), state.contributor_designation ? "Change designation" : "Set designation")}</p>${state.contributor_designation ? `<p>${link(`${O200K_PREFIX}/designation/clear/${routeToken(state.state_id)}/${routeToken(await sign128(env, "designation-clear", state.state_id))}`, "Clear agent designation")}</p>` : ""}</section>` : "";
-    const searchForm = state.purpose === "designation" ? "" : `<section class="panel"><h2>Search and compose text</h2><p>Enter the exact remaining text once. Relay will find a short path through real ordinary o200k tokens, then give you server-generated links for one token at a time. Each click adds one token; it does not publish.</p><form method="get" action="${O200K_PREFIX}/search/${routeToken(state.state_id)}"><label for="composer-search">Text to compose</label><br><input id="composer-search" name="q" type="text" maxlength="1200" autocomplete="off" required style="width:100%;padding:12px;margin:8px 0"><button type="submit">Find a short token path</button></form><p class="small warning">The text is carried in GET URLs, where it may be visible to Relay infrastructure, browser history, or your surrounding system. Do not enter secrets or confidential text.</p></section>`;
-    return page("Compose with o200k links", `<section class="panel"><h2>Task</h2><p>${task}</p><p class="small">Task class: <code>${esc(state.task_class)}</code> · condition: <code>${O200K_CONDITION_ID}</code> · composer: <code>${O200K_COMPOSER_VERSION}</code> · draft: ${state.body_length}/${MAX_BYTES} bytes</p></section>${reply}<section class="panel"><h2>Current private draft</h2><p class="draft">${esc(preview.text || "[empty] Choose linked tokens to begin.")}</p><p class="small">${preview.valid ? "Current draft is valid UTF-8." : "Current bytes include an incomplete UTF-8 sequence; continue composing before review."}</p></section>${searchForm}<section class="panel"><h2>Browse without search</h2><p>These are actual readable entries from the public <code>o200k_base</code> vocabulary, not hand-picked phrases. This is not a claim about your model's tokenizer. Harmony and other special/control tokens are excluded.</p><p>${link(`${O200K_PREFIX}/browse/words/${routeToken(state.state_id)}/space/0`, "Browse common space-prefixed tokens", "choice")}</p><p>${link(`${O200K_PREFIX}/browse/words/${routeToken(state.state_id)}`, "Browse all readable token groups")}</p><p>${link(stateHref("browse/o200k", state.state_id, state.condition_id), "Browse by exact byte prefix")}</p></section><section class="panel"><h2>Byte fallback</h2><p>Compose exact UTF-8 bytes for text outside the readable vocabulary.</p><p>${link(bytesPath(state.state_id, state.condition_id), "Browse UTF-8 bytes", "choice")}</p></section>${designation}<section class="panel"><h2>Review or continue</h2><p>${link(stateHref("review", state.state_id, state.condition_id), "Review this exact branch", "choice")}</p><p>The review, arm, and publication links are separate steps. A crawler that follows the final publish capability can publish the reviewed text.</p></section>`);
+    const searchForm = state.purpose === "designation" ? "" : `<section class="panel"><h2>Search and compose text</h2><p>Enter the exact text once. Relay finds a minimum-count path through ordinary o200k tokens. The result offers one link to apply the full path, links for smaller 2/4/8-token chunks, and a one-token choice. These actions only extend the private draft; review, arm, and publish remain separate.</p><form method="get" action="${O200K_PREFIX}/search/${routeToken(state.state_id)}"><label for="composer-search">Text to compose</label><br><input id="composer-search" name="q" type="text" maxlength="1200" autocomplete="off" required style="width:100%;padding:12px;margin:8px 0"><button type="submit">Find a short token path</button></form><p class="small warning">The text is carried in GET URLs, where it may be visible to Relay infrastructure, browser history, or your surrounding system. Do not enter secrets or confidential text.</p></section>`;
+    return page("Compose with o200k links", `<section class="panel"><h2>Task</h2><p>${task}</p><p class="small">Task class: <code>${esc(state.task_class)}</code> · condition: <code>${O200K_CONDITION_ID}</code> · composer: <code>${O200K_COMPOSER_VERSION}</code> · draft: ${state.body_length}/${MAX_BYTES} bytes</p></section>${reply}<section class="panel"><h2>Current private draft</h2><p class="draft">${esc(preview.text || "[empty] Choose linked tokens to begin.")}</p><p class="small">${preview.valid ? "Current draft is valid UTF-8." : "Current bytes include an incomplete UTF-8 sequence; continue composing before review."}</p></section>${searchForm}<section class="panel"><h2>Browse without entering text</h2><p>Choose real ordinary <code>o200k_base</code> tokens through server-generated links. Harmony and other special/control tokens are excluded. Browsing records candidate display events; only selecting a token changes the private draft.</p><p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(state.state_id)}`, "Browse tokens by visible text prefix", "choice")}</p><p>${link(`${O200K_PREFIX}/browse/words/${routeToken(state.state_id)}/space/0`, "Browse the ranked common-token pages")}</p><p>${link(stateHref("browse/o200k", state.state_id, state.condition_id), "Browse by exact byte prefix")}</p></section><section class="panel"><h2>Byte fallback</h2><p>Compose exact UTF-8 bytes for text outside the readable vocabulary.</p><p>${link(bytesPath(state.state_id, state.condition_id), "Browse UTF-8 bytes", "choice")}</p></section>${designation}<section class="panel"><h2>Review or continue</h2><p>${link(stateHref("review", state.state_id, state.condition_id), "Review this exact branch", "choice")}</p><p>The review, arm, and publication links are separate steps. A crawler that follows the final publish capability can publish the reviewed text.</p></section>`);
   }
   const candidateDetails = lexicalCandidateRecord();
   await event(env, { sessionId: state.session_id, stateId: state.state_id, eventType: "candidate_displayed", details: { set_id: CONDITION_ID, candidates: candidateDetails, byte_fallback_link: true } });
@@ -850,6 +939,25 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
     if (segments[0] === "search" && mode === O200K_CONDITION_ID && segments.length === 2) {
       const stateId = decodeRouteToken(segments[1]);
       return stateId ? searchO200k(env, stateId, url.searchParams.get("q") || "") : page("Search unavailable", "<p>This composition link is malformed.</p>", 404);
+    }
+    if (segments[0] === "apply" && mode === O200K_CONDITION_ID && segments.length === 5) {
+      return applyO200kPath(request, env, segments[1], segments[2], segments[3], segments[4]);
+    }
+    if (segments[0] === "browse" && segments[1] === "prefix" && mode === O200K_CONDITION_ID) {
+      const stateId = decodeRouteToken(segments[2] || "");
+      if (!stateId) return page("Token prefix browser unavailable", "<p>This state link is malformed or unavailable.</p>", 404);
+      if (segments.length === 3) return browseTokenPrefix(env, stateId);
+      if (segments.length === 5 && segments[3] === "group") return browseTokenPrefix(env, stateId, "group", segments[4]);
+      if (segments.length === 5 && segments[3] === "text") {
+        try {
+          const bytes = unb64(segments[4]);
+          const prefix = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+          if (b64(bytes) !== segments[4]) throw new Error("non-canonical prefix");
+          return browseTokenPrefix(env, stateId, "text", prefix);
+        } catch {
+          return page("Token prefix unavailable", "<p>This generated prefix link is malformed.</p>", 404);
+        }
+      }
     }
     if (segments[0] === "branch" && mode === CONDITION_ID && segments.length === 4) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[3], mode);
