@@ -422,7 +422,7 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.17.0");
+  assert.equal(protocol.schema_version, "0.18.0");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
@@ -453,7 +453,7 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
-  assert.equal(service.identity.protocol_revision, "0.17.0");
+  assert.equal(service.identity.protocol_revision, "0.18.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
@@ -462,7 +462,7 @@ try {
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.0.0.schema.json");
   assert.equal(service.schemas.collection, "/schemas/collection-1.2.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.17.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.18.0.schema.json");
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
   assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");
@@ -489,6 +489,34 @@ try {
     assert.equal(response.status, 200, `${pathName} is available locally`);
     assert.match(await response.text(), pathName.endsWith(".txt") ? /IARC RELAY/ : /<html/);
   }
+  const privacyHistoryResponse = await fetch(`${base}/privacy/history/`);
+  const privacyHistoryHtml = await privacyHistoryResponse.text();
+  assert.equal(privacyHistoryResponse.status, 200);
+  assert.equal(privacyHistoryResponse.headers.get("x-robots-tag"), "index, follow");
+  assert.match(privacyHistoryHtml, /Privacy notice 1\.6\.0/);
+  const archivedPrivacy = await fetch(`${base}/privacy/history/1.0.0`);
+  const archivedPrivacyHtml = await archivedPrivacy.text();
+  assert.equal(archivedPrivacy.status, 200, "prior privacy notice is served from its exact historical snapshot");
+  assert.match(archivedPrivacyHtml, /Historical archive · version 1\.0\.0/);
+  assert.match(archivedPrivacyHtml, /HISTORICAL ARCHIVE/);
+  const archivedPrivacyText = await fetch(`${base}/privacy/history/1.0.0.txt`);
+  assert.equal(archivedPrivacyText.status, 200);
+  assert.match(await archivedPrivacyText.text(), /Version 1\.0\.0/);
+  assert.equal((await fetch(`${base}/privacy/history/1.0.0?x=1`)).status, 400, "historical privacy routes reject cache-key ambiguity");
+  const changeLedgerResponse = await fetch(`${base}/changes`);
+  const changeLedgerHtml = await changeLedgerResponse.text();
+  assert.equal(changeLedgerResponse.status, 200);
+  assert.equal(changeLedgerResponse.headers.get("x-robots-tag"), "index, follow");
+  assert.match(changeLedgerHtml, /Responsible role/);
+  assert.match(changeLedgerHtml, /moderation log[\s\S]*separately lists message visibility changes/i);
+  assert.match(changeLedgerHtml, /Not recorded/);
+  assert.match(changeLedgerHtml, /protocol-0\.17\.0\.schema\.json/);
+  const changeLedger = await (await fetch(`${base}/changes.json`)).json();
+  assert.equal(changeLedger.moderation_log_separation.includes("not this software and policy change ledger"), true);
+  assert.equal(changeLedger.privacy_notices.some((notice) => notice.version === "1.6.0"), true);
+  assert.equal(changeLedger.protocol_revisions.some((revision) => revision.version === "0.17.0" && revision.effective_at), true);
+  assert.ok(changeLedgerResponse.headers.get("etag"), "stable change ledger supports validators");
+  assert.equal((await fetch(`${base}/changes.json?x=1`)).status, 400);
   assert.match(await (await fetch(`${base}/participation-policy`)).text(), /GET availability does not override a restriction/);
   assert.match(await (await fetch(`${base}/participation-policy`)).text(), /participation-policy\/relay-participation-1\.0\.0/);
   assert.match(await (await fetch(`${base}/participation-policy/relay-participation-1.0.0`)).text(), /Version relay-participation-1\.0\.0/);
@@ -520,7 +548,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.17.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -528,7 +556,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.17.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.18.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
