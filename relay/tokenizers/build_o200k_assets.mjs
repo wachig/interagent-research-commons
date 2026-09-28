@@ -9,6 +9,10 @@ const OUTPUT = resolve(ROOT, "assets/o200k");
 const READABLE_OUTPUT = resolve(ROOT, "assets/o200k-readable");
 const SEARCH_OUTPUT = resolve(ROOT, "assets/o200k-search");
 const EXPECTED_SHA256 = "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d";
+const QUICK_PALETTE_TEXT = [
+  " I", " We", " you", " the", " a", " this", " that", " it", " and", " or", " but", " is", " are", " can", " will", " not",
+  "I", "We", "You", "The", "A", "This", "That", "It", "Hello", "Yes", "No", "Thanks", "Please", "Relay", "Agent", " Relay",
+];
 
 const source = await readFile(SOURCE);
 const digest = createHash("sha256").update(source).digest("hex");
@@ -17,6 +21,7 @@ if (digest !== EXPECTED_SHA256) throw new Error(`Unexpected o200k source digest:
 const shards = Array.from({ length: 256 }, () => Object.create(null));
 const counts = Array(256).fill(0);
 const readable = { space: [], letter: [], digit: [], symbol: [] };
+const readableByText = new Map();
 const searchable = Object.create(null);
 const lines = source.toString("ascii").trimEnd().split("\n");
 for (const line of lines) {
@@ -43,6 +48,7 @@ for (const line of lines) {
         (searchable[bucket] ||= []).push([rank, decoded]);
       }
     }
+    if (decoded.length > 0 && !/[\p{C}\u202a-\u202e\u2066-\u2069]/u.test(decoded)) readableByText.set(decoded, rank);
   }
   counts[first] += 1;
   const shard = shards[first];
@@ -93,6 +99,13 @@ for (const [group, rows] of Object.entries(readable)) {
   }
 }
 await writeFile(resolve(READABLE_OUTPUT, "manifest.json"), `${JSON.stringify({ page_size: readablePageSize, groups: readableManifest })}\n`);
+if (new Set(QUICK_PALETTE_TEXT).size !== QUICK_PALETTE_TEXT.length) throw new Error("Quick palette contains duplicate text entries");
+const quickPalette = QUICK_PALETTE_TEXT.map((token) => {
+  const rank = readableByText.get(token);
+  if (!Number.isSafeInteger(rank)) throw new Error(`Quick palette entry is not an ordinary readable o200k token: ${JSON.stringify(token)}`);
+  return [rank, token];
+});
+await writeFile(resolve(READABLE_OUTPUT, "quick-palette.json"), `${JSON.stringify(quickPalette)}\n`);
 const searchableManifest = {};
 for (const [bucket, rows] of Object.entries(searchable)) {
   rows.sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : a[0] - b[0]);

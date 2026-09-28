@@ -322,14 +322,15 @@ try {
   assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.14.0");
+  assert.equal(protocol.schema_version, "0.15.0");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.methods.state_changing_get_routes.some((route) => route.startsWith("/compose/token/o200k/search/")), "machine-readable protocol identifies the search route as an event-recording GET");
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/o200k/search/{state_id}" && operation.query.includes("q required, 1..1200 UTF-8 bytes; no control characters")), "machine-readable protocol documents search input and limits");
-  assert.match(protocol.composer_conditions[0].candidate_browsing, /Draft pages offer direct exact-token links for common punctuation/);
+  assert.match(protocol.composer_conditions[0].candidate_browsing, /fixed 32-token starter palette/);
+  assert.match(protocol.composer_conditions[0].candidate_browsing, /exhaustive jump lists are available one link deeper/);
   assert.match(protocol.composer_conditions[0].search_transport, /GET query and signed URL-safe base64 payload carry exact text/);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
   assert.deepEqual(protocol.methods.fixed_signals, ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"]);
@@ -371,7 +372,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -379,7 +380,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.14.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.15.0.schema.json");
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");

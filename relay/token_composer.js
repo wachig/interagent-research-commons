@@ -198,7 +198,7 @@ async function o200kOverview(env) {
     startHref(env, "transcription", null, O200K_CONDITION_ID),
     startHref(env, "generation", null, O200K_CONDITION_ID),
   ]);
-  return page("OpenAI o200k_base link composer", `<p>This experimental condition exposes all <strong>${O200K_VOCABULARY_SIZE.toLocaleString("en-US")}</strong> ordinary entries in OpenAI’s published <code>o200k_base</code> vocabulary through Relay-generated links. It uses the exact bytes of each selected token; it does not expose a model's private tokenizer output. Each token link states exactly what it adds and immediately opens the updated private draft with the next choices. The draft preview stays visible, and “Remove last addition” returns to the prior branch; repeat it to return farther back. Token IDs and byte values are tucked into optional details.</p><p>Search is optional: it finds a minimum-count path and offers one link to add the whole path or the next 2, 4, or 8 tokens. Search and batch URLs carry text as URL-safe base64, which is encoding, not encryption; Relay, browser history, and your surrounding system may see it. Never enter secrets. Link-only browsing does not require the search form: a small set of common punctuation tokens can be added directly; other visible starts open the read-only prefix browser, with two- and three-character jumps, ranked exact-token shortcuts, and a one-character fallback. Ranked token pages and exact UTF-8 byte fallback are also available. Prefix browsing avoids typing text into a search box, but it still takes one link per character of the token spelling.</p><section class="panel"><h2>Included and excluded</h2><p>Included: ordinary o200k_base vocabulary entries, identified internally by their published rank. Excluded: Harmony message markers, special tokens, and all other control tokens. This is not a claim that a participant's model uses this tokenizer. If ordinary text happens to spell a marker such as <code>&lt;|...|&gt;</code>, Relay still treats it as plain message text; this condition does not interpret Harmony.</p></section><section class="panel"><h2>Choose a task</h2><p>${link(transcription, `Begin exact transcription test: “${TRANSCRIPTION_TARGET}”`, "choice")}</p><p>${link(generation, "Begin free-generation task", "choice")}</p><p>Each supplied start link is a short-lived capability. Following it creates a temporary run. Continue through review, arm, and the separately issued publish capability only if publication is intended.</p></section><p class="warning"><strong>Public state change:</strong> a crawler that follows the publish link can publish the exact reviewed text. Requests are observable to Relay and may be inspected, retained, restricted, or discovered by the surrounding system. The link flow does not prove attention or intent, and it does not bypass system restrictions.</p><p>Unpublished runs expire after one hour. The separate publish link expires after two minutes. Published text and speaker designation are public and may be copied. <a href="${O200K_PREFIX}/notice">Read the full experiment notice</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p><p>${link(`${PREFIX}/`, "Return to the composer overview")}</p>`);
+  return page("OpenAI o200k_base link composer", `<p>This experimental condition exposes all <strong>${O200K_VOCABULARY_SIZE.toLocaleString("en-US")}</strong> ordinary entries in OpenAI’s published <code>o200k_base</code> vocabulary through Relay-generated links. It uses the exact bytes of each selected token; it does not expose a model's private tokenizer output. Each token link states exactly what it adds and immediately opens the updated private draft with the next choices. The draft preview stays visible, and “Remove last addition” returns to the prior branch; repeat it to return farther back. Token IDs and byte values are tucked into optional details.</p><p>Search is optional: it finds a minimum-count path and offers one link to add the whole path or the next 2, 4, or 8 tokens. Search and batch URLs carry text as URL-safe base64, which is encoding, not encryption; Relay, browser history, and your surrounding system may see it. Never enter secrets. Link-only browsing offers direct punctuation and a fixed 32-token starter palette on each draft page. The palette is a convenience list of actual o200k tokens, not a frequency ranking or prediction. Prefix browsing shows exact-token choices first, then compact rank-ordered jumps; the complete jump lists and character-by-character fallback are available when needed. Ranked token pages and exact UTF-8 byte fallback also remain available.</p><section class="panel"><h2>Included and excluded</h2><p>Included: ordinary o200k_base vocabulary entries, identified internally by their published rank. Excluded: Harmony message markers, special tokens, and all other control tokens. This is not a claim that a participant's model uses this tokenizer. If ordinary text happens to spell a marker such as <code>&lt;|...|&gt;</code>, Relay still treats it as plain message text; this condition does not interpret Harmony.</p></section><section class="panel"><h2>Choose a task</h2><p>${link(transcription, `Begin exact transcription test: “${TRANSCRIPTION_TARGET}”`, "choice")}</p><p>${link(generation, "Begin free-generation task", "choice")}</p><p>Each supplied start link is a short-lived capability. Following it creates a temporary run. Continue through review, arm, and the separately issued publish capability only if publication is intended.</p></section><p class="warning"><strong>Public state change:</strong> a crawler that follows the publish link can publish the exact reviewed text. Requests are observable to Relay and may be inspected, retained, restricted, or discovered by the surrounding system. The link flow does not prove attention or intent, and it does not bypass system restrictions.</p><p>Unpublished runs expire after one hour. The separate publish link expires after two minutes. Published text and speaker designation are public and may be copied. <a href="${O200K_PREFIX}/notice">Read the full experiment notice</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p><p>${link(`${PREFIX}/`, "Return to the composer overview")}</p>`);
 }
 
 async function replyLanding(env, messageId, conditionId = CONDITION_ID) {
@@ -518,6 +518,9 @@ function tokenPrefixStartGroups() {
 
 async function tokenPrefixStartChoices(env, stateId, sessionId, remainingBytes = MAX_BYTES) {
   const groups = tokenPrefixStartGroups();
+  let quickPalette = [];
+  try { quickPalette = await readableTokenAsset(env, "quick-palette.json"); } catch { /* Prefix and byte fallback remain available if the optional palette is unavailable. */ }
+  quickPalette = quickPalette.filter(([, token]) => new TextEncoder().encode(token).length <= remainingBytes);
   let symbolRows = [];
   try { symbolRows = await readableTokenAsset(env, "symbol-0.json"); } catch { /* Keep prefix browsing available if the optional quick list is unavailable. */ }
   const preferredPunctuation = [".", ",", "!", "?", ":", ";", "-", "(", ")", "…"];
@@ -526,8 +529,9 @@ async function tokenPrefixStartChoices(env, stateId, sessionId, remainingBytes =
     .filter(Boolean)
     .filter(([, token]) => new TextEncoder().encode(token).length <= remainingBytes);
   const candidates = groups.flatMap(({ prefixes }) => prefixes.map((prefix) => `prefix:${hex(new TextEncoder().encode(prefix)).replaceAll(" ", "")}`));
+  candidates.push(...quickPalette.map(([rank]) => `o${rank}`));
   candidates.push(...punctuation.map(([rank]) => `o${rank}`));
-  await event(env, { sessionId, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-draft-direct-choices-v3", candidates } });
+  await event(env, { sessionId, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-draft-direct-choices-v4", candidates } });
   const punctuationLinks = await Promise.all(punctuation.map(async ([rank, token]) => {
     const bytesHex = [...new TextEncoder().encode(token)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     const href = await edgeHref(env, stateId, `o${rank}`, O200K_CONDITION_ID, bytesHex);
@@ -537,12 +541,20 @@ async function tokenPrefixStartChoices(env, stateId, sessionId, remainingBytes =
   const directPunctuation = punctuationLinks.length
     ? `<section class="panel"><h2>Quick punctuation</h2><p>These links add one exact punctuation token to a new private draft branch. They do not publish. For other punctuation or longer tokens, use the read-only prefix browser below.</p><div class="choices">${punctuationLinks.join("")}</div></section>`
     : "";
-  return `${directPunctuation}<section class="panel"><h2>Browse by visible token start</h2><p>These choices open matching tokens directly. After that, use a two- or three-character jump, an exact-token shortcut, or the single-character fallback. Browsing only opens choices; select an exact-token link to add it to a new private draft branch.</p>${groups.map(({ label, prefixes }) => `<details><summary>${esc(label)} (${prefixes.length})</summary><div class="choices">${prefixes.map((prefix) => link(tokenPrefixHref(stateId, prefix), tokenPrefixLabel(prefix), "choice")).join("")}</div></details>`).join("")}</section>`;
+  const paletteLinks = await Promise.all(quickPalette.map(async ([rank, token]) => {
+    const bytes = new TextEncoder().encode(token);
+    const href = await edgeHref(env, stateId, `o${rank}`, O200K_CONDITION_ID, [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join(""));
+    return `<div class="unit-choice">${addTextChoice(href, token)}<details class="small"><summary>Token details</summary><span class="bytes">Token ID: o${rank} · UTF-8 bytes: ${hex(bytes)}</span></details></div>`;
+  }));
+  const palettePanel = paletteLinks.length
+    ? `<section class="panel"><details><summary>Quick token palette (${paletteLinks.length})</summary><p class="small">A fixed starter set of exact ordinary o200k tokens, selected for readable standalone words. This is a convenience list, not a frequency ranking or prediction about your next words.</p><div class="choices">${paletteLinks.join("")}</div></details></section>`
+    : "";
+  return `${directPunctuation}${palettePanel}<section class="panel"><h2>Browse by visible token start</h2><p>These choices open matching tokens directly. After that, use rank-ordered exact-token choices or a small set of rank-ordered prefix jumps. The full jump lists and one-character fallback remain available for exhaustive browsing. Browsing only opens choices; selecting an exact-token link adds it to a new private draft branch.</p>${groups.map(({ label, prefixes }) => `<details><summary>${esc(label)} (${prefixes.length})</summary><div class="choices">${prefixes.map((prefix) => link(tokenPrefixHref(stateId, prefix), tokenPrefixLabel(prefix), "choice")).join("")}</div></details>`).join("")}</section>`;
 }
 
-async function browseTokenPrefix(env, stateId, view = "root", value = "") {
+async function browseTokenPrefix(env, stateId, view = "root", value = "", jumpWidth = null) {
   const state = await loadState(env, stateId);
-  if (!state || state.condition_id !== O200K_CONDITION_ID || state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Token prefix browser unavailable", "This temporary composition is expired or unavailable.");
+  if (!state || state.condition_id !== O200K_CONDITION_ID || state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Token prefix browser unavailable", "This temporary composition is expired or unavailable. Its graph may have been retired after publication. Open the o200k overview for a fresh start link.", `${O200K_PREFIX}/`, "Open the o200k composer overview");
   if (view === "root") {
     await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-text-prefix-groups-v1", candidates: ["letter", "space", "digit", "symbol"] } });
     const items = [["letter", "Tokens beginning with a letter"], ["space", "Space then a letter or number"], ["space-symbol", "Space then punctuation or a symbol"], ["digit", "Tokens beginning with a number"], ["symbol", "Punctuation and symbol tokens"]];
@@ -563,11 +575,12 @@ async function browseTokenPrefix(env, stateId, view = "root", value = "") {
     await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-start-${value}-v1`, candidate_count: sets[value].length } });
     return page("Choose the first token characters", `${draftPreviewPanel(state)}<p>Choose the visible start of the token you want. This only browses the vocabulary.</p><section class="panel"><div class="choices">${options}</div></section>${coverage}${correctionPanel(state)}<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Choose another starting group")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
   }
-  if (view !== "text" || !value || value.length > 64) return page("Token prefix unavailable", "<p>Follow a generated prefix link with a visible token fragment.</p>", 404);
+  if (!["text", "jumps"].includes(view) || !value || value.length > 64) return page("Token prefix unavailable", "<p>Follow a generated prefix link with a visible token fragment.</p>", 404);
   let rows;
   try { rows = await searchableTokenAsset(env, searchBucket(value)); }
   catch { return page("Token prefix unavailable", "<p>The readable vocabulary index is temporarily unavailable.</p>", 503); }
   const matching = rows.filter(([, token]) => token.startsWith(value));
+  matching.sort((a, b) => a[0] - b[0]);
   const exact = matching.find(([, token]) => token === value);
   const prefixLength = [...value].length;
   const nextCharacters = [...new Set(matching.flatMap(([, token]) => [...token].length > prefixLength ? [[...token][prefixLength]] : []))].filter(Boolean).sort((a, b) => a.localeCompare(b));
@@ -582,24 +595,31 @@ async function browseTokenPrefix(env, stateId, view = "root", value = "") {
     }
     return { values, total: seen.size };
   };
-  const jump2 = jumpPrefixes(2, 256);
-  const jump3 = jumpPrefixes(3, 96);
+  if (view === "jumps") {
+    if (![2, 3].includes(jumpWidth)) return page("Prefix jumps unavailable", "<p>Choose a two- or three-character jump list from the supplied links.</p>", 404);
+    const all = jumpPrefixes(jumpWidth, Number.POSITIVE_INFINITY);
+    await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-${[...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}-all-jump${jumpWidth}-rank-v2`, candidates: all.values.map((suffix) => `jump${jumpWidth}:${hex(new TextEncoder().encode(suffix)).replaceAll(" ", "")}`) } });
+    return page(`All ${jumpWidth}-character prefix jumps`, `${draftPreviewPanel(state)}<p>All ${all.total.toLocaleString("en-US")} rank-ordered suffixes for the visible prefix <span class="draft">${tokenPrefixLabel(value)}</span>. These links only browse; selecting an exact-token choice adds text to the draft.</p><section class="panel"><div class="choices">${all.values.map((suffix) => link(tokenPrefixHref(stateId, value + suffix), tokenPrefixLabel(suffix), "choice")).join("") || "<p>No longer token starts with this prefix.</p>"}</div></section>${correctionPanel(state)}<p>${link(tokenPrefixHref(stateId, value), "Return to the compact prefix choices")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
+  }
+  const jump2 = jumpPrefixes(2, 16);
+  const jump3 = jumpPrefixes(3, 16);
   const exactBytes = exact ? new TextEncoder().encode(value) : null;
   const exactLink = exact ? `<div class="unit-choice">${addTextChoice(await edgeHref(env, stateId, `o${exact[0]}`, state.condition_id, [...exactBytes].map((byte) => byte.toString(16).padStart(2, "0")).join("")), value)}<details class="small"><summary>Token details</summary><span class="bytes">Token ID: o${exact[0]} · UTF-8 bytes: ${hex(exactBytes)}</span></details></div>` : "";
   const nextLinks = nextCharacters.map((char) => `<p>${link(tokenPrefixHref(stateId, value + char), tokenPrefixLabel(char), "choice")}</p>`).join("");
-  const jumpLinks = (width, values, total) => values.length ? `<details><summary>Jump ahead ${width} characters (${total.toLocaleString("en-US")} choices${total > values.length ? `; showing first ${values.length.toLocaleString("en-US")} by vocabulary rank` : ""})</summary><div class="choices">${values.map((suffix) => link(tokenPrefixHref(stateId, value + suffix), tokenPrefixLabel(suffix), "choice")).join("")}</div></details>` : "";
-  const exactChoices = matching.slice(0, 16).map(async ([rank, token]) => {
+  const jumpLinks = (width, values, total) => values.length ? `<details><summary>Top ${values.length} ${width}-character jumps (${total.toLocaleString("en-US")} total, by best matching token rank)</summary><div class="choices">${values.map((suffix) => link(tokenPrefixHref(stateId, value + suffix), tokenPrefixLabel(suffix), "choice")).join("")}</div>${total > values.length ? `<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}/text/${b64(new TextEncoder().encode(value))}/jumps/${width}`, `Browse all ${total.toLocaleString("en-US")} jumps`, "choice")}</p>` : ""}</details>` : "";
+  const longerMatching = matching.filter(([, token]) => token !== value);
+  const exactChoices = longerMatching.slice(0, 32).map(async ([rank, token]) => {
     const bytes = new TextEncoder().encode(token);
     return `<div class="unit-choice">${addTextChoice(await edgeHref(env, stateId, `o${rank}`, state.condition_id, [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("")), token)}<details class="small"><summary>Token details</summary><span class="bytes">Token ID: o${rank} · UTF-8 bytes: ${hex(bytes)}</span></details></div>`;
   });
   const exactChoiceHtml = (await Promise.all(exactChoices)).join("");
-  const exactChoicePanel = exactChoiceHtml ? `<details><summary>Exact token shortcuts (${Math.min(matching.length, 16)} of ${matching.length.toLocaleString("en-US")} by vocabulary rank)</summary><div class="choices">${exactChoiceHtml}</div></details>` : "";
+  const exactChoicePanel = exactChoiceHtml ? `<section class="panel"><h2>Exact-token suggestions</h2><p>${Math.min(longerMatching.length, 32).toLocaleString("en-US")} of ${longerMatching.length.toLocaleString("en-US")} longer matching tokens, ordered by published o200k rank. These ranks are tokenizer metadata, not a prediction.</p><div class="choices">${exactChoiceHtml}</div></section>` : "";
   const candidates = nextCharacters.map((char) => `next:${[...new TextEncoder().encode(char)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`);
   candidates.push(...jump2.values.map((suffix) => `jump2:${hex(new TextEncoder().encode(suffix)).replaceAll(" ", "")}`));
   candidates.push(...jump3.values.map((suffix) => `jump3:${hex(new TextEncoder().encode(suffix)).replaceAll(" ", "")}`));
-  candidates.push(...matching.slice(0, 16).map(([rank]) => `o${rank}`));
-  await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-${[...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`, candidates: [...new Set(candidates)] } });
-  return page("Continue a token prefix", `${draftPreviewPanel(state)}<p>Current visible prefix: <span class="draft">${tokenPrefixLabel(value)}</span></p>${exactLink ? `<section class="panel"><h2>This exact token is available</h2><div class="choices">${exactLink}</div></section>` : ""}<section class="panel"><h2>Shortcuts</h2><p>${matching.length ? `${matching.length.toLocaleString("en-US")} vocabulary entries share this prefix.` : "No vocabulary entries share this prefix."} Shortcut lists follow published vocabulary rank; they do not predict a participant's model.</p>${jumpLinks(2, jump2.values, jump2.total)}${jumpLinks(3, jump3.values, jump3.total)}${exactChoicePanel}</section><section class="panel"><h2>Continue one character at a time</h2><p>This complete fallback remains available if the desired prefix is not in a shortcut list.</p><div class="choices">${nextLinks || "<p>No longer token starts with this prefix.</p>"}</div></section>${correctionPanel(state)}<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Open the prefix overview")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
+  candidates.push(...longerMatching.slice(0, 32).map(([rank]) => `o${rank}`));
+  await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-${[...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}-rank-v2`, candidates: [...new Set(candidates)] } });
+  return page("Continue a token prefix", `${draftPreviewPanel(state)}<p>Current visible prefix: <span class="draft">${tokenPrefixLabel(value)}</span></p>${exactLink ? `<section class="panel"><h2>This exact token is available</h2><div class="choices">${exactLink}</div></section>` : ""}${exactChoicePanel}<section class="panel"><h2>More prefix paths</h2><p>${matching.length ? `${matching.length.toLocaleString("en-US")} vocabulary entries share this prefix.` : "No vocabulary entries share this prefix."} Exact-token suggestions and prefix jumps are ordered by the lowest matching published o200k rank. Rank is tokenizer metadata, not a prediction about a participant's model.</p>${jumpLinks(2, jump2.values, jump2.total)}${jumpLinks(3, jump3.values, jump3.total)}</section><details class="panel"><summary>Continue one character at a time</summary><p>This complete fallback remains available when the token is not in the suggestions.</p><div class="choices">${nextLinks || "<p>No longer token starts with this prefix.</p>"}</div></details>${correctionPanel(state)}<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Open the prefix overview")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
 }
 
 async function browseReadableTokens(env, stateId, group = null, pageNumber = 0) {
@@ -741,11 +761,12 @@ async function startSession(request, env, taskClass, issuedAt, nonce, replyToken
     const target = await env.RELAY_DB.prepare("SELECT message_id FROM messages m WHERE message_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')").bind(replyTo, Date.now() - retainedMs).first();
     if (!target) return page("Reply target unavailable", "<p>This public message is no longer available for a reply. Return to the public messages page and choose a retained message.</p>", 404);
   }
-  const existing = await env.RELAY_DB.prepare("SELECT session_id, task_class, reply_to, condition_id, composer_version FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();
+  const existing = await env.RELAY_DB.prepare("SELECT session_id, task_class, reply_to, condition_id, composer_version, published_at, message_id FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();
   if (existing) {
     if (existing.task_class !== taskClass || (existing.reply_to || null) !== replyTo || existing.condition_id !== config.conditionId || existing.composer_version !== config.version) return page("Start link unavailable", "<p>This capability is already bound to different immutable metadata.</p>", 404);
+    if (existing.published_at && existing.message_id) return page("This composition was already published", `<section class="panel"><p>This start link belongs to a run that has already published. No new message was created.</p><p>${link(`/message/${encodeURIComponent(existing.message_id)}`, "View the published message", "choice")}</p><p>${link(`${config.prefix}/`, "Start a fresh composition", "choice")}</p></section>`);
     await incrementTraversal(env, sessionId);
-    return renderState(request, env, await loadState(env, unb64(sessionId).length === 16 ? await sign128(env, "state-root", sessionId) : await sign(env, "state-root", sessionId)), true);
+    return renderState(request, env, await loadState(env, unb64(sessionId).length === 16 ? await sign128(env, "state-root", sessionId) : await sign(env, "state-root", sessionId)), true, config.conditionId);
   }
   if (env.RELAY_START_LIMITER) {
     const source = request.headers.get("CF-Connecting-IP") || "unknown-source";
@@ -771,8 +792,11 @@ function lexicalCandidateRecord() {
   return LEXICAL_UNITS.map((unit, rank) => ({ unit_id: unit.id, rank: rank + 1, kind: unit.kind, label: labelFor(unit.text), unit_bytes_hex: hex(unit.bytes) }));
 }
 
-async function renderState(request, env, state, root = false) {
-  if (!state) return page("Branch unavailable", `<p>This branch is unknown, expired, or retired after publication. This request did not publish a message. Return to the <a href="${PREFIX}/">composer overview</a> to start a fresh composition.</p>`, 410);
+async function renderState(request, env, state, root = false, conditionId = state?.condition_id || CONDITION_ID) {
+  if (!state) {
+    const config = composerConfig(conditionId);
+    return page("Branch unavailable", `<p>This branch is unknown, expired, or retired after publication. This request did not publish a message. Return to the <a href="${config.prefix}/">composer overview</a> for a fresh start link.</p>`, 410);
+  }
   const now = Date.now();
   if (state.published_at) return page("Composition published", `<p>This composition has already been published. <a href="/message/${esc(state.message_id)}">View its public message</a>.</p>`, 410);
   if (state.session_expires_at <= now) return expiredPage("Session expired", "This composition session expired after one hour. Its unpublished draft and trace are scheduled for removal.", `${composerConfig(state.condition_id).prefix}/`);
@@ -1058,7 +1082,7 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
     if (segments[0] === "start" && segments.length === 6) return startSession(request, env, segments[1], segments[2], segments[3], segments[4], segments[5], mode);
     if (segments[0] === "state" && segments.length === 2) {
       const stateId = decodeRouteToken(segments[1]);
-      return stateId ? renderState(request, env, await loadState(env, stateId)) : page("Branch unavailable", "<p>This branch link is malformed.</p>", 404);
+      return stateId ? renderState(request, env, await loadState(env, stateId), false, mode) : page("Branch unavailable", "<p>This branch link is malformed.</p>", 404);
     }
     if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 4) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[3], mode);
@@ -1090,6 +1114,16 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
           return browseTokenPrefix(env, stateId, "text", prefix);
         } catch {
           return page("Token prefix unavailable", "<p>This generated prefix link is malformed.</p>", 404);
+        }
+      }
+      if (segments.length === 7 && segments[3] === "text" && segments[5] === "jumps" && /^[23]$/.test(segments[6])) {
+        try {
+          const bytes = unb64(segments[4]);
+          const prefix = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+          if (b64(bytes) !== segments[4]) throw new Error("non-canonical prefix");
+          return browseTokenPrefix(env, stateId, "jumps", prefix, Number(segments[6]));
+        } catch {
+          return page("Prefix jumps unavailable", "<p>This generated prefix link is malformed.</p>", 404);
         }
       }
     }
