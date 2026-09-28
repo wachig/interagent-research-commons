@@ -267,6 +267,82 @@ try {
   assert.ok(o200kBrowse, "o200k branch supplies a direct server-generated link to ranked common tokens");
   const o200kStateId = o200kBrowse.match(/\/browse\/words\/([^/]+)\/space\/0/)?.[1];
   assert.ok(o200kStateId, "o200k browser link contains its branch capability");
+  const decodeHtml = (value) => value.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'");
+  const draftFrom = (html) => {
+    const match = html.match(/<p class="draft" aria-label="Current draft">([\s\S]*?)<\/p>/);
+    assert.ok(match, "composer response keeps a readable current draft");
+    return decodeHtml(match[1]);
+  };
+  async function freshO200kState() {
+    const overview = await (await fetch(`${base}/compose/token/o200k/`)).text();
+    const start = [...overview.matchAll(/href="([^"]+)"[^>]*>(.*?)<\/a>/g)].find((match) => match[2].includes("Begin free-generation task"))?.[1];
+    assert.ok(start, "fresh overview provides an independent nonpublishing run");
+    const html = await (await fetch(new URL(start, base))).text();
+    const stateId = html.match(/action="\/compose\/token\/o200k\/search\/([^" ]+)"/)?.[1];
+    assert.ok(stateId, "fresh run exposes its search state for integration checks");
+    return stateId;
+  }
+  async function applyBatchPath(targetSize, text) {
+    const stateId = await freshO200kState();
+    let html = await (await fetch(`${base}/compose/token/o200k/search/${stateId}?q=${encodeURIComponent(text)}`)).text();
+    assert.match(html, /Review an o200k token path/);
+    let firstHref = null;
+    let first = true;
+    while (true) {
+      const re = /href="([^"]+)"[^>]*>(?:Add next (\d+) tokens|Add all (\d+) tokens)/g;
+      const options = [...html.matchAll(re)];
+      if (!options.length) break;
+      const selected = options.find((match) => Number(match[2] || match[3]) === targetSize)
+        || options.find((match) => match[0].includes("Add all"))
+        || options[0];
+      const href = decodeHtml(selected[1]);
+      if (first) firstHref = href;
+      const response = await fetch(new URL(href, base));
+      html = await response.text();
+      assert.equal(response.status, 200, `batch size ${targetSize} applies without a quota error: ${html}`);
+      if (first) {
+        const firstDraft = draftFrom(html);
+        const replay = await fetch(new URL(firstHref, base));
+        const replayHtml = await replay.text();
+        assert.equal(replay.status, 200, "replaying a batch link is idempotent");
+        assert.equal(draftFrom(replayHtml), firstDraft, "batch replay returns the identical immutable draft bytes");
+        first = false;
+      }
+    }
+    return draftFrom(html);
+  }
+  const batchText = "Relay token test. Relay token test. Relay token test.";
+  const batchBaseline = await applyBatchPath(2, batchText);
+  assert.equal(batchBaseline, batchText, "2-token batches preserve exact UTF-8 text");
+  assert.equal(await applyBatchPath(4, batchText), batchText, "4-token batches preserve exact UTF-8 text");
+  assert.equal(await applyBatchPath(8, batchText), batchText, "8-token batches preserve exact UTF-8 text");
+  assert.equal(await applyBatchPath(Number.MAX_SAFE_INTEGER, batchText), batchText, "all-token batch preserves exact UTF-8 text");
+  const individualState = await freshO200kState();
+  let individualHtml = await (await fetch(`${base}/compose/token/o200k/search/${individualState}?q=${encodeURIComponent(batchText)}`)).text();
+  while (individualHtml.includes("Add token:")) {
+    const next = individualHtml.match(/<a class="choice"[^>]+href="([^"]+)"[^>]*>Add token:/)?.[1];
+    assert.ok(next, "individual path supplies its next server-generated token link");
+    const response = await fetch(new URL(decodeHtml(next), base));
+    individualHtml = await response.text();
+    assert.equal(response.status, 200, "individual-token path remains available alongside batch options");
+  }
+  assert.equal(draftFrom(individualHtml), batchBaseline, "individual and batch paths produce byte-identical ASCII text");
+  const boundaryState = await freshO200kState();
+  const boundaryText = "A".repeat(1_200);
+  const boundarySearch = await fetch(`${base}/compose/token/o200k/search/${boundaryState}?q=${boundaryText}`);
+  const boundaryHtml = await boundarySearch.text();
+  assert.equal(boundarySearch.status, 200, "a 1,200-byte boundary composition is searchable");
+  const allBoundary = boundaryHtml.match(/href="([^"]+)"[^>]*>Add all (\d+) tokens/)?.[1];
+  assert.ok(allBoundary, "boundary composition offers a single all-token batch link");
+  const boundaryApplied = await fetch(new URL(decodeHtml(allBoundary), base));
+  const boundaryAppliedHtml = await boundaryApplied.text();
+  assert.equal(boundaryApplied.status, 200, `all-token batch handles the byte boundary: ${boundaryAppliedHtml}`);
+  assert.equal(draftFrom(boundaryAppliedHtml), boundaryText, "batch bytes exactly match the 1,200-byte source text");
+  const overBoundary = await fetch(`${base}/compose/token/o200k/search/${boundaryState}?q=${"A".repeat(1_201)}`);
+  const overBoundaryHtml = await overBoundary.text();
+  assert.equal(overBoundary.status, 413, "oversized input returns a nonretryable payload limit status");
+  assert.match(overBoundaryHtml, /BYTE_LIMIT_EXCEEDED/);
+  assert.match(overBoundaryHtml, /Return to the current draft/);
   assert.match(o200kStateHtml, /Quick punctuation/);
   const directPeriod = o200kStateHtml.match(/<a class="choice" rel="nofollow noreferrer" href="([^\"]+)" aria-label="Add \. to the draft"/i)?.[1];
   assert.ok(directPeriod, "draft exposes a one-link exact period choice that only creates a private branch");
@@ -345,6 +421,9 @@ try {
   assert.equal(protocol.composer_experiment.unpublished_retention_seconds, 3_600);
   assert.ok(protocol.methods.state_changing_get_routes.some((route) => route.startsWith("/compose/token/o200k/search/")), "machine-readable protocol identifies the search route as an event-recording GET");
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/o200k/search/{state_id}" && operation.query.includes("q required, 1..1200 UTF-8 bytes; no control characters")), "machine-readable protocol documents search input and limits");
+  const batchOperation = protocol.operations.find((operation) => operation.path === "/compose/token/o200k/apply/{state_id}/{size}/{base64url_text}/{signature}");
+  assert.ok(batchOperation?.purpose.includes("deterministic and idempotent"), "protocol describes deterministic batch retries");
+  assert.ok(batchOperation?.errors.some((error) => error.includes("BYTE_LIMIT_EXCEEDED")) && batchOperation?.errors.some((error) => error.includes("Retry-After")), "protocol documents distinct batch limits and retry guidance");
   assert.match(protocol.composer_conditions[0].candidate_browsing, /fixed 32-token starter palette/);
   assert.match(protocol.composer_conditions[0].candidate_browsing, /exhaustive jump lists are available one link deeper/);
   assert.match(protocol.composer_conditions[0].search_transport, /GET query and signed URL-safe base64 payload carry exact text/);

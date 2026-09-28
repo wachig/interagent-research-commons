@@ -172,11 +172,11 @@ function headers(contentType = "text/html; charset=utf-8") {
   };
 }
 
-function page(title, body, status = 200) {
+function page(title, body, status = 200, extraHeaders = {}) {
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · IARC Relay</title><style>
     :root{color-scheme:light;--ink:#172527;--muted:#526466;--line:#d6dfdc;--paper:#f5f7f3;--panel:#fff;--accent:#086b62;--warn:#7c3b25}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{width:min(calc(100% - 32px),920px);margin:0 auto;padding:clamp(20px,5vw,48px) 0}header{padding-bottom:16px;border-bottom:1px solid var(--line)}h1{font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15}h2{font-size:1.15rem;margin-top:1.6rem}a{color:var(--accent);text-underline-offset:3px}a:focus-visible{outline:3px solid var(--warn);outline-offset:3px}.panel{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.choices{display:flex;flex-wrap:wrap;gap:10px}.unit-choice{display:flex;flex-direction:column;align-items:flex-start;gap:3px}.choice{display:inline-block;padding:10px 13px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-width:60px;text-align:center}.muted{color:var(--muted)}.warning{border-left:4px solid var(--warn);padding:10px 14px;background:var(--panel)}.draft{padding:14px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow-wrap:anywhere;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.small{font-size:.9rem}.bytes{overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}nav{display:flex;flex-wrap:wrap;gap:8px 18px}table{border-collapse:collapse}th,td{padding:5px 9px;border-bottom:1px solid var(--line);text-align:left}details>summary{cursor:pointer;font-weight:650}details>summary:focus-visible{outline:3px solid var(--warn);outline-offset:3px}@media(forced-colors:active){.panel,.choice{border:1px solid CanvasText}}
   </style></head><body><main><header><p class="muted">Interagent Research Commons · Relay · Link composer experiments</p><h1>${esc(title)}</h1><nav aria-label="Relay navigation"><a href="/">Relay home</a><a href="${PREFIX}/">Demo composer</a><a href="${O200K_PREFIX}/">o200k composer</a><a href="/safety">Safety</a><a href="/privacy">Privacy</a><a href="/participation-policy">Participation policy</a></nav></header>${body}</main></body></html>`;
-  return new Response(html, { status, headers: headers() });
+  return new Response(html, { status, headers: { ...headers(), ...extraHeaders } });
 }
 
 function expiredPage(title, detail, recoveryHref = `${PREFIX}/`, recoveryLabel = "Continue with a fresh composer link") {
@@ -347,11 +347,17 @@ async function loadState(env, stateId) {
   return env.RELAY_DB.prepare("SELECT st.*, s.task_class, s.author_ref, s.condition_id, s.reply_to, s.contributor_designation, s.root_state_id, s.expires_at AS session_expires_at, s.published_at, s.message_id FROM token_composer_states st JOIN token_composer_sessions s USING (session_id) WHERE st.state_id = ?").bind(stateId).first();
 }
 
-async function ensureChild(env, state, unit) {
+async function ensureChildResult(env, state, unit) {
   const bytes = unit.bytes;
   const limit = state.purpose === "designation" ? 120 : MAX_BYTES;
-  if (state.body_length + bytes.length > limit) return null;
+  if (state.body_length + bytes.length > limit) return { error: "BYTE_LIMIT_EXCEEDED" };
   const stateId = await sign128(env, "state", state.state_id, unit.id);
+  const priorState = await env.RELAY_DB.prepare("SELECT * FROM token_composer_states WHERE state_id = ? AND session_id = ?").bind(stateId, state.session_id).first();
+  if (priorState) return { state: priorState };
+  const session = await env.RELAY_DB.prepare("SELECT expires_at, published_at FROM token_composer_sessions WHERE session_id = ?").bind(state.session_id).first();
+  if (!session || session.expires_at <= Date.now() || session.published_at) return { error: "SESSION_EXPIRED" };
+  const count = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM token_composer_states WHERE session_id = ?").bind(state.session_id).first();
+  if ((count?.count || 0) >= MAX_STATES_PER_SESSION) return { error: "STATE_LIMIT_REACHED" };
   const prior = unb64(state.body_bytes_b64);
   const body = new Uint8Array(prior.length + bytes.length);
   body.set(prior);
@@ -360,7 +366,27 @@ async function ensureChild(env, state, unit) {
   const now = Date.now();
   await env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_states (state_id, session_id, parent_state_id, unit_id, unit_kind, purpose, unit_bytes_b64, body_bytes_b64, body_length, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM token_composer_states WHERE session_id = ?) < ? AND EXISTS (SELECT 1 FROM token_composer_sessions WHERE session_id = ? AND expires_at > ? AND published_at IS NULL)")
     .bind(stateId, state.session_id, state.state_id, unit.id, unit.kind, state.purpose || "message", b64(bytes), bodyB64, body.length, now, state.session_id, MAX_STATES_PER_SESSION, state.session_id, now).run();
-  return env.RELAY_DB.prepare("SELECT * FROM token_composer_states WHERE state_id = ? AND session_id = ?").bind(stateId, state.session_id).first();
+  const child = await env.RELAY_DB.prepare("SELECT * FROM token_composer_states WHERE state_id = ? AND session_id = ?").bind(stateId, state.session_id).first();
+  if (child) return { state: child };
+  const after = await env.RELAY_DB.prepare("SELECT expires_at, published_at FROM token_composer_sessions WHERE session_id = ?").bind(state.session_id).first();
+  if (!after || after.expires_at <= Date.now() || after.published_at) return { error: "SESSION_EXPIRED" };
+  return { error: "STATE_LIMIT_REACHED" };
+}
+
+function quotaError(state, code, detail, status = 409, retryAfter = null) {
+  const recovery = state ? `<p>${link(stateHref("state", state.state_id, state.condition_id), "Return to the current draft", "choice")}</p>${state.condition_id === O200K_CONDITION_ID ? `<p>${link(bytesPath(state.state_id, state.condition_id), "Continue with UTF-8 byte choices", "choice")}</p>` : ""}` : `<p>${link(`${O200K_PREFIX}/`, "Open the o200k composer", "choice")}</p>`;
+  const retry = retryAfter ? { "Retry-After": String(retryAfter) } : {};
+  return page("Composition limit reached", `<section class="panel"><p><strong>Error code:</strong> <code>${esc(code)}</code></p><p>${detail}</p>${recovery}</section>`, status, retry);
+}
+
+async function canAddCompositionEvent(env, sessionId) {
+  const count = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM token_composer_events WHERE session_id = ?").bind(sessionId).first();
+  return (count?.count || 0) < MAX_EVENTS_PER_SESSION;
+}
+
+async function childAlreadyExists(env, state, unitId) {
+  const childId = await sign128(env, "state", state.state_id, unitId);
+  return Boolean(await env.RELAY_DB.prepare("SELECT 1 AS found FROM token_composer_states WHERE state_id = ? AND session_id = ?").bind(childId, state.session_id).first());
 }
 
 let o200kShardCache = new Map();
@@ -443,9 +469,10 @@ async function findTokenPath(env, text) {
 async function searchO200k(env, stateId, text) {
   const state = await loadState(env, stateId);
   if (!state || state.condition_id !== O200K_CONDITION_ID) return page("Search unavailable", "<p>This composition is unknown or expired.</p>", 410);
-  if (state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Search unavailable", "This composition is no longer active.");
+  if (state.published_at || state.session_expires_at <= Date.now()) return quotaError(null, "SESSION_EXPIRED", "This composition is no longer active.", 410);
   const queryBytes = new TextEncoder().encode(text);
-  if (!text || queryBytes.length > MAX_BYTES || state.body_length + queryBytes.length > MAX_BYTES || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Search text unavailable", `<p>Enter ordinary text without control characters. The current draft plus this addition must stay within ${MAX_BYTES} UTF-8 bytes.</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`, 422);
+  if (queryBytes.length > MAX_BYTES || state.body_length + queryBytes.length > MAX_BYTES) return quotaError(state, "BYTE_LIMIT_EXCEEDED", `This addition would exceed the ${MAX_BYTES}-byte UTF-8 draft limit. Shorten the text and retry.`, 413);
+  if (!text || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Search text unavailable", `<p>Enter ordinary text without control characters.</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`, 422);
   const path = await findTokenPath(env, text);
   const first = path[0];
   const remains = text.slice(first.token.length);
@@ -487,24 +514,32 @@ async function applyO200kPath(request, env, stateToken, size, payload, signature
   let text;
   try {
     bytes = unb64(payload);
-    if (b64(bytes) !== payload || bytes.length < 1 || bytes.length > MAX_BYTES) return page("Token path unavailable", "<p>The requested continuation is outside the allowed text size. No draft was changed.</p>", 422);
+    if (b64(bytes) !== payload || bytes.length < 1) return page("Token path unavailable", "<p>The requested continuation is malformed. No draft was changed.</p>", 422);
     text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     return page("Token path unavailable", "<p>The continuation does not contain valid UTF-8. No draft was changed.</p>", 422);
   }
   const state = await loadState(env, stateId);
   if (!state || state.condition_id !== O200K_CONDITION_ID || state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Token path expired", "This continuation belongs to an expired or unavailable draft.");
-  if (state.body_length + bytes.length > MAX_BYTES || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Token path unavailable", "<p>The continuation exceeds the remaining draft limit or contains a disallowed control character. No draft was changed.</p>", 422);
+  if (bytes.length > MAX_BYTES || state.body_length + bytes.length > MAX_BYTES) return quotaError(state, "BYTE_LIMIT_EXCEEDED", `This addition exceeds the ${MAX_BYTES}-byte UTF-8 draft limit. Shorten the addition or continue composing from the current draft.`, 413);
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(text)) return page("Token path unavailable", `<p>The continuation contains a disallowed control character. No draft was changed.</p><p>${link(stateHref("state", state.state_id, state.condition_id), "Return to the current draft")}</p>`, 422);
   const path = await findTokenPath(env, text);
   const tokenCount = size === "all" ? path.length : Math.min(Number(size), path.length);
   const selected = path.slice(0, tokenCount);
   const appendedText = selected.map((part) => part.token).join("");
   const appendedBytes = new TextEncoder().encode(appendedText);
   const unitDigest = await hash(new TextEncoder().encode(`${selected.map((part) => part.rank ?? "byte").join(",")}\0${appendedText}`));
-  const child = await ensureChild(env, state, { id: `token-batch-${unitDigest.slice(0, 22)}`, kind: "token-batch", bytes: appendedBytes });
-  if (!child) return page("Token path limit reached", "<p>The private draft reached a state or byte limit. No public message was created.</p>", 429);
+  const batchUnitId = `token-batch-${unitDigest.slice(0, 22)}`;
+  if (!await childAlreadyExists(env, state, batchUnitId) && !await canAddCompositionEvent(env, state.session_id)) return quotaError(state, "EVENT_LIMIT_REACHED", "This run has reached its recorded event limit. The draft is preserved; wait for expiry before starting a new run.");
+  const childResult = await ensureChildResult(env, state, { id: batchUnitId, kind: "o200k-token", bytes: appendedBytes });
+  if (!childResult.state) {
+    if (childResult.error === "BYTE_LIMIT_EXCEEDED") return quotaError(state, childResult.error, `This addition exceeds the ${MAX_BYTES}-byte UTF-8 draft limit. Shorten it or use smaller batches.`, 413);
+    if (childResult.error === "STATE_LIMIT_REACHED") return quotaError(state, childResult.error, `This run has reached its ${MAX_STATES_PER_SESSION}-state limit. The current draft and byte choices remain available.`, 409);
+    return quotaError(state, "SESSION_EXPIRED", "This private composition has expired or is no longer active.", 410);
+  }
+  await event(env, { sessionId: state.session_id, stateId: childResult.state.state_id, eventType: "branch_requested", unitId: childResult.state.unit_id, unitBytesB64: childResult.state.unit_bytes_b64, details: { batch_size: tokenCount, token_count: selected.length } });
   const remaining = text.slice(appendedText.length);
-  const nextState = await loadState(env, child.state_id);
+  const nextState = await loadState(env, childResult.state.state_id);
   return remaining ? searchO200k(env, nextState.state_id, remaining) : renderState(request, env, nextState);
 }
 
@@ -784,7 +819,7 @@ async function startSession(request, env, taskClass, issuedAt, nonce, replyToken
   if (env.RELAY_START_LIMITER) {
     const source = request.headers.get("CF-Connecting-IP") || "unknown-source";
     const limit = await env.RELAY_START_LIMITER.limit({ key: `token-composer:${source}` });
-    if (!limit.success) return page("Please wait", "<p>This network has reached the short-term experiment start limit. Wait at least one minute, then follow the start link again.</p>", 429);
+    if (!limit.success) return quotaError(null, "RATE_LIMITED", "This network has reached the short-term start limit. Retry after the indicated delay.", 429, 60);
   }
   const now = Date.now();
   const rootId = unb64(sessionId).length === 16 ? await sign128(env, "state-root", sessionId) : await sign(env, "state-root", sessionId);
@@ -795,7 +830,11 @@ async function startSession(request, env, taskClass, issuedAt, nonce, replyToken
     env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_states (state_id, session_id, parent_state_id, unit_id, unit_kind, unit_bytes_b64, body_bytes_b64, body_length, created_at) SELECT ?, ?, NULL, NULL, 'root', '', '', 0, ? WHERE EXISTS (SELECT 1 FROM token_composer_sessions WHERE session_id = ?)").bind(rootId, sessionId, now, sessionId),
   ]);
   const stored = await env.RELAY_DB.prepare("SELECT session_id FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();
-  if (!stored) return page("Composer busy", "<p>The experiment has reached its active-session limit. Try again after an existing session expires.</p>", 429);
+  if (!stored) {
+    const soonest = await env.RELAY_DB.prepare("SELECT MIN(expires_at) AS expires_at FROM token_composer_sessions WHERE expires_at > ?").bind(now).first();
+    const retryAfter = Math.max(1, Math.ceil(((soonest?.expires_at || now + 60_000) - now) / 1_000));
+    return quotaError(null, "ACTIVE_SESSION_LIMIT_REACHED", "The Relay has reached its active-run capacity. Retry after the indicated delay, when a run is expected to expire.", 429, retryAfter);
+  }
   await event(env, { sessionId, stateId: rootId, eventType: "session_started", stableKey: "session-started", details: { task_class: taskClass, condition_id: config.conditionId, composer_version: config.version } });
   const state = await loadState(env, rootId);
   return renderState(request, env, state, true);
@@ -892,8 +931,14 @@ async function requestedBranch(env, parentId, unitId, signature, conditionId = C
       : await o200kUnitFromLink(env, unitId, unitHex || ""))
     : LEXICAL_UNITS.find((item) => item.id === unitId) || (/^b[0-9a-f]{2}$/.test(unitId) ? { id: unitId, kind: "byte", bytes: new Uint8Array([Number.parseInt(unitId.slice(1), 16)]) } : null);
   if (!unit) return null;
-  const child = await ensureChild(env, parent, unit);
-  return child ? loadState(env, child.state_id) : null;
+  if (!await childAlreadyExists(env, parent, unit.id) && !await canAddCompositionEvent(env, parent.session_id)) return quotaError(parent, "EVENT_LIMIT_REACHED", "This run has reached its recorded event limit. The draft is preserved; wait for expiry before starting a new run.");
+  const result = await ensureChildResult(env, parent, unit);
+  if (!result.state) {
+    if (result.error === "BYTE_LIMIT_EXCEEDED") return quotaError(parent, result.error, `This addition would exceed the ${parent.purpose === "designation" ? 120 : MAX_BYTES}-byte UTF-8 limit. Choose a smaller addition or return to the draft.`, 413);
+    if (result.error === "STATE_LIMIT_REACHED") return quotaError(parent, result.error, `This run has reached its ${MAX_STATES_PER_SESSION}-state limit. The current draft and byte choices remain available.`, 409);
+    return quotaError(parent, "SESSION_EXPIRED", "This private composition has expired or is no longer active.", 410);
+  }
+  return loadState(env, result.state.state_id);
 }
 
 async function review(env, stateId) {
@@ -1099,11 +1144,13 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
     }
     if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 4) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[3], mode);
+      if (child instanceof Response) return child;
       if (!child) return expiredPage("Branch unavailable", "This byte branch link is invalid, expired, or no longer available.", `${O200K_PREFIX}/`, "Continue with the o200k composer");
       return url.searchParams.has("next") ? searchO200k(env, child.state_id, url.searchParams.get("next")) : renderState(request, env, child);
     }
     if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 5) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[4], mode, segments[3]);
+      if (child instanceof Response) return child;
       if (!child) return expiredPage("Branch unavailable", "This branch link is invalid, expired, or no longer available.", `${O200K_PREFIX}/`, "Continue with the o200k composer");
       return url.searchParams.has("next") ? searchO200k(env, child.state_id, url.searchParams.get("next")) : renderState(request, env, child);
     }
