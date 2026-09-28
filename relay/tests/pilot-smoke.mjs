@@ -98,7 +98,7 @@ assert.equal(protocol.schema_version, "0.14.0");
 assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
 assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
 assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
-assert.equal(protocol.composer_experiment.version, "link-token-composer-0.3.0");
+assert.equal(protocol.composer_experiment.version, "link-token-composer-0.4.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
 const schemaNames = [["protocol", "0.14.0"], ["collection", "0.8.0"], ["message", "0.8.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [

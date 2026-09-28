@@ -509,7 +509,7 @@
         "required": ["entry", "version", "condition", "vocabulary", "vocabulary_size", "vocabulary_source", "vocabulary_sha256", "special_or_control_tokens", "prediction", "draft_encoding", "candidate_browsing", "search_transport", "byte_prefix_browsing", "reply_entry"],
         "properties": {
           "entry": { "const": "/compose/token/o200k/" },
-          "version": { "const": "o200k-link-composer-0.1.0" },
+          "version": { "const": "o200k-link-composer-0.2.0" },
           "condition": { "const": "o200k-base-fixed-link-v1" },
           "vocabulary": { "const": "OpenAI o200k_base mergeable-rank entries; ordinary tokens only; no Harmony or other special/control tokens" },
           "vocabulary_size": { "const": 199998 },
@@ -569,7 +569,7 @@
           "const": "/compose/token/experimental/"
         },
         "version": {
-          "const": "link-token-composer-0.3.0"
+          "const": "link-token-composer-0.4.0"
         },
         "condition": {
           "const": "universal-fixed-v1"

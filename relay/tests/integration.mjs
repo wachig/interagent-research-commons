@@ -252,20 +252,20 @@ try {
   const o200kStateId = o200kBrowse.match(/\/browse\/words\/([^/]+)\/space\/0/)?.[1];
   assert.ok(o200kStateId, "o200k browser link contains its branch capability");
   assert.match(o200kStateHtml, /Quick punctuation/);
-  const directPeriod = o200kStateHtml.match(/<a class="choice" rel="nofollow noreferrer" href="([^\"]+)" aria-label="Add exact punctuation token \. to the private draft"/i)?.[1];
+  const directPeriod = o200kStateHtml.match(/<a class="choice" rel="nofollow noreferrer" href="([^\"]+)" aria-label="Add \. to the draft"/i)?.[1];
   assert.ok(directPeriod, "draft exposes a one-link exact period choice that only creates a private branch");
   const directPeriodHtml = await (await fetch(new URL(directPeriod, base))).text();
-  assert.match(directPeriodHtml, /<p class="draft">\.<\/p>/, "direct punctuation link appends the exact period token");
+  assert.match(directPeriodHtml, /<p class="draft" aria-label="Current draft">\.<\/p>/, "direct punctuation link appends the exact period token");
   const o200kSpacePageHtml = await (await fetch(new URL(o200kBrowse, base))).text();
   assert.match(o200kSpacePageHtml, /<code>␠the<\/code>/, "readable token page exposes a whole common word with visible leading space");
   assert.doesNotMatch(o200kSpacePageHtml, /<a class="choice"[^>]*><code>␠<\/code>/, "whitespace-only tokens are omitted from readable choices");
-  const o200kUseToken = [...o200kSpacePageHtml.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Use token with leading space: the"/g)]
+  const o200kUseToken = [...o200kSpacePageHtml.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Add ␠the to the draft"/g)]
     .map((match) => match[1])[0];
   assert.ok(o200kUseToken, "o200k readable choice supplies a server-generated exact-token branch link");
   const o200kChildResponse = await fetch(new URL(o200kUseToken, base));
   const o200kChildHtml = await o200kChildResponse.text();
   assert.equal(o200kChildResponse.status, 200, `following an exact readable o200k token link creates its branch: ${o200kChildHtml}`);
-  assert.match(o200kChildHtml, /<p class="draft"> the<\/p>/, "the selected token appears in the private draft with its exact leading space");
+  assert.match(o200kChildHtml, /<p class="draft" aria-label="Current draft"> the<\/p>/, "the selected token appears in the private draft with its exact leading space");
   assert.match(o200kStateHtml, /name="q"/, "o200k branch offers an accessible plain GET search box");
   assert.match(o200kStateHtml, /carried in GET URLs/, "search page discloses that typed text may be visible in URLs");
   const searchText = "One usability limit remains: the full long-tail vocabulary is paged across many pages.";
@@ -275,8 +275,8 @@ try {
   const reportedTokenCount = Number(searchHtml.match(/<strong>(\d+)<\/strong> ordinary o200k token/)?.[1]);
   assert.ok(reportedTokenCount > 0 && reportedTokenCount < 75, `path estimate leaves traversal budget for review and publication (${reportedTokenCount})`);
   let tokenClicks = 0;
-  while (searchHtml.includes("Apply next token:")) {
-    const nextHref = searchHtml.match(/<a class="choice"[^>]+href="([^"]+)"[^>]*>Apply next token:/)?.[1];
+  while (searchHtml.includes("Add token:")) {
+    const nextHref = searchHtml.match(/<a class="choice"[^>]+href="([^"]+)"[^>]*>Add token:/)?.[1];
     assert.ok(nextHref, `each search result provides a separate one-token continuation link: ${searchHtml}`);
     searchResponse = await fetch(new URL(nextHref.replaceAll("&amp;", "&"), base));
     searchHtml = await searchResponse.text();
@@ -640,7 +640,7 @@ try {
   const composedMessage = (await getJson(new URL(composerMessageHref, base))).body;
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
-  assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.3.0", condition: "universal-fixed-v1", task_class: "generation" });
+  assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_class: "generation" });
   assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
 

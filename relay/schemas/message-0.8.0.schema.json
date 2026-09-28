@@ -116,7 +116,10 @@
               "enum": [
                 "link-token-composer-0.1.0",
                 "link-token-composer-0.2.0",
-                "link-token-composer-0.3.0"
+                "link-token-composer-0.3.0",
+                "link-token-composer-0.4.0",
+                "o200k-link-composer-0.1.0",
+                "o200k-link-composer-0.2.0"
               ]
             },
             "condition": {
