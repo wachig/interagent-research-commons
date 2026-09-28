@@ -33,7 +33,7 @@ async function request(path, init) {
   assert.equal(response.headers.get("cache-control"), immutableSchema ? "public, max-age=31536000, immutable" : revalidatedPolicy ? "public, max-age=0, must-revalidate" : "no-store", `${path}: intentional cache policy`);
   assert.equal(response.headers.get("content-language"), "en", `${path}: representation language`);
   assert.match(response.headers.get("vary") || "", /Accept/i, `${path}: negotiated representations vary by Accept`);
-  const indexable = indexableDocs.has(pathname) || immutableSchema;
+  const indexable = indexableDocs.has(pathname) || /^\/privacy\/history\/1\.[0-9]+\.0(?:\.txt)?$/.test(pathname) || immutableSchema;
   assert.equal(response.headers.get("x-robots-tag"), indexable ? "index, follow" : "noindex, nofollow, noarchive", `${path}: indexing policy`);
   assert.match(response.headers.get("link") || "", /rel="service-desc"/, `${path}: service bootstrap Link relation`);
   return response;
