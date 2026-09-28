@@ -148,7 +148,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.14\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.15\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -199,29 +199,44 @@ try {
   assert.match(landing.headers.get("content-security-policy"), /default-src 'none'/);
   assert.doesNotMatch(landingHtml, /href="\/(?:start|prepare|stage|publish)(?:\?|\/|"|<)/i);
   assert.match(landingHtml, /isolated local prototype; not deployed/);
+  const keyboardResponse = await fetch(`${base}/predictive-keyboard/html/`);
+  const keyboardHtml = await keyboardResponse.text();
+  assert.equal(keyboardResponse.status, 200);
+  assert.match(keyboardResponse.headers.get("content-type"), /text\/html/);
+  const predictionMarkup = keyboardHtml.match(/<nav class="choices" aria-label="Top word predictions">([\s\S]*?)<\/nav>/)?.[1] || "";
+  assert.equal((predictionMarkup.match(/<a\b/g) || []).length, 10, "HTML keyboard exposes ten server-generated predictions");
+  assert.match(keyboardHtml, /aria-label="Turn shift on"/, "keyboard exposes a linked shift key");
+  const symbolsHref = suppliedHref(keyboardHtml, (anchor) => anchor.includes('aria-label="?123"'));
+  const symbolsHtml = await (await fetch(new URL(symbolsHref.replaceAll("&amp;", "&"), base))).text();
+  assert.match(symbolsHtml, /aria-label="Symbols keyboard"/);
+  assert.match(symbolsHtml, /aria-label="Add :"/, "symbols keyboard can add a colon");
+  assert.match(symbolsHtml, /aria-label="Add -"/, "symbols keyboard can add a hyphen");
+  const shiftHref = suppliedHref(keyboardHtml, (anchor) => anchor.includes('aria-label="turn shift on"'));
+  const shiftedHtml = await (await fetch(new URL(shiftHref.replaceAll("&amp;", "&"), base))).text();
+  assert.match(shiftedHtml, /aria-label="Add uppercase o"/i, "shifted keyboard exposes capital-letter links");
   const crawlQueue = ["/"];
   const crawled = new Set();
   while (crawlQueue.length) {
     const crawlPath = crawlQueue.shift();
     if (crawled.has(crawlPath)) continue;
     crawled.add(crawlPath);
-    assert.ok(crawled.size <= 32, "the documented HTML graph remains bounded");
+    assert.ok(crawled.size <= 32, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
     const crawlResponse = await fetch(`${base}${crawlPath}`, { redirect: "manual" });
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
       const html = await crawlResponse.text();
-      const isComposerPage = crawlPath.startsWith("/compose/token/experimental") || crawlPath.startsWith("/compose/token/o200k");
+      const isComposerPage = crawlPath.startsWith("/compose/token/experimental") || crawlPath.startsWith("/compose/token/o200k") || crawlPath.startsWith("/predictive-keyboard/html");
       if (!isComposerPage) {
         for (const mutationPath of ["/start", "/prepare", "/stage", "/publish", "/quick/stage", "/quick/one-shot"]) {
           assert.equal(html.includes(`href="${mutationPath}`), false, `HTML page contains no active mutation link: ${crawlPath}`);
         }
       } else {
         assert.equal(html.includes("/publish/"), false, "composer overview never exposes a publication capability");
-        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/") continue;
+        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/" || crawlPath === "/predictive-keyboard/html/") continue;
       }
       for (const linkPart of html.split('href="').slice(1)) {
-        const href = linkPart.split('"')[0];
-        if (href.startsWith("/")) crawlQueue.push(href);
+        const href = linkPart.split('"')[0].replaceAll("&amp;", "&");
+        if (href.startsWith("/") && !href.startsWith("/predictive-keyboard/vendor/")) crawlQueue.push(href);
       }
     }
   }
@@ -288,16 +303,16 @@ try {
   assert.ok(tokenClicks + 5 < 80, `including start, search, review, arm and publish, this run needs ${tokenClicks + 5} total page traversals`);
   console.log(`o200k search path: ${reportedTokenCount} token links, ${tokenClicks + 5} total traversals including start, search, review, arm, and publish.`);
   assert.match(searchHtml, /href="\/compose\/token\/o200k\/review\//, "completed exact token path offers review");
-  assert.match(searchHtml, /<p class="draft">One usability limit remains: the full long-tail vocabulary is paged across many pages\.<\/p>/, "search path composes the requested exact sentence");
+  assert.match(searchHtml, /<p class="draft" aria-label="Current draft">One usability limit remains: the full long-tail vocabulary is paged across many pages\.<\/p>/, "search path composes the requested exact sentence");
   assert.equal((await fetch(`${base}/compose/token/o200k/search/${o200kStateId}?q=test&unexpected=1`)).status, 400, "search accepts only the documented query field");
   const o200kBytePage = await (await fetch(`${base}/compose/token/o200k/browse/bytes/${o200kStateId}/4`)).text();
-  const o200kByteChoice = [...o200kBytePage.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Add O"/g)]
+  const o200kByteChoice = [...o200kBytePage.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Add “O” to the draft"/g)]
     .map((match) => match[1])[0];
   assert.ok(o200kByteChoice, "o200k byte fallback supplies a server-generated uppercase O link");
   const o200kByteResponse = await fetch(new URL(o200kByteChoice, base));
   const o200kByteHtml = await o200kByteResponse.text();
   assert.equal(o200kByteResponse.status, 200, `following an o200k byte link creates its branch: ${o200kByteHtml}`);
-  assert.match(o200kByteHtml, /<p class="draft">O<\/p>/, "the selected o200k fallback byte appears exactly in the private draft");
+  assert.match(o200kByteHtml, /<p class="draft" aria-label="Current draft">O<\/p>/, "the selected o200k fallback byte appears exactly in the private draft");
   const o200kByteBrowse = `/compose/token/o200k/browse/o200k/${o200kStateId}`;
   assert.equal((await fetch(`${base}${o200kByteBrowse}`)).status, 200, "exact byte-prefix browsing remains available as fallback");
   let o200kTokenChoices = "";

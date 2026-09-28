@@ -7,7 +7,7 @@ const MAX_BODY_BYTES = 1_200;
 const MAX_URL_LENGTH = 8_000;
 const STATE_TTL_MS = 30 * 60 * 1_000;
 const HISTORY_LIMIT = 20;
-const PREDICTION_LIMIT = 8;
+const PREDICTION_LIMIT = 10;
 const NO_STORE = {
   "Cache-Control": "no-store",
   "Referrer-Policy": "no-referrer",
@@ -168,16 +168,20 @@ function makeHref(path, params) {
   return `${PREFIX}/${path}?${query}`;
 }
 
-function screen(draft, replyTo, undoHref, clearHref, reviewHref, predictions, keyHref) {
+function screen(draft, replyTo, undoHref, clearHref, reviewHref, predictions, stateHref, layout, shifted) {
+  const href = (path, params = {}) => makeHref(path, { state: stateHref, layout, ...params });
   const predictionLinks = predictions.map((candidate) => {
-    const href = makeHref("pick", { state: keyHref, word: encodeBase64Url(candidate) });
-    return `<a href="${escapeHtml(href)}" aria-label="Use prediction ${escapeHtml(candidate)}">${escapeHtml(candidate)}</a>`;
+    const shown = shifted ? candidate.charAt(0).toLocaleUpperCase("en-US") + candidate.slice(1) : candidate;
+    return `<a href="${escapeHtml(href("pick", { word: encodeBase64Url(candidate), ...(shifted ? { shift: "1" } : {}) }))}" aria-label="Use prediction ${escapeHtml(shown)}">${escapeHtml(shown)}</a>`;
   }).join("");
-  const keys = "abcdefghijklmnopqrstuvwxyz".split("").map((letter) => `<a href="${escapeHtml(makeHref("key", { state: keyHref, value: letter }))}" aria-label="Add ${letter}">${letter}</a>`).join("");
-  const punctuation = [["space", "space"], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"], ["apostrophe", "'"]]
-    .map(([value, label]) => `<a href="${escapeHtml(makeHref("key", { state: keyHref, value }))}" aria-label="Add ${label}">${value}</a>`).join("");
+  const key = (value, label = value, extraClass = "") => `<a class="key ${extraClass}" href="${escapeHtml(href("key", { value, ...(shifted ? { shift: "1" } : {}) }))}" aria-label="Add ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
+  const mode = (label, nextLayout, nextShifted = false, extraClass = "", accessibleName = label) => `<a class="key ${extraClass}" href="${escapeHtml(href("state", { layout: nextLayout, ...(nextShifted ? { shift: "1" } : {}) }))}" aria-label="${escapeHtml(accessibleName)}">${escapeHtml(label)}</a>`;
+  const letterRows = `<div class="keyrow">${"qwertyuiop".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)).join("")}</div><div class="keyrow indented">${"asdfghjkl".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)).join("")}</div><div class="keyrow third">${mode("⇧", "letters", !shifted, "wide", shifted ? "Turn shift off" : "Turn shift on")} ${"zxcvbnm".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)).join("")} ${undoHref ? `<a class="key wide" href="${escapeHtml(undoHref)}" aria-label="Undo last addition">⌫</a>` : `<span class="key wide spacer" aria-hidden="true"></span>`}</div><div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${key(",", ",")} ${key("space", "Space", "space")} ${key(".", ".")} ${key("?", "?", "wide")}</div>`;
+  const symbolRows = `<div class="keyrow">${"1234567890".split("").map((value) => key(value, value)).join("")}</div><div class="keyrow symbols">${["@", "#", "$", "%", "&", "-", "*", "+", "("].map((value) => key(value, value)).join("")}</div><div class="keyrow symbols">${[")", "_", "!", "?", "'", ":", ";", '"', "/"].map((value) => key(value, value)).join("")}${undoHref ? `<a class="key" href="${escapeHtml(undoHref)}" aria-label="Undo last addition">⌫</a>` : ""}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${key(",", ",")} ${key("space", "Space", "space")} ${key(".", ".")} ${key("enter", "↵", "wide")}</div>`;
   const controls = `${undoHref ? `<a href="${escapeHtml(undoHref)}">undo</a>` : ""}${clearHref ? `<a href="${escapeHtml(clearHref)}">clear</a>` : ""}${reviewHref ? `<a href="${escapeHtml(reviewHref)}">review</a>` : ""}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>HTML keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.letters a{min-width:2.1rem}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}</style></head><body><main><h1>HTML keyboard</h1><p class="notice">Signed draft links are not encrypted and may appear in URLs or logs. Review creates a temporary private draft; the publish link makes it public. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>${replyTo ? `<p class="notice">Reply to ${escapeHtml(replyTo)}</p>` : ""}<section><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre></section><section><h2>Predictions</h2><nav class="choices" aria-label="Top word predictions">${predictionLinks || "<span>no predictions</span>"}</nav></section><section><h2>Keyboard</h2><nav class="choices letters" aria-label="Letters">${keys}</nav><nav class="choices" aria-label="Space and punctuation">${punctuation}</nav></section><nav class="controls" aria-label="Draft controls">${controls}</nav></main></body></html>`;
+  const keyboard = layout === "symbols" ? symbolRows : letterRows;
+  const heading = layout === "symbols" ? "Symbols" : "Letters";
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>HTML keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible,.key:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.key-grid{display:flex;flex-direction:column;gap:.4rem}.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.35rem}.keyrow.indented{margin-inline:5%}.keyrow.third{grid-template-columns:repeat(11,minmax(0,1fr))}.keyrow.symbols{grid-template-columns:repeat(10,minmax(0,1fr))}.keyrow.bottom{grid-template-columns:repeat(10,minmax(0,1fr))}.key{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:center;padding:.35rem .15rem;border:1px solid #ccd6df;border-radius:6px;background:#f8fafb;color:#25343b;text-decoration:none;font-weight:650;box-shadow:0 2px 0 #d6dfe2}.key.wide{grid-column:span 2}.key.space{grid-column:span 4}.key.spacer{visibility:hidden}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}@media(max-width:380px){main{padding:12px}.keyrow{gap:.2rem}.keyrow.third{gap:.2rem}.key{font-size:.82rem;min-height:44px}}</style></head><body><main><h1>HTML keyboard</h1><p class="notice">Signed draft links are not encrypted and may appear in URLs or logs. Review creates a temporary private draft; the publish link makes it public. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>${replyTo ? `<p class="notice">Reply to ${escapeHtml(replyTo)}</p>` : ""}<section><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre></section><section><h2>Predictions</h2><nav class="choices" aria-label="Top word predictions">${predictionLinks || "<span>no predictions</span>"}</nav></section><section><h2>${heading}</h2><nav class="key-grid" aria-label="${heading} keyboard">${keyboard}</nav></section><nav class="controls" aria-label="Draft controls">${controls}</nav></main></body></html>`;
 }
 
 function operationHref(path, state) {
@@ -200,6 +204,8 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
   if (url.href.length > MAX_URL_LENGTH) return errorPage(`Links may not exceed ${MAX_URL_LENGTH} characters.`, 414);
   try {
     let state;
+    let layout = "letters";
+    let shifted = false;
     let path = url.pathname;
     if (path === `${PREFIX}/` || path === PREFIX) {
       const params = queryState(url, new Set(["reply_to"]));
@@ -207,9 +213,12 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
       if (replyTo && !validReplyTarget(replyTo)) throw new Error("Reply target is not a valid IARC message ID.");
       state = { version: 1, draft: "", history: [], reply_to: replyTo, expires_at: Date.now() + STATE_TTL_MS, nonce: crypto.randomUUID() };
     } else if ([`${PREFIX}/state`, `${PREFIX}/key`, `${PREFIX}/pick`, `${PREFIX}/undo`, `${PREFIX}/clear`, `${PREFIX}/review`, `${PREFIX}/discard`].includes(path)) {
-      const allowed = path === `${PREFIX}/key` ? new Set(["state", "value"]) : path === `${PREFIX}/pick` ? new Set(["state", "word"]) : path === `${PREFIX}/discard` ? new Set(["state", "cap"]) : new Set(["state"]);
+      const allowed = path === `${PREFIX}/key` ? new Set(["state", "value", "layout", "shift"]) : path === `${PREFIX}/pick` ? new Set(["state", "word", "layout", "shift"]) : path === `${PREFIX}/discard` ? new Set(["state", "cap"]) : new Set(["state", "layout", "shift"]);
       const params = queryState(url, allowed);
       state = await readState(env, params.get("state"));
+      layout = params.get("layout") || "letters";
+      shifted = params.get("shift") === "1";
+      if (!new Set(["letters", "symbols"]).has(layout) || (params.has("shift") && !new Set(["0", "1"]).has(params.get("shift"))) || (shifted && layout !== "letters")) throw new Error("Keyboard layout link is invalid.");
       if (path === `${PREFIX}/state`) {
         // Render the selected immutable branch again.
       } else if (path === `${PREFIX}/discard`) {
@@ -223,8 +232,8 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
         return response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Private draft discarded · IARC Relay</title><main><h1>Private draft discarded</h1><p>The unpublished draft was discarded and its publish link is invalid. Nothing was published.</p><p><a href="${escapeHtml(keyboardHref)}">Edit message</a></p></main></html>`);
       } else if (path === `${PREFIX}/key`) {
         const value = params.get("value");
-        const validValues = new Map([["space", " "], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"], ["apostrophe", "'"]]);
-        const addition = /^[a-z]$/u.test(value || "") ? value : validValues.get(value);
+        const validValues = new Map([["space", " "], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"], ["apostrophe", "'"], ["colon", ":"], ["hyphen", "-"], ["semicolon", ";"], ["quote", '"'], ["enter", "\n"]]);
+        const addition = /^[a-zA-Z0-9@#$%&*+()_!?:;'"\/.,-]$/u.test(value || "") ? value : validValues.get(value);
         if (addition === undefined) throw new Error("Unknown keyboard key.");
         if (addition === " " && /\s$/u.test(state.draft)) {
           // A repeated space is a no-op; keep the draft stable.
@@ -233,6 +242,7 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
           if (new TextEncoder().encode(proposed).byteLength > MAX_BODY_BYTES) throw new Error(`Message limit reached (${MAX_BODY_BYTES} UTF-8 bytes).`);
           state = { ...state, draft: proposed, history: pushHistory(state, proposed, "", addition) };
         }
+        if (shifted) shifted = false;
       } else if (path === `${PREFIX}/pick`) {
         let candidate;
         try { candidate = decodeBase64Url(params.get("word") || ""); }
@@ -243,10 +253,12 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
         const partial = match?.[0] || "";
         const prefix = state.draft.slice(0, state.draft.length - partial.length);
         const separator = !partial && state.draft.length && !/\s$/u.test(state.draft) ? " " : "";
-        const addition = `${separator}${candidate} `;
+        const selected = shifted ? candidate.charAt(0).toLocaleUpperCase("en-US") + candidate.slice(1) : candidate;
+        const addition = `${separator}${selected} `;
         const proposed = `${prefix}${addition}`;
         if (new TextEncoder().encode(proposed).byteLength > MAX_BODY_BYTES) throw new Error(`Message limit reached (${MAX_BODY_BYTES} UTF-8 bytes).`);
         state = { ...state, draft: proposed, history: pushHistory(state, proposed, partial, addition) };
+        if (shifted) shifted = false;
       } else if (path === `${PREFIX}/undo`) {
         const item = state.history.at(-1);
         if (item) {
@@ -276,10 +288,11 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
     const encodedState = await signState(env, state);
     const predictions = await predict(env, request, state.draft);
     const canReview = Boolean(state.draft);
-    const undoHref = state.history.length ? operationHref("undo", encodedState) : "";
+    const modeParams = { state: encodedState, layout, ...(shifted ? { shift: "1" } : {}) };
+    const undoHref = state.history.length ? makeHref("undo", modeParams) : "";
     const clearHref = canReview ? operationHref("clear", encodedState) : "";
     const reviewHref = canReview ? operationHref("review", encodedState) : "";
-    return response(screen(state.draft, state.reply_to, undoHref, clearHref, reviewHref, predictions, encodedState));
+    return response(screen(state.draft, state.reply_to, undoHref, clearHref, reviewHref, predictions, encodedState, layout, shifted));
   } catch (error) {
     const status = /signing is not configured|assets are unavailable|resource unavailable/u.test(error.message) ? 503 : /too long|limit reached/u.test(error.message) ? 413 : 400;
     return errorPage(error instanceof Error ? error.message : "Keyboard request failed.", status);
