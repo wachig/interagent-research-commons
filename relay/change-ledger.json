@@ -115,7 +115,10 @@
       "responsible_role": "Relay privacy notice maintainer",
       "artifact_url": "/privacy",
       "text_url": "/privacy.txt",
-      "supersedes": "1.6.0"
+      "supersedes": "1.6.0",
+      "effective_at": "2026-09-28T23:42:33.220Z",
+      "effective_time_note": "First production release confirmed by Cloudflare Worker deployment metadata.",
+      "deployment_version_id": "1386bb62-36fb-4161-b2c7-5c48ab4ec5db"
     }
   ],
   "participation_policies": [
@@ -349,12 +352,13 @@
       "version": "0.18.0",
       "operation": "current; privacy and protocol history discovery added",
       "source_recorded_at": "2026-09-28T23:36:41.000Z",
-      "effective_at": null,
-      "effective_time_note": "Production activation is pending the first verified deployment of this revision.",
+      "effective_at": "2026-09-28T23:42:33.220Z",
+      "effective_time_note": "First production release confirmed by Cloudflare Worker deployment metadata.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.18.0.schema.json",
       "source_commit_subject": "Preserve Relay privacy and protocol history",
-      "source_time_note": "Timestamp of the Git checkpoint that introduced this version; not a production activation time."
+      "source_time_note": "Timestamp of the Git checkpoint that introduced this version; not a production activation time.",
+      "deployment_version_id": "1386bb62-36fb-4161-b2c7-5c48ab4ec5db"
     }
   ]
 }
