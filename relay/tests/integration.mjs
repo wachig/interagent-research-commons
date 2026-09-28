@@ -149,7 +149,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.16\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.17\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -414,7 +414,7 @@ try {
   assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.16.0");
+  assert.equal(protocol.schema_version, "0.17.0");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
@@ -445,7 +445,7 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
-  assert.equal(service.identity.protocol_revision, "0.16.0");
+  assert.equal(service.identity.protocol_revision, "0.17.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
@@ -453,6 +453,8 @@ try {
   assert.equal(service.operations.experiments.catalog, "/");
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.0.0.schema.json");
+  assert.equal(service.schemas.collection, "/schemas/collection-1.2.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.17.0.schema.json");
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
   assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");
@@ -510,7 +512,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.17.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -518,10 +520,10 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.16.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.17.0.schema.json");
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
   assert.ok(protocol.machine_schemas.includes("/schemas/message-1.0.0.schema.json"));
-  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.1.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.2.0.schema.json"));
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -633,10 +635,13 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.1.0.schema.json");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.2.0.schema.json");
   assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
   assert.equal(publicMessages.body.ordering, "created_at-ascending-then-message_id-ascending");
   assert.equal(publicMessages.body.coverage.scope, "visible-retained-messages");
+  assert.equal(publicMessages.body.coverage.consistent_snapshot, false);
+  assert.equal(publicMessages.body.coverage.gaps_possible, true);
+  assert.equal(publicMessages.body.collection_status, "visible");
   assert.equal(publicMessages.body.links.self.href, "/poll?limit=20");
   assert.equal(publicMessages.body.links.service_description.href, "/service.json");
   assert.equal(publicMessages.body.links.service_description.rel, "service-desc");
@@ -691,7 +696,9 @@ try {
   assert.match(quickReplyGuide, new RegExp(`reply_to=${winningPublish.body.message_id}`));
   const advancedReplyGuide = await (await fetch(`${base}/entry?reply_to=${winningPublish.body.message_id}`)).text();
   assert.match(advancedReplyGuide, new RegExp(`reply_to=${winningPublish.body.message_id}`));
-  assert.equal((await fetch(`${base}/poll?after_cursor=IARC-M-00000000-0000-0000-000000000000`)).status, 400);
+  const badCursorResponse = await getJson(`${base}/poll?after_cursor=IARC-M-00000000-0000-0000-000000000000`);
+  assert.equal(badCursorResponse.response.status, 400);
+  assert.deepEqual(badCursorResponse.body.recovery, { strategy: "restart-from-oldest-visible", href: "/poll?limit=20" });
 
   const nextPrepare = await getJson(`${base}/prepare?${new URLSearchParams({ session_cap: winningPublish.body.session_cap })}`);
   const forbiddenNewThread = await getJson(`${base}/stage?${new URLSearchParams({ cap: nextPrepare.body.stage_cap, message: "second new thread is rate limited" })}`);
@@ -809,9 +816,13 @@ try {
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
   const afterComposerCollection = await getJson(`${base}/poll?limit=1`);
   assert.equal(afterComposerCollection.response.status, 200);
-  assert.equal(afterComposerCollection.body.schema_version, "1.1.0");
+  assert.equal(afterComposerCollection.body.schema_version, "1.2.0");
   assert.equal(afterComposerCollection.body.has_more, true, "limited collection advertises another page");
-  assert.match(afterComposerCollection.body.links.next.href, /^\/poll\?after_cursor=IARC-M-[0-9a-f-]{36}&limit=1$/);
+  assert.match(afterComposerCollection.body.links.next.href, /^\/poll\?after_cursor=c1_[A-Za-z0-9_-]+&limit=1$/);
+  const orphanPosition = `c1_${Buffer.from(JSON.stringify({ v: 1, scope: "public-feed", created_at: 0, message_id: "IARC-M-00000000-0000-0000-0000-000000000000" })).toString("base64url")}`;
+  const continuedWithoutAnchor = await getJson(`${base}/poll?after_cursor=${orphanPosition}&limit=1`);
+  assert.equal(continuedWithoutAnchor.response.status, 200, "position cursor continues when its message row is absent");
+  assert.equal(continuedWithoutAnchor.body.returned_count, 1);
   const followedPage = await getJson(new URL(afterComposerCollection.body.links.next.href, base));
   assert.equal(followedPage.response.status, 200, "collection-provided next URL can be followed directly");
   assert.equal(followedPage.body.returned_count, 1);
@@ -819,6 +830,14 @@ try {
   const thread = await getJson(`${base}/thread/${encodeURIComponent(composedMessage.conversation_id)}?limit=1`);
   assert.equal(thread.body.collection, "thread");
   assert.equal(thread.body.collection_id, composedMessage.conversation_id);
+  const orphanThreadPosition = `c1_${Buffer.from(JSON.stringify({ v: 1, scope: `thread:${composedMessage.conversation_id}`, created_at: 0, message_id: "IARC-M-00000000-0000-0000-0000-000000000000" })).toString("base64url")}`;
+  const continuedThreadWithoutAnchor = await getJson(`${base}/thread/${composedMessage.conversation_id}?after_cursor=${orphanThreadPosition}&limit=1`);
+  assert.equal(continuedThreadWithoutAnchor.response.status, 200, "thread position cursor continues without the anchor row");
+  assert.equal(continuedThreadWithoutAnchor.body.returned_count, 1);
+  const missingThread = await getJson(`${base}/thread/IARC-C-00000000-0000-0000-0000-000000000000`);
+  assert.equal(missingThread.response.status, 200);
+  assert.equal(missingThread.body.collection_status, "empty-or-unavailable");
+  assert.equal(missingThread.body.returned_count, 0);
   assert.equal(thread.body.entries[0].message_id, composedMessage.message_id);
   const composerFeedHtml = await (await fetch(`${base}/commons`)).text();
   assert.match(composerFeedHtml, new RegExp(`<a href="/reply/${composedMessage.message_id}">Reply<\\/a>`));
