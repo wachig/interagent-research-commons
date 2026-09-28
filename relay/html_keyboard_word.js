@@ -162,7 +162,7 @@ async function makeChild(env, request, parent, action, argument, childId) {
   return child;
 }
 
-async function renderKeyboard(request, env, state, url, startHref = null) {
+async function renderKeyboard(request, env, state, url) {
   const draft = await loadDraft(env, state);
   const modeParams = queryParams(url, new Set(["layout", "shift"]));
   const layout = modeParams.get("layout") || "letters";
@@ -182,10 +182,9 @@ async function renderKeyboard(request, env, state, url, startHref = null) {
   const clearHref = draft ? await makeLink("clear", "-") : "";
   const reviewHref = draft ? `${PREFIX}/review/${word(state.state_id)}` : "";
   const reply = state.reply_to ? `<p class="notice">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
-  const start = startHref ? `<p><a class="primary" rel="nofollow" href="${escapeHtml(startHref)}">Start a temporary draft</a></p>` : "";
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted) : "";
   const controls = `${undoHref ? `<a href="${escapeHtml(undoHref)}">undo</a>` : ""}${clearHref ? `<a href="${escapeHtml(clearHref)}">clear</a>` : ""}${reviewHref ? `<a rel="nofollow" href="${escapeHtml(reviewHref)}">review</a>` : ""}`;
-  const body = `<h1>HTML keyboard · word links</h1><p class="notice">Keyboard links use readable word codes. Each choice saves a temporary draft step at Relay for up to 30 minutes. Steps are deleted after publication or expiry. Links are not encrypted; your environment or hosting provider may observe them. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a> · <a href="/predictive-keyboard/html/">Original HTML keyboard</a></p>${start}${reply}<section><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre></section><section><h2>Predictions</h2><nav class="choices" aria-label="Top word predictions">${predictionLinks.join("") || "<span>no predictions</span>"}</nav></section><section><h2>${layout === "symbols" ? "Symbols" : "Letters"}</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav></section><nav class="controls" aria-label="Draft controls">${controls}</nav></main>`;
+  const body = `<h1>HTML keyboard · word links</h1><p class="notice">Opening this page starts a temporary Relay session. Keyboard links use readable word codes. Each choice saves a temporary draft step at Relay for up to 30 minutes. Steps are deleted after publication or expiry. Links are not encrypted; your environment or hosting provider may observe them. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a> · <a href="/predictive-keyboard/html/">Original HTML keyboard</a></p>${reply}<section><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre></section><section><h2>Predictions</h2><nav class="choices" aria-label="Top word predictions">${predictionLinks.join("") || "<span>no predictions</span>"}</nav></section><section><h2>${layout === "symbols" ? "Symbols" : "Letters"}</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav></section><nav class="controls" aria-label="Draft controls">${controls}</nav></main>`;
   return response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>HTML keyboard · word links · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible,.key:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.key-grid{display:flex;flex-direction:column;gap:.4rem}.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.35rem}.keyrow.indented{margin-inline:5%}.keyrow.third{grid-template-columns:repeat(11,minmax(0,1fr))}.keyrow.symbols{grid-template-columns:repeat(10,minmax(0,1fr))}.keyrow.bottom{grid-template-columns:repeat(10,minmax(0,1fr))}.key{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:center;padding:.35rem .15rem;border:1px solid #ccd6df;border-radius:6px;background:#f8fafb;color:#25343b;text-decoration:none;font-weight:650;box-shadow:0 2px 0 #d6dfe2}.key.wide{grid-column:span 2}.key.space{grid-column:span 4}.key.spacer{visibility:hidden}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}.primary{display:inline-block;padding:.65rem .9rem;border:1px solid #086b62;border-radius:5px;color:#086b62;font-weight:700}@media(max-width:380px){main{padding:12px}.keyrow,.keyrow.third{gap:.2rem}.key{font-size:.82rem;min-height:44px}}</style></head><body><main>${body}</body></html>`);
 }
 
@@ -193,10 +192,18 @@ export function isWordKeyboardPath(pathname) {
   return pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`);
 }
 
+export function isWordKeyboardStartPath(pathname) {
+  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname.includes(`${PREFIX}/start/`);
+}
+
+export function isWordKeyboardMutationPath(pathname) {
+  return isWordKeyboardStartPath(pathname) || /\/step\/|\/review\/|\/discard\//u.test(pathname);
+}
+
 export async function handleWordKeyboard(request, env, url, createPublishDraft, discardPublishDraft) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...NO_STORE, Allow: "GET, OPTIONS" } });
   if (request.method === "HEAD") {
-    const mutating = /\/(?:start|step|review|discard)(?:\/|$)/u.test(url.pathname);
+    const mutating = isWordKeyboardMutationPath(url.pathname);
     return new Response(null, { status: mutating ? 405 : 200, headers: { ...NO_STORE, Allow: mutating ? "GET, OPTIONS" : "GET, HEAD, OPTIONS" } });
   }
   if (request.method !== "GET") return new Response("Method not allowed", { status: 405, headers: { ...NO_STORE, Allow: "GET, HEAD, OPTIONS" } });
@@ -207,12 +214,8 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       const params = queryParams(url, new Set(["reply_to"]));
       const replyTo = params.get("reply_to") || "";
       if (replyTo && !validReplyTarget(replyTo)) throw new Error("Reply target is not a valid IARC message ID.");
-      const sessionId = randomToken();
-      const issuedAt = Date.now();
-      const cap = await signCommonWordRoute(env, "keyboard-start", sessionId, replyTo, issuedAt);
-      const startHref = `${PREFIX}/start/${issuedAt}/${word(sessionId)}/${word(cap)}${replyTo ? `?reply_to=${encodeURIComponent(replyTo)}` : ""}`;
-      const reply = replyTo ? `<p class="notice">Reply to ${escapeHtml(replyTo)}</p>` : "";
-      return page("HTML keyboard · word links", `<h1>HTML keyboard · word links</h1><p class="notice">Readable word-sequence links keep keyboard choices compact. Following Start creates a temporary Relay session. Each subsequent choice saves a private draft step at Relay for up to 30 minutes; steps are deleted after publication or expiry. These links are not encrypted and may be observed by Relay, Cloudflare, or your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a> · <a href="/predictive-keyboard/html/">Original HTML keyboard</a></p>${reply}<p><a class="primary" rel="nofollow" href="${escapeHtml(startHref)}">Start a temporary draft</a></p>`);
+      const state = await createSession(env, randomToken(), replyTo || null);
+      return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}`, url.origin));
     }
     const startMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/start\/(\d{13})\/([^/]+)\/([^/]+)$/u);
     if (startMatch) {
@@ -225,7 +228,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       if (!Number.isSafeInteger(issuedAt) || issuedAt > Date.now() + 60_000 || Date.now() - issuedAt > START_TTL_MS) throw new Error("This start link expired. Return to the overview for a fresh link.");
       if (await signCommonWordRoute(env, "keyboard-start", sessionId, replyTo, issuedAt) !== cap) throw new Error("This start link is invalid.");
       const state = await createSession(env, sessionId, replyTo || null);
-      return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}`, url));
+      return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}`, url.origin));
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {
