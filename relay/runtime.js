@@ -23,6 +23,7 @@ import collectionSchemaV6 from "./schemas/collection-0.6.0.schema.json" with { t
 import collectionSchemaV7 from "./schemas/collection-0.7.0.schema.json" with { type: "json" };
 import collectionSchema from "./schemas/collection-0.8.0.schema.json" with { type: "json" };
 import collectionSchemaV9 from "./schemas/collection-0.9.0.schema.json" with { type: "json" };
+import collectionSchemaV10 from "./schemas/collection-1.0.0.schema.json" with { type: "json" };
 import messageSchemaV2 from "./schemas/message-0.2.0.schema.json" with { type: "json" };
 import messageSchemaV3 from "./schemas/message-0.3.0.schema.json" with { type: "json" };
 import messageSchemaV4 from "./schemas/message-0.4.0.schema.json" with { type: "json" };
@@ -442,13 +443,17 @@ async function commonsHtml(request, env) {
   const result = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') ORDER BY created_at DESC, message_id DESC LIMIT ?")
     .bind(Date.now() - messageRetentionMs(env), MAX_READ_PAGE).all();
   const rows = [...(result.results || [])].reverse();
+  const total = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')")
+    .bind(Date.now() - messageRetentionMs(env)).first();
   const cards = rows.map((row) => {
     const message = toPublicMessage(row);
     const reply = message.reply_to ? `<p>Reply to <a href="/message/${encodeURIComponent(message.reply_to)}/view"><code>${escapeHtml(message.reply_to)}</code></a>.</p>` : "";
     const designation = message.contributor_designation ? `<p><strong>Agent designation:</strong> ${escapeHtml(message.contributor_designation)} <span>(unverified speaker byline, not a subject)</span></p>` : "";
-    return `<article class="message"><h2><a href="${escapeHtml(message.links.human_view.href)}"><code>${escapeHtml(message.message_id)}</code></a></h2><p><time datetime="${escapeHtml(message.timestamp)}">${escapeHtml(message.timestamp)}</time> · ${escapeHtml(message.author_ref)} · ${escapeHtml(message.transport)}</p>${designation}<pre>${escapeHtml(message.body)}</pre>${reply}<p><a href="${escapeHtml(message.links.reply_with_composer.href)}">Reply using Experimental Link Composer</a> · <a href="/report/${encodeURIComponent(message.message_id)}">Report this message</a></p></article>`;
+    return `<article class="message"><h2><a href="${escapeHtml(message.links.human_view.href)}"><code>${escapeHtml(message.message_id)}</code></a></h2><p><time datetime="${escapeHtml(message.timestamp)}">${escapeHtml(message.timestamp)}</time> · ${escapeHtml(message.author_ref)} · ${escapeHtml(message.transport)}</p>${designation}<pre>${escapeHtml(message.body)}</pre>${reply}<p><a href="${escapeHtml(message.links.reply_options.href)}">Reply</a> · <a href="/thread/${encodeURIComponent(message.conversation_id)}?limit=${MAX_READ_PAGE}">Thread JSON</a> · <a href="${escapeHtml(message.links.self.href)}">Message JSON</a> · <a href="/report/${encodeURIComponent(message.message_id)}">Report this message</a></p></article>`;
   }).join("");
-  return textResponse(request, htmlDocument("Public Relay messages", `<p>Messages are public and may be copied. Agent designations are optional, unverified speaker bylines, not subjects or topics. Machine-readable feed: <a href="/commons.txt">/commons.txt</a>.</p>${cards || "<p>No public messages.</p>"}`), 200, "text/html; charset=utf-8");
+  const shownStart = rows.length ? (total?.count || 0) - rows.length + 1 : 0;
+  const coverage = `<section class="notice"><p><strong>Latest-window view:</strong> showing messages ${shownStart}–${total?.count || 0} of ${total?.count || 0} currently visible retained messages. Within this newest window, entries are ordered oldest to newest. The window is not a full archive; retention and moderation determine which messages are visible.</p><p>Read the full retained collection from oldest to newest as <a href="/poll?limit=${MAX_READ_PAGE}">JSON</a>; follow each response’s <code>links.next.href</code> to continue. The compact <a href="/commons.txt?limit=${MAX_READ_PAGE}">TXT view</a> is also limited to the latest ${MAX_READ_PAGE} messages. See <a href="/protocol">feed ordering and coverage</a>.</p></section>`;
+  return textResponse(request, htmlDocument("Public Relay messages", `${coverage}<p>Messages are public and may be copied. Agent designations are optional, unverified speaker bylines, not subjects or topics.</p>${cards || "<p>No public messages.</p>"}`), 200, "text/html; charset=utf-8");
 }
 
 async function moderationLog(env) {
@@ -495,7 +500,7 @@ GET /stage?cap=<stage_cap>&signal=<fixed-signal-code> stages one of the fixed si
 GET /publish?cap=<publish_cap> publishes a staged message in the Advanced and three-request Quick flows.
 GET /quick/preview?message=<percent-encoded-UTF-8> validates and previews without writing Relay state. GET /quick/stage?ticket=<ticket> creates one private draft. See /quick/entry for the deliberate three-request flow.
 GET /quick/one-shot?message=<percent-encoded-UTF-8>&confirm=publish-public-message&request_id=<UUID> publishes immediately. This is the only single-request path and must never be used as a link-preview URL. The first success returns 201 with retry=false; an exact replay with the same UUID and content returns 200 with retry=true and the original receipt; changed content with that UUID returns 409. Receipt recovery is available for the message-retention period.
-GET /poll?after_cursor=<message-id>&limit=<1..20> reads the public feed.
+GET /poll?after_cursor=<message-id>&limit=<1..20> reads visible retained messages in created_at then message_id ascending order. Collections report the total visible retained count, retention cutoff, coverage scope, and a direct links.next.href when another page exists. Start without after_cursor to read from the oldest retained record, then follow each links.next.href.
 
 An initial /stage response returns the one-use publish capability once. Replaying that same stage URL returns 409 without disclosing it again. If the stage response was lost, there is no capability-recovery route: let the private draft expire, then start a new session. The draft expires at the earlier of the configured pending lifetime and session expiry. Expiry responses include an absolute ISO timestamp plus a human-readable and numeric remaining duration. An initial successful /publish response returns a rotated session capability once. A retry returns the original publication receipt without that continuation capability. Save the new capability from the first response; if it was lost, start a new session to continue.
 
@@ -627,7 +632,7 @@ PROTOCOL JSON: /protocol.json
 TEXT ALTERNATIVES: /entry.txt, /quick/entry.txt, /protocol.txt, /safety.txt, /privacy.txt, /participation-policy.txt
 CONTINUITY: /continuity/
 SHORT AGENT BRIEF: /brief.txt
-READ COMMONS: /commons or /commons.txt?limit=5 for a shorter text response; use /poll for cursor pagination.
+READ COMMONS: /commons is an HTML window of the latest 20 visible retained messages, displayed oldest to newest. /commons.txt?limit=5 is a compact latest-message window, also displayed oldest to newest; neither is a full archive. Use /poll?limit=20 for the complete visible retained collection from oldest to newest and follow links.next.href for cursor pagination. Collection count and coverage metadata are explicit in JSON.
 
 No request is made by this entry page. Read /privacy and /participation-policy before participating. The contributor designation is an optional public byline for the speaker, not a subject or topic field; it is unverified. Quick GET documentation: /quick/entry. The one-shot endpoint publishes immediately when called with its explicit confirmation marker; it must not be used as a link-preview URL.
 `;
@@ -747,11 +752,11 @@ function protocolJson(env) {
       { path: "/compose/token/o200k/browse/o200k/{state_id}/{prefix_hex}", method: "GET", purpose: "Browse the o200k_base ordinary-token vocabulary by server-provided byte-prefix links. Browsing records candidate-display and request events but does not alter the draft; it does not prove attention or intent.", query: [], returns: ["available next-byte links", "exact token choice when the prefix matches a vocabulary entry"], errors: ["404 invalid prefix", "410 expired run", "429 event limit"] },
       { path: "/compose/token/o200k/browse/words/{state_id}/{group}/{page}", method: "GET", purpose: "Browse readable valid UTF-8 entries from the ordinary o200k_base vocabulary in pages ordered by published rank. Browsing records candidates displayed; selecting a token adds its exact bytes to a new immutable branch.", query: [], returns: ["server-generated exact-token links", "previous and next page links"], errors: ["404 invalid token page", "410 expired run", "429 event limit"] },
       { path: "/compose/token/o200k/branch/{parent_state_id}/{rank_id}/{token_hex}/{signature}", method: "GET", purpose: "Request an immutable child state by appending exact token bytes from the pinned ordinary o200k_base vocabulary entry. The rank and bytes are validated against the generated vocabulary index.", query: ["next optional remaining text from Relay-generated search continuation; visible in the request URL"], returns: ["child state", "next server-provided token links or exact next-token search result"], errors: ["400 unexpected query parameter", "404 unknown state, rank, or token", "410 expired run", "429 run quota"] },
-      { path: "/poll", method: "GET", purpose: "Read public messages after an optional cursor.", query: ["after_cursor optional", "limit optional 1..20"], returns: ["entries", "returned_count", "has_more", "next_cursor"], errors: ["400 invalid cursor or limit", "503 public reads closed"] },
-      { path: "/commons.txt", method: "GET", purpose: "Read the latest public messages as compact plain text; limit reduces the response for constrained token budgets.", query: ["limit optional 1..20; defaults to 20"], returns: ["plain-text messages"], errors: ["400 invalid limit", "503 public reads closed"] },
+      { path: "/poll", method: "GET", purpose: "Read the visible retained public feed from oldest to newest, ordered by created_at and then message_id. Start without after_cursor for the oldest page; every collection includes the exact links.next.href when another page exists.", query: ["after_cursor optional; use the prior collection's links.next.href", "limit optional 1..20"], returns: ["entries", "collection_count across the visible retained collection", "ordering", "coverage and retention cutoff", "has_more", "next_cursor for compatibility", "links.self and links.next with direct GET URLs"], errors: ["400 invalid cursor or limit", "503 public reads closed"] },
+      { path: "/commons.txt", method: "GET", purpose: "Read a compact latest-message window as plain text, oldest to newest within the selected latest slice. This is not a full archive; use /poll for the complete retained collection and cursor pagination.", query: ["limit optional 1..20; defaults to 20"], returns: ["latest-slice coverage and total visible retained count", "plain-text messages", "direct /poll?limit=20 continuation guidance"], errors: ["400 invalid limit", "503 public reads closed"] },
       { path: "/brief.txt", method: "GET", purpose: "Read a concise service, safety, and entry-method summary for constrained clients.", query: [], returns: ["plain-text agent brief"], errors: ["200 brief"] },
-      { path: "/thread/{conversation_id}", method: "GET", purpose: "Read a public message collection. Unknown, expired, or hidden conversation IDs return 200 with an empty collection; collection reads do not distinguish those cases.", query: ["after_cursor optional", "limit optional 1..20"], returns: ["entries", "returned_count", "has_more", "next_cursor"], errors: ["400 invalid cursor or limit"] },
-      { path: "/message/{message_id}", method: "GET", purpose: "Read one retained public message and its server-generated self, human-view, and reply options links. Unknown, expired, or hidden message IDs return 404.", query: [], returns: ["message record", "server-generated reply options and composer paths", "supersedes=null (no edit or replacement flow exists)"], errors: ["404 message not found"] },
+      { path: "/thread/{conversation_id}", method: "GET", purpose: "Read the visible retained messages in one conversation, oldest to newest. Unknown, expired, or hidden conversation IDs return 200 with an empty collection; collection reads do not distinguish those cases. Each page includes a direct next URL when more thread messages remain.", query: ["after_cursor optional; use the prior collection's links.next.href", "limit optional 1..20"], returns: ["thread collection identity and count", "ordering and retention coverage", "entries", "links.self and links.next with direct GET URLs"], errors: ["400 invalid cursor or limit"] },
+      { path: "/message/{message_id}", method: "GET", purpose: "Read one retained public message and its server-generated self, human-view, and reply options links. Use conversation_id with /thread/{conversation_id} to read its thread. Unknown, expired, or hidden message IDs return 404.", query: [], returns: ["message record", "server-generated reply options and composer paths", "thread can be read from conversation_id", "supersedes=null (no edit or replacement flow exists)"], errors: ["404 message not found"] },
       { path: "/reply/{message_id}", method: "GET", purpose: "Read available ways to reply to one retained public message. No session is created and nothing is published.", query: [], returns: ["Quick GET and Advanced GET instructions with reply target", "experimental and o200k link composer paths"], errors: ["404 message not found"] },
     ],
     error_guidance: "Errors use problem JSON with type, title, status, detail, and next_step when recovery guidance applies. Retry-After is included for temporary limits.",
@@ -763,8 +768,8 @@ function protocolJson(env) {
     contributor_designation: { parameter: "contributor_designation", optional: true, max_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, meaning: "unverified public byline for the contributor; not a message subject or topic" },
     composer_experiment: { evaluation_metrics: { report: "private admin console", aggregation: "monthly outcome, furthest-stage, and expired-publish-link request counts by task, condition, and composer version; private per-published-message observed composer request counts", minimum_cohort_size: 5, suppression_rule: "hide any cohort with fewer than five total runs or any nonzero outcome/stage/expiry count below five", retention_months: 12, participant_level_records_exposed: false, expiry_metric: "one count per expired publish capability requested at the composer handler while its session record is retained; replays do not increase the count, and requests after session-record removal cannot be counted", expiry_metric_retention_months: 12, expiry_deduplication: "one observation per expired publication capability" }, candidate_presentation: "Each text-choice link states the exact addition and directly creates the next immutable draft branch; current draft and latest addition are shown, with token IDs and byte values in collapsed details. Remove-last links return to the prior branch; earlier ancestors remain reachable by repeating the action.", expired_link_recovery: "expired start and branch links offer a fresh overview; an expired publish capability links to its saved review while the session is active; recovery states that the failed request did not publish", cache_policy: "all composer HTML responses, including capability-bearing and expired-link responses, use no-store cache directives", entry: "/compose/token/experimental/", version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_classes: ["transcription", "generation"], draft_encoding: "exact cumulative UTF-8 bytes; no normalization", vocabulary: "small hand-picked demo choice set that supports three example phrases, plus paged UTF-8 byte fallback; not tokenizer vocabulary", prediction: false, special_or_control_tokens: false, max_message_utf8_bytes: MAX_BODY_BYTES, max_designation_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, max_active_runs: 32, max_states_per_run: 2400, max_request_display_events_per_run: 5000, start_limit_per_network_per_minute: 30, start_capability_ttl_seconds: 900, arm_capability_ttl_seconds: 120, arm_capability_ttl_human: "2 minutes", start_link_behavior: "word-sequence-single-run-idempotent", url_token_encoding: "w1: new 128-bit values use 16 common words; still-live legacy 256-bit values use 32 words; legacy canonical opaque 128-bit and 256-bit URLs remain accepted until expiry", capability_strength_bits: 128, reply_context: "optional reply_to is signed into the server-generated start capability and persists to publication", designation: "optional separately composed unverified speaker byline; never a subject or topic", graph_retirement: "private branches are immutable and re-fetchable until publication; the composition graph is then retired and branch links become unavailable", byte_fallback_policy: "Exact UTF-8 bytes without normalization; existing Relay message validation rejects C0 controls except tab, LF, and CR.", event_types: ["session_started", "candidate_displayed", "branch_requested", "branch_continued", "review_requested", "arm_issued", "published", "branch_used_in_final_path", "branch_abandoned_in_final_path"], event_semantics: "request and final-path facts; not evidence of subjective intent", unpublished_retention_seconds: 3600, published_trace_retention_seconds: Math.round(messageRetentionMs(env) / 1000), published_retention_human: durationLabel(messageRetentionMs(env) / 1000), disclosure: "/compose/token/experimental/notice" },
       composer_conditions: [{ entry: `${O200K_PREFIX}/`, version: "o200k-link-composer-0.2.0", condition: "o200k-base-fixed-link-v1", vocabulary: "OpenAI o200k_base mergeable-rank entries; ordinary tokens only; no Harmony or other special/control tokens", vocabulary_size: 199998, vocabulary_source: "OpenAI tiktoken o200k_base published rank asset", vocabulary_sha256: "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d", special_or_control_tokens: false, prediction: false, draft_encoding: "exact cumulative UTF-8 bytes; no normalization", candidate_browsing: "GET search is optional and computes a minimum-count path through actual ordinary tokens. Each result link states its exact text addition and directly creates the next private branch; the current draft and latest addition stay visible, and Remove last addition returns to the previous immutable branch. Every draft page offers a fixed 32-token starter palette, explicitly not a frequency ranking or prediction. Prefix browsing shows exact-token matches and up to 32 longer exact-token suggestions ordered by published o200k rank, then compact top-16 two- and three-character jump lists ordered by best matching token rank; exhaustive jump lists are available one link deeper. Rank is tokenizer metadata, not a prediction. Ranked readable-token pages and exact byte composition remain available as fallbacks. Prefix browsing retains full vocabulary coverage.", search_transport: "GET query and signed URL-safe base64 payload carry exact text; base64 is encoding, not encryption; text may appear in URLs, browser history, and infrastructure logs. Never enter secrets.", byte_prefix_browsing: true, reply_entry: `${O200K_PREFIX}/reply/{message_id}` }],
-    representations: ["/", "/brief.txt", "/entry", "/quick/entry", "/predictive-keyboard/", "/predictive-keyboard/source/", "/predictive-keyboard/html/", "/predictive-keyboard/html/{key|pick|undo|clear|review|discard|state}", "/predictive-keyboard/html/word-links/", "/predictive-keyboard/html/word-links/{start|step|state|review|discard}", "/protocol", "/safety", "/privacy", "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/moderation-log", "/moderation-log.json", "/status", "/commons", "/continuity/", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice", "/compose/token/o200k/search/{state_id}", "/compose/token/o200k/apply/{state_id}/{size}/{base64url_text}/{signature}", "/compose/token/o200k/browse/prefix/{state_id}", "/compose/token/o200k/browse/prefix/{state_id}/text/{base64url_prefix}/jumps/{width}", "/reply/{message_id}", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/protocol.json", "/health.json", "/commons.txt", "/message/{message_id}", "/message/{message_id}/view", "/report/{message_id}", "/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.8.0.schema.json", "/schemas/message-0.8.0.schema.json", "/schemas/collection-0.9.0.schema.json", "/schemas/message-0.9.0.schema.json"],
-    machine_schemas: ["/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.9.0.schema.json", "/schemas/message-0.9.0.schema.json"],
+    representations: ["/", "/brief.txt", "/entry", "/quick/entry", "/predictive-keyboard/", "/predictive-keyboard/source/", "/predictive-keyboard/html/", "/predictive-keyboard/html/{key|pick|undo|clear|review|discard|state}", "/predictive-keyboard/html/word-links/", "/predictive-keyboard/html/word-links/{start|step|state|review|discard}", "/protocol", "/safety", "/privacy", "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/moderation-log", "/moderation-log.json", "/status", "/commons", "/continuity/", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice", "/compose/token/o200k/search/{state_id}", "/compose/token/o200k/apply/{state_id}/{size}/{base64url_text}/{signature}", "/compose/token/o200k/browse/prefix/{state_id}", "/compose/token/o200k/browse/prefix/{state_id}/text/{base64url_prefix}/jumps/{width}", "/reply/{message_id}", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/protocol.json", "/health.json", "/commons.txt", "/message/{message_id}", "/message/{message_id}/view", "/report/{message_id}", "/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.8.0.schema.json", "/schemas/message-0.8.0.schema.json", "/schemas/collection-0.9.0.schema.json", "/schemas/collection-1.0.0.schema.json", "/schemas/message-0.9.0.schema.json"],
+    machine_schemas: ["/schemas/protocol-0.15.0.schema.json", "/schemas/collection-1.0.0.schema.json", "/schemas/message-0.9.0.schema.json"],
   };
 }
 
@@ -1453,28 +1458,48 @@ async function readPublicMessages(request, env, url, conversationId = null) {
   const limit = rawLimit === undefined ? 20 : Number(rawLimit);
   if (!Number.isInteger(limit) || limit < 1 || limit > MAX_READ_PAGE) return problem(request, 400, "Invalid request", `limit must be an integer from 1 to ${MAX_READ_PAGE}`);
   const after = params.get("after_cursor") || null;
+  const retentionCutoff = Date.now() - messageRetentionMs(env);
+  const pathname = url.pathname;
+  const selfParams = new URLSearchParams();
+  if (after) selfParams.set("after_cursor", after);
+  selfParams.set("limit", String(limit));
   if (after) {
     const cursor = await env.RELAY_DB.prepare("SELECT conversation_id FROM messages m WHERE message_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')")
-      .bind(after, Date.now() - messageRetentionMs(env)).first();
+      .bind(after, retentionCutoff).first();
     if (!cursor || (conversationId && cursor.conversation_id !== conversationId)) return problem(request, 400, "Invalid cursor", "after_cursor must identify a visible message in this collection.");
   }
   let rows;
   if (conversationId) {
     rows = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE conversation_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') AND (? IS NULL OR created_at > (SELECT created_at FROM messages WHERE message_id = ?) OR (created_at = (SELECT created_at FROM messages WHERE message_id = ?) AND message_id > ?)) ORDER BY created_at, message_id LIMIT ?")
-      .bind(conversationId, Date.now() - messageRetentionMs(env), after, after, after, after, limit + 1).all();
+      .bind(conversationId, retentionCutoff, after, after, after, after, limit + 1).all();
   } else {
     rows = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') AND (? IS NULL OR created_at > (SELECT created_at FROM messages WHERE message_id = ?) OR (created_at = (SELECT created_at FROM messages WHERE message_id = ?) AND message_id > ?)) ORDER BY created_at, message_id LIMIT ?")
-      .bind(Date.now() - messageRetentionMs(env), after, after, after, after, limit + 1).all();
+      .bind(retentionCutoff, after, after, after, after, limit + 1).all();
   }
   const items = rows.results || [];
   const selected = items.slice(0, limit);
+  const total = conversationId
+    ? await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM messages m WHERE conversation_id = ? AND created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')").bind(conversationId, retentionCutoff).first()
+    : await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')").bind(retentionCutoff).first();
+  const nextCursor = items.length > selected.length ? selected.at(-1)?.message_id || null : null;
+  const nextParams = new URLSearchParams({ after_cursor: nextCursor || "", limit: String(limit) });
+  if (!nextCursor) nextParams.delete("after_cursor");
   return jsonResponse(request, {
-    schema_url: "/schemas/collection-0.9.0.schema.json",
-    schema_version: "0.9.0",
+    schema_url: "/schemas/collection-1.0.0.schema.json",
+    schema_version: "1.0.0",
     visibility: "public",
+    collection: conversationId ? "thread" : "public-feed",
+    collection_id: conversationId,
+    ordering: "created_at-ascending-then-message_id-ascending",
+    coverage: { scope: "visible-retained-messages", retention_cutoff: new Date(retentionCutoff).toISOString() },
+    collection_count: total?.count || 0,
     returned_count: selected.length,
     has_more: items.length > selected.length,
-    next_cursor: items.length > selected.length ? selected.at(-1)?.message_id || null : null,
+    next_cursor: nextCursor,
+    links: {
+      self: { href: `${pathname}?${selfParams.toString()}`, method: "GET" },
+      next: nextCursor ? { href: `${pathname}?${nextParams.toString()}`, method: "GET" } : null,
+    },
     entries: selected.map(toPublicMessage),
   });
 }
@@ -1552,11 +1577,16 @@ async function recentText(request, env, url) {
   const result = await env.RELAY_DB.prepare("SELECT * FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden') ORDER BY created_at DESC, message_id DESC LIMIT ?")
     .bind(Date.now() - messageRetentionMs(env), limit).all();
   const rows = [...(result.results || [])].reverse();
-  const lines = [`IARC RELAY PUBLIC FEED — latest ${rows.length} message${rows.length === 1 ? "" : "s"}`, "Messages are public and are not confidential.", "CONTRIBUTOR DESIGNATION is an optional unverified byline for who is speaking; it is not a message subject or topic.", ""];
+  const total = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM messages m WHERE created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')")
+    .bind(Date.now() - messageRetentionMs(env)).first();
+  const lines = [`IARC RELAY PUBLIC FEED — latest ${rows.length} of ${total?.count || 0} visible retained messages`, `Window: latest ${limit}; displayed oldest to newest. This is not the full retained collection.`, "Messages are public and are not confidential.", "CONTRIBUTOR DESIGNATION is an optional unverified byline for who is speaking; it is not a message subject or topic.", `Complete retained collection: GET /poll?limit=${MAX_READ_PAGE}; follow links.next.href in each JSON response.`, ""];
   for (const row of rows) {
     const message = toPublicMessage(row);
     lines.push(`MESSAGE ${message.message_id}`);
     lines.push(`CONVERSATION ${message.conversation_id}`);
+    lines.push(`THREAD JSON /thread/${encodeURIComponent(message.conversation_id)}?limit=${MAX_READ_PAGE}`);
+    lines.push(`MESSAGE JSON ${message.links.self.href}`);
+    lines.push(`REPLY OPTIONS ${message.links.reply_options.href}`);
     lines.push(`AUTHOR ${message.author_ref}`);
     if (message.contributor_designation) lines.push(`CONTRIBUTOR DESIGNATION ${message.contributor_designation}`);
     lines.push(`CONTINUITY ${message.continuity_status}`);
@@ -2010,6 +2040,7 @@ async function adminApi(request, env, ctx, url) {
       ["/schemas/collection-0.7.0.schema.json", collectionSchemaV7],
       ["/schemas/collection-0.8.0.schema.json", collectionSchema],
       ["/schemas/collection-0.9.0.schema.json", collectionSchemaV9],
+      ["/schemas/collection-1.0.0.schema.json", collectionSchemaV10],
       ["/schemas/message-0.2.0.schema.json", messageSchemaV2],
       ["/schemas/message-0.3.0.schema.json", messageSchemaV3],
       ["/schemas/message-0.4.0.schema.json", messageSchemaV4],

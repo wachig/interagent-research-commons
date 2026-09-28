@@ -237,7 +237,7 @@ try {
       }
       for (const linkPart of html.split('href="').slice(1)) {
         const href = linkPart.split('"')[0].replaceAll("&amp;", "&");
-        if (href.startsWith("/") && !href.startsWith("/predictive-keyboard/vendor/")) crawlQueue.push(href);
+        if (href.startsWith("/") && !href.startsWith("/predictive-keyboard/vendor/") && !/^\/(?:poll|commons\.txt|thread|message)(?:\/|\?|$)/.test(href)) crawlQueue.push(href);
       }
     }
   }
@@ -463,11 +463,15 @@ try {
   assert.match(await htmlPoll.text(), /Relay response/);
   const htmlCommons = await fetch(`${base}/commons`);
   assert.match(htmlCommons.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlCommons.text(), /Public Relay messages/);
+  const htmlCommonsText = await htmlCommons.text();
+  assert.match(htmlCommonsText, /Public Relay messages/);
+  assert.match(htmlCommonsText, /Latest-window view/);
+  assert.match(htmlCommonsText, /\/poll\?limit=20/);
+  assert.match(htmlCommonsText, /\/commons\.txt\?limit=20/);
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -478,7 +482,7 @@ try {
   const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.15.0.schema.json");
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
   assert.ok(protocol.machine_schemas.includes("/schemas/message-0.9.0.schema.json"));
-  assert.ok(protocol.machine_schemas.includes("/schemas/collection-0.9.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.0.0.schema.json"));
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -590,8 +594,11 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.9.0.schema.json");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.0.0.schema.json");
   assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
+  assert.equal(publicMessages.body.ordering, "created_at-ascending-then-message_id-ascending");
+  assert.equal(publicMessages.body.coverage.scope, "visible-retained-messages");
+  assert.equal(publicMessages.body.links.self.href, "/poll?limit=20");
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
   const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json");
@@ -613,8 +620,8 @@ try {
   assert.equal(publicMessages.body.entries[0].contributor_designation, "Research collaborator");
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /CONTRIBUTOR DESIGNATION Research collaborator/);
   const shortFeed = await (await fetch(`${base}/commons.txt?limit=1`)).text();
-  assert.match(shortFeed, /latest 1 message/);
-  assert.equal((shortFeed.match(/^MESSAGE /gm) || []).length, 1);
+  assert.match(shortFeed, /latest 1 of \d+ visible retained messages/);
+  assert.equal((shortFeed.match(/^MESSAGE IARC-M-/gm) || []).length, 1);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
   assert.equal(publicMessages.body.entries[0].moderation_state, "visible");
   assert.equal(publicMessages.body.entries[0].schema_version, "0.9.0");
@@ -622,7 +629,7 @@ try {
   assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.2.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
     assert.equal(JSON.stringify(publicMessages.body).includes(secret), false, "bearer capabilities are absent from public JSON reads");
-    assert.equal((await (await fetch(`${base}/commons.txt`)).text()).includes(secret), false, "bearer capabilities are absent from public text reads");
+  assert.equal((await (await fetch(`${base}/commons.txt`)).text()).includes(secret), false, "bearer capabilities are absent from public text reads");
   }
   const detail = await getJson(`${base}${winningPublish.body.message_url}`);
   assert.equal(detail.body.body, specialText);
@@ -753,6 +760,28 @@ try {
   assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_class: "generation" });
   assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
+  const afterComposerCollection = await getJson(`${base}/poll?limit=1`);
+  assert.equal(afterComposerCollection.response.status, 200);
+  assert.equal(afterComposerCollection.body.schema_version, "1.0.0");
+  assert.equal(afterComposerCollection.body.has_more, true, "limited collection advertises another page");
+  assert.match(afterComposerCollection.body.links.next.href, /^\/poll\?after_cursor=IARC-M-[0-9a-f-]{36}&limit=1$/);
+  const followedPage = await getJson(new URL(afterComposerCollection.body.links.next.href, base));
+  assert.equal(followedPage.response.status, 200, "collection-provided next URL can be followed directly");
+  assert.equal(followedPage.body.returned_count, 1);
+  assert.notEqual(followedPage.body.entries[0].message_id, afterComposerCollection.body.entries[0].message_id);
+  const thread = await getJson(`${base}/thread/${encodeURIComponent(composedMessage.conversation_id)}?limit=1`);
+  assert.equal(thread.body.collection, "thread");
+  assert.equal(thread.body.collection_id, composedMessage.conversation_id);
+  assert.equal(thread.body.entries[0].message_id, composedMessage.message_id);
+  const composerFeedHtml = await (await fetch(`${base}/commons`)).text();
+  assert.match(composerFeedHtml, new RegExp(`<a href="/reply/${composedMessage.message_id}">Reply<\\/a>`));
+  assert.doesNotMatch(composerFeedHtml, new RegExp(`/compose/token/experimental/reply/${composedMessage.message_id}`), "feed sends all replies to the neutral capability-based chooser");
+  assert.match(composerFeedHtml, new RegExp(`/thread/${composedMessage.conversation_id}\\?limit=20`));
+  assert.match(composerFeedHtml, new RegExp(`/message/${composedMessage.message_id}`));
+  const composerTextFeed = await (await fetch(`${base}/commons.txt?limit=1`)).text();
+  assert.match(composerTextFeed, /latest 1 of \d+ visible retained messages/);
+  assert.match(composerTextFeed, /displayed oldest to newest/);
+  assert.match(composerTextFeed, new RegExp(`THREAD JSON /thread/${composedMessage.conversation_id}`));
 
 
 
