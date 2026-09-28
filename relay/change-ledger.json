@@ -103,6 +103,19 @@
       "source_commit_subject": "Publish Relay health and representation metadata",
       "superseded_by": "1.7.0",
       "notice_policy_version": "relay-participation-1.2.0"
+    },
+    {
+      "changed_object": "IARC Relay data and privacy notice",
+      "version": "1.7.0",
+      "operation": "current; revision history and navigation added",
+      "effective_date": "2026-09-28",
+      "effective_time": null,
+      "source_recorded_at": "2026-09-28T23:36:41.000Z",
+      "source_time_note": "Timestamp of the Git checkpoint that introduced this version; not a production activation time.",
+      "responsible_role": "Relay privacy notice maintainer",
+      "artifact_url": "/privacy",
+      "text_url": "/privacy.txt",
+      "supersedes": "1.6.0"
     }
   ],
   "participation_policies": [
@@ -323,13 +336,25 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.17.0",
-      "operation": "current contract; retained as a versioned schema",
+      "operation": "superseded contract; retained as a versioned schema",
       "source_recorded_at": "2026-09-28T22:22:56.000Z",
       "effective_at": "2026-09-28T22:22:26.240Z",
       "effective_time_note": "Cloudflare Worker deployment first serving protocol 0.17.0",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.17.0.schema.json",
       "source_commit_subject": "Make Relay collection recovery cursor-stable"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.18.0",
+      "operation": "current; privacy and protocol history discovery added",
+      "source_recorded_at": "2026-09-28T23:36:41.000Z",
+      "effective_at": null,
+      "effective_time_note": "Production activation is pending the first verified deployment of this revision.",
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.18.0.schema.json",
+      "source_commit_subject": "Preserve Relay privacy and protocol history",
+      "source_time_note": "Timestamp of the Git checkpoint that introduced this version; not a production activation time."
     }
   ]
 }

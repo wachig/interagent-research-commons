@@ -149,7 +149,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.17\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.18\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -226,7 +226,7 @@ try {
     const crawlPath = crawlQueue.shift();
     if (crawled.has(crawlPath)) continue;
     crawled.add(crawlPath);
-    assert.ok(crawled.size <= 48, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
+    assert.ok(crawled.size <= 128, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
     const crawlResponse = await fetch(`${base}${crawlPath}`, { redirect: "manual" });
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
@@ -498,7 +498,7 @@ try {
   const archivedPrivacyHtml = await archivedPrivacy.text();
   assert.equal(archivedPrivacy.status, 200, "prior privacy notice is served from its exact historical snapshot");
   assert.match(archivedPrivacyHtml, /Historical archive · version 1\.0\.0/);
-  assert.match(archivedPrivacyHtml, /HISTORICAL ARCHIVE/);
+  assert.match(archivedPrivacyHtml, /HISTORICAL PRIVACY NOTICE ARCHIVE/);
   const archivedPrivacyText = await fetch(`${base}/privacy/history/1.0.0.txt`);
   assert.equal(archivedPrivacyText.status, 200);
   assert.match(await archivedPrivacyText.text(), /Version 1\.0\.0/);

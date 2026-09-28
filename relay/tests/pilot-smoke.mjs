@@ -9,9 +9,9 @@ assert.equal(target.hostname, canonicalHostname, "only the canonical IARC Relay 
 assert.equal(target.protocol, "https:");
 
 const failures = [];
-const indexableDocs = new Set(["/", "/service.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/status", "/robots.txt", "/sitemap.xml"]);
+const indexableDocs = new Set(["/", "/service.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", "/changes", "/changes.json", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/status", "/robots.txt", "/sitemap.xml"]);
 const fixedReadPaths = new Set([
-  "/", "/service.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy",
+  "/", "/service.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/privacy/history/", "/changes", "/changes.json",
   "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/brief.txt", "/robots.txt", "/sitemap.xml",
   "/status", "/moderation-log", "/continuity/",
   "/compose/token/experimental/", "/compose/token/experimental/notice",
@@ -19,6 +19,7 @@ const fixedReadPaths = new Set([
 ]);
 function isSafeReadPath(pathname) {
   return fixedReadPaths.has(pathname)
+    || /^\/privacy\/history\/1\.[0-9]+\.0(?:\.txt)?$/.test(pathname)
     || /^\/compose\/token\/experimental\/reply\/IARC-M-[0-9a-f-]{36}$/i.test(pathname)
     || /^\/message\/IARC-M-[0-9a-f-]{36}(?:\/view)?$/i.test(pathname)
     || /^\/thread\/IARC-C-[0-9a-f-]{36}$/i.test(pathname);
@@ -28,7 +29,7 @@ async function request(path, init) {
   assert.ok(response.status < 300 || response.status >= 400, `${path} must not redirect`);
   const pathname = new URL(path, target).pathname;
   const immutableSchema = /^\/schemas\/(?:protocol|collection|message|health)-[0-9.]+\.schema\.json$/.test(pathname);
-  const revalidatedPolicy = ["/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.0.0.txt", "/participation-policy/relay-participation-1.1.0", "/participation-policy/relay-participation-1.1.0.txt"].includes(pathname);
+  const revalidatedPolicy = ["/privacy", "/privacy.txt", "/privacy/history/", "/changes", "/changes.json", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.0.0.txt", "/participation-policy/relay-participation-1.1.0", "/participation-policy/relay-participation-1.1.0.txt"].includes(pathname) || /^\/privacy\/history\/1\.[0-9]+\.0(?:\.txt)?$/.test(pathname);
   assert.equal(response.headers.get("cache-control"), immutableSchema ? "public, max-age=31536000, immutable" : revalidatedPolicy ? "public, max-age=0, must-revalidate" : "no-store", `${path}: intentional cache policy`);
   assert.equal(response.headers.get("content-language"), "en", `${path}: representation language`);
   assert.match(response.headers.get("vary") || "", /Accept/i, `${path}: negotiated representations vary by Accept`);
@@ -45,7 +46,7 @@ while (queue.length) {
   const path = queue.shift();
   if (visited.has(path)) continue;
   visited.add(path);
-  assert.ok(visited.size <= 48, "published HTML graph remains bounded");
+  assert.ok(visited.size <= 64, "published HTML graph remains bounded");
   const response = await request(path);
   assert.ok(response.status >= 200 && response.status < 300, `${path} resolves`);
   const body = await response.text();
@@ -59,7 +60,7 @@ while (queue.length) {
     }
   }
 }
-for (const path of ["/health.json", "/brief.txt", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/continuity/", "/commons", "/commons.txt", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice"]) {
+for (const path of ["/health.json", "/brief.txt", "/protocol.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/privacy/history/", "/privacy/history/1.0.0", "/privacy/history/1.0.0.txt", "/changes", "/changes.json", "/participation-policy", "/status", "/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/continuity/", "/commons", "/commons.txt", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice"]) {
   const response = await request(path);
   assert.equal(response.status, 200, `${path} is public-read accessible`);
   if (["/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status"].includes(path)) assert.match(response.headers.get("content-type"), /text\/html/);
@@ -117,6 +118,8 @@ assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
 assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
 assert.equal(protocol.composer_experiment.version, "link-token-composer-0.4.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
+assert.equal(protocol.privacy_notice.history, "/privacy/history/");
+assert.ok(protocol.representations.includes("/changes.json"));
 const schemaNames = [["protocol", "0.18.0"], ["collection", "1.2.0"], ["message", "1.0.0"], ["health", "1.0.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
@@ -142,6 +145,14 @@ assert.equal(unchangedPrivacy.headers.get("cache-control"), "public, max-age=0, 
 const immutableSchemaResponse = await request("/schemas/health-1.0.0.schema.json");
 assert.ok(immutableSchemaResponse.headers.get("etag"), "immutable schema has an entity tag");
 assert.ok(immutableSchemaResponse.headers.get("last-modified"), "immutable schema has a last-modified validator on deployed Workers");
+const historyIndex = await (await request("/privacy/history/")).text();
+assert.match(historyIndex, /Privacy notice 1\.6\.0/);
+const privacyArchive = await request("/privacy/history/1.0.0");
+assert.match(await privacyArchive.text(), /Historical archive · version 1\.0\.0/);
+const changeLedger = await (await request("/changes.json")).json();
+assert.equal(changeLedger.privacy_notices.some((entry) => entry.version === "1.6.0" && entry.superseded_by === "1.7.0"), true);
+assert.equal(changeLedger.protocol_revisions.some((entry) => entry.version === "0.18.0" && entry.effective_at), true);
+assert.match((await request("/changes")).headers.get("link") || "", /rel="alternate"; type="application\/json"/);
 const collectionSchema = schemas.find(([name]) => name === "collection")[1];
 const messageSchema = schemas.find(([name]) => name === "message")[1];
 const liveFeed = await (await request("/poll")).json();
