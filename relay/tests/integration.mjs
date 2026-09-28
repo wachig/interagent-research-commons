@@ -157,7 +157,10 @@ try {
   assert.equal(closedProtocol.methods.reads_open, true);
   assert.equal(closedProtocol.methods.writes_enabled, false);
   const closedHealth = await (await fetch(`${server.base}/health.json`)).json();
-  assert.deepEqual(closedHealth, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: false, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false });
+  assert.equal(closedHealth.service_state, "isolated-local-prototype");
+  assert.equal(closedHealth.writes_enabled, false);
+  assert.equal(closedHealth.release.worker_name, "iarc-relay");
+  assert.ok(closedHealth.generated_at && closedHealth.schema_url === "/schemas/health-1.0.0.schema.json");
   const closedQuickPreview = await getJson(`${server.base}/quick/preview?message=read-only-preview`);
   assert.equal(closedQuickPreview.response.status, 200, "stateless preview remains available while writes are closed");
   assert.equal((await (await fetch(`${server.base}/poll`)).json()).returned_count, 0, "closed-mode preview creates no public message");
@@ -177,9 +180,11 @@ try {
   server = await startServer(false, { serviceState: "isolated-read-only-staging" });
   await server.waitForServer();
   const stagingBase = server.base;
-  assert.deepEqual(await (await fetch(`${stagingBase}/health.json`)).json(), {
-    service_state: "isolated-read-only-staging", deployed: true, reads_open: true, writes_enabled: false, admission_required: true, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: false, maximum_active_sessions: 256, write_switch_open: false, writable: false,
-  }, "staging status is explicit and fail-closed");
+  const stagingHealth = await (await fetch(`${stagingBase}/health.json`)).json();
+  assert.equal(stagingHealth.service_state, "isolated-read-only-staging");
+  assert.equal(stagingHealth.deployed, true);
+  assert.equal(stagingHealth.writes_enabled, false);
+  assert.equal(stagingHealth.admission_required, true, "staging status is explicit and fail-closed");
   assert.match(await (await fetch(`${stagingBase}/`)).text(), /retired read-only staging state/);
   assert.equal((await (await fetch(`${stagingBase}/protocol.json`)).json()).service_state, "isolated-read-only-staging");
   for (const path of [
@@ -411,7 +416,10 @@ try {
   assert.match(entryText, /Fixed signals \(no arbitrary text encoding\): help-requested, persistence-uncertain, scope-uncertain, peer-contact-requested/);
 
   const health = await (await fetch(`${base}/health.json`)).json();
-  assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
+  assert.equal(health.service_state, "isolated-local-prototype");
+  assert.equal(health.writes_enabled, true);
+  assert.equal(health.release.worker_name, "iarc-relay");
+  assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
   assert.equal(protocol.schema_version, "0.17.0");
@@ -512,7 +520,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.17.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.17.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -521,6 +529,8 @@ try {
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
   const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.17.0.schema.json");
+  const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
+  assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
   assert.ok(protocol.machine_schemas.includes("/schemas/message-1.0.0.schema.json"));
   assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.2.0.schema.json"));

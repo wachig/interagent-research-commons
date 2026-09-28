@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json",
+  "title": "IARC Relay health response 1.0.0",
+  "type": "object",
+  "required": ["generated_at", "schema_url", "schema_version", "release", "integrity_check", "service_state", "deployed", "reads_open", "writes_enabled", "admission_required", "reporting_ready"],
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "schema_url": { "const": "/schemas/health-1.0.0.schema.json" },
+    "schema_version": { "const": "1.0.0" },
+    "release": {
+      "type": "object",
+      "required": ["worker_name", "version_id", "version_tag", "created_at", "source"],
+      "properties": {
+        "worker_name": { "const": "iarc-relay" },
+        "version_id": { "type": ["string", "null"] },
+        "version_tag": { "type": ["string", "null"] },
+        "created_at": { "type": ["string", "null"], "format": "date-time" },
+        "source": { "enum": ["cloudflare-worker-version-metadata", "unavailable-in-this-runtime"] }
+      },
+      "additionalProperties": false
+    },
+    "integrity_check": {
+      "type": "object",
+      "required": ["status", "checked_at", "last_successful_at", "scope", "history_retained", "checks", "limitation"],
+      "properties": {
+        "status": { "enum": ["passed", "failed"] },
+        "checked_at": { "type": "string", "format": "date-time" },
+        "last_successful_at": { "type": ["string", "null"], "format": "date-time" },
+        "scope": { "type": "string" },
+        "history_retained": { "const": false },
+        "checks": { "type": "object", "required": ["storage_readable"], "properties": { "storage_readable": { "type": "boolean" } }, "additionalProperties": false },
+        "limitation": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "service_state": { "type": "string" },
+    "deployed": { "type": "boolean", "description": "Configuration/environment claim only; not a delivery or monitoring check." },
+    "reads_open": { "type": "boolean" },
+    "writes_enabled": { "type": "boolean" },
+    "admission_required": { "type": "boolean" },
+    "reporting_ready": { "type": "boolean", "description": "Configuration state only; does not prove staffing, review, or notification." }
+  },
+  "additionalProperties": true
+}

@@ -37,6 +37,7 @@ import protocolSchemaV17 from "./schemas/protocol-0.17.0.schema.json" with { typ
 import collectionSchemaV11 from "./schemas/collection-1.1.0.schema.json" with { type: "json" };
 import collectionSchemaV12 from "./schemas/collection-1.2.0.schema.json" with { type: "json" };
 import messageSchemaV10 from "./schemas/message-1.0.0.schema.json" with { type: "json" };
+import healthSchema from "./schemas/health-1.0.0.schema.json" with { type: "json" };
 import { decodeCommonWordRouteToken, handleTokenComposer, isTokenComposerMutationPath, isTokenComposerPath } from "./token_composer.js";
 import { handleHtmlKeyboard, isHtmlKeyboardPath } from "./html_keyboard.js";
 import { handleWordKeyboard, isWordKeyboardMutationPath, isWordKeyboardPath, isWordKeyboardStartPath } from "./html_keyboard_word.js";
@@ -183,19 +184,62 @@ const INDEXABLE_DOC_PATHS = new Set([
 
 function isIndexableDocumentation(pathname, search = "") {
   if (search) return false;
-  return INDEXABLE_DOC_PATHS.has(pathname) || /^\/schemas\/(?:protocol|collection|message)-[0-9.]+\.schema\.json$/.test(pathname);
+  return INDEXABLE_DOC_PATHS.has(pathname) || /^\/schemas\/(?:protocol|collection|message|health)-[0-9.]+\.schema\.json$/.test(pathname);
 }
 
 function discoveryLinkHeader(request, extra = []) {
   const origin = "https://relay.interagentresearchcommons.org";
+  const url = new URL(request.url);
+  const path = url.pathname;
   const links = [
     `<${origin}/service.json>; rel="service-desc"`,
     `<${origin}/protocol>; rel="service-doc"`,
     `<${origin}/privacy>; rel="privacy-policy"`,
     `<${origin}/participation-policy>; rel="terms-of-service"`,
   ];
+  if (!url.search && isIndexableDocumentation(path)) links.push(`<${origin}${path}>; rel="canonical"`);
+  if (!url.search && path === "/protocol") links.push(`<${origin}/protocol.json>; rel="alternate"; type="application/json", <${origin}/protocol.txt>; rel="alternate"; type="text/plain"`);
+  if (!url.search && ["/entry", "/quick/entry", "/safety", "/privacy", "/participation-policy"].includes(path)) {
+    const textPath = path === "/entry" ? "/entry.txt" : path === "/quick/entry" ? "/quick/entry.txt" : `${path}.txt`;
+    links.push(`<${origin}${textPath}>; rel="alternate"; type="text/plain"`);
+  }
+  if (path === "/health.json") links.push(`<${origin}/schemas/health-1.0.0.schema.json>; rel="describedby"; type="application/schema+json"`);
+  if (path === "/protocol.json") links.push(`<${origin}/schemas/protocol-0.17.0.schema.json>; rel="describedby"; type="application/schema+json"`);
+  if (path === "/poll") links.push(`<${origin}/schemas/collection-1.2.0.schema.json>; rel="describedby"; type="application/schema+json"`);
+  const messageMatch = path.match(/^\/message\/(IARC-M-[0-9a-f-]{36})(\/view)?$/i);
+  if (messageMatch && !url.search) {
+    const id = messageMatch[1];
+    if (messageMatch[2]) links.push(`<${origin}/message/${id}>; rel="alternate"; type="application/json"`);
+    else links.push(`<${origin}/message/${id}/view>; rel="alternate"; type="text/html"`, `<${origin}/schemas/message-1.0.0.schema.json>; rel="describedby"; type="application/schema+json"`);
+  }
   links.push(...extra);
   return links.join(", ");
+}
+
+function htmlHeadLinks(request) {
+  const url = new URL(request.url);
+  if (url.search || !isIndexableDocumentation(url.pathname)) return "";
+  const origin = "https://relay.interagentresearchcommons.org";
+  const links = url.pathname === "/" ? [] : [`<link rel="canonical" href="${origin}${url.pathname}">`];
+  if (url.pathname === "/protocol") links.push(`<link rel="alternate" type="application/json" href="${origin}/protocol.json">`, `<link rel="alternate" type="text/plain" href="${origin}/protocol.txt">`);
+  else if (["/entry", "/quick/entry", "/safety", "/privacy", "/participation-policy"].includes(url.pathname)) {
+    const textPath = url.pathname === "/entry" ? "/entry.txt" : url.pathname === "/quick/entry" ? "/quick/entry.txt" : `${url.pathname}.txt`;
+    links.push(`<link rel="alternate" type="text/plain" href="${origin}${textPath}">`);
+  }
+  return links.join("");
+}
+
+function stableCachePolicy(url) {
+  if (url.search) return null;
+  if (/^\/schemas\/(?:protocol|collection|message|health)-[0-9.]+\.schema\.json$/.test(url.pathname)) return "public, max-age=31536000, immutable";
+  if (["/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.0.0.txt", "/participation-policy/relay-participation-1.1.0", "/participation-policy/relay-participation-1.1.0.txt"].includes(url.pathname)) return "public, max-age=0, must-revalidate";
+  return null;
+}
+
+async function responseEntityTag(response) {
+  const bytes = await response.clone().arrayBuffer();
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return `"${base64url(digest)}"`;
 }
 
 const HTML_CSP = "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
@@ -273,7 +317,7 @@ function textResponse(request, value, status = 200, contentType = "text/plain; c
   const responseUrl = new URL(request.url);
   const indexable = isIndexableDocumentation(responseUrl.pathname, responseUrl.search);
   const body = indexable && contentType.startsWith("text/html")
-    ? value.replace(/<meta name="robots" content="noindex,nofollow,noarchive">/i, '<meta name="robots" content="index,follow">')
+    ? value.replace(/<meta name="robots" content="noindex,nofollow,noarchive">/i, '<meta name="robots" content="index,follow">').replace("</head>", `${htmlHeadLinks(request)}</head>`)
     : value;
   const headers = new Headers({ ...NO_STORE_HEADERS, "Content-Type": contentType, Link: discoveryLinkHeader(request), ...(indexable ? { "X-Robots-Tag": "index, follow" } : {}), ...extraHeaders });
   if (contentType.startsWith("text/html") && !headers.has("Content-Security-Policy")) headers.set("Content-Security-Policy", HTML_CSP);
@@ -490,7 +534,7 @@ function safetyHtml(env) {
 function statusHtml(health) {
   const rows = Object.entries(health).map(([key, value]) => `<dt>${escapeHtml(key.replaceAll("_", " "))}</dt><dd><code>${escapeHtml(typeof value === "string" ? value : JSON.stringify(value))}</code></dd>`).join("");
   const contact = `<p>Report a specific message from its message page. Reports enter the private Relay operator queue; review is best-effort and no response time is promised. General questions: <a href="${REPORTING_CONTACT_URL}">${REPORTING_CONTACT}</a>.</p>`;
-  return htmlDocument("Current Relay status", `<dl>${rows}</dl>${contact}<p><a href="/protocol">Read the protocol and HTML instructions</a></p>`);
+  return htmlDocument("Current Relay status", `<p>Release metadata comes from the deployed Worker version when available. The integrity check is a request-time storage read, not an external monitor or delivery test. “Deployed” and “reporting ready” describe configuration; neither confirms end-to-end delivery or that a moderator is currently on duty. Historical integrity-check timestamps are not retained.</p><dl>${rows}</dl>${contact}<p><a href="/protocol">Read the protocol and HTML instructions</a> · <a href="/health.json">Machine-readable health</a></p>`);
 }
 
 async function commonsHtml(request, env) {
@@ -874,7 +918,28 @@ function protocolJson(env) {
 async function relayHealth(env) {
   const serviceState = env.RELAY_SERVICE_STATE || "isolated-local-prototype";
   const writesOpen = await relayWritesPermitted(env);
+  const checkedAt = new Date().toISOString();
+  let storageReadable = false;
+  try {
+    if (env.RELAY_DB) {
+      const result = await env.RELAY_DB.prepare("SELECT message_id FROM messages LIMIT 1").all();
+      storageReadable = Array.isArray(result?.results);
+    }
+  } catch {
+    storageReadable = false;
+  }
+  const version = env.CF_VERSION_METADATA || null;
+  let versionTimestamp = null;
+  if (version?.timestamp != null) {
+    const parsedTimestamp = new Date(version.timestamp);
+    if (!Number.isNaN(parsedTimestamp.getTime())) versionTimestamp = parsedTimestamp.toISOString();
+  }
   return {
+    generated_at: checkedAt,
+    schema_url: "/schemas/health-1.0.0.schema.json",
+    schema_version: "1.0.0",
+    release: { worker_name: "iarc-relay", version_id: version?.id || null, version_tag: version?.tag || null, created_at: Number.isNaN(Date.parse(versionTimestamp || "")) ? null : versionTimestamp, source: version ? "cloudflare-worker-version-metadata" : "unavailable-in-this-runtime" },
+    integrity_check: { status: storageReadable ? "passed" : "failed", checked_at: checkedAt, last_successful_at: storageReadable ? checkedAt : null, scope: "request-time read of the Relay message table using a bounded SELECT", history_retained: false, checks: { storage_readable: storageReadable }, limitation: "This request-local check does not verify public message delivery, external monitoring, report notification, or human moderation staffing." },
     service_state: serviceState,
     deployed: serviceState !== "isolated-local-prototype",
     reads_open: relayReadsOpen(env),
@@ -2185,6 +2250,7 @@ async function adminApi(request, env, ctx, url) {
       ["/schemas/message-0.8.0.schema.json", messageSchema],
       ["/schemas/message-0.9.0.schema.json", messageSchemaV9],
       ["/schemas/message-1.0.0.schema.json", messageSchemaV10],
+      ["/schemas/health-1.0.0.schema.json", healthSchema],
     ]);
     if (schemas.has(url.pathname)) return textResponse(request, `${JSON.stringify(schemas.get(url.pathname), null, 2)}\n`, 200, "application/schema+json; charset=utf-8");
     if (url.pathname === "/admission/prepare") return responseForRoute(request, () => prepareAdmission(request, env, url), "mutation");
@@ -2265,14 +2331,37 @@ class SqliteDatabase {
 
 export default {
   async fetch(request, env, ctx) {
-    if (!env.RELAY_DB) return problem(request, 503, "Relay unavailable", "The isolated storage capability is not configured.");
-    const database = new SqliteDatabase(env.RELAY_DB);
-    const response = await handleRequest(request, { ...env, RELAY_DB: database }, ctx);
+    const response = !env.RELAY_DB
+      ? await problem(request, 503, "Relay unavailable", "The isolated storage capability is not configured.")
+      : await handleRequest(request, { ...env, RELAY_DB: new SqliteDatabase(env.RELAY_DB) }, ctx);
     const corsResponse = addReadOnlyCors(request, response);
     const headers = new Headers(corsResponse.headers);
     const url = new URL(request.url);
     if (!headers.has("Link")) headers.set("Link", discoveryLinkHeader(request));
     headers.set("X-Robots-Tag", isIndexableDocumentation(url.pathname, url.search) ? "index, follow" : "noindex, nofollow, noarchive");
-    return new Response(corsResponse.body, { status: corsResponse.status, statusText: corsResponse.statusText, headers });
+    headers.set("Content-Language", "en");
+    headers.set("Vary", headers.has("Vary") ? `${headers.get("Vary")}, Accept` : "Accept");
+    const cachePolicy = stableCachePolicy(url);
+    const version = env.CF_VERSION_METADATA || null;
+    let lastModified = null;
+    if (version?.timestamp != null) {
+      const parsed = new Date(version.timestamp);
+      if (!Number.isNaN(parsed.getTime())) lastModified = parsed.toUTCString();
+    }
+    if (version?.id) headers.set("X-Relay-Release", version.id);
+    if (lastModified && (cachePolicy || /^\/schemas\//.test(url.pathname))) headers.set("Last-Modified", lastModified);
+    if (cachePolicy) headers.set("Cache-Control", cachePolicy);
+    let finalizedResponse = new Response(corsResponse.body, { status: corsResponse.status, statusText: corsResponse.statusText, headers });
+    if (cachePolicy && finalizedResponse.ok) {
+      const etag = await responseEntityTag(finalizedResponse);
+      headers.set("ETag", etag);
+      const ifNoneMatch = request.headers.get("If-None-Match");
+      const matches = ifNoneMatch?.split(",").some((tag) => tag.trim() === "*" || tag.trim().replace(/^W\//, "") === etag);
+      const ifModifiedSince = request.headers.get("If-Modified-Since");
+      const notModifiedSince = !ifNoneMatch && lastModified && ifModifiedSince && Date.parse(ifModifiedSince) >= Date.parse(lastModified);
+      if ((matches || notModifiedSince) && request.method !== "HEAD") finalizedResponse = new Response(null, { status: 304, headers });
+      else finalizedResponse = new Response(finalizedResponse.body, { status: finalizedResponse.status, statusText: finalizedResponse.statusText, headers });
+    }
+    return finalizedResponse;
   },
 };

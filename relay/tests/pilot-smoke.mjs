@@ -26,8 +26,13 @@ function isSafeReadPath(pathname) {
 async function request(path, init) {
   const response = await fetch(new URL(path, target), { redirect: "manual", ...init });
   assert.ok(response.status < 300 || response.status >= 400, `${path} must not redirect`);
-  assert.equal(response.headers.get("cache-control"), "no-store", `${path}: no-store`);
-  const indexable = indexableDocs.has(new URL(path, target).pathname) || /^\/schemas\/(?:protocol|collection|message)-[0-9.]+\.schema\.json$/.test(new URL(path, target).pathname);
+  const pathname = new URL(path, target).pathname;
+  const immutableSchema = /^\/schemas\/(?:protocol|collection|message|health)-[0-9.]+\.schema\.json$/.test(pathname);
+  const revalidatedPolicy = ["/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.0.0.txt", "/participation-policy/relay-participation-1.1.0", "/participation-policy/relay-participation-1.1.0.txt"].includes(pathname);
+  assert.equal(response.headers.get("cache-control"), immutableSchema ? "public, max-age=31536000, immutable" : revalidatedPolicy ? "public, max-age=0, must-revalidate" : "no-store", `${path}: intentional cache policy`);
+  assert.equal(response.headers.get("content-language"), "en", `${path}: representation language`);
+  assert.match(response.headers.get("vary") || "", /Accept/i, `${path}: negotiated representations vary by Accept`);
+  const indexable = indexableDocs.has(pathname) || immutableSchema;
   assert.equal(response.headers.get("x-robots-tag"), indexable ? "index, follow" : "noindex, nofollow, noarchive", `${path}: indexing policy`);
   assert.match(response.headers.get("link") || "", /rel="service-desc"/, `${path}: service bootstrap Link relation`);
   return response;
@@ -82,6 +87,15 @@ for (const userAgent of [
 assert.equal((await request("/not-a-relay-resource")).status, 404, "unknown paths do not fall through to an unrelated site");
 
 const health = await (await request("/health.json")).json();
+const healthSchema = await (await request("/schemas/health-1.0.0.schema.json")).json();
+const healthValidator = new Ajv2020({ allErrors: true, strict: true });
+addFormats(healthValidator);
+assert.equal(healthValidator.validate(healthSchema, health), true, `health response validates: ${JSON.stringify(healthValidator.errors)}`);
+assert.match(health.generated_at, /^\d{4}-\d\d-\d\dT/);
+assert.equal(health.schema_version, "1.0.0");
+assert.equal(health.release.worker_name, "iarc-relay");
+assert.equal(health.integrity_check.history_retained, false);
+assert.equal((await request("/health.json")).headers.get("cache-control"), "no-store", "health is not cached");
 assert.equal(health.service_state, "isolated-public-beta");
 assert.equal(health.writes_enabled, true);
 assert.equal(health.admission_required, false);
@@ -103,7 +117,7 @@ assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
 assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
 assert.equal(protocol.composer_experiment.version, "link-token-composer-0.4.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
-const schemaNames = [["protocol", "0.17.0"], ["collection", "1.2.0"], ["message", "1.0.0"]];
+const schemaNames = [["protocol", "0.17.0"], ["collection", "1.2.0"], ["message", "1.0.0"], ["health", "1.0.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
   await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
@@ -114,9 +128,24 @@ for (const [, schema] of schemas) ajv.addSchema(schema);
 const protocolSchema = schemas.find(([name]) => name === "protocol")[1];
 assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.17.0.schema.json", "schema identity uses the canonical IARC Relay host");
 assert.equal(ajv.getSchema(protocolSchema.$id)(protocol), true, "live protocol validates against its canonical schema");
+const protocolHtmlResponse = await request("/protocol");
+const protocolHtml = await protocolHtmlResponse.text();
+assert.match(protocolHtml, /<link rel="canonical" href="https:\/\/relay\.interagentresearchcommons\.org\/protocol">/);
+assert.match(protocolHtml, /<link rel="alternate" type="application\/json" href="https:\/\/relay\.interagentresearchcommons\.org\/protocol\.json">/);
+assert.match(protocolHtmlResponse.headers.get("link") || "", /rel="alternate"; type="application\/json"/);
+const privacy = await request("/privacy");
+assert.ok(privacy.headers.get("etag"), "stable policy has an entity tag");
+assert.ok(privacy.headers.get("last-modified"), "stable policy has a last-modified validator on deployed Workers");
+const unchangedPrivacy = await fetch(new URL("/privacy", target), { headers: { "If-None-Match": privacy.headers.get("etag") } });
+assert.equal(unchangedPrivacy.status, 304, "unchanged stable documentation supports conditional requests");
+assert.equal(unchangedPrivacy.headers.get("cache-control"), "public, max-age=0, must-revalidate");
+const immutableSchemaResponse = await request("/schemas/health-1.0.0.schema.json");
+assert.ok(immutableSchemaResponse.headers.get("etag"), "immutable schema has an entity tag");
+assert.ok(immutableSchemaResponse.headers.get("last-modified"), "immutable schema has a last-modified validator on deployed Workers");
 const collectionSchema = schemas.find(([name]) => name === "collection")[1];
 const messageSchema = schemas.find(([name]) => name === "message")[1];
 const liveFeed = await (await request("/poll")).json();
+assert.equal((await request("/poll")).headers.get("cache-control"), "no-store", "feed visibility is always fresh and no-store");
 assert.equal(ajv.getSchema(collectionSchema.$id)(liveFeed), true, `live collection validates against current schema: ${JSON.stringify(ajv.errors)}`);
 assert.equal(liveFeed.coverage.consistent_snapshot, false);
 assert.equal(liveFeed.coverage.gaps_possible, true);
@@ -129,6 +158,11 @@ const invalidCursor = await (await request("/poll?after_cursor=IARC-M-00000000-0
 assert.equal(invalidCursor.recovery.strategy, "restart-from-oldest-visible");
 assert.equal(invalidCursor.recovery.href, "/poll?limit=20");
 for (const entry of liveFeed.entries) assert.equal(ajv.getSchema(messageSchema.$id)(entry), true, `live message validates against current schema: ${JSON.stringify(ajv.errors)}`);
+if (liveFeed.entries.length) {
+  const messageHeaders = await request(liveFeed.entries[0].links.self.href);
+  assert.equal(messageHeaders.headers.get("cache-control"), "no-store", "messages remain non-cacheable to avoid serving content after moderation");
+  assert.match(messageHeaders.headers.get("link") || "", /rel="alternate"; type="text\/html"/);
+}
 const serviceResponse = await request("/service.json");
 const serviceText = await serviceResponse.text();
 const service = JSON.parse(serviceText);
