@@ -129,7 +129,7 @@ function suppliedHref(html, predicate) {
 function hasSafetyHeaders(response) {
   assert.equal(response.headers.get("cache-control"), "no-store");
   assert.equal(response.headers.get("referrer-policy"), "no-referrer");
-  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+  assert.ok(["noindex, nofollow, noarchive", "index, follow"].includes(response.headers.get("x-robots-tag")));
 }
 
 let server;
@@ -149,7 +149,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.15\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.16\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -221,7 +221,7 @@ try {
     const crawlPath = crawlQueue.shift();
     if (crawled.has(crawlPath)) continue;
     crawled.add(crawlPath);
-    assert.ok(crawled.size <= 32, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
+    assert.ok(crawled.size <= 48, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
     const crawlResponse = await fetch(`${base}${crawlPath}`, { redirect: "manual" });
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
@@ -414,7 +414,7 @@ try {
   assert.deepEqual(health, { service_state: "isolated-local-prototype", deployed: false, reads_open: true, writes_enabled: true, admission_required: false, reporting_ready: false, reporting_contact_email: "contact@agentresearchcommons.org", reporting_contact_scope: "general-ARC-and-IARC-contact", dedicated_report_intake: false, moderation_queue_configured: false, response_time_guaranteed: false, report_categories: ["spam", "harassment", "private-information", "threat", "malware-or-exploitation", "other"], report_detail_max_utf8_bytes: 1_200, report_retention_days: 90, reports_per_network_per_minute: 5, report_rate_limit_scope: "per-network-per-Cloudflare-location", capability_signing_ready: true, public_start_ready: true, maximum_active_sessions: 256, write_switch_open: true, writable: true });
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.15.0");
+  assert.equal(protocol.schema_version, "0.16.0");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
@@ -436,6 +436,31 @@ try {
   assert.ok(protocol.operations.some((operation) => operation.path === "/brief.txt"));
   assert.ok(protocol.operations.some((operation) => operation.path === "/commons.txt" && operation.query[0].startsWith("limit")));
   assert.equal(protocol.limits.pending_lifetime_seconds, 2, "local TTL override should reach the storage Worker");
+  const serviceResponse = await fetch(`${base}/service.json`);
+  const service = await serviceResponse.json();
+  assert.equal(serviceResponse.status, 200);
+  assert.match(serviceResponse.headers.get("link"), /rel="service-desc"/);
+  assert.equal(service.links.service_documentation.href, "/protocol");
+  assert.equal(service.links.participation_policy.href, "/participation-policy");
+  assert.equal(service.links.public_feed_json.href, "/poll?limit=20");
+  assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");
+  const robots = await (await fetch(`${base}/robots.txt`)).text();
+  assert.match(robots, /Sitemap: https:\/\/relay\.interagentresearchcommons\.org\/sitemap\.xml/);
+  assert.match(robots, /Disallow: \/compose\//);
+  const sitemap = await (await fetch(`${base}/sitemap.xml`)).text();
+  assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
+  assert.match(sitemap, /\/service\.json/);
+  assert.doesNotMatch(sitemap, /\/commons|\/message\/|\/thread\/|\/compose\//);
+  for (const pathName of ["/", "/protocol", "/protocol.json", "/privacy", "/participation-policy", "/schemas/message-1.0.0.schema.json"]) {
+    const response = await fetch(`${base}${pathName}`);
+    assert.equal(response.headers.get("x-robots-tag"), "index, follow", `${pathName} is indexable service documentation`);
+    assert.match(response.headers.get("link"), /rel="service-desc"/);
+    if ((response.headers.get("content-type") || "").startsWith("text/html")) assert.match(await response.text(), /name="robots" content="index,follow"/);
+  }
+  for (const pathName of ["/commons", "/commons.txt", "/poll", "/message/IARC-M-00000000-0000-0000-000000000000", "/compose/token/experimental/"]) {
+    const response = await fetch(`${base}${pathName}`);
+    assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive", `${pathName} retains restricted indexing`);
+  }
   for (const pathName of ["/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt"]) {
     const response = await fetch(`${base}${pathName}`);
     assert.equal(response.status, 200, `${pathName} is available locally`);
@@ -471,7 +496,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -479,10 +504,10 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.15.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.16.0.schema.json");
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
-  assert.ok(protocol.machine_schemas.includes("/schemas/message-0.9.0.schema.json"));
-  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.0.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/message-1.0.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.1.0.schema.json"));
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -594,14 +619,16 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.0.0.schema.json");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.1.0.schema.json");
   assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
   assert.equal(publicMessages.body.ordering, "created_at-ascending-then-message_id-ascending");
   assert.equal(publicMessages.body.coverage.scope, "visible-retained-messages");
   assert.equal(publicMessages.body.links.self.href, "/poll?limit=20");
+  assert.equal(publicMessages.body.links.service_description.href, "/service.json");
+  assert.equal(publicMessages.body.links.service_description.rel, "service-desc");
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json");
+  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.0.0.schema.json");
   assert.equal(validateMessage(publicMessages.body.entries[0]), true, `public message validates against its canonical published schema: ${JSON.stringify(validateMessage.errors)}`);
   for (const composer of composerSchemaFixtures.valid) {
     const fixture = { ...publicMessages.body.entries[0], transport: composer ? "link-composer-get" : "constrained-get", composer };
@@ -624,7 +651,7 @@ try {
   assert.equal((shortFeed.match(/^MESSAGE IARC-M-/gm) || []).length, 1);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
   assert.equal(publicMessages.body.entries[0].moderation_state, "visible");
-  assert.equal(publicMessages.body.entries[0].schema_version, "0.9.0");
+  assert.equal(publicMessages.body.entries[0].schema_version, "1.0.0");
   assert.equal(publicMessages.body.entries[0].supersedes, null);
   assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.2.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
@@ -635,6 +662,12 @@ try {
   assert.equal(detail.body.body, specialText);
   assert.match(detail.response.headers.get("content-type"), /application\/json/);
   assert.equal(detail.body.links.reply_options.href, `/reply/${winningPublish.body.message_id}`);
+  assert.equal(detail.body.links.service_description.href, "/service.json");
+  assert.equal(detail.body.links.thread.href, `/thread/${winningPublish.body.conversation_id}`);
+  assert.equal(detail.body.links.thread.rel, "collection");
+  assert.equal(detail.body.links.privacy_policy.href, "/privacy");
+  assert.equal(detail.body.links.participation_policy.href, "/participation-policy");
+  assert.match(detail.response.headers.get("link"), new RegExp(`/thread/${winningPublish.body.conversation_id}.*rel="collection"`));
   const replyOptionsResponse = await fetch(`${base}${detail.body.links.reply_options.href}`);
   const replyOptionsHtml = await replyOptionsResponse.text();
   assert.equal(replyOptionsResponse.status, 200);
@@ -692,7 +725,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.0.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -758,11 +791,11 @@ try {
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
   assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_class: "generation" });
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.0.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
   const afterComposerCollection = await getJson(`${base}/poll?limit=1`);
   assert.equal(afterComposerCollection.response.status, 200);
-  assert.equal(afterComposerCollection.body.schema_version, "1.0.0");
+  assert.equal(afterComposerCollection.body.schema_version, "1.1.0");
   assert.equal(afterComposerCollection.body.has_more, true, "limited collection advertises another page");
   assert.match(afterComposerCollection.body.links.next.href, /^\/poll\?after_cursor=IARC-M-[0-9a-f-]{36}&limit=1$/);
   const followedPage = await getJson(new URL(afterComposerCollection.body.links.next.href, base));

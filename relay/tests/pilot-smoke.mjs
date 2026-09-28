@@ -9,9 +9,10 @@ assert.equal(target.hostname, canonicalHostname, "only the canonical IARC Relay 
 assert.equal(target.protocol, "https:");
 
 const failures = [];
+const indexableDocs = new Set(["/", "/service.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/status", "/robots.txt", "/sitemap.xml"]);
 const fixedReadPaths = new Set([
-  "/", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy",
-  "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/brief.txt",
+  "/", "/service.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy",
+  "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/brief.txt", "/robots.txt", "/sitemap.xml",
   "/status", "/moderation-log", "/continuity/",
   "/compose/token/experimental/", "/compose/token/experimental/notice",
   "/compose/token/o200k/", "/compose/token/o200k/notice",
@@ -26,7 +27,9 @@ async function request(path, init) {
   const response = await fetch(new URL(path, target), { redirect: "manual", ...init });
   assert.ok(response.status < 300 || response.status >= 400, `${path} must not redirect`);
   assert.equal(response.headers.get("cache-control"), "no-store", `${path}: no-store`);
-  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive", `${path}: noindex`);
+  const indexable = indexableDocs.has(new URL(path, target).pathname) || /^\/schemas\/(?:protocol|collection|message)-[0-9.]+\.schema\.json$/.test(new URL(path, target).pathname);
+  assert.equal(response.headers.get("x-robots-tag"), indexable ? "index, follow" : "noindex, nofollow, noarchive", `${path}: indexing policy`);
+  assert.match(response.headers.get("link") || "", /rel="service-desc"/, `${path}: service bootstrap Link relation`);
   return response;
 }
 
@@ -37,7 +40,7 @@ while (queue.length) {
   const path = queue.shift();
   if (visited.has(path)) continue;
   visited.add(path);
-  assert.ok(visited.size <= 32, "published HTML graph remains bounded");
+  assert.ok(visited.size <= 48, "published HTML graph remains bounded");
   const response = await request(path);
   assert.ok(response.status >= 200 && response.status < 300, `${path} resolves`);
   const body = await response.text();
@@ -94,13 +97,13 @@ assert.match(await (await request("/safety")).text(), /contact@agentresearchcomm
 assert.match(await (await request("/safety.txt")).text(), /report .* POST form/i);
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, true);
-assert.equal(protocol.schema_version, "0.15.0");
+assert.equal(protocol.schema_version, "0.16.0");
 assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
 assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
 assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
 assert.equal(protocol.composer_experiment.version, "link-token-composer-0.4.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
-const schemaNames = [["protocol", "0.15.0"], ["collection", "0.8.0"], ["message", "0.8.0"]];
+const schemaNames = [["protocol", "0.16.0"], ["collection", "1.1.0"], ["message", "1.0.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
   await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
@@ -109,8 +112,21 @@ const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 for (const [, schema] of schemas) ajv.addSchema(schema);
 const protocolSchema = schemas.find(([name]) => name === "protocol")[1];
-assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.15.0.schema.json", "schema identity uses the canonical IARC Relay host");
+assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.16.0.schema.json", "schema identity uses the canonical IARC Relay host");
 assert.equal(ajv.getSchema(protocolSchema.$id)(protocol), true, "live protocol validates against its canonical schema");
+const collectionSchema = schemas.find(([name]) => name === "collection")[1];
+const messageSchema = schemas.find(([name]) => name === "message")[1];
+const liveFeed = await (await request("/poll")).json();
+assert.equal(ajv.getSchema(collectionSchema.$id)(liveFeed), true, `live collection validates against current schema: ${JSON.stringify(ajv.errors)}`);
+for (const entry of liveFeed.entries) assert.equal(ajv.getSchema(messageSchema.$id)(entry), true, `live message validates against current schema: ${JSON.stringify(ajv.errors)}`);
+const service = await (await request("/service.json")).json();
+assert.equal(service.service_id, "IARC-RELAY");
+assert.equal(service.links.service_documentation.href, "/protocol");
+assert.equal(service.links.participation_policy.href, "/participation-policy");
+assert.equal(service.links.message_schema.href, "/schemas/message-1.0.0.schema.json");
+const sitemap = await (await request("/sitemap.xml")).text();
+assert.match(sitemap, /\/service\.json/);
+assert.doesNotMatch(sitemap, /\/commons|\/message\/|\/thread\/|\/compose\//);
 assert.match(await (await request("/quick/entry")).text(), /<ol><li>GET \/quick\/preview/);
 assert.match(await (await request("/brief.txt")).text(), /Reports use same-origin POST/);
 const shortFeed = await (await request("/commons.txt?limit=1")).text();
