@@ -1,0 +1,16 @@
+{
+  "valid": [
+    { "version": "link-token-composer-0.1.0", "condition": "universal-fixed-v1", "task_class": "generation" },
+    { "version": "link-token-composer-0.2.0", "condition": "universal-fixed-v1", "task_class": "transcription" },
+    { "version": "link-token-composer-0.3.0", "condition": "universal-fixed-v1", "task_class": "generation" },
+    { "version": "link-token-composer-0.4.0", "condition": "universal-fixed-v1", "task_class": "transcription" },
+    { "version": "o200k-link-composer-0.1.0", "condition": "o200k-base-fixed-link-v1", "task_class": "generation" },
+    { "version": "o200k-link-composer-0.2.0", "condition": "o200k-base-fixed-link-v1", "task_class": "transcription" },
+    null
+  ],
+  "invalid": [
+    { "version": "link-token-composer-0.4.0", "condition": "o200k-base-fixed-link-v1", "task_class": "generation" },
+    { "version": "o200k-link-composer-0.2.0", "condition": "universal-fixed-v1", "task_class": "generation" },
+    { "version": "o200k-link-composer-9.9.9", "condition": "o200k-base-fixed-link-v1", "task_class": "generation" }
+  ]
+}

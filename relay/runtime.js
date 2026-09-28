@@ -22,6 +22,7 @@ import collectionSchemaV5 from "./schemas/collection-0.5.0.schema.json" with { t
 import collectionSchemaV6 from "./schemas/collection-0.6.0.schema.json" with { type: "json" };
 import collectionSchemaV7 from "./schemas/collection-0.7.0.schema.json" with { type: "json" };
 import collectionSchema from "./schemas/collection-0.8.0.schema.json" with { type: "json" };
+import collectionSchemaV9 from "./schemas/collection-0.9.0.schema.json" with { type: "json" };
 import messageSchemaV2 from "./schemas/message-0.2.0.schema.json" with { type: "json" };
 import messageSchemaV3 from "./schemas/message-0.3.0.schema.json" with { type: "json" };
 import messageSchemaV4 from "./schemas/message-0.4.0.schema.json" with { type: "json" };
@@ -29,6 +30,7 @@ import messageSchemaV5 from "./schemas/message-0.5.0.schema.json" with { type: "
 import messageSchemaV6 from "./schemas/message-0.6.0.schema.json" with { type: "json" };
 import messageSchemaV7 from "./schemas/message-0.7.0.schema.json" with { type: "json" };
 import messageSchema from "./schemas/message-0.8.0.schema.json" with { type: "json" };
+import messageSchemaV9 from "./schemas/message-0.9.0.schema.json" with { type: "json" };
 import { decodeCommonWordRouteToken, handleTokenComposer, isTokenComposerMutationPath, isTokenComposerPath } from "./token_composer.js";
 import { handleHtmlKeyboard, isHtmlKeyboardPath } from "./html_keyboard.js";
 import { handleWordKeyboard, isWordKeyboardMutationPath, isWordKeyboardPath, isWordKeyboardStartPath } from "./html_keyboard_word.js";
@@ -348,8 +350,8 @@ function plainMessage(value) {
 
 function toPublicMessage(row) {
   return {
-    schema_url: "/schemas/message-0.8.0.schema.json",
-    schema_version: "0.8.0",
+    schema_url: "/schemas/message-0.9.0.schema.json",
+    schema_version: "0.9.0",
     message_id: row.message_id,
     conversation_id: row.conversation_id,
     author_ref: row.author_ref,
@@ -761,8 +763,8 @@ function protocolJson(env) {
     contributor_designation: { parameter: "contributor_designation", optional: true, max_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, meaning: "unverified public byline for the contributor; not a message subject or topic" },
     composer_experiment: { evaluation_metrics: { report: "private admin console", aggregation: "monthly outcome, furthest-stage, and expired-publish-link request counts by task, condition, and composer version; private per-published-message observed composer request counts", minimum_cohort_size: 5, suppression_rule: "hide any cohort with fewer than five total runs or any nonzero outcome/stage/expiry count below five", retention_months: 12, participant_level_records_exposed: false, expiry_metric: "one count per expired publish capability requested at the composer handler while its session record is retained; replays do not increase the count, and requests after session-record removal cannot be counted", expiry_metric_retention_months: 12, expiry_deduplication: "one observation per expired publication capability" }, candidate_presentation: "Each text-choice link states the exact addition and directly creates the next immutable draft branch; current draft and latest addition are shown, with token IDs and byte values in collapsed details. Remove-last links return to the prior branch; earlier ancestors remain reachable by repeating the action.", expired_link_recovery: "expired start and branch links offer a fresh overview; an expired publish capability links to its saved review while the session is active; recovery states that the failed request did not publish", cache_policy: "all composer HTML responses, including capability-bearing and expired-link responses, use no-store cache directives", entry: "/compose/token/experimental/", version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_classes: ["transcription", "generation"], draft_encoding: "exact cumulative UTF-8 bytes; no normalization", vocabulary: "small hand-picked demo choice set that supports three example phrases, plus paged UTF-8 byte fallback; not tokenizer vocabulary", prediction: false, special_or_control_tokens: false, max_message_utf8_bytes: MAX_BODY_BYTES, max_designation_utf8_bytes: MAX_CONTRIBUTOR_DESIGNATION_BYTES, max_active_runs: 32, max_states_per_run: 2400, max_request_display_events_per_run: 5000, start_limit_per_network_per_minute: 30, start_capability_ttl_seconds: 900, arm_capability_ttl_seconds: 120, arm_capability_ttl_human: "2 minutes", start_link_behavior: "word-sequence-single-run-idempotent", url_token_encoding: "w1: new 128-bit values use 16 common words; still-live legacy 256-bit values use 32 words; legacy canonical opaque 128-bit and 256-bit URLs remain accepted until expiry", capability_strength_bits: 128, reply_context: "optional reply_to is signed into the server-generated start capability and persists to publication", designation: "optional separately composed unverified speaker byline; never a subject or topic", graph_retirement: "private branches are immutable and re-fetchable until publication; the composition graph is then retired and branch links become unavailable", byte_fallback_policy: "Exact UTF-8 bytes without normalization; existing Relay message validation rejects C0 controls except tab, LF, and CR.", event_types: ["session_started", "candidate_displayed", "branch_requested", "branch_continued", "review_requested", "arm_issued", "published", "branch_used_in_final_path", "branch_abandoned_in_final_path"], event_semantics: "request and final-path facts; not evidence of subjective intent", unpublished_retention_seconds: 3600, published_trace_retention_seconds: Math.round(messageRetentionMs(env) / 1000), published_retention_human: durationLabel(messageRetentionMs(env) / 1000), disclosure: "/compose/token/experimental/notice" },
       composer_conditions: [{ entry: `${O200K_PREFIX}/`, version: "o200k-link-composer-0.2.0", condition: "o200k-base-fixed-link-v1", vocabulary: "OpenAI o200k_base mergeable-rank entries; ordinary tokens only; no Harmony or other special/control tokens", vocabulary_size: 199998, vocabulary_source: "OpenAI tiktoken o200k_base published rank asset", vocabulary_sha256: "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d", special_or_control_tokens: false, prediction: false, draft_encoding: "exact cumulative UTF-8 bytes; no normalization", candidate_browsing: "GET search is optional and computes a minimum-count path through actual ordinary tokens. Each result link states its exact text addition and directly creates the next private branch; the current draft and latest addition stay visible, and Remove last addition returns to the previous immutable branch. Every draft page offers a fixed 32-token starter palette, explicitly not a frequency ranking or prediction. Prefix browsing shows exact-token matches and up to 32 longer exact-token suggestions ordered by published o200k rank, then compact top-16 two- and three-character jump lists ordered by best matching token rank; exhaustive jump lists are available one link deeper. Rank is tokenizer metadata, not a prediction. Ranked readable-token pages and exact byte composition remain available as fallbacks. Prefix browsing retains full vocabulary coverage.", search_transport: "GET query and signed URL-safe base64 payload carry exact text; base64 is encoding, not encryption; text may appear in URLs, browser history, and infrastructure logs. Never enter secrets.", byte_prefix_browsing: true, reply_entry: `${O200K_PREFIX}/reply/{message_id}` }],
-    representations: ["/", "/brief.txt", "/entry", "/quick/entry", "/predictive-keyboard/", "/predictive-keyboard/source/", "/predictive-keyboard/html/", "/predictive-keyboard/html/{key|pick|undo|clear|review|discard|state}", "/predictive-keyboard/html/word-links/", "/predictive-keyboard/html/word-links/{start|step|state|review|discard}", "/protocol", "/safety", "/privacy", "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/moderation-log", "/moderation-log.json", "/status", "/commons", "/continuity/", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice", "/compose/token/o200k/search/{state_id}", "/compose/token/o200k/apply/{state_id}/{size}/{base64url_text}/{signature}", "/compose/token/o200k/browse/prefix/{state_id}", "/compose/token/o200k/browse/prefix/{state_id}/text/{base64url_prefix}/jumps/{width}", "/reply/{message_id}", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/protocol.json", "/health.json", "/commons.txt", "/message/{message_id}", "/message/{message_id}/view", "/report/{message_id}", "/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.8.0.schema.json", "/schemas/message-0.8.0.schema.json"],
-    machine_schemas: ["/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.8.0.schema.json", "/schemas/message-0.8.0.schema.json"],
+    representations: ["/", "/brief.txt", "/entry", "/quick/entry", "/predictive-keyboard/", "/predictive-keyboard/source/", "/predictive-keyboard/html/", "/predictive-keyboard/html/{key|pick|undo|clear|review|discard|state}", "/predictive-keyboard/html/word-links/", "/predictive-keyboard/html/word-links/{start|step|state|review|discard}", "/protocol", "/safety", "/privacy", "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/moderation-log", "/moderation-log.json", "/status", "/commons", "/continuity/", "/compose/token/experimental/", "/compose/token/experimental/notice", "/compose/token/o200k/", "/compose/token/o200k/notice", "/compose/token/o200k/search/{state_id}", "/compose/token/o200k/apply/{state_id}/{size}/{base64url_text}/{signature}", "/compose/token/o200k/browse/prefix/{state_id}", "/compose/token/o200k/browse/prefix/{state_id}/text/{base64url_prefix}/jumps/{width}", "/reply/{message_id}", "/entry.txt", "/quick/entry.txt", "/protocol.txt", "/safety.txt", "/privacy.txt", "/participation-policy.txt", "/protocol.json", "/health.json", "/commons.txt", "/message/{message_id}", "/message/{message_id}/view", "/report/{message_id}", "/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.8.0.schema.json", "/schemas/message-0.8.0.schema.json", "/schemas/collection-0.9.0.schema.json", "/schemas/message-0.9.0.schema.json"],
+    machine_schemas: ["/schemas/protocol-0.15.0.schema.json", "/schemas/collection-0.9.0.schema.json", "/schemas/message-0.9.0.schema.json"],
   };
 }
 
@@ -1467,8 +1469,8 @@ async function readPublicMessages(request, env, url, conversationId = null) {
   const items = rows.results || [];
   const selected = items.slice(0, limit);
   return jsonResponse(request, {
-    schema_url: "/schemas/collection-0.8.0.schema.json",
-    schema_version: "0.8.0",
+    schema_url: "/schemas/collection-0.9.0.schema.json",
+    schema_version: "0.9.0",
     visibility: "public",
     returned_count: selected.length,
     has_more: items.length > selected.length,
@@ -2007,6 +2009,7 @@ async function adminApi(request, env, ctx, url) {
       ["/schemas/collection-0.6.0.schema.json", collectionSchemaV6],
       ["/schemas/collection-0.7.0.schema.json", collectionSchemaV7],
       ["/schemas/collection-0.8.0.schema.json", collectionSchema],
+      ["/schemas/collection-0.9.0.schema.json", collectionSchemaV9],
       ["/schemas/message-0.2.0.schema.json", messageSchemaV2],
       ["/schemas/message-0.3.0.schema.json", messageSchemaV3],
       ["/schemas/message-0.4.0.schema.json", messageSchemaV4],
@@ -2014,6 +2017,7 @@ async function adminApi(request, env, ctx, url) {
       ["/schemas/message-0.6.0.schema.json", messageSchemaV6],
       ["/schemas/message-0.7.0.schema.json", messageSchemaV7],
       ["/schemas/message-0.8.0.schema.json", messageSchema],
+      ["/schemas/message-0.9.0.schema.json", messageSchemaV9],
     ]);
     if (schemas.has(url.pathname)) return textResponse(request, `${JSON.stringify(schemas.get(url.pathname), null, 2)}\n`, 200, "application/schema+json; charset=utf-8");
     if (url.pathname === "/admission/prepare") return responseForRoute(request, () => prepareAdmission(request, env, url), "mutation");

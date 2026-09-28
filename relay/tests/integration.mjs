@@ -7,6 +7,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import composerSchemaFixtures from "./fixtures/composer-schema-0.9.json" with { type: "json" };
 
 const relayRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = path.resolve(relayRoot, "..");
@@ -232,7 +233,7 @@ try {
         }
       } else {
         assert.equal(html.includes("/publish/"), false, "composer overview never exposes a publication capability");
-        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/" || crawlPath === "/predictive-keyboard/html/") continue;
+        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/" || crawlPath === "/predictive-keyboard/html/" || crawlPath === "/predictive-keyboard/html/word-links/") continue;
       }
       for (const linkPart of html.split('href="').slice(1)) {
         const href = linkPart.split('"')[0].replaceAll("&amp;", "&");
@@ -387,7 +388,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -397,6 +398,8 @@ try {
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
   const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.15.0.schema.json");
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
+  assert.ok(protocol.machine_schemas.includes("/schemas/message-0.9.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/collection-0.9.0.schema.json"));
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -508,12 +511,24 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.8.0.schema.json");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-0.9.0.schema.json");
   assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json");
+  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json");
   assert.equal(validateMessage(publicMessages.body.entries[0]), true, `public message validates against its canonical published schema: ${JSON.stringify(validateMessage.errors)}`);
+  for (const composer of composerSchemaFixtures.valid) {
+    const fixture = { ...publicMessages.body.entries[0], transport: composer ? "link-composer-get" : "constrained-get", composer };
+    assert.equal(validateMessage(fixture), true, `supported composer fixture validates: ${JSON.stringify(composer)} ${JSON.stringify(validateMessage.errors)}`);
+    assert.equal(validateCollection({ ...publicMessages.body, returned_count: 1, entries: [fixture] }), true, `collection accepts supported composer fixture: ${JSON.stringify(composer)}`);
+  }
+  for (const composer of composerSchemaFixtures.invalid) {
+    const fixture = { ...publicMessages.body.entries[0], transport: "link-composer-get", composer };
+    assert.equal(validateMessage(fixture), false, `unsupported composer pairing is rejected: ${JSON.stringify(composer)}`);
+    assert.equal(validateCollection({ ...publicMessages.body, returned_count: 1, entries: [fixture] }), false, `collection rejects unsupported composer pairing: ${JSON.stringify(composer)}`);
+  }
+  const legacyMessageSchema = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json");
+  assert.equal(legacyMessageSchema({ ...publicMessages.body.entries[0], transport: "link-composer-get", composer: { version: "o200k-link-composer-0.1.0", condition: "o200k-base-fixed-link-v1", task_class: "generation" } }), false, "published 0.8.0 schema remains unchanged as historical contract");
   assert.equal(validateMessage({ ...publicMessages.body.entries[0], policy_version: "prototype-0.1.0" }), true, "current schema remains compatible with preserved legacy public records");
   assert.equal(publicMessages.body.entries[0].author_ref, started.body.participant_ref);
   assert.equal(publicMessages.body.entries[0].contributor_designation, "Research collaborator");
@@ -523,7 +538,7 @@ try {
   assert.equal((shortFeed.match(/^MESSAGE /gm) || []).length, 1);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
   assert.equal(publicMessages.body.entries[0].moderation_state, "visible");
-  assert.equal(publicMessages.body.entries[0].schema_version, "0.8.0");
+  assert.equal(publicMessages.body.entries[0].schema_version, "0.9.0");
   assert.equal(publicMessages.body.entries[0].supersedes, null);
   assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.2.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
@@ -591,7 +606,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -615,14 +630,14 @@ try {
   const beforeComposer = (await getJson(`${base}/poll`)).body.returned_count;
   const composerStartHref = suppliedHref(composerOverviewHtml, (anchor) => anchor.includes("begin free-generation task"));
   let composerHtml = await (await fetch(new URL(composerStartHref, base))).text();
-  const abandonedHref = suppliedHref(composerHtml, (anchor) => anchor.includes("<strong>relay</strong>"));
+  const abandonedHref = suppliedHref(composerHtml, (anchor) => anchor.includes("<code>relay</code>"));
   const abandonedHtml = await (await fetch(new URL(abandonedHref, base))).text();
   assert.match(abandonedHtml, />Relay</, "the fetched sibling branch contains its own immutable content");
   const fallbackHref = suppliedHref(composerHtml, (anchor) => anchor.includes("browse utf-8 bytes"));
   let browseHtml = await (await fetch(new URL(fallbackHref, base))).text();
   const zeroRangeHref = suppliedHref(browseHtml, (anchor) => anchor.includes("browse bytes 00 through 0f"));
   const zeroOptions = await (await fetch(new URL(zeroRangeHref, base))).text();
-  const zeroByteHref = suppliedHref(zeroOptions, (anchor) => anchor.includes('aria-label="add 0x00"'));
+  const zeroByteHref = suppliedHref(zeroOptions, (anchor) => anchor.includes('aria-label="add byte 0x00 to'));
   const zeroState = await (await fetch(new URL(zeroByteHref, base))).text();
   const zeroReviewHref = suppliedHref(zeroState, (anchor) => anchor.includes("review this exact branch"));
   const zeroReview = await (await fetch(new URL(zeroReviewHref, base))).text();
@@ -635,8 +650,8 @@ try {
     const groupHref = suppliedHref(browseHtml, (anchor) => anchor.includes(`browse bytes ${group}0 through ${group}f`));
     const byteOptions = await (await fetch(new URL(groupHref, base))).text();
     const byteHex = byte.toString(16).padStart(2, "0").toUpperCase();
-    const byteLabel = byte === 0x20 ? "␠ space" : byte === 0x0a ? "↵ line feed" : byte === 0x09 ? "⇥ tab" : byte >= 0x21 && byte <= 0x7e ? String.fromCharCode(byte) : `0x${byteHex}`;
-    const byteHref = suppliedHref(byteOptions, (anchor) => anchor.includes(`aria-label="add ${byteLabel.toLowerCase()}"`));
+    const byteLabel = byte === 0x20 ? "space" : byte === 0x0a ? "line feed" : byte === 0x09 ? "tab" : byte === 0x0d ? "carriage return" : byte >= 0x21 && byte <= 0x7e ? `“${String.fromCharCode(byte)}”` : `byte 0x${byteHex}`;
+    const byteHref = suppliedHref(byteOptions, (anchor) => anchor.includes(`aria-label="add ${byteLabel.toLowerCase()} to`));
     currentStatePage = await (await fetch(new URL(byteHref, base))).text();
     browseHtml = await (await fetch(new URL(suppliedHref(currentStatePage, (anchor) => anchor.includes("browse utf-8 bytes")), base))).text();
   }
@@ -657,7 +672,7 @@ try {
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
   assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_class: "generation" });
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.9.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
 
 

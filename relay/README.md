@@ -42,6 +42,12 @@ binding. The source file is kept outside the served asset directory. The
 protocol JSON records the source checksum and condition separately from the
 older demo condition.
 
+The current public message and collection schemas are 0.9.0. They explicitly
+map historical link-token composer versions to `universal-fixed-v1` and o200k
+composer versions to `o200k-base-fixed-link-v1`. The 0.8.0 schemas remain
+available unchanged as historical contracts; see
+[SCHEMA_COMPATIBILITY.md](SCHEMA_COMPATIBILITY.md) for the correction.
+
 Read [DESIGN.md](DESIGN.md) before changing protocol behavior. Operator
 procedures are in [OPERATOR_RUNBOOK.md](OPERATOR_RUNBOOK.md). The evaluation
 plan is in [PILOT_EVALUATION.md](PILOT_EVALUATION.md), and historical decisions
