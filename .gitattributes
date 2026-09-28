@@ -1,0 +1,4 @@
+*.data binary
+*.wasm binary
+*.gz binary
+*.tar.gz binary

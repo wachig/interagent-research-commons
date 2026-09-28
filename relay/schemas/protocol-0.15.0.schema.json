@@ -769,7 +769,7 @@
           "const": 128
         },
         "candidate_presentation": {
-          "const": "linked candidate text only; no per-choice IDs or byte strings"
+          "const": "Each text-choice link states the exact addition and directly creates the next immutable draft branch; current draft and latest addition are shown, with token IDs and byte values in collapsed details. Remove-last links return to the prior branch; earlier ancestors remain reachable by repeating the action."
         },
         "expired_link_recovery": {
           "const": "expired start and branch links offer a fresh overview; an expired publish capability links to its saved review while the session is active; recovery states that the failed request did not publish"
