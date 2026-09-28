@@ -6,7 +6,7 @@ const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
 const REPORT_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms", "token_composer_arm_expiry_observations", "token_composer_arm_expiry_aggregates"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms", "token_composer_arm_expiry_observations", "token_composer_arm_expiry_aggregates", "html_keyboard_sessions", "html_keyboard_states", "html_keyboard_publish_links"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -192,6 +192,10 @@ export class RelayStore {
       this.#run("DELETE FROM token_composer_states WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_events WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?))", now, this.messageRetentionMs, now);
       this.#run("DELETE FROM token_composer_sessions WHERE expires_at <= ? AND (published_at IS NULL OR published_at + ? <= ?)", now, this.messageRetentionMs, now);
+      this.#run("DELETE FROM html_keyboard_states WHERE session_id IN (SELECT session_id FROM html_keyboard_sessions WHERE expires_at <= ?)", now);
+      this.#run("DELETE FROM html_keyboard_publish_links WHERE session_id IN (SELECT session_id FROM html_keyboard_sessions WHERE expires_at <= ?)", now);
+      this.#run("DELETE FROM html_keyboard_publish_links WHERE publish_cap_hash IN (SELECT c.cap_hash FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.kind = 'publish' AND (c.expires_at <= ? OR p.expires_at <= ? OR p.state <> 'staged'))", now, now);
+      this.#run("DELETE FROM html_keyboard_sessions WHERE expires_at <= ?", now);
     });
     const sessions = this.#first("SELECT COUNT(*) AS count FROM sessions");
     if (sessions?.count > 0) {
@@ -209,6 +213,7 @@ export class RelayStore {
       this.#first("SELECT MIN(strftime('%s', cohort_month || '-01', '+12 months') * 1000) AS at FROM token_composer_outcome_aggregates")?.at,
       this.#first("SELECT MIN(strftime('%s', cohort_month || '-01', '+12 months') * 1000) AS at FROM token_composer_arm_expiry_aggregates")?.at,
       this.#first("SELECT MIN(observed_at + 60000) AS at FROM token_composer_arm_expiry_observations")?.at,
+      this.#first("SELECT MIN(expires_at) AS at FROM html_keyboard_sessions")?.at,
     ].filter((value) => Number.isSafeInteger(value));
     if (!deadlines.length) {
       await this.ctx.storage.deleteAlarm();

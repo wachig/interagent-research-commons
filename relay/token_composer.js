@@ -92,6 +92,19 @@ function encodeWordToken(value) {
   return `${WORD_TOKEN_VERSION}-${[...bytes].map((byte) => TOKEN_WORDS[byte]).join("-")}`;
 }
 
+export function encodeCommonWordRouteToken(value) {
+  return encodeWordToken(value);
+}
+
+export function decodeCommonWordRouteToken(value) {
+  const bytes = decodeWordToken(value);
+  return bytes ? b64(bytes) : null;
+}
+
+export async function signCommonWordRoute(env, purpose, ...parts) {
+  return sign128(env, `common-word-route:${purpose}`, ...parts);
+}
+
 function decodeWordToken(value) {
   if (!value.startsWith(`${WORD_TOKEN_VERSION}-`)) return null;
   const words = value.slice(WORD_TOKEN_VERSION.length + 1).split("-");

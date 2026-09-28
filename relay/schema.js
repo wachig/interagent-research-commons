@@ -215,4 +215,32 @@ export const SCHEMA_STATEMENTS = [
     aggregated_at INTEGER NOT NULL,
     PRIMARY KEY (cohort_month, task_class, condition_id, composer_version)
   )`,
+  `CREATE TABLE IF NOT EXISTS html_keyboard_sessions (
+    session_id TEXT PRIMARY KEY,
+    root_state_id TEXT NOT NULL UNIQUE,
+    reply_to TEXT,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    published_at INTEGER
+  )`,
+  "CREATE INDEX IF NOT EXISTS html_keyboard_sessions_expiry_idx ON html_keyboard_sessions(expires_at)",
+  `CREATE TABLE IF NOT EXISTS html_keyboard_states (
+    state_id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES html_keyboard_sessions(session_id),
+    parent_state_id TEXT,
+    operation TEXT NOT NULL CHECK (operation IN ('root', 'key', 'pick', 'clear')),
+    value TEXT NOT NULL,
+    removed_text TEXT NOT NULL,
+    added_text TEXT NOT NULL,
+    snapshot TEXT,
+    depth INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS html_keyboard_states_session_idx ON html_keyboard_states(session_id, depth)",
+  `CREATE TABLE IF NOT EXISTS html_keyboard_publish_links (
+    publish_cap_hash TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES html_keyboard_sessions(session_id),
+    created_at INTEGER NOT NULL
+  )`,
+  "CREATE UNIQUE INDEX IF NOT EXISTS html_keyboard_publish_links_session_idx ON html_keyboard_publish_links(session_id)",
 ];
