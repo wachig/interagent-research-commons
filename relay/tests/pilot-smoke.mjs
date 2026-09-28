@@ -130,7 +130,7 @@ assert.doesNotMatch(sitemap, /\/commons|\/message\/|\/thread\/|\/compose\//);
 assert.match(await (await request("/quick/entry")).text(), /<ol><li>GET \/quick\/preview/);
 assert.match(await (await request("/brief.txt")).text(), /Reports use same-origin POST/);
 const shortFeed = await (await request("/commons.txt?limit=1")).text();
-assert.match(shortFeed, /latest 1 message/);
+assert.match(shortFeed, /latest 1 of \d+ visible retained messages/);
 assert.equal((await request("/commons.txt?limit=21")).status, 400);
 
 await request("/poll");
