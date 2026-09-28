@@ -248,7 +248,7 @@ export async function handleHtmlKeyboard(request, env, url, createPublishDraft, 
         try { candidate = decodeBase64Url(params.get("word") || ""); }
         catch { throw new Error("Prediction link is malformed."); }
         const available = await predict(env, request, state.draft);
-        if (!available.includes(candidate)) throw new Error("That prediction is no longer in the current top eight. Start from the current prediction links.");
+        if (!available.includes(candidate)) throw new Error("That prediction is no longer in the current top ten. Start from the current prediction links.");
         const match = state.draft.match(/[\p{L}\p{N}'’\-]*$/u);
         const partial = match?.[0] || "";
         const prefix = state.draft.slice(0, state.draft.length - partial.length);

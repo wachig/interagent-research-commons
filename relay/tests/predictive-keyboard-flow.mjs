@@ -69,7 +69,7 @@ try {
   assert.equal(htmlKeyboard.status, 200);
   const htmlKeyboardPage = await htmlKeyboard.text();
   assert.doesNotMatch(htmlKeyboardPage, /<script\b/i, "HTML keyboard runs without page JavaScript");
-  assert.equal([...htmlKeyboardPage.matchAll(/aria-label="Use prediction /g)].length, 8, "HTML keyboard shows eight model predictions");
+  assert.equal([...htmlKeyboardPage.matchAll(/aria-label="Use prediction /g)].length, 10, "HTML keyboard shows ten model predictions");
   const addLetter = htmlKeyboardPage.match(/href="([^"]+)" aria-label="Add i"/)?.[1];
   assert.ok(addLetter, "HTML keyboard supplies the letter-i link");
   const letterPage = await (await fetch(new URL(addLetter.replaceAll("&amp;", "&"), base))).text();
