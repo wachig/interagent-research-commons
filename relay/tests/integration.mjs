@@ -819,7 +819,7 @@ try {
   assert.match(config, /"RELAY_READS_OPEN"\s*:\s*"true"/);
   assert.match(config, /"RELAY_WRITES_OPEN"\s*:\s*"false"/);
   const pilotConfig = await fs.readFile(path.join(relayRoot, "wrangler.pilot.jsonc"), "utf8");
-  assert.match(pilotConfig, /"name"\s*:\s*"iarc-relay-invited-pilot"/);
+  assert.match(pilotConfig, /"name"\s*:\s*"iarc-relay"/);
   assert.match(pilotConfig, /"workers_dev"\s*:\s*false/);
   assert.match(pilotConfig, /"custom_domain"\s*:\s*true/);
   assert.match(pilotConfig, /"pattern"\s*:\s*"relay\.interagentresearchcommons\.org"/);

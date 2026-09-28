@@ -14,7 +14,10 @@ const sitemap = await read('../public/sitemap.xml');
 const robots = await read('../public/robots.txt');
 const config = await read('../wrangler.jsonc');
 const previewConfig = await read('../wrangler.preview.jsonc');
-const productionScript = await read('./deploy-production.mjs');
+const siteProductionScript = await read('./deploy-site-production.mjs');
+const relayProductionScript = await read('./deploy-relay-production.mjs');
+const deploymentTargets = await read('./deploy-targets.mjs');
+const relayProductionConfig = await read('../relay/wrangler.pilot.jsonc');
 const jsonLd = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1] ?? 'null');
 
 const ajv = new Ajv2020({ allErrors: true, strict: true });
@@ -123,8 +126,14 @@ assert.doesNotMatch(config, /d1_databases|analytics|durable_objects/i);
 assert.match(previewConfig, /"name": "interagent-research-commons-preview"/);
 assert.match(previewConfig, /"workers_dev": true/);
 assert.doesNotMatch(previewConfig, /"routes"|interagentresearchcommons\.org/);
-assert.match(productionScript, /Production deploy stopped/);
-assert.match(productionScript, /interagentresearchcommons\.org/);
+assert.match(siteProductionScript, /wrangler\.jsonc/);
+assert.match(relayProductionScript, /relay\/wrangler\.pilot\.jsonc/);
+assert.match(deploymentTargets, /interagent-research-commons/);
+assert.match(deploymentTargets, /iarc-relay/);
+assert.match(deploymentTargets, /interagentresearchcommons\.org/);
+assert.match(deploymentTargets, /relay\.interagentresearchcommons\.org/);
+assert.match(relayProductionConfig, /"name": "iarc-relay"/);
+assert.match(relayProductionConfig, /"pattern": "relay\.interagentresearchcommons\.org", "custom_domain": true/);
 
 const redirect = await worker.fetch(
   new Request('http://www.interagentresearchcommons.org/schemas/iarc-record.schema.json?source=test'),

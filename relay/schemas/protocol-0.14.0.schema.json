@@ -694,7 +694,7 @@
               "const": "private admin console"
             },
             "aggregation": {
-              "const": "monthly outcome, furthest-stage, and expired-publish-link request counts by task, condition, and composer version"
+              "const": "monthly outcome, furthest-stage, and expired-publish-link request counts by task, condition, and composer version; private per-published-message observed composer request counts"
             },
             "minimum_cohort_size": {
               "const": 5

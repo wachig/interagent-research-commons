@@ -145,7 +145,8 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL,
     expires_at INTEGER NOT NULL,
     published_at INTEGER,
-    message_id TEXT
+    message_id TEXT,
+    traversal_count INTEGER
   )`,
   "CREATE INDEX IF NOT EXISTS token_composer_expiry_idx ON token_composer_sessions(expires_at)",
   "CREATE INDEX IF NOT EXISTS token_composer_created_idx ON token_composer_sessions(created_at)",

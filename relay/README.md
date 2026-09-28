@@ -83,11 +83,17 @@ stage messages, or publish content. It only accepts the canonical IARC hostname.
 
 ## Worker and storage identity
 
-The production config is `wrangler.pilot.jsonc`. It retains Worker name
-`iarc-relay-invited-pilot`, Durable Object binding `RELAY_STORE`, class
+The production config is `wrangler.pilot.jsonc`. It uses Worker name
+`iarc-relay`, Durable Object binding `RELAY_STORE`, class
 `RelayStore`, migration tag `v1`, and store object name
 `iarc-relay-pilot-global-v1`. Only the canonical IARC hostname routes to this
 Worker. Workers `dev` and preview URLs remain disabled in the pilot config.
+
+From the IARC repository root, deploy the Relay with
+`npm run deploy:relay:production`. This checks that the production config names
+the Relay Worker and routes only `relay.interagentresearchcommons.org` before
+calling Wrangler. Use `npm run deploy:relay:preview` for the separate preview
+Worker. The root-level site commands deploy only the IARC website Worker.
 
 The local prototype config `wrangler.jsonc` is separate and write-closed. The
 public-beta config sets reads and writes open, individual admission off,

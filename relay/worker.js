@@ -72,6 +72,7 @@ export class RelayStore {
         if (!columns.some((column) => column.name === "composer_version")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN composer_version TEXT NOT NULL DEFAULT 'link-token-composer-0.1.0'");
         if (!columns.some((column) => column.name === "reply_to")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN reply_to TEXT");
         if (!columns.some((column) => column.name === "contributor_designation")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN contributor_designation TEXT");
+        if (!columns.some((column) => column.name === "traversal_count")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN traversal_count INTEGER");
       }
       if (table === "token_composer_states" && !columns.some((column) => column.name === "purpose")) this.sql.exec("ALTER TABLE token_composer_states ADD COLUMN purpose TEXT NOT NULL DEFAULT 'message'");
       if (table === "messages") {

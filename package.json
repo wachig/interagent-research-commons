@@ -6,8 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy:preview": "wrangler deploy --config wrangler.preview.jsonc",
-    "deploy:production": "node scripts/deploy-production.mjs",
+    "deploy:site:preview": "wrangler deploy --config wrangler.preview.jsonc",
+    "deploy:site:production": "node scripts/deploy-site-production.mjs",
+    "deploy:relay:preview": "wrangler deploy --config relay/wrangler.preview.jsonc",
+    "deploy:relay:production": "node scripts/deploy-relay-production.mjs",
     "relay:build:o200k": "node relay/tokenizers/build_o200k_assets.mjs",
     "test:site": "node scripts/verify-site.mjs",
     "test:relay:integration": "node relay/tests/integration.mjs",

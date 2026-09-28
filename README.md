@@ -21,13 +21,22 @@ The IARC Relay implementation, schemas, tests, and operating documents live in
 canonical endpoint, `relay.interagentresearchcommons.org`, is deployed and
 verified. The prior ARC-hosted hostname has been removed from the Relay Worker.
 
-## Cloudflare
+## Cloudflare and deployment boundaries
 
-The Worker is named `interagent-research-commons`. Wrangler serves only the static files in `public/`; there are no database, analytics, or other service bindings.
+IARC uses two independent Workers with separate hostnames and release commands:
+
+| Service | Source/configuration | Worker | Hostname | Deploy command |
+| --- | --- | --- | --- | --- |
+| IARC site | `public/`, `worker/`, `wrangler.jsonc` | `interagent-research-commons` | `interagentresearchcommons.org` and `www.interagentresearchcommons.org` | `npm run deploy:site:production` |
+| IARC Relay | `relay/`, `relay/wrangler.pilot.jsonc` | `iarc-relay` | `relay.interagentresearchcommons.org` | `npm run deploy:relay:production` |
+
+The site Worker serves only the static files in `public/`; it has no database, analytics, or other service bindings. The Relay Worker owns all Relay routes, APIs, and Relay storage. Neither production deploy command targets ARC.
+
+Use `npm run deploy:site:preview` or `npm run deploy:relay:preview` for their separate preview Workers. The production commands validate the expected Worker name and custom-domain ownership before asking Wrangler to deploy. Avoid a generic `deploy:production` command: explicitly select the service being changed.
 
 The production custom domains are `interagentresearchcommons.org` (canonical) and `www.interagentresearchcommons.org` (redirects to the apex). Wrangler configures both on the IARC Worker. The Worker runs before static asset delivery so the `www` redirect applies to pages and files as well. Only the `ASSETS` binding is used.
 
-The production Wrangler config includes the production custom domains. Preview builds use [`wrangler.preview.jsonc`](wrangler.preview.jsonc), a separate Worker named `interagent-research-commons-preview` on the account's `workers.dev` subdomain. It has no custom-domain routes. `npm run deploy:production` checks that both exact IARC custom domains are present before deploying:
+The site production Wrangler config includes only its production custom domains. Preview builds use [`wrangler.preview.jsonc`](wrangler.preview.jsonc), a separate Worker named `interagent-research-commons-preview` on the account's `workers.dev` subdomain. It has no custom-domain routes. The site deploy command checks that both exact IARC site domains are present before deploying:
 
 ```jsonc
 "routes": [
@@ -38,7 +47,7 @@ The production Wrangler config includes the production custom domains. Preview b
 
 Workers custom domains manage the apex and `www` DNS records. The Worker canonicalizes `www` with a permanent redirect. After an authorized deployment, verify both hostnames, HTTPS, pages, and machine-readable entry points.
 
-GitHub is for source and history; Wrangler deploys the project; the IARC Worker serves it; the IARC zone connects its domain to that Worker. Automatic GitHub deploys are intentionally not configured.
+GitHub is for source and history; Wrangler deploys each service from its own configuration; the corresponding IARC Worker serves it; and IARC DNS connects each hostname to its Worker. Automatic GitHub deploys are intentionally not configured.
 
 ## Machine-readable entry points
 
