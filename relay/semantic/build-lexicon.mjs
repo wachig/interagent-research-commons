@@ -2,11 +2,14 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { gunzipSync } from "node:zlib";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SOURCE = join(ROOT, "relay/semantic/lexicon-source.dic");
+const SUBTLEX_SOURCE = join(ROOT, "relay/semantic/subtlex-us.tsv.gz");
 const OUTPUT = join(ROOT, "relay/assets/semantic-lexicon");
 const MAX_SHARD_BYTES = 64 * 1024;
+const SUBTLEX_RAW_SHA256 = "c5f86f065fc5d057fbf366433b8c5ca550aa7c24e128362dea4394f2b29c86e4";
 const WORD = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:['’\-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*$/u;
 const encoder = new TextEncoder();
 
@@ -31,6 +34,46 @@ for (const line of lines) {
 
 const words = [...unique.values()].sort(codepointCompare);
 if (words.length < 30_000) throw new Error(`Only ${words.length} usable words were indexed; the plan requires at least 30,000.`);
+
+const subtlexCompressed = await readFile(SUBTLEX_SOURCE);
+const subtlexBytes = gunzipSync(subtlexCompressed);
+if (hash(subtlexBytes) !== SUBTLEX_RAW_SHA256) throw new Error("The pinned SUBTLEX-US frequency source failed its SHA-256 check.");
+const subtlexText = new TextDecoder("utf-8", { fatal: true }).decode(subtlexBytes);
+const [frequencyHeader, ...frequencyRows] = subtlexText.trimEnd().split(/\r?\n/u);
+const frequencyColumns = frequencyHeader.split("\t");
+const column = (name) => frequencyColumns.indexOf(name);
+const wordColumn = column("Word");
+const frequencyColumn = column("FREQlow");
+const diversityColumn = column("Cdlow");
+if (wordColumn < 0 || frequencyColumn < 0 || diversityColumn < 0 || frequencyRows.length !== 74_286) throw new Error("The pinned SUBTLEX-US source has an unexpected schema or row count.");
+const subtlexByWord = new Map();
+for (const line of frequencyRows) {
+  const fields = line.split("\t");
+  const key = fields[wordColumn].normalize("NFC").toLocaleLowerCase("en-US");
+  const item = { frequency: Number(fields[frequencyColumn]), diversity: Number(fields[diversityColumn]) };
+  if (!key || !Number.isFinite(item.frequency) || !Number.isFinite(item.diversity) || item.frequency < 0 || item.diversity < 0) throw new Error("A SUBTLEX-US frequency row is invalid.");
+  const previous = subtlexByWord.get(key);
+  if (!previous || item.diversity > previous.diversity || item.diversity === previous.diversity && item.frequency > previous.frequency) subtlexByWord.set(key, item);
+}
+
+const chunkOrderGroups = new Map();
+for (const word of words) {
+  const lower = word.normalize("NFC").toLocaleLowerCase("en-US");
+  const frequency = subtlexByWord.get(lower) || { frequency: 0, diversity: 0 };
+  for (const length of [1, 2]) {
+    const prefix = [...lower].slice(0, length).join("");
+    if (!new RegExp(`^\\p{L}{${length}}$`, "u").test(prefix)) continue;
+    if (!chunkOrderGroups.has(prefix)) chunkOrderGroups.set(prefix, []);
+    chunkOrderGroups.get(prefix).push({ word, frequency });
+  }
+}
+const wordCategory = (value) => /^[\p{Lu}\p{M}\p{N}]+$/u.test(value) ? 2 : /^[\p{Lu}]/u.test(value) ? 1 : 0;
+for (const entries of chunkOrderGroups.values()) entries.sort((left, right) =>
+  right.frequency.diversity - left.frequency.diversity ||
+  right.frequency.frequency - left.frequency.frequency ||
+  wordCategory(left.word) - wordCategory(right.word) ||
+  left.word.localeCompare(right.word, "en-US"));
+
 const shards = [];
 const shardFiles = [];
 const startPairCounts = new Map();
@@ -115,5 +158,30 @@ await writeFile(join(OUTPUT, "start-pairs.json"), `${JSON.stringify({
   short_characters: [...shortCharacters].sort(codepointCompare),
   two_letter_words: twoLetterWords,
 })}\n`);
-await writeFile(join(OUTPUT, "README.txt"), `IARC semantic composer English lexicon\nVersion: ${manifest.lexicon_version}\nUnique usable entries: ${words.length}\nSource archive SHA-256: ${manifest.source.source_archive_sha256}\nExtracted en_US.dic SHA-256: ${manifest.source.extracted_dictionary_sha256}\nLicense: ${manifest.source.license}\nLicense notice: ${manifest.source.license_file}\nBuild command: node relay/semantic/build-lexicon.mjs\n\nThis is a deterministic spelling vocabulary, not a frequency ranking or prediction model. Inflected forms not present in the pinned dictionary may be absent.\n`);
+const chunkOrderDir = join(OUTPUT, "chunk-order");
+await mkdir(chunkOrderDir, { recursive: true });
+const chunkOrderFiles = [];
+for (const [prefix, entries] of [...chunkOrderGroups].sort(([left], [right]) => codepointCompare(left, right))) {
+  const content = JSON.stringify(entries.map(({ word }) => word));
+  const size = encoder.encode(content).byteLength;
+  if (size > 512 * 1024) throw new Error(`Chunk candidate order ${prefix} exceeds 512 KiB.`);
+  const file = `${prefix}.json`;
+  await writeFile(join(chunkOrderDir, file), `${content}\n`);
+  chunkOrderFiles.push({ prefix, path: `chunk-order/${file}`, count: entries.length, bytes: size, sha256: hash(content) });
+}
+await writeFile(join(OUTPUT, "chunk-order-manifest.json"), `${JSON.stringify({
+  format: "iarc-chunk-candidate-order-1",
+  source: "SUBTLEX-US lowercase word frequency and contextual diversity",
+  attribution: "Marc Brysbaert and Boris New, SUBTLEX-US; see relay/semantic/SUBTLEX_US_ATTRIBUTION.md",
+  source_url: "https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus",
+  source_sha256: SUBTLEX_RAW_SHA256,
+  lexicon_version: "fluenttyper-9d4826d5-en_US-hunspell-base-1",
+  lexicon_word_count: words.length,
+  ranked_word_count: words.filter((word) => (subtlexByWord.get(word.normalize("NFC").toLocaleLowerCase("en-US"))?.diversity || 0) > 0).length,
+  unranked_policy: "All Hunspell entries remain included; words without a lowercase SUBTLEX-US score follow ranked entries in capitalization-aware alphabetical order.",
+  reuse_terms: "Credit SUBTLEX authors and make clear the dataset remains freely available; see relay/semantic/SUBTLEX_US_ATTRIBUTION.md.",
+  ordering: "Cdlow descending, FREQlow descending, then lowercase/title-case/all-capital group and alphabetical order.",
+  prefixes: chunkOrderFiles,
+}, null, 2)}\n`);
+await writeFile(join(OUTPUT, "README.txt"), `IARC semantic composer English lexicon\nVersion: ${manifest.lexicon_version}\nUnique usable entries: ${words.length}\nSource archive SHA-256: ${manifest.source.source_archive_sha256}\nExtracted en_US.dic SHA-256: ${manifest.source.extracted_dictionary_sha256}\nLicense: ${manifest.source.license}\nLicense notice: ${manifest.source.license_file}\nBuild command: node relay/semantic/build-lexicon.mjs\n\nThe base Hunspell spelling lexicon is not frequency-ranked and is not a prediction model. The separate Chunk Word Keyboard 2 candidate-order index is precomputed from SUBTLEX-US lowercase contextual-diversity and frequency counts. Its source, attribution, and reuse conditions are documented in relay/semantic/SUBTLEX_US_ATTRIBUTION.md.\nInflected forms not present in the pinned spelling dictionary may be absent.\n`);
 console.log(`Built ${words.length} words in ${shards.length} shards (${shardFiles.map((path) => relative(OUTPUT, path)).join(", ")}).`);

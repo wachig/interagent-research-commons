@@ -1289,7 +1289,7 @@ try {
     return html.slice(start, end < 0 ? undefined : end);
   };
   const directPair = (html, pair) => {
-    const pattern = new RegExp(`<a href="([^"]+)">${pair}<small>([\\d,]+)<\\/small><\\/a>`);
+    const pattern = new RegExp(`<span class="counted-choice"><a href="([^"]+)">${pair}<\\/a><small>\\(([\\d,]+)\\)<\\/small><\\/span>`);
     const match = html.match(pattern);
     assert.ok(match, `direct pair link exists: ${pair}`);
     return { href: match[1], count: Number(match[2].replaceAll(",", "")) };
@@ -1300,7 +1300,7 @@ try {
   assert.ok(singleLetterStartHref, "the A category heading is a lowercase selectable button");
   const cloneAStartPage = await chunkFetch2(chunkEntry2, singleLetterStartHref);
   assert.match(cloneAStartPage, /START <strong>a<\/strong>/u, "selecting a letter sets a one-letter START");
-  assert.match(cloneAStartPage, /<nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">[\s\S]*?>aa<small>/u, "one-letter START exposes its available two-letter continuations");
+  assert.match(cloneAStartPage, /<nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">[\s\S]*?<span class="counted-choice"><a[^>]*>aa<\/a><small>\([\d,]+\)<\/small><\/span>/u, "one-letter START exposes its available two-letter continuations with separate counts");
   const cloneBo = directPair(chunkEntry2, "bo");
   assert.equal(cloneBo.count, 423, "clone offers the same lexicon candidates as the original");
   const cloneBoPage = await chunkFetch2(chunkEntry2, cloneBo.href);
@@ -1327,7 +1327,7 @@ try {
   const cloneTerPage = await chunkFetch2(cloneTePage, terHref);
   assert.match(cloneTerPage, /START <strong>ter<\/strong>/u, "choosing ter replaces the two-letter START");
   assert.match(cloneTerPage, /<a href="[^"]+" aria-current="true" aria-label="Set START to ter">ter<\/a>/u, "the selected continuation remains visibly active");
-  assert.match(cloneTerPage, /All matches are shown in stable order/u, "three-letter starts show every candidate without pagination");
+  assert.match(cloneTerPage, /All matches are shown in SUBTLEX-US lowercase usage order/u, "three-letter starts show every candidate without pagination in precomputed general-frequency order");
   assert.doesNotMatch(cloneTerPage, />More words<|>Previous words<|word_page=/u, "the three-letter candidate view has no paging controls");
   const terCandidateRegion = cloneTerPage.match(/<div class="chunks candidates" aria-label="Matching candidate words">([\s\S]*?)<\/div>/u)?.[1] || "";
   const terExpectedCount = Number(cloneTerPage.match(/<h2>Candidates <span>\((\d+)\)<\/span><\/h2>/u)?.[1]);

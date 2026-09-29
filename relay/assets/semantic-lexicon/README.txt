@@ -7,4 +7,5 @@ License: LGPL-2.1-or-later; dictionary identified as based on Kevin Atkinson's P
 License notice: /predictive-keyboard/vendor/licenses/LICENSE.aspell
 Build command: node relay/semantic/build-lexicon.mjs
 
-This is a deterministic spelling vocabulary, not a frequency ranking or prediction model. Inflected forms not present in the pinned dictionary may be absent.
+The base Hunspell spelling lexicon is not frequency-ranked and is not a prediction model. The separate Chunk Word Keyboard 2 candidate-order index is precomputed from SUBTLEX-US lowercase contextual-diversity and frequency counts. Its source, attribution, and reuse conditions are documented in relay/semantic/SUBTLEX_US_ATTRIBUTION.md.
+Inflected forms not present in the pinned spelling dictionary may be absent.

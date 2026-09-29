@@ -19,8 +19,10 @@ const PUNCTUATION = new Set(["", ".", ",", "?", "!", ":", ";"]);
 const CASE = new Set(["as-is", "auto", "capitalize", "upper"]);
 const WRAPPER = new Set(["none", "quote", "parenthetical"]);
 const DICTIONARY_CACHE = new Map();
+const CHUNK_ORDER_CACHE = new Map();
 let LEXICON_MANIFEST_PROMISE;
 let LEXICON_START_PAIRS_PROMISE;
+let CHUNK_ORDER_MANIFEST_PROMISE;
 const COMMONS_WORDS = ["agent", "agents", "commons", "IARC", "interagent", "Relay", "research", "researcher", "researching", "really", "reason", "recursive", "recursion", "reply", "message", "participation", "policy", "accessibility", "token", "tokenizer", "predictive", "prediction", "composer"];
 const CANONICAL_CASE = new Map([["iarc", "IARC"], ["arc", "ARC"], ["openai", "OpenAI"], ["cloudflare", "Cloudflare"], ["github", "GitHub"], ["presage", "Presage"], ["hunspell", "Hunspell"], ["wrangler", "Wrangler"]]);
 const MIN_PHRASE_TOKEN_SHARE = 0.12;
@@ -188,6 +190,45 @@ async function lexiconStartPairs(env, request) {
   return LEXICON_START_PAIRS_PROMISE;
 }
 
+async function chunkCandidateOrder(env, request, prefix) {
+  const cacheKey = `chunk:${prefix}`;
+  if (CHUNK_ORDER_CACHE.has(cacheKey)) {
+    const cached = CHUNK_ORDER_CACHE.get(cacheKey);
+    CHUNK_ORDER_CACHE.delete(cacheKey);
+    CHUNK_ORDER_CACHE.set(cacheKey, cached);
+    return cached;
+  }
+  if (!env.ASSETS) throw new Error("The chunk word-order index is unavailable.");
+  const lexicon = await lexiconManifest(env, request);
+  if (!CHUNK_ORDER_MANIFEST_PROMISE) {
+    CHUNK_ORDER_MANIFEST_PROMISE = (async () => {
+      const response = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/chunk-order-manifest.json", request.url)));
+      if (!response.ok) throw new Error("The chunk word-order manifest is unavailable.");
+      const manifest = await response.json();
+      if (manifest.format !== "iarc-chunk-candidate-order-1" || manifest.lexicon_version !== lexicon.lexicon_version || manifest.lexicon_word_count !== lexicon.word_count || !Array.isArray(manifest.prefixes)) throw new Error("The chunk word-order manifest is invalid.");
+      return manifest;
+    })().catch((error) => {
+      CHUNK_ORDER_MANIFEST_PROMISE = undefined;
+      throw error;
+    });
+  }
+  const manifest = await CHUNK_ORDER_MANIFEST_PROMISE;
+  const shard = manifest.prefixes.find((item) => item.prefix === prefix);
+  if (!shard) return [];
+  const response = await env.ASSETS.fetch(new Request(new URL(`/semantic-lexicon/${shard.path}`, request.url)));
+  if (!response.ok) throw new Error("A chunk word-order index is unavailable.");
+  const raw = await response.text();
+  const canonical = raw.endsWith("\n") ? raw.slice(0, -1) : raw;
+  const bytes = new TextEncoder().encode(canonical);
+  const digest = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((item) => item.toString(16).padStart(2, "0")).join("");
+  if (bytes.byteLength !== shard.bytes || digest !== shard.sha256) throw new Error("A chunk word-order index failed its integrity check.");
+  const words = JSON.parse(canonical);
+  if (!Array.isArray(words) || words.length !== shard.count || words.some((value) => typeof value !== "string" || !WORD.test(value) || !value.normalize("NFC").toLocaleLowerCase("en-US").startsWith(prefix)) || new Set(words.map((value) => value.toLocaleLowerCase("en-US"))).size !== words.length) throw new Error("A chunk word-order index has invalid entries.");
+  CHUNK_ORDER_CACHE.set(cacheKey, words);
+  while (CHUNK_ORDER_CACHE.size > 8) CHUNK_ORDER_CACHE.delete(CHUNK_ORDER_CACHE.keys().next().value);
+  return words;
+}
+
 function chunkHref(stateId, { start = "", inside = [], end = "", startPage = 0, insidePage = 0, endPage = 0 } = {}) {
   const query = new URLSearchParams({ view: "chunks" });
   if (start) query.set("start", start);
@@ -235,14 +276,13 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
   const reply = state.reply_to ? `<p class="hint">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const context = predictionContext(draft, state);
   const initials = [...new Set(startPairs.map(({ value }) => value[0]))].sort();
-  const startGroups = initials.map((initial) => `<section id="start-${initial}"><h3><a class="letter-choice" href="${escapeHtml(chunkHref(state.state_id, { start: initial }))}" aria-label="Choose single-letter START ${initial}">${initial}</a></h3><div class="chunks">${startPairs.filter(({ value }) => value[0] === initial).map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}">${value}<small>${count}</small></a>`).join("")}</div></section>`).join("");
+  const startGroups = initials.map((initial) => `<section id="start-${initial}"><h3><a class="letter-choice" href="${escapeHtml(chunkHref(state.state_id, { start: initial }))}" aria-label="Choose single-letter START ${initial}">${initial}</a></h3><div class="chunks">${startPairs.filter(({ value }) => value[0] === initial).map(({ value, count }) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}">${value}</a><small>(${count})</small></span>`).join("")}</div></section>`).join("");
   const startJumps = initials.map((initial) => `<a href="?view=chunks#start-${initial}" aria-label="Jump to starting pairs beginning ${initial}">${initial.toUpperCase()}</a>`).join("");
   let search = `<div class="workspace start-only"><section class="constraint"><h2>START</h2><p>Choose a lowercase letter or one of the ${startPairs.length} valid two-letter beginnings.</p><nav class="letter-jumps" aria-label="Starting-letter groups">${startJumps}</nav><div class="pair-groups">${startGroups}</div></section></div>`;
   let resultSummary = "Choose a starting pair to search the pinned spelling lexicon.";
   if (start) {
     const startFamily = [...start].slice(0, Math.min(2, [...start].length)).join("");
-    const lexicon = await dictionaryWords(env, request, startFamily);
-    const startFamilyWords = lexicon.filter((value) => value.toLocaleLowerCase("en-US").startsWith(startFamily));
+    const startFamilyWords = await chunkCandidateOrder(env, request, startFamily);
     const base = startFamilyWords.filter((value) => value.toLocaleLowerCase("en-US").startsWith(start));
     const wordsFor = (value) => [...value.toLocaleLowerCase("en-US")];
     const bodyPairs = (value) => {
@@ -261,8 +301,7 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     };
     const candidates = base.filter(matches);
     const byWord = new Map(candidates.map((value) => [value.toLocaleLowerCase("en-US"), value]));
-    const category = (value) => /^[\p{Lu}\p{M}\p{N}]+$/u.test(value) ? 2 : /^[\p{Lu}]/u.test(value) ? 1 : 0;
-    const ordered = [...byWord.values()].sort((left, right) => category(left) - category(right) || left.localeCompare(right, "en-US"));
+    const ordered = [...byWord.values()];
     const insideCounts = chunkCountMap(candidates, bodyPairs);
     const endingPairs = (value) => {
       const pair = wordsFor(value).slice(-2).join("");
@@ -280,18 +319,18 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
       ? (CHUNK_KEYBOARD_THREE_LETTER_PREFIXES[startFamily[0]] || []).filter((value) => value.startsWith(startFamily))
       : [];
     const prefixBar = start.length === 1 && twoLetterOptions.length
-      ? `<section class="start-prefix-picker"><h3>Two-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">${twoLetterOptions.map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}<small>${count}</small></a>`).join("")}</nav></section>`
+      ? `<section class="start-prefix-picker"><h3>Two-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">${twoLetterOptions.map(({ value, count }) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a><small>(${count})</small></span>`).join("")}</nav></section>`
       : threeLetterOptions.length
         ? `<section class="start-prefix-picker"><h3>Three-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">${threeLetterOptions.map((value) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value, inside, end }))}"${start === value ? ' aria-current="true"' : ""} aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
         : "";
-    const renderInsideMatrix = (counts) => chunkMatrix(counts, "inside", "INSIDE", (value, count) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside: [...inside, value], end }))}">${value}<small>${count}</small></a>`, currentFilters);
-    const endMatrix = chunkMatrix(endOptions, "end", "END", (value, count) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}<small>${count}</small></a>`, currentFilters);
-    const replacementMatrix = chunkMatrix(replacementEnds, "replace-end", "replacement END", (value, count) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}<small>${count}</small></a>`, currentFilters);
+    const renderInsideMatrix = (counts) => chunkMatrix(counts, "inside", "INSIDE", (value, count) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start, inside: [...inside, value], end }))}">${value}</a><small>(${count})</small></span>`, currentFilters);
+    const endMatrix = chunkMatrix(endOptions, "end", "END", (value, count) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}</a><small>(${count})</small></span>`, currentFilters);
+    const replacementMatrix = chunkMatrix(replacementEnds, "replace-end", "replacement END", (value, count) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}</a><small>(${count})</small></span>`, currentFilters);
     const matchingCount = ordered.length;
     const candidateChoices = start.length < 3 ? ordered.slice(0, 20) : ordered;
     resultSummary = start.length < 3
       ? `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} entries beginning ${start}. Showing up to 20; choose a ${start.length === 1 ? "two" : "three"}-letter START to see all matches for that beginning.`
-      : `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} entries beginning ${start}. All matches are shown in stable order: lowercase forms, title-case forms, then all-capital forms.`;
+      : `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} entries beginning ${start}. All matches are shown in SUBTLEX-US lowercase usage order; unranked spellings follow alphabetically.`;
     const candidateLinks = await Promise.all(candidateChoices.map(async (value) => {
       const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
       const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
@@ -308,8 +347,8 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
   if (draft) controls.push(`<a rel="nofollow" href="${escapeHtml(await actionHref({ ...state, env }, "clear", "-", "letters", "", 0, "chunks"))}">Clear draft</a>`);
   if (draft) controls.push(`<a rel="nofollow" href="${PREFIX}/review/${word(state.state_id)}?view=chunks">Review message</a>`);
   const editKeys = await Promise.all([["space", "Space"], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"]].map(async ([key, label]) => `<a href="${escapeHtml(await actionHref({ ...state, env }, "key", key, "letters", "", 0, "chunks"))}">${escapeHtml(label)}</a>`));
-  const responseBody = `<h1>Chunk Word Keyboard 2</h1><details class="help"><summary>About this keyboard</summary><p>The pinned Hunspell spelling lexicon is searched deterministically. No prediction call or model ranking is used in this entry. Names and abbreviations remain available and are ordered after lowercase spellings. Some valid words may be absent from the lexicon.</p><p>Following a word, key, or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p></details><section id="draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre><p class="hint">${draftBytes} UTF-8 bytes · 1200 max.</p>${reply}</section><section><h2>Find a word</h2>${!start ? `<p class="summary" aria-label="Current constraints">START <strong>—</strong> | INSIDE <strong>—</strong> | END <strong>—</strong></p>` : ""}${search}</section><section><h2>Space and punctuation</h2><div class="chunks" aria-label="Space and punctuation links">${editKeys.join("")}</div></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}<p><a href="/predictive-keyboard/html/word-links/">Open the standard contextual keyboard</a></p>`;
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><base href="${baseHref}"><title>Chunk Word Keyboard 2 · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.45 system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:20px}h1{font-size:1.45rem;margin:.2rem 0 1rem}h2{font-size:1rem;margin:.4rem 0}.notice,.hint{font-size:.84rem;color:#526466}.draft{min-height:3.2rem;background:white;border:1px solid #ccd6df;padding:.7rem;white-space:pre-wrap;overflow-wrap:anywhere}.chunks{display:flex;flex-wrap:wrap;gap:.35rem}.chunks a{display:inline-flex;align-items:center;gap:.2rem;min-height:38px;padding:.3rem .5rem;border:1px solid #cbd7de;border-radius:5px;background:white;color:#086b62;text-decoration:none}.chunks a:focus-visible,.controls a:focus-visible,.letter-jumps a:focus-visible,.letter-choice:focus-visible,.reset-search:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.chunks small{color:#526466;font-size:.7rem}.active{display:flex;flex-wrap:wrap;gap:.6rem;margin:.7rem 0}.active span{padding:.35rem .5rem;background:#e9f1ee;border-radius:4px}.active a{margin-left:.35rem;color:#086b62}section{margin:1rem 0}h3{font-size:.85rem;margin:.7rem 0 .35rem}.letter-choice{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:.25rem .45rem;border:1px solid #cbd7de;border-radius:5px;background:#fff;color:#086b62;text-decoration:none;text-align:center;text-transform:lowercase}.letter-choice:hover{background:#e9f1ee}h4{font-size:.8rem;margin:.3rem 0}.letter-jumps{display:flex;gap:.3rem;flex-wrap:wrap;margin:.4rem 0}.letter-jumps a{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:.25rem .45rem;border:1px solid #cbd7de;border-radius:5px;background:#fff;color:#086b62;text-decoration:none;text-align:center}.letter-jumps a:hover{background:#e9f1ee}.start-prefixes{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:.15rem .1rem .55rem}.start-prefixes a{flex:0 0 auto;min-width:48px}.start-prefixes a[aria-current="true"]{background:#086b62;border-color:#086b62;color:#fff}.pair-groups>section{margin:.5rem 0;scroll-margin-top:4.5rem}.pair-groups .chunks a{min-height:32px;padding:.2rem .4rem}.workspace{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.workspace.start-only{grid-template-columns:minmax(0,1fr)}.workspace.filters-only{grid-template-columns:repeat(2,minmax(0,1fr))}.constraint,.candidate-panel{min-width:0;padding:.7rem;border:1px solid #d3dcdd;border-radius:6px;background:#fff}.candidate-panel{margin:1rem 0}.candidate-panel .chunks a{min-height:42px}details{margin:.5rem 0}summary{cursor:pointer;color:#086b62}.summary{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem;background:#e9f1ee;border:1px solid #cbd7de;border-radius:5px}.reset-search{flex:none;padding:.35rem .55rem;border:1px solid #086b62;border-radius:5px;background:#fff;color:#086b62;font-weight:650;text-decoration:none}.controls{display:flex;gap:1rem;margin:.55rem 0;flex-wrap:wrap}.controls a{color:#086b62}a{overflow-wrap:anywhere}@media(max-width:720px){main{padding:14px}.workspace{grid-template-columns:1fr}.summary{position:static;align-items:flex-start;flex-wrap:wrap}}@media(max-width:420px){main{padding:11px}}</style></head><body><main>${responseBody}</main></body></html>`;
+  const responseBody = `<h1>Chunk Word Keyboard 2</h1><details class="help"><summary>About this keyboard</summary><p>The pinned Hunspell spelling lexicon is searched deterministically. Candidate words are ordered by lowercase frequency and contextual diversity from <a href="https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus">SUBTLEX-US</a>; unranked spellings remain available after them. This is general word frequency, not contextual prediction. Some valid words may be absent from the lexicon.</p><p>Following a word, key, or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p></details><section id="draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre><p class="hint">${draftBytes} UTF-8 bytes · 1200 max.</p>${reply}</section><section><h2>Find a word</h2>${!start ? `<p class="summary" aria-label="Current constraints">START <strong>—</strong> | INSIDE <strong>—</strong> | END <strong>—</strong></p>` : ""}${search}</section><section><h2>Space and punctuation</h2><div class="chunks" aria-label="Space and punctuation links">${editKeys.join("")}</div></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}<p><a href="/predictive-keyboard/html/word-links/">Open the standard contextual keyboard</a></p>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><base href="${baseHref}"><title>Chunk Word Keyboard 2 · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.45 system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:20px}h1{font-size:1.45rem;margin:.2rem 0 1rem}h2{font-size:1rem;margin:.4rem 0}.notice,.hint{font-size:.84rem;color:#526466}.draft{min-height:3.2rem;background:white;border:1px solid #ccd6df;padding:.7rem;white-space:pre-wrap;overflow-wrap:anywhere}.chunks{display:flex;flex-wrap:wrap;gap:.35rem}.chunks a,.counted-choice a{display:inline-flex;align-items:center;gap:.2rem;min-height:38px;padding:.3rem .5rem;border:1px solid #cbd7de;border-radius:5px;background:white;color:#086b62;text-decoration:none}.counted-choice{display:inline-flex;align-items:center;gap:.2rem}.chunks a:focus-visible,.counted-choice a:focus-visible,.controls a:focus-visible,.letter-jumps a:focus-visible,.letter-choice:focus-visible,.reset-search:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.chunks small,.counted-choice small{color:#526466;font-size:.7rem}.active{display:flex;flex-wrap:wrap;gap:.6rem;margin:.7rem 0}.active span{padding:.35rem .5rem;background:#e9f1ee;border-radius:4px}.active a{margin-left:.35rem;color:#086b62}section{margin:1rem 0}h3{font-size:.85rem;margin:.7rem 0 .35rem}.letter-choice{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:.25rem .45rem;border:1px solid #cbd7de;border-radius:5px;background:#fff;color:#086b62;text-decoration:none;text-align:center;text-transform:lowercase}.letter-choice:hover{background:#e9f1ee}h4{font-size:.8rem;margin:.3rem 0}.letter-jumps{display:flex;gap:.3rem;flex-wrap:wrap;margin:.4rem 0}.letter-jumps a{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:.25rem .45rem;border:1px solid #cbd7de;border-radius:5px;background:#fff;color:#086b62;text-decoration:none;text-align:center}.letter-jumps a:hover{background:#e9f1ee}.start-prefixes{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:.15rem .1rem .55rem}.start-prefixes .counted-choice{flex:0 0 auto}.start-prefixes a{min-width:48px}.start-prefixes a[aria-current="true"]{background:#086b62;border-color:#086b62;color:#fff}.pair-groups>section{margin:.5rem 0;scroll-margin-top:4.5rem}.pair-groups .chunks a{min-height:32px;padding:.2rem .4rem}.workspace{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.workspace.start-only{grid-template-columns:minmax(0,1fr)}.workspace.filters-only{grid-template-columns:repeat(2,minmax(0,1fr))}.constraint,.candidate-panel{min-width:0;padding:.7rem;border:1px solid #d3dcdd;border-radius:6px;background:#fff}.candidate-panel{margin:1rem 0}.candidate-panel .chunks a{min-height:42px}details{margin:.5rem 0}summary{cursor:pointer;color:#086b62}.summary{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem;background:#e9f1ee;border:1px solid #cbd6df;border-radius:5px}.reset-search{flex:none;padding:.35rem .55rem;border:1px solid #086b62;border-radius:5px;background:#fff;color:#086b62;font-weight:650;text-decoration:none}.controls{display:flex;gap:1rem;margin:.55rem 0;flex-wrap:wrap}.controls a{color:#086b62}a{overflow-wrap:anywhere}@media(max-width:720px){main{padding:14px}.workspace{grid-template-columns:1fr}.summary{position:static;align-items:flex-start;flex-wrap:wrap}}@media(max-width:420px){main{padding:11px}}</style></head><body><main>${responseBody}</main></body></html>`;
   return response(html, 200, { "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" });
 }
 
