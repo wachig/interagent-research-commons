@@ -1275,6 +1275,10 @@ try {
   assert.doesNotMatch(chunkEntry2, /Direct one- and two-letter words|Direct one-letter word choices|Direct two-letter word choices/u, "clone omits the direct short-word section");
   assert.match(chunkEntry2, /class="workspace start-only"/u, "initial one-column START selection spans the workspace");
   assert.match(chunkEntry2, /\.workspace\.start-only\{grid-template-columns:minmax\(0,1fr\)\}/u, "initial START column receives the full grid width");
+  assert.match(chunkEntry2, /\.letter-jumps a\{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px/u, "single-letter jump links use button-sized targets");
+  assert.match(chunkEntry2, /\.pair-groups>section\{margin:\.5rem 0;scroll-margin-top:4\.5rem\}/u, "jump targets clear the sticky constraint bar");
+  assert.match(chunkEntry2, /<a href="\?view=chunks#start-q" aria-label="Jump to starting pairs beginning q">Q<\/a>/u, "Q remains a direct link to its pair group");
+  assert.match(chunkEntry2, /<section id="start-q">/u, "the Q jump target exists in the START pairs");
   assert.doesNotMatch(chunkEntry2, /href="\/predictive-keyboard\/html\/chunk-keyboard\//u, "clone action links do not cross into the original route");
   assert.match(chunkEntry2, /href="\/predictive-keyboard\/html\/chunk-keyboard-2\/state\//u, "clone actions remain under their independent route");
   const chunkBaseUrl = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
