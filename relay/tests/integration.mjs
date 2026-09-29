@@ -228,7 +228,7 @@ try {
   assert.match(keyboardResponse.headers.get("content-type"), /text\/html/);
   assert.match(keyboardHtml, /<textarea\b/u, "integrated HTML keyboard keeps exact text entry on its main screen");
   assert.match(keyboardHtml, /<select\b[^>]*aria-label="More words"/u, "integrated keyboard offers additional contextual predictions");
-  assert.match(keyboardHtml, /Punctuation/u);
+  assert.doesNotMatch(keyboardHtml, /<legend>(?:Punctuation|Capitalization|Wrap the word)<\/legend>|name="(?:suffix|case|wrapper)"|Keep the model(?:'s|’s) exact casing/u, "contextual keyboard omits formatting controls");
   assert.match(keyboardHtml, /aria-label="Turn shift on"/u, "keyboard exposes linked shift control");
   assert.match(keyboardHtml, /aria-label="\?123"/u, "keyboard links to its symbol layout");
   const crawlQueue = ["/"];
@@ -1223,7 +1223,7 @@ try {
   assert.match(integratedKeyboard, /Up to 32 more suggestions, ranked after the first 12/u, "the additional model prediction range is disclosed");
   assert.match(integratedKeyboard, /<summary>Choices for clients that can only follow links<\/summary>/u, "the link-only section is clearly for clients unable to submit forms");
   assert.match(integratedKeyboard, /<select\b[^>]*aria-label="More words"/u, "the same screen offers expanded contextual words");
-  assert.match(integratedKeyboard, /Punctuation/u, "punctuation is available inline");
+  assert.doesNotMatch(integratedKeyboard, /<legend>(?:Punctuation|Capitalization|Wrap the word)<\/legend>|name="(?:suffix|case|wrapper)"|Keep the model(?:'s|’s) exact casing/u, "formatting controls are removed from the keyboard page");
   assert.match(integratedKeyboard, /aria-label="Letters keyboard"/u, "clickable character keys stay on the primary screen");
   assert.match(integratedKeyboardResponse.headers.get("content-security-policy"), /form-action 'self'/u, "native GET forms are permitted by the page policy");
   const moreOptionCount = (integratedKeyboard.match(/<option\b/g) || []).length;
@@ -1258,7 +1258,7 @@ try {
   assert.match(recursionResult, /<pre class="draft"[^>]*>Recursion<\/pre>/u, "link-only prefix selection applies automatic sentence capitalization");
   const linkOnlyCandidate = integratedKeyboard.match(/<div class="choices" aria-label="Link-only predictions"><a rel="nofollow" href="([^"]+)">([^<]+)<\/a>/u);
   assert.ok(linkOnlyCandidate, "link-only clients receive a first candidate link");
-  assert.match(integratedKeyboard, /Keep the model's exact casing/u, "automatic casing has an explicit link-only override");
+  assert.doesNotMatch(integratedKeyboard, /Keep the model's exact casing/u, "link-only choices do not expose a casing override");
   const linkOnlyResult = await (await fetch(new URL(linkOnlyCandidate[1], quickBase))).text();
   assert.match(linkOnlyResult, new RegExp(`<pre class="draft"[^>]*>${linkOnlyCandidate[2].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}<\/pre>`), "link-only prediction commits the exact displayed casing");
   const candidate = integratedKeyboard.match(/<button[^>]*name="pick" value="(word:[^"]+)"[^>]*>/u)?.[1];
