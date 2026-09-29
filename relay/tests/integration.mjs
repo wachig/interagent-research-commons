@@ -1300,8 +1300,25 @@ try {
   assert.equal(cloneBo.count, 423, "clone offers the same lexicon candidates as the original");
   const cloneBoPage = await chunkFetch2(chunkEntry2, cloneBo.href);
   assert.match(cloneBoPage, /423 matching words from 423 entries beginning bo/u);
+  assert.match(cloneBoPage, /Showing up to 20; choose a listed three-letter START/u, "two-letter starts explain the compact candidate preview");
+  assert.doesNotMatch(cloneBoPage, />More words<|>Previous words</u, "Chunk Word Keyboard 2 has no candidate paging links");
+  assert.match(cloneBoPage, /<nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">[\s\S]*?<a href="[^"]+"[^>]*>boa<\/a>/u, "the exact supplied B continuations replace candidate paging");
   assert.match(cloneBoPage, /class="workspace"/u, "after START selection, the three-column constraint workspace returns");
   assert.doesNotMatch(cloneBoPage, /class="workspace start-only"/u);
+  const cloneTe = directPair(chunkEntry2, "te");
+  const cloneTePage = await chunkFetch2(chunkEntry2, cloneTe.href);
+  const tePrefixRegion = cloneTePage.match(/<nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">([\s\S]*?)<\/nav>/u)?.[1] || "";
+  assert.match(tePrefixRegion, />tea<\/a>[\s\S]*?>teb<\/a>[\s\S]*?>tec<\/a>[\s\S]*?>ted<\/a>[\s\S]*?>tee<\/a>/u, "the T continuation row follows the user-supplied list order");
+  const terHref = tePrefixRegion.match(/<a href="([^"]+)"[^>]*>ter<\/a>/u)?.[1];
+  assert.ok(terHref, "the supplied ter continuation is selectable");
+  const cloneTerPage = await chunkFetch2(cloneTePage, terHref);
+  assert.match(cloneTerPage, /START <strong>ter<\/strong>/u, "choosing ter replaces the two-letter START");
+  assert.match(cloneTerPage, /<a href="[^"]+" aria-current="true" aria-label="Set START to ter">ter<\/a>/u, "the selected continuation remains visibly active");
+  assert.match(cloneTerPage, /All matches are shown in stable order/u, "three-letter starts show every candidate without pagination");
+  assert.doesNotMatch(cloneTerPage, />More words<|>Previous words<|word_page=/u, "the three-letter candidate view has no paging controls");
+  const terCandidateRegion = cloneTerPage.match(/<div class="chunks candidates" aria-label="Matching candidate words">([\s\S]*?)<\/div>/u)?.[1] || "";
+  const terExpectedCount = Number(cloneTerPage.match(/<h2>Candidates <span>\((\d+)\)<\/span><\/h2>/u)?.[1]);
+  assert.equal([...terCandidateRegion.matchAll(/<a rel="nofollow"/gu)].length, terExpectedCount, "all three-letter matches are rendered as selectable links");
   const letterJump = (html, ariaLabel, letter) => {
     const region = html.match(new RegExp(`<nav class="letter-jumps" aria-label="${ariaLabel}">([\\s\\S]*?)<\\/nav>`, "u"))?.[1] || "";
     const match = region.match(new RegExp(`<a href="([^"]*)">${letter}<\\/a>`, "iu"));
