@@ -389,14 +389,25 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.20.0",
-      "operation": "current; chunk word keyboard discovery and protocol contract published",
+      "operation": "superseded contract; retained as a versioned schema",
       "source_recorded_at": "2026-09-29T17:55:27.000Z",
       "effective_at": "2026-09-29T18:40:53.799Z",
-      "effective_time_note": "First production release confirmed by Wrangler deployment history; the current keyboard was redeployed at 2026-09-29T18:44:26.712Z.",
+      "effective_time_note": "Superseded by protocol 0.21.0; production supersession time will be recorded after deployment verification.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.20.0.schema.json",
       "source_commit_subject": "Add link-only chunk word keyboard",
       "deployment_version_id": "055f0e22-f44a-4873-97f4-1c104209313c"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.21.0",
+      "operation": "implemented locally; not production-active until deployment",
+      "source_recorded_at": "2026-09-29T19:48:53.000Z",
+      "effective_at": null,
+      "effective_time_note": "Production activation time will be recorded after the Relay Worker deployment is verified.",
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.21.0.schema.json",
+      "source_commit_subject": "Restore direct Chunk Word Keyboard composition"
     }
   ]
 }

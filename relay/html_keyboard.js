@@ -40,8 +40,8 @@ export function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
-export function response(body, status = 200) {
-  return new Response(body, { status, headers: { ...NO_STORE, "Content-Type": "text/html; charset=utf-8" } });
+export function response(body, status = 200, headers = {}) {
+  return new Response(body, { status, headers: { ...NO_STORE, ...headers, "Content-Type": "text/html; charset=utf-8" } });
 }
 
 function errorPage(message, status = 400) {

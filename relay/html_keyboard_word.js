@@ -18,7 +18,6 @@ const PUNCTUATION = new Set(["", ".", ",", "?", "!", ":", ";"]);
 const CASE = new Set(["as-is", "auto", "capitalize", "upper"]);
 const WRAPPER = new Set(["none", "quote", "parenthetical"]);
 const DICTIONARY_CACHE = new Map();
-const PREDICTION_CACHE = new Map();
 let LEXICON_MANIFEST_PROMISE;
 let LEXICON_START_PAIRS_PROMISE;
 const COMMONS_WORDS = ["agent", "agents", "commons", "IARC", "interagent", "Relay", "research", "researcher", "researching", "really", "reason", "recursive", "recursion", "reply", "message", "participation", "policy", "accessibility", "token", "tokenizer", "predictive", "prediction", "composer"];
@@ -178,7 +177,7 @@ async function lexiconStartPairs(env, request) {
       const result = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/start-pairs.json", request.url)));
       if (!result.ok) throw new Error("The two-letter word-search index is unavailable.");
       const index = await result.json();
-      if (index.lexicon_version !== manifest.lexicon_version || !Array.isArray(index.pairs) || index.pairs.some((item) => !item || !/^\p{L}{2}$/u.test(item.value) || !Number.isSafeInteger(item.count) || item.count < 1) || !Array.isArray(index.short_characters) || index.short_characters.some((value) => !/^[\p{L}\p{N}]$/u.test(value))) throw new Error("The two-letter word-search index is invalid.");
+      if (index.lexicon_version !== manifest.lexicon_version || !Array.isArray(index.pairs) || index.pairs.some((item) => !item || !/^\p{L}{2}$/u.test(item.value) || !Number.isSafeInteger(item.count) || item.count < 1) || !Array.isArray(index.short_characters) || index.short_characters.some((value) => !/^[\p{L}\p{N}]$/u.test(value)) || !Array.isArray(index.two_letter_words) || index.two_letter_words.some((value) => !/^\p{L}{2}$/u.test(value))) throw new Error("The two-letter word-search index is invalid.");
       return index;
     })().catch((error) => {
       LEXICON_START_PAIRS_PROMISE = undefined;
@@ -197,14 +196,20 @@ function chunkHref(stateId, { start = "", inside = [], end = "", startPage = 0, 
   if (wordPage) query.set("word_page", String(wordPage));
   if (insidePage) query.set("inside_page", String(insidePage));
   if (endPage) query.set("end_page", String(endPage));
-  return `${PREFIX}/state/${word(stateId)}?${query}`;
+  return `?${query}`;
 }
 
-function chunkPageLinks(stateId, current, name, total, pageSize = 48) {
-  const page = current[name];
-  const previous = page ? `<a href="${escapeHtml(chunkHref(stateId, { ...current, [name]: page - 1 }))}">Previous</a>` : "";
-  const next = (page + 1) * pageSize < total ? `<a href="${escapeHtml(chunkHref(stateId, { ...current, [name]: page + 1 }))}">More</a>` : "";
-  return previous || next ? `<nav class="paging" aria-label="More chunk choices">${previous} ${next}</nav>` : "";
+function chunkMatrix(counts, groupId, label, linkFor, jumpTarget = "?view=chunks") {
+  const groups = new Map();
+  for (const item of [...counts].sort(([left], [right]) => left.localeCompare(right, "en-US"))) {
+    const initial = item[0][0];
+    if (!groups.has(initial)) groups.set(initial, []);
+    groups.get(initial).push(item);
+  }
+  if (!groups.size) return `<p>No compatible ${escapeHtml(label.toLocaleLowerCase("en-US"))} remain.</p>`;
+  const jumps = [...groups.keys()].map((initial) => `<a href="${escapeHtml(`${jumpTarget}#${groupId}-${initial}`)}">${initial.toUpperCase()}</a>`).join("");
+  const sections = [...groups].map(([initial, values]) => `<section id="${groupId}-${initial}"><h4>${initial.toUpperCase()}</h4><div class="chunks">${values.map(([value, count]) => linkFor(value, count)).join("")}</div></section>`).join("");
+  return `<nav class="letter-jumps" aria-label="${escapeHtml(label)} letters">${jumps}</nav><div class="pair-groups">${sections}</div>`;
 }
 
 function chunkCountMap(words, selector) {
@@ -213,32 +218,6 @@ function chunkCountMap(words, selector) {
     for (const chunk of new Set(selector(value))) counts.set(chunk, (counts.get(chunk) || 0) + 1);
   }
   return counts;
-}
-
-async function rankedWordsForContext(env, request, context) {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(context)));
-  const cacheKey = [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
-  let cached = PREDICTION_CACHE.get(cacheKey);
-  if (cached && cached.expiresAt <= Date.now()) {
-    PREDICTION_CACHE.delete(cacheKey);
-    cached = undefined;
-  }
-  if (!cached) {
-    const pending = predictRanked(env, request, context, 48).then(usableWords);
-    cached = { pending, expiresAt: Date.now() + 10 * 60 * 1_000 };
-    PREDICTION_CACHE.set(cacheKey, cached);
-    while (PREDICTION_CACHE.size > 8) PREDICTION_CACHE.delete(PREDICTION_CACHE.keys().next().value);
-    pending.catch(() => PREDICTION_CACHE.delete(cacheKey));
-    // The model is optional; the request is bounded below, so never hold the
-    // HTML response open while the prediction runtime initializes.
-  }
-  let timeout;
-  const result = await Promise.race([
-    cached.pending.then((words) => ({ words }), () => ({ words: [] })),
-    new Promise((resolve) => { timeout = setTimeout(() => resolve(null), 120); }),
-  ]);
-  clearTimeout(timeout);
-  return result || { words: [], pending: true };
 }
 
 async function renderChunkKeyboard(request, env, state, draft, url, params) {
@@ -251,28 +230,26 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     if (!/^\d+$/u.test(raw) || !Number.isSafeInteger(value) || value < 0 || value > 10_000) throw new Error("A chunk-choice page is invalid.");
     return value;
   };
-  const current = { start, inside, end, startPage: pageValue("start_page"), wordPage: pageValue("word_page"), insidePage: pageValue("inside_page"), endPage: pageValue("end_page") };
+  const current = { start, inside, end, wordPage: pageValue("word_page") };
   const chunkValid = (value) => /^\p{L}{2}$/u.test(value);
   if ((start && !chunkValid(start)) || (end && !chunkValid(end)) || inside.length > 8 || inside.some((value) => !chunkValid(value)) || new Set(inside).size !== inside.length) throw new Error("Choose distinct two-letter chunks from the displayed options.");
   const startIndex = await lexiconStartPairs(env, request);
   const startPairs = startIndex.pairs;
+  const baseHref = `${PREFIX}/state/${word(state.state_id)}`;
+  const shortPickCapability = await signCommonWordRoute(env, "keyboard-short-pick", state.state_id);
+  const shortPickHref = (value) => `?view=chunks&pick_short=${encodeURIComponent(value)}&short_cap=${shortPickCapability}`;
   const draftBytes = new TextEncoder().encode(draft).byteLength;
   const reply = state.reply_to ? `<p class="hint">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const context = predictionContext(draft, state);
-  // Reuse one model ranking while the link-only constraints change. Matching
-  // candidates remain complete even when no predictor result is available.
-  const ranking = start ? await rankedWordsForContext(env, request, context) : { words: [], pending: false };
-  const ranked = ranking.words;
-  const shortLinks = await Promise.all(startIndex.short_characters.map(async (value) => {
-    const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
-    const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
-    return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add short word ${escapeHtml(autoCase(value, context))}">${escapeHtml(autoCase(value, context))}</a>`;
-  }));
-  const startPageSize = 48;
-  const startPage = current.startPage;
-  const visibleStartPairs = startPairs.slice(startPage * startPageSize, startPage * startPageSize + startPageSize);
-  const startPages = `${startPage ? `<a href="${escapeHtml(chunkHref(state.state_id, { startPage: startPage - 1 }))}">Previous starting pairs</a>` : ""} ${(startPage + 1) * startPageSize < startPairs.length ? `<a href="${escapeHtml(chunkHref(state.state_id, { startPage: startPage + 1 }))}">More starting pairs</a>` : ""}`;
-  let search = `<section><h2>START</h2><p>Choose the first two letters. Each option shows how many dictionary entries begin with it.</p><div class="chunks" aria-label="Starting letter pairs">${visibleStartPairs.map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Start ${escapeHtml(value)}, ${count} matching words">${escapeHtml(value)} <small>${count}</small></a>`).join("")}</div><nav class="paging" aria-label="Starting-pair pages">${startPages}</nav><p class="hint">Showing ${startPage * startPageSize + 1}–${Math.min((startPage + 1) * startPageSize, startPairs.length)} of ${startPairs.length} starting pairs.</p><h3>One-character words and digits</h3><div class="chunks" aria-label="Direct one-character candidates">${shortLinks.join("")}</div></section>`;
+  const shortLinks = startIndex.short_characters.map((value) => `<a rel="nofollow" href="${escapeHtml(shortPickHref(value))}">${escapeHtml(autoCase(value, context))}</a>`);
+  const twoLetterLinks = startIndex.two_letter_words.map((value) => {
+    const label = autoCase(value, context);
+    return `<a rel="nofollow" href="${escapeHtml(shortPickHref(value))}">${escapeHtml(label)}</a>`;
+  });
+  const initials = [...new Set(startPairs.map(({ value }) => value[0]))].sort();
+  const startGroups = initials.map((initial) => `<section id="start-${initial}"><h3>${initial.toUpperCase()}</h3><div class="chunks">${startPairs.filter(({ value }) => value[0] === initial).map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}">${value}<small>${count}</small></a>`).join("")}</div></section>`).join("");
+  const startJumps = initials.map((initial) => `<a href="?view=chunks#start-${initial}" aria-label="Jump to starting pairs beginning ${initial}">${initial.toUpperCase()}</a>`).join("");
+  let search = `<div class="workspace"><section class="constraint"><h2>START</h2><p>Choose a known beginning. All ${startPairs.length} valid pairs are available directly.</p><nav class="letter-jumps" aria-label="Starting-letter groups">${startJumps}</nav><div class="pair-groups">${startGroups}</div><details><summary>Direct one- and two-letter words</summary><h3>One letter</h3><div class="chunks" aria-label="Direct one-letter word choices">${shortLinks.join("")}</div><h3>Two letters</h3><div class="chunks" aria-label="Direct two-letter word choices">${twoLetterLinks.join("")}</div><p class="hint">All matching entries remain included, including names and abbreviations.</p></details></section></div>`;
   let resultSummary = "Choose a starting pair to search the pinned spelling lexicon.";
   if (start) {
     const lexicon = await dictionaryWords(env, request, start);
@@ -293,75 +270,48 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
       return (!end || lower.endsWith(end)) && inside.every((chunk) => bodyPairs(value).includes(chunk)) && chars.length >= 2;
     };
     const candidates = base.filter(matches);
-    // The lexicon search must remain available if prediction is unavailable:
-    // prediction only orders candidates and is never part of the match set.
-    const modelRank = new Map(ranked.map((candidate, index) => [candidate.text.toLocaleLowerCase("en-US"), index]));
     const byWord = new Map(candidates.map((value) => [value.toLocaleLowerCase("en-US"), value]));
-    const ordered = [...byWord.values()].sort((left, right) => {
-      const leftRank = modelRank.get(left.toLocaleLowerCase("en-US"));
-      const rightRank = modelRank.get(right.toLocaleLowerCase("en-US"));
-      if (leftRank !== undefined || rightRank !== undefined) return (leftRank ?? Infinity) - (rightRank ?? Infinity) || left.localeCompare(right, "en-US");
-      return left.localeCompare(right, "en-US");
-    });
+    const category = (value) => /^[\p{Lu}\p{M}\p{N}]+$/u.test(value) ? 2 : /^[\p{Lu}]/u.test(value) ? 1 : 0;
+    const ordered = [...byWord.values()].sort((left, right) => category(left) - category(right) || left.localeCompare(right, "en-US"));
     const insideCounts = chunkCountMap(candidates, bodyPairs);
-    // Replacing an END filter must be possible without first removing it: count
-    // alternative endings against the same START/INSIDE pool, excluding END.
-    const endPool = base.filter((value) => inside.every((chunk) => bodyPairs(value).includes(chunk)));
-    const endCounts = chunkCountMap(endPool, (value) => {
-      const chars = wordsFor(value);
-      const pair = chars.slice(-2).join("");
+    const endingPairs = (value) => {
+      const pair = wordsFor(value).slice(-2).join("");
       return chunkValid(pair) ? [pair] : [];
-    });
-    const selectorLinks = (counts, selected, pageName, pageNumber) => {
-      const options = [...counts].filter(([value]) => value !== selected && (pageName !== "insidePage" || !inside.includes(value)))
-        .sort(([left, leftCount], [right, rightCount]) => leftCount - rightCount || left.localeCompare(right, "en-US"));
-      const visible = options.slice(pageNumber * 48, pageNumber * 48 + 48);
-      const links = visible.map(([value, count]) => {
-        const next = { ...current, [pageName]: 0 };
-        if (pageName === "insidePage") next.inside = [...inside, value];
-        else next.end = value;
-        next.wordPage = 0;
-        next.insidePage = 0;
-        next.endPage = 0;
-        return `<a href="${escapeHtml(chunkHref(state.state_id, next))}" aria-label="${pageName === "insidePage" ? "Inside" : "End"} chunk ${escapeHtml(value)}, leaves ${count} candidates">${escapeHtml(value)} <small>${count}</small></a>`;
-      }).join("");
-      return { html: links || "<p>No additional chunks apply to the remaining candidates.</p>", total: options.length };
     };
-    const active = [];
-    active.push(`<span>START <strong>${escapeHtml(start)}</strong> <a href="${escapeHtml(chunkHref(state.state_id))}">Remove</a></span>`);
-    for (const value of inside) active.push(`<span>INSIDE <strong>${escapeHtml(value)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { ...current, inside: inside.filter((item) => item !== value), wordPage: 0, insidePage: 0, endPage: 0 }))}">Remove</a></span>`);
-    if (end) active.push(`<span>END <strong>${escapeHtml(end)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { ...current, end: "", wordPage: 0, insidePage: 0, endPage: 0 }))}">Remove</a></span>`);
-    const insideOptions = inside.length < 8 ? selectorLinks(insideCounts, "", "insidePage", current.insidePage) : { html: "<p>Inside-chunk limit reached. Remove a chunk to add another.</p>", total: 0 };
-    const endOptions = selectorLinks(endCounts, end, "endPage", current.endPage);
-    const chunkState = (pageName, total) => chunkPageLinks(state.state_id, current, pageName, total);
+    const endCounts = chunkCountMap(candidates, endingPairs);
+    const endPool = base.filter((value) => inside.every((chunk) => bodyPairs(value).includes(chunk)));
+    const insideOptions = new Map([...insideCounts].filter(([value]) => !inside.includes(value)));
+    const endOptions = new Map([...endCounts].filter(([value]) => value !== end));
+    const replacementEnds = new Map([...chunkCountMap(endPool, endingPairs)].filter(([value]) => value !== end));
+    const remainingLabel = (count) => `${count} ${count === 1 ? "candidate" : "candidates"} remain`;
+    const currentFilters = chunkHref(state.state_id, { start, inside, end });
+    const renderInsideMatrix = (counts) => chunkMatrix(counts, "inside", "INSIDE", (value, count) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside: [...inside, value], end }))}">${value}<small>${count}</small></a>`, currentFilters);
+    const endMatrix = chunkMatrix(endOptions, "end", "END", (value, count) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}<small>${count}</small></a>`, currentFilters);
+    const replacementMatrix = chunkMatrix(replacementEnds, "replace-end", "replacement END", (value, count) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}<small>${count}</small></a>`, currentFilters);
     const matchingCount = ordered.length;
-    const rankDescription = ranking.pending
-      ? "Predictor ranking is warming; this complete match list is alphabetical. Reload to apply it when ready."
-      : ranked.length
-        ? "Predictor-ranked matches appear first; remaining matches are alphabetical."
-        : "No predictor-ranked matches are available; this complete match list is alphabetical.";
-    resultSummary = `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} lexicon entries beginning ${start}. ${rankDescription}`;
+    resultSummary = `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} entries beginning ${start}. Stable order: lowercase forms, title-case forms, then all-capital forms; none are omitted.`;
     const wordPage = current.wordPage;
     const pageWords = ordered.slice(wordPage * 20, wordPage * 20 + 20);
-    const modelWords = new Set(ranked.map((candidate) => candidate.text.toLocaleLowerCase("en-US")));
     const candidateLinks = await Promise.all(pageWords.map(async (value) => {
       const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
       const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
       const label = autoCase(value, context);
-      const suggested = modelWords.has(value.toLocaleLowerCase("en-US")) ? " · suggested" : "";
-      return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add ${escapeHtml(label)}${suggested}">${escapeHtml(label)}${suggested ? `<small>${suggested}</small>` : ""}</a>`;
+      return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
     }));
     const candidatePages = `${wordPage ? `<a href="${escapeHtml(chunkHref(state.state_id, { ...current, wordPage: wordPage - 1 }))}">Previous words</a>` : ""} ${(wordPage + 1) * 20 < ordered.length ? `<a href="${escapeHtml(chunkHref(state.state_id, { ...current, wordPage: wordPage + 1 }))}">More words</a>` : ""}`;
-    search = `<section><h2>Constraints</h2><p>START is the first pair. INSIDE pairs must occur after the first two and before the last two letters; add more to require all of them. END is the final pair. Choices show how many candidates remain if added.</p><div class="active">${active.join("")}</div><h3>INSIDE · choose a pair</h3><div class="chunks" aria-label="Compatible inside chunks">${insideOptions.html}</div>${chunkState("insidePage", insideOptions.total)}<h3>END · choose a pair</h3><div class="chunks" aria-label="Compatible ending chunks">${endOptions.html}</div>${chunkState("endPage", endOptions.total)}</section><section><h2>Candidates</h2><p>${resultSummary}</p><nav class="paging" aria-label="Candidate words">${candidatePages}</nav><div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the search.</p>"}</div><nav class="paging" aria-label="Candidate words">${candidatePages}</nav></section>`;
+    const endArea = end ? `<p>Selected END <strong>${escapeHtml(end)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { start, inside }))}">Remove END ${escapeHtml(end)}</a></p><details><summary>Change END (replaces ${escapeHtml(end)})</summary><p>Replacement choices are computed before the current ending and may broaden the results.</p>${replacementMatrix}</details>` : endMatrix;
+    const insideArea = inside.length < 8 ? renderInsideMatrix(insideOptions) : "<p>Limit of eight INSIDE chunks reached. Remove one to add another.</p>";
+    const workspace = `<div class="workspace"><section class="constraint"><h2>START</h2><p><strong>${escapeHtml(start)}</strong> · ${base.length} entries</p><a href="${escapeHtml(chunkHref(state.state_id))}">Change START and reset dependent chunks</a></section><section class="constraint"><h2>INSIDE</h2><p>Pairs must fit fully between the first and last two letters. Add another pair to narrow the current candidates.</p><div class="active">${inside.map((value) => `<span><strong>${escapeHtml(value)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { start, inside: inside.filter((item) => item !== value), end }))}">Remove INSIDE ${escapeHtml(value)}</a></span>`).join("")}</div>${insideArea}</section><section class="constraint"><h2>END</h2><p>Each additive choice narrows the current candidates.</p>${endArea}</section></div>`;
+    search = `<p class="summary" aria-label="Current constraints">START <strong>${escapeHtml(start)}</strong> | INSIDE <strong>${inside.map(escapeHtml).join(", ") || "—"}</strong> | END <strong>${escapeHtml(end) || "—"}</strong></p><section class="candidate-panel"><h2>Candidates <span>(${matchingCount.toLocaleString("en-US")})</span></h2><p>${escapeHtml(resultSummary)}</p><nav class="paging" aria-label="Candidate words">${candidatePages}</nav><div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the search.</p>"}</div><nav class="paging" aria-label="Candidate words">${candidatePages}</nav></section>${workspace}`;
   }
   const controls = [];
   if (state.parent_state_id) controls.push(`<a href="${escapeHtml(stateHref(state.parent_state_id, "letters", false, "", 0, "chunks"))}">Undo last addition</a>`);
   if (draft) controls.push(`<a rel="nofollow" href="${escapeHtml(await actionHref({ ...state, env }, "clear", "-", "letters", "", 0, "chunks"))}">Clear draft</a>`);
   if (draft) controls.push(`<a rel="nofollow" href="${PREFIX}/review/${word(state.state_id)}?view=chunks">Review message</a>`);
   const editKeys = await Promise.all([["space", "Space"], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"]].map(async ([key, label]) => `<a href="${escapeHtml(await actionHref({ ...state, env }, "key", key, "letters", "", 0, "chunks"))}">${escapeHtml(label)}</a>`));
-  const responseBody = `<h1>Chunk word keyboard</h1><p class="notice">Find a word by narrowing the pinned Hunspell spelling lexicon (48,262 entries in the pinned release). This is a deterministic word search, not a prediction of intent. The local English predictor only ranks matching words; it does not limit which words can be found. Some valid English words may be absent from the lexicon. Following a candidate or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p><section id="draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre><p class="hint">${draftBytes} UTF-8 bytes · 1200 max.</p>${reply}</section><section><h2>Find a word</h2><p>Choose START first. Add INSIDE and END only when useful; each added constraint narrows the candidate set. Select a candidate to add the whole word.</p>${search}</section><section><h2>Space and punctuation</h2><div class="chunks" aria-label="Space and punctuation links">${editKeys.join("")}</div></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}${!start ? `<p class="hint">${escapeHtml(resultSummary)}</p>` : ""}<p><a href="${PREFIX}/word-links/">Open the standard contextual keyboard</a></p>`;
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Chunk word keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.45 system-ui,sans-serif}main{max-width:760px;margin:auto;padding:20px}h1{font-size:1.45rem;margin:.2rem 0 1rem}h2{font-size:1rem;margin:.4rem 0}.notice,.hint{font-size:.84rem;color:#526466}.draft{min-height:3.2rem;background:white;border:1px solid #ccd6df;padding:.7rem;white-space:pre-wrap;overflow-wrap:anywhere}.chunks{display:flex;flex-wrap:wrap;gap:.4rem}.chunks a{display:inline-flex;align-items:center;gap:.25rem;min-height:42px;padding:.4rem .65rem;border:1px solid #cbd7de;border-radius:5px;background:white;color:#086b62;text-decoration:none}.chunks a:focus-visible,.controls a:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.chunks small{color:#526466;font-size:.72rem}.active{display:flex;flex-wrap:wrap;gap:.6rem;margin:.7rem 0}.active span{padding:.35rem .5rem;background:#e9f1ee;border-radius:4px}.active a{margin-left:.35rem;color:#086b62}section{margin:1.2rem 0}h3{font-size:.9rem;margin:1rem 0 .45rem}.paging,.controls{display:flex;gap:1rem;margin:.55rem 0;flex-wrap:wrap}.paging a,.controls a{color:#086b62}.candidates a{min-height:44px}.candidates a small{color:#526466}a{overflow-wrap:anywhere}@media(max-width:420px){main{padding:13px}}</style></head><body><main>${responseBody}</main></body></html>`;
-  return response(html);
+  const responseBody = `<h1>Chunk word keyboard</h1><details class="help"><summary>About this keyboard</summary><p>The pinned Hunspell spelling lexicon is searched deterministically. No prediction call or model ranking is used in this entry. Names and abbreviations remain available and are ordered after lowercase spellings. Some valid words may be absent from the lexicon.</p><p>Following a word, key, or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p></details><section id="draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre><p class="hint">${draftBytes} UTF-8 bytes · 1200 max.</p>${reply}</section><section><h2>Find a word</h2>${!start ? `<p class="summary" aria-label="Current constraints">START <strong>—</strong> | INSIDE <strong>—</strong> | END <strong>—</strong></p>` : ""}${search}</section><section><h2>Space and punctuation</h2><div class="chunks" aria-label="Space and punctuation links">${editKeys.join("")}</div></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}<p><a href="${PREFIX}/">Open the standard contextual keyboard</a></p>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><base href="${baseHref}"><title>Chunk word keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.45 system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:20px}h1{font-size:1.45rem;margin:.2rem 0 1rem}h2{font-size:1rem;margin:.4rem 0}.notice,.hint{font-size:.84rem;color:#526466}.draft{min-height:3.2rem;background:white;border:1px solid #ccd6df;padding:.7rem;white-space:pre-wrap;overflow-wrap:anywhere}.chunks{display:flex;flex-wrap:wrap;gap:.35rem}.chunks a{display:inline-flex;align-items:center;gap:.2rem;min-height:38px;padding:.3rem .5rem;border:1px solid #cbd7de;border-radius:5px;background:white;color:#086b62;text-decoration:none}.chunks a:focus-visible,.controls a:focus-visible,.letter-jumps a:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.chunks small{color:#526466;font-size:.7rem}.active{display:flex;flex-wrap:wrap;gap:.6rem;margin:.7rem 0}.active span{padding:.35rem .5rem;background:#e9f1ee;border-radius:4px}.active a{margin-left:.35rem;color:#086b62}section{margin:1rem 0}h3{font-size:.85rem;margin:.7rem 0 .35rem}h4{font-size:.8rem;margin:.3rem 0}.letter-jumps{display:flex;gap:.3rem;flex-wrap:wrap;margin:.4rem 0}.letter-jumps a{padding:.2rem .35rem;color:#086b62}.pair-groups>section{margin:.5rem 0}.pair-groups .chunks a{min-height:32px;padding:.2rem .4rem}.workspace{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.constraint,.candidate-panel{min-width:0;padding:.7rem;border:1px solid #d3dcdd;border-radius:6px;background:#fff}.candidate-panel{margin:1rem 0}.candidate-panel .chunks a{min-height:42px}details{margin:.5rem 0}summary{cursor:pointer;color:#086b62}.summary{position:sticky;top:0;z-index:1;padding:.55rem;background:#e9f1ee;border:1px solid #cbd7de;border-radius:5px}.paging,.controls{display:flex;gap:1rem;margin:.55rem 0;flex-wrap:wrap}.paging a,.controls a{color:#086b62}a{overflow-wrap:anywhere}@media(max-width:720px){main{padding:14px}.workspace{grid-template-columns:1fr}.summary{position:static}}@media(max-width:420px){main{padding:11px}}</style></head><body><main>${responseBody}</main></body></html>`;
+  return response(html, 200, { "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" });
 }
 
 async function findState(env, stateId) {
@@ -732,8 +682,19 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {
-      queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
+      const stateParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", "pick_short", "short_cap"]));
       const state = await findState(env, readWord(stateMatch[1]));
+      if (stateParams.has("pick_short") || stateParams.has("short_cap")) {
+        const value = stateParams.get("pick_short") || "";
+        const supplied = stateParams.get("short_cap") || "";
+        const index = await lexiconStartPairs(env, request);
+        const allowed = new Set([...index.short_characters, ...index.two_letter_words].map((item) => item.toLocaleLowerCase("en-US")));
+        if (!allowed.has(value.toLocaleLowerCase("en-US")) || await signCommonWordRoute(env, "keyboard-short-pick", state.state_id) !== supplied) throw new Error("This short-word choice was not issued for the current keyboard state.");
+        const argument = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
+        const childId = await signCommonWordRoute(env, "keyboard-action", state.state_id, "pick", argument);
+        const child = await makeChild(env, request, state, "pick", argument, childId, true);
+        return await renderKeyboard(request, env, child, new URL(`${PREFIX}/state/${word(child.state_id)}?view=chunks#draft`, url.origin));
+      }
       return await renderKeyboard(request, env, state, url);
     }
     const formMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/form\/([^/]+)$/u);

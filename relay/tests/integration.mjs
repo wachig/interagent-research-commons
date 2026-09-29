@@ -165,7 +165,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.20\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.21\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -451,8 +451,9 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.20.0");
-  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/"), "the current protocol documents the lexical constraint keyboard");
+  assert.equal(protocol.schema_version, "0.21.0");
+  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/" && operation.purpose.includes("Candidate order is deterministic")), "the current protocol documents the deterministic chunk keyboard");
+  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/word-links/state/{state}" && operation.query.includes("pick_short and short_cap optional")), "protocol documents the scoped direct short-word choice");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
@@ -483,7 +484,7 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
-  assert.equal(service.identity.protocol_revision, "0.20.0");
+  assert.equal(service.identity.protocol_revision, "0.21.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
@@ -492,7 +493,7 @@ try {
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
   assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.20.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.21.0.schema.json");
   assert.equal(service.operations.experiments.chunk_word_keyboard, "/predictive-keyboard/html/chunk-keyboard/");
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
@@ -579,7 +580,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -587,7 +588,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.20.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.21.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
@@ -1255,55 +1256,96 @@ try {
   const chunkEntry = await chunkEntryResponse.text();
   assert.equal(chunkEntryResponse.status, 200, chunkEntry);
   assert.match(chunkEntry, /<h1>Chunk word keyboard<\/h1>/u);
-  assert.match(chunkEntry, /deterministic word search, not a prediction of intent/u);
-  assert.match(chunkEntry, /The local English predictor only ranks matching words/u);
-  assert.doesNotMatch(chunkEntry, /<select\b|<button\b|<form\b/u, "all lexical constraints and short candidates are ordinary links");
+  assert.match(chunkEntry, /No prediction call or model ranking is used in this entry/u);
+  assert.doesNotMatch(chunkEntry, /<select\b|<button\b|<form\b/u, "all choices remain ordinary links");
   const chunkEntryBytes = new TextEncoder().encode(chunkEntry).byteLength;
-  assert.ok(chunkEntryBytes < 40_000, `the entry pages starting choices rather than sending the entire lexicon index (${chunkEntryBytes} bytes)`);
-  assert.match(chunkEntry, /Showing 1–48 of 519 starting pairs/u);
-  let startPageHtml = chunkEntry;
-  let boHref;
-  for (let page = 0; page < 12 && !boHref; page += 1) {
-    boHref = startPageHtml.match(/<a href="([^"]+)" aria-label="Start bo, 423 matching words">/u)?.[1];
-    if (boHref) break;
-    const morePairs = startPageHtml.match(/<a href="([^"]+)">More starting pairs<\/a>/u)?.[1];
-    assert.ok(morePairs, "starting-pair pages expose the remaining dictionary choices");
-    startPageHtml = await (await fetch(new URL(decodeHtml(morePairs), quickBase))).text();
-  }
-  assert.ok(boHref, "bo is an offered START chunk across linked pages");
-  const boPage = await (await fetch(new URL(decodeHtml(boHref), quickBase))).text();
-  assert.match(boPage, /423 matching words from 423 lexicon entries beginning bo/u);
-  const findChunkChoice = async (html, group, accessibleName) => {
-    let current = html;
-    for (let page = 0; page < 20; page += 1) {
-      const selected = [...current.matchAll(/<a href="([^"]+)" aria-label="([^"]+)">/gu)].find((match) => match[2] === accessibleName);
-      if (selected) return { page: current, href: decodeHtml(selected[1]), pageCount: page };
-      const start = current.indexOf(`<h3>${group} · choose a pair</h3>`);
-      const end = current.indexOf(`<h3>${group === "INSIDE" ? "END" : "INSIDE"} · choose a pair</h3>`, start + 1);
-      const section = start >= 0 ? current.slice(start, end < 0 ? undefined : end) : "";
-      const more = section.match(/<a href="([^"]+)">More<\/a>/u)?.[1];
-      assert.ok(more, `${group} pagination exposes the remaining compatible choices`);
-      current = await (await fetch(new URL(decodeHtml(more), quickBase))).text();
-    }
-    assert.fail(`${accessibleName} was not found within 20 linked pages`);
+  assert.ok(chunkEntryBytes < 110_000, `all known choices fit a compact HTML page (${chunkEntryBytes} bytes)`);
+  assert.match(chunkEntry, /All 519 valid pairs are available directly/u);
+  assert.match(chunkEntry, /aria-label="Starting-letter groups"/u);
+  assert.doesNotMatch(chunkEntry, />More starting pairs<|>More chunk choices/u, "known chunks require no pagination");
+  const chunkBaseUrl = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
+  const chunkFetch = async (html, href) => (await fetch(new URL(decodeHtml(href), chunkBaseUrl(html)))).text();
+  const pairRegion = (html, heading, followingHeading) => {
+    const start = html.indexOf(`<h2>${heading}</h2>`);
+    const end = followingHeading ? html.indexOf(`<h2>${followingHeading}</h2>`, start + 1) : -1;
+    return html.slice(start, end < 0 ? undefined : end);
   };
-  const insideTt = await findChunkChoice(boPage, "INSIDE", "Inside chunk tt, leaves 7 candidates");
-  assert.match(insideTt.page, /aria-label="Inside chunk tt, leaves 7 candidates"/u, "INSIDE options are computed from the current candidate set");
-  const bottPage = await (await fetch(new URL(insideTt.href, quickBase))).text();
-  assert.match(bottPage, /7 matching words from 423 lexicon entries beginning bo/u);
-  const endingLe = await findChunkChoice(bottPage, "END", "End chunk le, leaves 1 candidates");
-  const bottlePage = await (await fetch(new URL(endingLe.href, quickBase))).text();
-  assert.match(bottlePage, /1 matching word from 423 lexicon entries beginning bo/u);
-  assert.match(bottlePage, />Bottle(?:<small>|<\/a>)/u, "the three constraints identify bottle as a candidate");
-  const bottleHref = bottlePage.match(/<a rel="nofollow" href="([^"]+)" aria-label="Add Bottle[^"]*">Bottle/u)?.[1];
-  assert.ok(bottleHref, "candidate selection is also an ordinary server-generated link");
+  const directPair = (html, pair) => {
+    const pattern = new RegExp(`<a href="([^"]+)">${pair}<small>([\\d,]+)<\\/small><\\/a>`);
+    const match = html.match(pattern);
+    assert.ok(match, `direct pair link exists: ${pair}`);
+    return { href: match[1], count: Number(match[2].replaceAll(",", "")) };
+  };
+  const letterJump = (html, ariaLabel, letter) => {
+    const region = html.match(new RegExp(`<nav class="letter-jumps" aria-label="${ariaLabel}">([\\s\\S]*?)<\\/nav>`, "u"))?.[1] || "";
+    const match = region.match(new RegExp(`<a href="([^"]*)">${letter}<\\/a>`, "iu"));
+    assert.ok(match, `${ariaLabel} has a direct ${letter.toUpperCase()} jump`);
+    return new URL(decodeHtml(match[1]), chunkBaseUrl(html));
+  };
+  const candidateCount = (html) => Number(html.match(/<h2>Candidates <span>\((\d+)\)<\/span><\/h2>/u)?.[1]);
+  const verifyAdditivePairs = async (html, sectionHtml, kind) => {
+    const links = [...sectionHtml.matchAll(/<a href="([^"]+)">([a-z]{2})<small>(\d+)<\/small><\/a>/gu)];
+    for (const [, href, pair, expected] of links) {
+      assert.ok(Number(expected) > 0, `${kind} ${pair} has a positive count`);
+      assert.equal(candidateCount(await chunkFetch(html, href)), Number(expected), `${kind} ${pair} count equals destination result count`);
+    }
+  };
+  let bottlePathActivations = 0;
+  const bo = directPair(chunkEntry, "bo");
+  assert.equal(bo.count, 423);
+  const boPage = await chunkFetch(chunkEntry, bo.href);
+  bottlePathActivations += 1;
+  assert.match(boPage, /423 matching words from 423 entries beginning bo/u);
+  const insideRegion = pairRegion(boPage, "INSIDE", "END");
+  assert.ok((insideRegion.match(/<a href="[^"]+">[a-z]{2}<small>\d+<\/small><\/a>/gu) || []).length > 0);
+  assert.equal(letterJump(boPage, "INSIDE letters", "t").searchParams.get("start"), "bo", "inside letter jumps preserve the selected START filter");
+  assert.equal(letterJump(boPage, "END letters", "l").searchParams.get("start"), "bo", "end letter jumps preserve the selected START filter");
+  await verifyAdditivePairs(boPage, insideRegion, "INSIDE");
+  await verifyAdditivePairs(boPage, pairRegion(boPage, "END", null), "END");
+  const insideTt = directPair(insideRegion, "tt");
+  assert.equal(insideTt.count, 7);
+  const bottPage = await chunkFetch(boPage, insideTt.href);
+  bottlePathActivations += 1;
+  assert.equal(candidateCount(bottPage), 7);
+  const endLetterJump = letterJump(bottPage, "END letters", "l");
+  assert.equal(endLetterJump.searchParams.get("start"), "bo", "end letter navigation preserves START");
+  assert.equal(endLetterJump.searchParams.get("inside"), "tt", "end letter navigation preserves INSIDE");
+  await verifyAdditivePairs(bottPage, pairRegion(bottPage, "INSIDE", "END"), "INSIDE");
+  const endRegion = pairRegion(bottPage, "END", "INSIDE");
+  await verifyAdditivePairs(bottPage, endRegion, "END");
+  const endingLe = directPair(endRegion, "le");
+  assert.equal(endingLe.count, 1);
+  const bottlePage = await chunkFetch(bottPage, endingLe.href);
+  bottlePathActivations += 1;
+  assert.equal(candidateCount(bottlePage), 1);
+  assert.match(bottlePage, />Bottle<\/a>/u, "the constraints identify Bottle");
+  const bottleHref = bottlePage.match(/<a rel="nofollow" href="([^"]+)" aria-label="Add Bottle">Bottle/u)?.[1];
+  assert.ok(bottleHref, "candidate selection is a normal server-generated link");
   const bottleAdded = await (await fetch(new URL(decodeHtml(bottleHref), quickBase))).text();
-  assert.match(bottleAdded, /<h1>Chunk word keyboard<\/h1>/u, "choosing a candidate returns to the same keyboard entry");
-  assert.match(bottleAdded, /<pre class="draft">Bottle<\/pre>/u, "choosing a candidate appends the whole automatically cased word");
-  assert.match(bottleAdded, /aria-label="Starting letter pairs"/u, "candidate selection clears lexical constraints and returns to the new-word chooser");
-  const oneLetter = chunkEntry.match(/<a rel="nofollow" href="([^"]+)" aria-label="Add short word I">I<\/a>/u)?.[1];
-  assert.ok(oneLetter, "one-character dictionary entries are available directly");
-  assert.match(await (await fetch(new URL(decodeHtml(oneLetter), quickBase))).text(), /<pre class="draft">I<\/pre>/u);
+  bottlePathActivations += 1;
+  assert.match(bottleAdded, /<h1>Chunk word keyboard<\/h1>/u);
+  assert.match(bottleAdded, /<pre class="draft">Bottle<\/pre>/u);
+  assert.match(bottleAdded, /aria-label="Starting-letter groups"/u, "candidate selection clears constraints for the next word");
+  assert.equal(bottlePathActivations, 4, "bo → tt → le → Bottle requires exactly four link activations");
+
+  const re = directPair(chunkEntry, "re");
+  const rePage = await chunkFetch(chunkEntry, re.href);
+  const cu = directPair(pairRegion(rePage, "INSIDE", "END"), "cu");
+  assert.ok(cu.count > 0);
+  const recuPage = await chunkFetch(rePage, cu.href);
+  const on = directPair(pairRegion(recuPage, "END", "INSIDE"), "on");
+  assert.equal(on.count, 4);
+  const recursionPage = await chunkFetch(recuPage, on.href);
+  assert.equal(candidateCount(recursionPage), 4);
+  assert.match(recursionPage, />Recursion<\/a>/u, "recursion remains available among the four deterministic matches");
+  assert.doesNotMatch(recursionPage, /suggested|predictor ranking|model suggestion/iu, "the v1 candidate ordering has no prediction dependency");
+
+  const oneLetter = chunkEntry.match(/<a rel="nofollow" href="([^"]+)">I<\/a>/u)?.[1];
+  assert.ok(oneLetter, "one-character lexicon entries are directly available");
+  assert.match(await chunkFetch(chunkEntry, oneLetter), /<pre class="draft">I<\/pre>/u);
+  const twoLetter = chunkEntry.match(/<a rel="nofollow" href="([^"]+)">Of<\/a>/u)?.[1];
+  assert.ok(twoLetter, "two-character lexicon entries have direct add links");
+  assert.match(await chunkFetch(chunkEntry, twoLetter), /<pre class="draft">Of<\/pre>/u);
   const prefixSelectionUrl = (html, selectedPrefix, selection = selectedPrefix) => {
     const form = [...html.matchAll(/<form method="get" action="([^"]+)" class="prefix-select">([\s\S]*?)<\/form>/gu)]
       .find((match) => match[2].includes(`name="prefix" value="${selectedPrefix.replaceAll("'", "&#39;")}"`) && match[2].includes(`option value="${selection.replaceAll("'", "&#39;")}"`));
