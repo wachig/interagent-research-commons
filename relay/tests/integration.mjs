@@ -1288,6 +1288,34 @@ try {
   assert.match(ePrimePage, /<h2>Matching words<\/h2>/u, "prefixes without trigrams still use the word-matching system");
   assert.match(ePrimePage, /Add e&#39;en/u, "the word browser can still offer e'en for its supplied prefix");
   assert.match(ePrimePage, /Add e&#39;er/u, "the word browser can still offer e'er for its supplied prefix");
+  // Reproduce native GET form semantics: the browser replaces the action query
+  // with successful controls. The hidden view field must therefore carry the
+  // prefix keyboard mode through prediction submissions.
+  const hePage = await (await fetch(prefixSelectionUrl(prefixKeyboard, "he"))).text();
+  const helSection = hePage.match(/<h2>Three-letter choices for he<\/h2>([\s\S]*?)<h2>Matching words<\/h2>/u)?.[1] || "";
+  const helLink = suppliedHref(helSection, (anchor) => />hel<\/a>/u.test(anchor));
+  const helPageResponse = await fetch(new URL(decodeHtml(helLink), quickBase));
+  const helPage = await helPageResponse.text();
+  assert.equal(helPageResponse.status, 200, helPage);
+  assert.match(helPage, /<pre class="draft"[^>]*>hel<\/pre>/u, "the supplied hel continuation produces the expected draft");
+  const predictionForm = helPage.match(/<form method="get" action="([^"]+)" class="compose-form">([\s\S]*?)<\/form>/u);
+  assert.ok(predictionForm, "the prefix keyboard keeps its native prediction form");
+  assert.match(predictionForm[2], /<input type="hidden" name="view" value="prefix">/u, "prediction form submits prefix mode explicitly");
+  const helloButton = predictionForm[2].match(/<button type="submit" name="pick" value="(word:hello:[^"]+)">Hello<\/button>/iu);
+  assert.ok(helloButton, "Hello is available as a contextual prediction after hel");
+  const nativeGetUrl = new URL(decodeHtml(predictionForm[1]), quickBase);
+  nativeGetUrl.search = "";
+  for (const hidden of predictionForm[2].matchAll(/<input type="hidden" name="([^"]+)" value="([^"]*)">/gu)) {
+    nativeGetUrl.searchParams.append(decodeHtml(hidden[1]), decodeHtml(hidden[2]));
+  }
+  const selectedMore = predictionForm[2].match(/<select name="more"[^>]*>\s*<option value="([^"]*)" selected>/u)?.[1];
+  if (selectedMore !== undefined) nativeGetUrl.searchParams.append("more", decodeHtml(selectedMore));
+  nativeGetUrl.searchParams.append("pick", decodeHtml(helloButton[1]));
+  const helloPageResponse = await fetch(nativeGetUrl);
+  const helloPage = await helloPageResponse.text();
+  assert.equal(helloPageResponse.status, 200, helloPage);
+  assert.match(helloPage, /<h1>Prefix link keyboard<\/h1>/u, "choosing predicted Hello stays in the prefix keyboard instead of jumping to the contextual keyboard");
+  assert.match(helloPage, /<pre class="draft"[^>]*>Hello<\/pre>/u, "the matching word prediction completes the existing hel prefix");
   const symbolsLink = suppliedHref(prefixKeyboard, (anchor) => />\?123<\/a>/u.test(anchor));
   const symbolsPage = await (await fetch(new URL(decodeHtml(symbolsLink), quickBase))).text();
   assert.match(symbolsPage, /aria-label="Numbers and symbols controls"/u);
