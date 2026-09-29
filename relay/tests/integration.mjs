@@ -1269,6 +1269,8 @@ try {
   assert.deepEqual(quChoices, ["qua", "qub", "que", "qui", "quo", "qur"], "qu exposes exactly the supplied extensions");
   const directQu = await (await fetch(prefixSelectionUrl(prefixKeyboard, "qu"))).text();
   assert.match(directQu, /<pre class="draft"[^>]*>qu<\/pre>/u, "the qu dropdown adds its two-letter prefix without first selecting q");
+  const directQua = await (await fetch(prefixSelectionUrl(prefixKeyboard, "qu", "qua"))).text();
+  assert.match(directQua, /<pre class="draft"[^>]*>qua<\/pre>/u, "the qu dropdown accepts one of its own listed three-letter continuations");
   assert.match(quPage, /Add quick/iu, "ordinary matching words remain available alongside fixed trigram choices");
   const quaLink = suppliedHref(quSection, (anchor) => />qua<\/a>/u.test(anchor));
   const quaPage = await (await fetch(new URL(decodeHtml(quaLink), quickBase))).text();

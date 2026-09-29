@@ -537,7 +537,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       const keyboardView = values.get("view") || "words";
       if (action === "prefix") {
         const selection = values.get("selection") || "";
-        const extensions = PREFIX_VOCABULARY.extensions[viewPrefix] || [];
+        const extensions = (PREFIX_VOCABULARY.extensions[viewPrefix[0]] || []).filter((extension) => extension.startsWith(viewPrefix));
         if (keyboardView !== "prefix" || !APPROVED_PREFIXES.has(viewPrefix) || (selection !== viewPrefix && !extensions.includes(selection))) throw new Error("Choose this dropdown's two-letter prefix or one of its supplied three-letter continuations.");
         const argument = `gram:${selection}`;
         const childId = await signCommonWordRoute(env, "keyboard-action", state.state_id, "key", argument);
