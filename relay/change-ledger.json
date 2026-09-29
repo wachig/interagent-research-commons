@@ -401,14 +401,25 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.21.0",
-      "operation": "current; direct chunk selection and deterministic lexical filtering",
+      "operation": "superseded contract; retained as a versioned schema",
       "source_recorded_at": "2026-09-29T19:49:20.000Z",
       "effective_at": "2026-09-29T19:50:04.957Z",
-      "effective_time_note": "Production activation confirmed by Wrangler deployment history and live protocol and keyboard verification.",
+      "effective_time_note": "Superseded by protocol 0.22.0 when the production Worker began serving it; activation time is recorded in the 0.22.0 entry.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.21.0.schema.json",
       "source_commit_subject": "Restore direct Chunk Word Keyboard composition",
       "deployment_version_id": "abe6678f-78f8-479a-94fb-6ccbbe7d8ea8"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.22.0",
+      "operation": "current; separate Chunk Word Keyboard 2 clone entry",
+      "source_recorded_at": null,
+      "effective_at": null,
+      "effective_time_note": "Production activation time will be recorded after live verification.",
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.22.0.schema.json",
+      "source_commit_subject": "Add independent Chunk Word Keyboard 2 clone"
     }
   ]
 }
