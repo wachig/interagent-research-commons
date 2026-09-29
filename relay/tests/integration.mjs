@@ -1289,10 +1289,10 @@ try {
     return html.slice(start, end < 0 ? undefined : end);
   };
   const directPair = (html, pair) => {
-    const pattern = new RegExp(`<span class="counted-choice"><a href="([^"]+)">${pair}<\\/a><small>\\(([\\d,]+)\\)<\\/small><\\/span>`);
+    const pattern = new RegExp(`<a href="([^"]+)">${pair}(?:<small>([\\d,]+)<\\/small>)?<\\/a>`);
     const match = html.match(pattern);
     assert.ok(match, `direct pair link exists: ${pair}`);
-    return { href: match[1], count: Number(match[2].replaceAll(",", "")) };
+    return { href: match[1], count: match[2] ? Number(match[2].replaceAll(",", "")) : undefined };
   };
   const chunkBaseUrl2 = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
   const chunkFetch2 = async (html, href) => { const target = new URL(decodeHtml(href), chunkBaseUrl2(html)); assert.match(target.pathname, /^\/predictive-keyboard\/html\/chunk-keyboard-2\//u, "clone traversal stays under its separate route"); return (await fetch(target)).text(); };
@@ -1300,9 +1300,9 @@ try {
   assert.ok(singleLetterStartHref, "the A category heading is a lowercase selectable button");
   const cloneAStartPage = await chunkFetch2(chunkEntry2, singleLetterStartHref);
   assert.match(cloneAStartPage, /START <strong>a<\/strong>/u, "selecting a letter sets a one-letter START");
-  assert.match(cloneAStartPage, /<nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">[\s\S]*?<span class="counted-choice"><a[^>]*>aa<\/a><small>\([\d,]+\)<\/small><\/span>/u, "one-letter START exposes its available two-letter continuations with separate counts");
+  assert.match(cloneAStartPage, /<nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">[\s\S]*?<a[^>]*>aa<\/a>/u, "one-letter START exposes its available two-letter continuations");
+  assert.doesNotMatch(cloneAStartPage, /<small>\([\d,]+\)<\/small>/u, "clone pair counts are omitted from the display");
   const cloneBo = directPair(chunkEntry2, "bo");
-  assert.equal(cloneBo.count, 423, "clone offers the same lexicon candidates as the original");
   const cloneBoPage = await chunkFetch2(chunkEntry2, cloneBo.href);
   assert.match(cloneBoPage, /423 matching words from 423 entries beginning bo/u);
   assert.match(cloneBoPage, /Showing up to 20; choose a three-letter START/u, "two-letter starts explain the compact candidate preview");

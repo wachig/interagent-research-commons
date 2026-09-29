@@ -276,7 +276,7 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
   const reply = state.reply_to ? `<p class="hint">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const context = predictionContext(draft, state);
   const initials = [...new Set(startPairs.map(({ value }) => value[0]))].sort();
-  const startGroups = initials.map((initial) => `<section id="start-${initial}"><h3><a class="letter-choice" href="${escapeHtml(chunkHref(state.state_id, { start: initial }))}" aria-label="Choose single-letter START ${initial}">${initial}</a></h3><div class="chunks">${startPairs.filter(({ value }) => value[0] === initial).map(({ value, count }) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}">${value}</a><small>(${count})</small></span>`).join("")}</div></section>`).join("");
+  const startGroups = initials.map((initial) => `<section id="start-${initial}"><h3><a class="letter-choice" href="${escapeHtml(chunkHref(state.state_id, { start: initial }))}" aria-label="Choose single-letter START ${initial}">${initial}</a></h3><div class="chunks">${startPairs.filter(({ value }) => value[0] === initial).map(({ value }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}">${value}</a>`).join("")}</div></section>`).join("");
   const startJumps = initials.map((initial) => `<a href="?view=chunks#start-${initial}" aria-label="Jump to starting pairs beginning ${initial}">${initial.toUpperCase()}</a>`).join("");
   let search = `<div class="workspace start-only"><section class="constraint"><h2>START</h2><p>Choose a lowercase letter or one of the ${startPairs.length} valid two-letter beginnings.</p><nav class="letter-jumps" aria-label="Starting-letter groups">${startJumps}</nav><div class="pair-groups">${startGroups}</div></section></div>`;
   let resultSummary = "Choose a starting pair to search the pinned spelling lexicon.";
@@ -319,13 +319,13 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
       ? (CHUNK_KEYBOARD_THREE_LETTER_PREFIXES[startFamily[0]] || []).filter((value) => value.startsWith(startFamily))
       : [];
     const prefixBar = start.length === 1 && twoLetterOptions.length
-      ? `<section class="start-prefix-picker"><h3>Two-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">${twoLetterOptions.map(({ value, count }) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a><small>(${count})</small></span>`).join("")}</nav></section>`
+      ? `<section class="start-prefix-picker"><h3>Two-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">${twoLetterOptions.map(({ value }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
       : threeLetterOptions.length
         ? `<section class="start-prefix-picker"><h3>Three-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">${threeLetterOptions.map((value) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value, inside, end }))}"${start === value ? ' aria-current="true"' : ""} aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
         : "";
-    const renderInsideMatrix = (counts) => chunkMatrix(counts, "inside", "INSIDE", (value, count) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start, inside: [...inside, value], end }))}">${value}</a><small>(${count})</small></span>`, currentFilters);
-    const endMatrix = chunkMatrix(endOptions, "end", "END", (value, count) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}</a><small>(${count})</small></span>`, currentFilters);
-    const replacementMatrix = chunkMatrix(replacementEnds, "replace-end", "replacement END", (value, count) => `<span class="counted-choice"><a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}</a><small>(${count})</small></span>`, currentFilters);
+    const renderInsideMatrix = (counts) => chunkMatrix(counts, "inside", "INSIDE", (value) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside: [...inside, value], end }))}">${value}</a>`, currentFilters);
+    const endMatrix = chunkMatrix(endOptions, "end", "END", (value) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}</a>`, currentFilters);
+    const replacementMatrix = chunkMatrix(replacementEnds, "replace-end", "replacement END", (value) => `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}">${value}</a>`, currentFilters);
     const matchingCount = ordered.length;
     const candidateChoices = start.length < 3 ? ordered.slice(0, 20) : ordered;
     resultSummary = start.length < 3
