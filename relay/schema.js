@@ -243,4 +243,75 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   "CREATE UNIQUE INDEX IF NOT EXISTS html_keyboard_publish_links_session_idx ON html_keyboard_publish_links(session_id)",
+  `CREATE TABLE IF NOT EXISTS semantic_sessions (
+    session_id TEXT PRIMARY KEY REFERENCES sessions(session_id),
+    root_state_id TEXT NOT NULL UNIQUE,
+    reply_to TEXT,
+    composer_version TEXT NOT NULL,
+    renderer_version TEXT NOT NULL,
+    model_version TEXT NOT NULL,
+    lexicon_version TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    published_at INTEGER,
+    message_id TEXT,
+    status TEXT NOT NULL CHECK (status IN ('editing', 'review-staging', 'review-ready', 'published', 'expired')),
+    review_attempt_id TEXT,
+    review_generation INTEGER NOT NULL DEFAULT 0,
+    review_state_id TEXT,
+    review_lease_until INTEGER,
+    state_count INTEGER NOT NULL DEFAULT 0,
+    logical_bytes INTEGER NOT NULL DEFAULT 0,
+    rate_window_start INTEGER NOT NULL DEFAULT 0,
+    request_count INTEGER NOT NULL DEFAULT 0,
+    addition_count INTEGER NOT NULL DEFAULT 0,
+    prediction_count INTEGER NOT NULL DEFAULT 0
+  )`,
+  "CREATE INDEX IF NOT EXISTS semantic_sessions_expiry_idx ON semantic_sessions(expires_at)",
+  `CREATE TABLE IF NOT EXISTS semantic_states (
+    state_id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES semantic_sessions(session_id),
+    parent_state_id TEXT,
+    operation_json TEXT NOT NULL,
+    snapshot_json TEXT,
+    rendered_text TEXT NOT NULL,
+    body_digest TEXT NOT NULL,
+    renderer_version TEXT NOT NULL,
+    body_bytes INTEGER NOT NULL,
+    logical_bytes INTEGER NOT NULL,
+    action_digest TEXT NOT NULL,
+    depth INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    UNIQUE(parent_state_id, action_digest)
+  )`,
+  "CREATE INDEX IF NOT EXISTS semantic_states_session_idx ON semantic_states(session_id, depth)",
+  `CREATE TABLE IF NOT EXISTS semantic_publish_links (
+    publish_cap_hash TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL REFERENCES semantic_sessions(session_id),
+    state_id TEXT NOT NULL REFERENCES semantic_states(state_id),
+    review_attempt_id TEXT NOT NULL,
+    review_generation INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    UNIQUE(session_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS semantic_storage_usage (
+    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+    logical_bytes INTEGER NOT NULL CHECK (logical_bytes >= 0)
+  )`,
+  "INSERT OR IGNORE INTO semantic_storage_usage (singleton, logical_bytes) VALUES (1, 0)",
+  `CREATE TRIGGER IF NOT EXISTS semantic_state_limits_before_insert BEFORE INSERT ON semantic_states
+  BEGIN
+    SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM semantic_sessions WHERE session_id = NEW.session_id AND status = 'editing' AND expires_at > NEW.created_at AND state_count < 512 AND logical_bytes + NEW.logical_bytes <= 80 * 1024 * 1024) THEN RAISE(ABORT, 'semantic state quota or session status reached') END;
+    SELECT CASE WHEN (SELECT logical_bytes FROM semantic_storage_usage WHERE singleton = 1) + NEW.logical_bytes > 80 * 1024 * 1024 THEN RAISE(ABORT, 'semantic aggregate storage quota reached') END;
+  END`,
+  `CREATE TRIGGER IF NOT EXISTS semantic_state_limits_after_insert AFTER INSERT ON semantic_states
+  BEGIN
+    UPDATE semantic_sessions SET state_count = state_count + 1, logical_bytes = logical_bytes + NEW.logical_bytes WHERE session_id = NEW.session_id;
+    UPDATE semantic_storage_usage SET logical_bytes = logical_bytes + NEW.logical_bytes WHERE singleton = 1;
+  END`,
+  `CREATE TRIGGER IF NOT EXISTS semantic_state_limits_after_delete AFTER DELETE ON semantic_states
+  BEGIN
+    UPDATE semantic_sessions SET state_count = MAX(0, state_count - 1), logical_bytes = MAX(0, logical_bytes - OLD.logical_bytes) WHERE session_id = OLD.session_id;
+    UPDATE semantic_storage_usage SET logical_bytes = MAX(0, logical_bytes - OLD.logical_bytes) WHERE singleton = 1;
+  END`,
 ];

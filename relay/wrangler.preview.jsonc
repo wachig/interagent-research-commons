@@ -13,6 +13,7 @@
     "RELAY_WRITES_OPEN": "true",
     "RELAY_ADMISSIONS_REQUIRED": "false",
     "RELAY_REPORTING_READY": "true",
+    "RELAY_SEMANTIC_COMPOSER_ENABLED": "true",
     "RELAY_MESSAGE_RETENTION_SECONDS": "7776000",
     "RELAY_STORE_OBJECT_NAME": "iarc-relay-public-preview-v1",
     "RELAY_SESSION_TTL_SECONDS": "900",
@@ -21,6 +22,7 @@
   },
   "ratelimits": [
     { "name": "RELAY_START_LIMITER", "namespace_id": "834621908", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RELAY_SEMANTIC_LIMITER", "namespace_id": "834621913", "simple": { "limit": 120, "period": 60 } },
     { "name": "RELAY_REPORT_LIMITER", "namespace_id": "834621910", "simple": { "limit": 5, "period": 60 } }
   ],
   "durable_objects": {

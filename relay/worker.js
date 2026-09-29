@@ -6,7 +6,7 @@ const MAX_STORAGE_RPC_BYTES = 32_768;
 const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
 const REPORT_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
-const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms", "token_composer_arm_expiry_observations", "token_composer_arm_expiry_aggregates", "html_keyboard_sessions", "html_keyboard_states", "html_keyboard_publish_links"]);
+const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms", "token_composer_arm_expiry_observations", "token_composer_arm_expiry_aggregates", "html_keyboard_sessions", "html_keyboard_states", "html_keyboard_publish_links", "semantic_sessions", "semantic_states", "semantic_publish_links", "semantic_storage_usage"]);
 
 function jsonResponse(value, status = 200) {
   return new Response(`${JSON.stringify(value)}\n`, {
@@ -151,6 +151,13 @@ export class RelayStore {
     this.ctx.storage.transactionSync(() => {
       this.#run("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE state = 'staged' AND expires_at <= ?", Date.now());
       this.#run("DELETE FROM capabilities WHERE expires_at <= ?", Date.now());
+      const now = Date.now();
+      this.#run("UPDATE semantic_sessions SET status = 'editing', review_attempt_id = NULL, review_state_id = NULL, review_lease_until = NULL WHERE status = 'review-staging' AND review_lease_until <= ? AND expires_at > ?", now, now);
+      this.#run("UPDATE semantic_sessions SET status = 'editing', review_attempt_id = NULL, review_state_id = NULL, review_lease_until = NULL WHERE status = 'review-ready' AND expires_at > ? AND NOT EXISTS (SELECT 1 FROM semantic_publish_links l JOIN capabilities c ON c.cap_hash = l.publish_cap_hash JOIN pending_messages p ON p.pending_id = c.pending_id WHERE l.session_id = semantic_sessions.session_id AND c.expires_at > ? AND p.expires_at > ? AND p.state = 'staged')", now, now, now);
+      this.#run("DELETE FROM semantic_publish_links WHERE session_id IN (SELECT session_id FROM semantic_sessions WHERE expires_at <= ?) OR NOT EXISTS (SELECT 1 FROM capabilities c JOIN pending_messages p ON p.pending_id = c.pending_id WHERE c.cap_hash = semantic_publish_links.publish_cap_hash AND c.expires_at > ? AND p.expires_at > ? AND p.state = 'staged')", now, now, now);
+      this.#run("DELETE FROM semantic_states WHERE session_id IN (SELECT session_id FROM semantic_sessions WHERE expires_at <= ?)", now);
+      this.#run("UPDATE semantic_sessions SET status = 'expired', review_attempt_id = NULL, review_state_id = NULL, review_lease_until = NULL WHERE expires_at <= ?", now);
+      this.#run("DELETE FROM semantic_sessions WHERE expires_at <= ?", now);
       this.#run("DELETE FROM quick_get_tickets WHERE expires_at <= ?", Date.now());
       this.#run("DELETE FROM quick_get_one_shots WHERE expires_at <= ?", Date.now());
       this.#run("DELETE FROM pending_messages WHERE session_id IN (SELECT session_id FROM sessions WHERE expires_at <= ?)", Date.now());
@@ -164,7 +171,6 @@ export class RelayStore {
       this.#run("DELETE FROM messages WHERE created_at <= ?", Date.now() - this.messageRetentionMs);
       this.#run("DELETE FROM admin_audit WHERE created_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
       this.#run("UPDATE relay_admin_settings SET updated_by = 'expired', reason = 'Operator detail expired after 365 days' WHERE updated_at <= ?", Date.now() - ADMIN_AUDIT_RETENTION_MS);
-      const now = Date.now();
       this.#run(`INSERT INTO token_composer_outcome_aggregates (cohort_month, task_class, condition_id, composer_version, outcome, furthest_stage, run_count, aggregated_at)
         SELECT strftime('%Y-%m', s.created_at / 1000, 'unixepoch'), s.task_class, s.condition_id, s.composer_version,
           CASE WHEN s.published_at IS NULL THEN 'expired-before-publication' ELSE 'published' END,
@@ -214,6 +220,8 @@ export class RelayStore {
       this.#first("SELECT MIN(strftime('%s', cohort_month || '-01', '+12 months') * 1000) AS at FROM token_composer_arm_expiry_aggregates")?.at,
       this.#first("SELECT MIN(observed_at + 60000) AS at FROM token_composer_arm_expiry_observations")?.at,
       this.#first("SELECT MIN(expires_at) AS at FROM html_keyboard_sessions")?.at,
+      this.#first("SELECT MIN(expires_at) AS at FROM semantic_sessions")?.at,
+      this.#first("SELECT MIN(review_lease_until) AS at FROM semantic_sessions WHERE status = 'review-staging'")?.at,
     ].filter((value) => Number.isSafeInteger(value));
     if (!deadlines.length) {
       await this.ctx.storage.deleteAlarm();

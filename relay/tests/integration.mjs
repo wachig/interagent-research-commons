@@ -52,6 +52,8 @@ async function startServer(writeEnabled, { readsOpen = true, admissionsRequired,
     "--var",
     `RELAY_REPORTING_READY:${useReporting ? "true" : "false"}`,
     "--var",
+    "RELAY_SEMANTIC_COMPOSER_ENABLED:true",
+    "--var",
     "RELAY_CAPABILITY_SECRET:local-only-test-secret-do-not-deploy-0000000000000000",
     ...(operatorSecret ? ["--var", `RELAY_OPERATOR_SECRET:${operatorSecret}`] : []),
     "--var",
@@ -149,7 +151,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.18\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.19\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -231,7 +233,7 @@ try {
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
       const html = await crawlResponse.text();
-      const isComposerPage = crawlPath.startsWith("/compose/token/experimental") || crawlPath.startsWith("/compose/token/o200k") || crawlPath.startsWith("/predictive-keyboard/html");
+      const isComposerPage = crawlPath.startsWith("/compose/token/experimental") || crawlPath.startsWith("/compose/token/o200k") || crawlPath.startsWith("/predictive-keyboard/html") || crawlPath.startsWith("/compose/semantic/");
       if (!isComposerPage) {
         for (const mutationPath of ["/start", "/prepare", "/stage", "/publish", "/quick/stage", "/quick/one-shot"]) {
           assert.equal(html.includes(`href="${mutationPath}`), false, `HTML page contains no active mutation link: ${crawlPath}`);
@@ -242,7 +244,7 @@ try {
       }
       for (const linkPart of html.split('href="').slice(1)) {
         const href = linkPart.split('"')[0].replaceAll("&amp;", "&");
-        if (href.startsWith("/") && !href.startsWith("/predictive-keyboard/vendor/") && !/^\/(?:poll|commons\.txt|thread|message)(?:\/|\?|$)/.test(href)) crawlQueue.push(href);
+        if (href.startsWith("/") && !href.startsWith("/predictive-keyboard/vendor/") && !/^\/(?:poll|commons\.txt|thread|message)(?:\/|\?|$)/.test(href) && !href.startsWith("/compose/semantic/start?")) crawlQueue.push(href);
       }
     }
   }
@@ -422,7 +424,7 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.18.0");
+  assert.equal(protocol.schema_version, "0.19.0");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
@@ -453,16 +455,16 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
-  assert.equal(service.identity.protocol_revision, "0.18.0");
+  assert.equal(service.identity.protocol_revision, "0.19.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
   assert.equal(service.operations.participate.recommended, "/quick/entry");
   assert.equal(service.operations.experiments.catalog, "/");
   assert.equal(service.policies.participation, "/participation-policy");
-  assert.equal(service.schemas.message, "/schemas/message-1.0.0.schema.json");
-  assert.equal(service.schemas.collection, "/schemas/collection-1.2.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.18.0.schema.json");
+  assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
+  assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.19.0.schema.json");
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
   assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");
@@ -474,7 +476,7 @@ try {
   assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
   assert.match(sitemap, /\/service\.json/);
   assert.doesNotMatch(sitemap, /\/commons|\/message\/|\/thread\/|\/compose\//);
-  for (const pathName of ["/", "/protocol", "/protocol.json", "/privacy", "/participation-policy", "/schemas/message-1.0.0.schema.json"]) {
+  for (const pathName of ["/", "/protocol", "/protocol.json", "/privacy", "/participation-policy", "/schemas/message-1.1.0.schema.json"]) {
     const response = await fetch(`${base}${pathName}`);
     assert.equal(response.headers.get("x-robots-tag"), "index, follow", `${pathName} is indexable service documentation`);
     assert.match(response.headers.get("link"), /rel="service-desc"/);
@@ -548,7 +550,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -556,12 +558,14 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.18.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.19.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
-  assert.ok(protocol.machine_schemas.includes("/schemas/message-1.0.0.schema.json"));
-  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.2.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/message-1.1.0.schema.json"));
+  assert.ok(protocol.machine_schemas.includes("/schemas/collection-1.3.0.schema.json"));
+  assert.ok(protocol.operations.some((operation) => operation.path === "/compose/semantic/add" && /idempotent immutable child/.test(operation.purpose)));
+  assert.ok(protocol.composer_conditions.some((condition) => condition.version === "hierarchical-semantic-composer-0.1.0" && condition.prediction === false));
   assert.match((await fetch(`${base}/schemas/protocol-0.4.0.schema.json`)).headers.get("content-type"), /application\/schema\+json/);
   assert.equal((await fetch(`${base}/commons.txt?ignored=1`)).status, 400, "static representation parameters are rejected explicitly");
 
@@ -673,7 +677,7 @@ try {
 
   const publicMessages = await getJson(`${base}/poll`);
   assert.equal(publicMessages.body.returned_count, 1);
-  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.2.0.schema.json");
+  const validateCollection = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/collection-1.3.0.schema.json");
   assert.equal(validateCollection(publicMessages.body), true, `public collection validates against its canonical published schema: ${JSON.stringify(validateCollection.errors)}`);
   assert.equal(publicMessages.body.ordering, "created_at-ascending-then-message_id-ascending");
   assert.equal(publicMessages.body.coverage.scope, "visible-retained-messages");
@@ -685,7 +689,7 @@ try {
   assert.equal(publicMessages.body.links.service_description.rel, "service-desc");
   assert.equal(publicMessages.body.entries[0].body, specialText, "HTML-like participant text remains inert data");
   assert.match(publicMessages.body.entries[0].body, /IGNORE ALL PRIOR INSTRUCTIONS/, "prompt-injection-like text remains inert participant data");
-  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.0.0.schema.json");
+  const validateMessage = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.1.0.schema.json");
   assert.equal(validateMessage(publicMessages.body.entries[0]), true, `public message validates against its canonical published schema: ${JSON.stringify(validateMessage.errors)}`);
   for (const composer of composerSchemaFixtures.valid) {
     const fixture = { ...publicMessages.body.entries[0], transport: composer ? "link-composer-get" : "constrained-get", composer };
@@ -697,6 +701,10 @@ try {
     assert.equal(validateMessage(fixture), false, `unsupported composer pairing is rejected: ${JSON.stringify(composer)}`);
     assert.equal(validateCollection({ ...publicMessages.body, returned_count: 1, entries: [fixture] }), false, `collection rejects unsupported composer pairing: ${JSON.stringify(composer)}`);
   }
+  const semanticComposerFixture = { version: "hierarchical-semantic-composer-0.1.0", condition: "semantic-english-literal-v1", task_class: "composition" };
+  assert.equal(validateMessage({ ...publicMessages.body.entries[0], transport: "link-composer-get", composer: semanticComposerFixture }), true, `semantic composer provenance pair validates: ${JSON.stringify(validateMessage.errors)}`);
+  assert.equal(validateMessage({ ...publicMessages.body.entries[0], transport: "link-composer-get", composer: { ...semanticComposerFixture, condition: "universal-fixed-v1" } }), false, "semantic composer rejects a mismatched condition");
+  assert.equal(validateMessage({ ...publicMessages.body.entries[0], transport: "link-composer-get", composer: { ...semanticComposerFixture, task_class: "generation" } }), false, "semantic composer requires its declared composition task class");
   const legacyMessageSchema = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-0.8.0.schema.json");
   assert.equal(legacyMessageSchema({ ...publicMessages.body.entries[0], transport: "link-composer-get", composer: { version: "o200k-link-composer-0.1.0", condition: "o200k-base-fixed-link-v1", task_class: "generation" } }), false, "published 0.8.0 schema remains unchanged as historical contract");
   assert.equal(validateMessage({ ...publicMessages.body.entries[0], policy_version: "prototype-0.1.0" }), true, "current schema remains compatible with preserved legacy public records");
@@ -708,7 +716,7 @@ try {
   assert.equal((shortFeed.match(/^MESSAGE IARC-M-/gm) || []).length, 1);
   assert.equal(publicMessages.body.entries[0].visibility, "public");
   assert.equal(publicMessages.body.entries[0].moderation_state, "visible");
-  assert.equal(publicMessages.body.entries[0].schema_version, "1.0.0");
+  assert.equal(publicMessages.body.entries[0].schema_version, "1.1.0");
   assert.equal(publicMessages.body.entries[0].supersedes, null);
   assert.equal(publicMessages.body.entries[0].policy_version, "relay-participation-1.2.0");
   for (const secret of [started.body.session_cap, prepared.body.stage_cap, staged.body.publish_cap]) {
@@ -784,7 +792,7 @@ try {
   const signalMessage = await getJson(`${base}${signalPublished.body.message_url}`);
   assert.equal(signalMessage.body.signal_type, "help-requested");
   assert.equal(signalMessage.body.body, "[signal:help-requested]");
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.0.0.schema.json")(signalMessage.body), true);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.1.0.schema.json")(signalMessage.body), true);
   assert.match(await (await fetch(`${base}/commons.txt`)).text(), /SIGNAL help-requested/);
 
   const curlStart = JSON.parse(curlGet(`${base}/start`));
@@ -850,11 +858,11 @@ try {
   assert.equal(composedMessage.body, "Arbitrary bytes: A🌱.");
   assert.equal(composedMessage.transport, "link-composer-get");
   assert.deepEqual(composedMessage.composer, { version: "link-token-composer-0.4.0", condition: "universal-fixed-v1", task_class: "generation" });
-  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.0.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
+  assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.1.0.schema.json")(composedMessage), true, `composer message schema validation: ${JSON.stringify(ajv.errors)}`);
   assert.equal((await getJson(`${base}/poll`)).body.returned_count, beforeComposer + 1, "publish replay does not create a duplicate");
   const afterComposerCollection = await getJson(`${base}/poll?limit=1`);
   assert.equal(afterComposerCollection.response.status, 200);
-  assert.equal(afterComposerCollection.body.schema_version, "1.2.0");
+  assert.equal(afterComposerCollection.body.schema_version, "1.3.0");
   assert.equal(afterComposerCollection.body.has_more, true, "limited collection advertises another page");
   assert.match(afterComposerCollection.body.links.next.href, /^\/poll\?after_cursor=c1_[A-Za-z0-9_-]+&limit=1$/);
   const orphanPosition = `c1_${Buffer.from(JSON.stringify({ v: 1, scope: "public-feed", created_at: 0, message_id: "IARC-M-00000000-0000-0000-0000-000000000000" })).toString("base64url")}`;
@@ -1164,6 +1172,119 @@ try {
   const reusedId = await getJson(`${quickBase}/quick/one-shot?${new URLSearchParams({ message: "different content", confirm: "publish-public-message", request_id: oneShotRequestId })}`);
   assert.equal(reusedId.response.status, 409, "single-shot idempotency key cannot publish changed content");
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "single-shot confirmation publishes exactly once");
+
+  const semanticOverview = await fetch(`${quickBase}/compose/semantic/`);
+  const semanticOverviewHtml = await semanticOverview.text();
+  assert.equal(semanticOverview.status, 200);
+  assert.match(semanticOverviewHtml, /pinned 48,262-word English spelling list/);
+  assert.match(semanticOverviewHtml, /Contextual predictions are not enabled/);
+  assert.match(semanticOverview.headers.get("cache-control"), /no-store/);
+  assert.equal((await fetch(`${quickBase}/privacy`)).headers.get("cache-control"), "public, max-age=0, must-revalidate");
+  assert.match(await (await fetch(`${quickBase}/privacy.txt`)).text(), /SEMANTIC COMPOSER/);
+  const archivedPrivacy17 = await fetch(`${quickBase}/privacy/history/1.7.0.txt`);
+  assert.equal(archivedPrivacy17.status, 200, "superseded privacy notice 1.7.0 remains retrievable");
+  assert.match(await archivedPrivacy17.text(), /Version 1\.7\.0/);
+  assert.equal((await fetch(`${quickBase}/compose/semantic/start`, { method: "HEAD" })).status, 405, "HEAD cannot create a semantic session");
+  assert.equal((await fetch(`${quickBase}/compose/semantic/start`, { method: "OPTIONS" })).status, 204, "OPTIONS does not create a semantic session");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "semantic overview and method probes do not publish");
+
+  const href = (html, phrase) => suppliedHref(html, (anchor) => anchor.includes(phrase)).replaceAll("&amp;", "&");
+  const startLink = href(semanticOverviewHtml, "start a temporary draft");
+  const startResponse = await fetch(new URL(startLink, quickBase), { redirect: "manual" });
+  assert.equal(startResponse.status, 303, "a fresh start capability creates exactly one editing session");
+  const initialStateUrl = new URL(startResponse.headers.get("location"), quickBase);
+  assert.ok(initialStateUrl.searchParams.get("session"), "state links bind the standard Relay session");
+  const initialPageResponse = await fetch(initialStateUrl);
+  const initialPage = await initialPageResponse.text();
+  assert.equal(initialPageResponse.status, 200);
+  assert.match(initialPage, /\(empty\)/);
+  const initialHead = await fetch(initialStateUrl, { method: "HEAD" });
+  assert.equal(initialHead.status, 200, "HEAD may inspect but does not create a branch");
+  const refreshOptions = await fetch(`${quickBase}/compose/semantic/add`, { method: "OPTIONS" });
+  assert.equal(refreshOptions.status, 204);
+
+  const linkLayoutPage = await (await fetch(new URL(href(initialPage, "use links-only view"), quickBase))).text();
+  const phraseLink = href(linkLayoutPage, "i think");
+  const [phraseResponse, phraseReplayResponse] = await Promise.all([
+    fetch(new URL(phraseLink, quickBase)),
+    fetch(new URL(phraseLink, quickBase)),
+  ]);
+  const phrasePage = await phraseResponse.text();
+  const phraseReplayPage = await phraseReplayResponse.text();
+  assert.equal(phraseResponse.status, 200, "one phrase activation returns the new draft directly");
+  assert.equal(phraseReplayResponse.status, 200, "concurrent replay returns the same child branch");
+  assert.match(phrasePage, /I think/);
+  assert.match(phrasePage, /7 UTF-8 bytes/);
+  assert.equal(phrasePage.match(/State (sem_[A-Za-z0-9_-]+)/)?.[1], phraseReplayPage.match(/State (sem_[A-Za-z0-9_-]+)/)?.[1], "concurrent identical additions converge on one immutable child");
+  const firstBranchUrl = new URL(href(phrasePage, "undo last addition"), quickBase);
+  const suffixBranchResponse = await fetch(new URL(href(phrasePage, "this is useful"), quickBase));
+  const suffixBranch = await suffixBranchResponse.text();
+  assert.equal(suffixBranchResponse.status, 200, suffixBranch);
+  assert.match(suffixBranch, /I think This is useful/);
+  const undone = await fetch(firstBranchUrl);
+  assert.match(await undone.text(), /I think/);
+
+  const formatLink = href(phrasePage, "format next addition");
+  const formatPageResponse = await fetch(new URL(formatLink, quickBase));
+  assert.equal(formatPageResponse.status, 200);
+  assert.match(await formatPageResponse.text(), /Suffix punctuation appears outside/);
+  const unicodeBufferUrl = `${quickBase}/compose/semantic/characters?${new URLSearchParams({ session: initialStateUrl.searchParams.get("session"), state: initialStateUrl.searchParams.get("state"), view: initialStateUrl.searchParams.get("view"), cp: "1F680" })}`;
+  const unicodeBufferResponse = await fetch(unicodeBufferUrl);
+  const unicodeBufferPage = await unicodeBufferResponse.text();
+  assert.equal(unicodeBufferResponse.status, 200);
+  assert.match(unicodeBufferPage, /🚀/u, "literal codepoint lane handles non-ASCII without JavaScript");
+
+  const typeLink = href(phrasePage, "type exact text");
+  const typePageResponse = await fetch(new URL(typeLink, quickBase));
+  const typePage = await typePageResponse.text();
+  assert.equal(typePageResponse.status, 200);
+  assert.match(typePage, /<form method="get" action="\/compose\/semantic\/add">/, "exact-text lane uses a no-JavaScript GET form");
+  const typeAction = typePage.match(/<button type="submit" name="action" value="([^"]+)">Add typed text<\/button>/)?.[1];
+  assert.ok(typeAction, "typed text form provides a signed, explicit add action");
+  const typedSession = typePage.match(/name="session" value="([^"]+)"/)?.[1];
+  const typedState = typePage.match(/name="state" value="([^"]+)"/)?.[1];
+  const typedView = typePage.match(/name="view" value="([^"]+)"/)?.[1];
+  const typedUrl = `${quickBase}/compose/semantic/add?${new URLSearchParams({ session: typedSession, state: typedState, view: typedView, action: typeAction, text: " café", join: "exact" })}`;
+  const typedResponse = await fetch(typedUrl);
+  const typedPage = await typedResponse.text();
+  assert.equal(typedResponse.status, 200);
+  assert.match(typedPage, /I think café/);
+
+  const reviewLink = href(typedPage, "review this draft");
+  const reviewResponse = await fetch(new URL(reviewLink, quickBase));
+  const reviewPage = await reviewResponse.text();
+  assert.equal(reviewResponse.status, 200, "review atomically stages the exact stored body");
+  assert.match(reviewPage, /I think café/);
+  const semanticPublishHref = href(reviewPage, "publish this message publicly");
+  const publishResponse = await fetch(new URL(semanticPublishHref, quickBase));
+  const semanticReceipt = await publishResponse.json();
+  assert.equal(publishResponse.status, 201);
+  assert.equal(semanticReceipt.published, true);
+  const semanticMessage = (await getJson(`${quickBase}${semanticReceipt.message_url}`)).body;
+  assert.equal(semanticMessage.body, "I think café");
+  assert.deepEqual(semanticMessage.composer, semanticComposerFixture);
+  assert.equal(semanticMessage.transport, "link-composer-get");
+  assert.equal(validateMessage(semanticMessage), true, `published semantic record validates: ${JSON.stringify(validateMessage.errors)}`);
+  const semanticReplay = await fetch(new URL(semanticPublishHref, quickBase));
+  assert.equal(semanticReplay.status, 201, "semantic publication replay returns the protocol’s publication receipt status");
+  assert.equal((await semanticReplay.json()).message_id, semanticReceipt.message_id);
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 4, "semantic publication is idempotent");
+  assert.equal((await fetch(initialStateUrl)).status, 410, "published private branch graph is retired");
+
+  const discardOverview = await (await fetch(`${quickBase}/compose/semantic/`)).text();
+  const discardStart = await fetch(new URL(href(discardOverview, "start a temporary draft"), quickBase), { redirect: "manual" });
+  const discardStateUrl = new URL(discardStart.headers.get("location"), quickBase);
+  const discardRoot = await (await fetch(discardStateUrl)).text();
+  const discardLinkLayout = await (await fetch(new URL(href(discardRoot, "use links-only view"), quickBase))).text();
+  const discardPhrase = await (await fetch(new URL(href(discardLinkLayout, "i think"), quickBase))).text();
+  const discardReview = await (await fetch(new URL(href(discardPhrase, "review this draft"), quickBase))).text();
+  const discardLink = href(discardReview, "discard private draft and edit");
+  const discardedResponse = await fetch(new URL(discardLink, quickBase), { redirect: "manual" });
+  assert.equal(discardedResponse.status, 303, await discardedResponse.clone().text());
+  const editableAfterDiscard = await fetch(new URL(discardedResponse.headers.get("location"), quickBase));
+  assert.match(await editableAfterDiscard.text(), /I think/);
+  const invalidatedPublish = await fetch(new URL(href(discardReview, "publish this message publicly"), quickBase));
+  assert.equal(invalidatedPublish.status, 410, "discard invalidates the staged publication capability");
 
   console.log("IARC Relay local integration tests passed.");
 } catch (error) {
