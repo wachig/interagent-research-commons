@@ -20,3 +20,9 @@ FluentTyper's repository is MIT-licensed. Its bundled Presage runtime is separat
 From the IARC repository root, run `npx wrangler dev --config relay/wrangler.jsonc`, then open `http://localhost:8787/predictive-keyboard/`. The route is scoped to the Relay Worker assets and does not change the IARC orientation-site Worker.
 
 The page is a composition entry to the regular Relay workflow. It opens a read-only preview first; one action creates a private draft, and a distinct final action publishes publicly. Message-bearing URLs are visible to browsers and infrastructure; do not send secrets.
+
+## HTML word-link keyboard
+
+The link-only version is at `/predictive-keyboard/html/word-links/`. Its phrase row now offers at most four diverse two-word continuations, and only when both words have sufficient relative support among the model's returned candidates. Presage's raw probabilities vary by context, so this is a conservative filter, not a calibrated claim that a phrase is correct. The keyboard leaves the row empty when no candidate passes.
+
+Choosing a model or prefix word applies sentence-start capitalization, turns a standalone `i` into `I`, and preserves a short list of known project or tool spellings such as `IARC` and `OpenAI`. Link-only clients can expand “Keep the model's exact casing” to opt out. Prefix browsing orders contextual matches first, then reviewed Commons terms, lowercase spellings, and finally title-case/all-caps entries. The pinned Hunspell-derived list is a spelling dictionary, not a frequency-ranked vocabulary; it does not claim that alphabetical order represents commonness. Selecting a prefix result returns to the main keyboard with the prefix cleared.

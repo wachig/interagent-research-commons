@@ -1207,8 +1207,11 @@ try {
   assert.match(integratedKeyboard, /<textarea\b/u, "the primary keyboard keeps ordinary text input on the draft screen");
   const phraseBlock = integratedKeyboard.match(/<div class="choices" aria-label="Likely phrase continuations">([\s\S]*?)<\/div>/u)?.[1] || "";
   const phraseLabels = [...phraseBlock.matchAll(/<button[^>]*>([^<]+)<\/button>/gu)].map((match) => match[1].trim().split(/\s+/u));
-  assert.ok(phraseLabels.length >= 4, "composer supplies at least four conditional phrase choices");
-  assert.ok(phraseLabels.some((phrase) => phrase.length >= 3) && phraseLabels.every((phrase) => phrase.length >= 2 && phrase.length <= 5), "phrase suggestions are conditionally expanded to two through five words");
+  assert.ok(phraseLabels.length <= 4, "composer shows no more than four confidence-gated phrase choices");
+  assert.ok(phraseLabels.every((phrase) => phrase.length === 2), "phrase suggestions are short, complete two-word continuations");
+  assert.ok(phraseLabels.every((phrase) => phrase[0].charAt(0) === phrase[0].charAt(0).toLocaleUpperCase("en-US")), "phrase labels show the sentence-start casing that selection will commit");
+  assert.equal(new Set(phraseLabels.map((phrase) => phrase.at(-1)?.toLocaleLowerCase("en-US"))).size, phraseLabels.length, "phrase suggestions do not repeat the same continuation word");
+  if (!phraseLabels.length) assert.match(integratedKeyboard, /No suggestions means none passed that gate/u, "low-confidence phrases are omitted instead of filling the row with weak guesses");
   assert.match(integratedKeyboard, /Prediction links for link-only clients/u, "agents unable to submit forms still get signed prediction links");
   assert.match(integratedKeyboard, /<select\b[^>]*aria-label="More words"/u, "the same screen offers expanded contextual words");
   assert.match(integratedKeyboard, /Punctuation/u, "punctuation is available inline");
@@ -1220,8 +1223,18 @@ try {
   assert.ok(formScope, "keyboard suggestions submit within the current saved state");
   const rWordsUrl = `${quickBase}/predictive-keyboard/html/word-links/state/${formScope}?prefix=r`;
   const rWordsPage = await (await fetch(rWordsUrl)).text();
-  assert.match(rWordsPage, /Add recursion/u, "reviewed Commons vocabulary repairs a known useful-prefix gap");
-  assert.match(rWordsPage, /Model-ranked matches first, then reviewed Commons terms/u);
+  assert.match(rWordsPage, /Add recursion/iu, "reviewed Commons vocabulary repairs a known useful-prefix gap");
+  assert.match(rWordsPage, /Context predictions first, reviewed Commons terms next, then ordinary spellings before proper names and acronyms/u);
+  const recursionLink = rWordsPage.match(/<a rel="nofollow" href="([^"]+)">Add Recursion<\/a>/iu);
+  assert.ok(recursionLink, "curated Commons words remain visible near the start of a matching prefix list");
+  assert.ok(!/[?&](?:prefix|offset)=/u.test(recursionLink[1]), "choosing a prefix result clears its prefix and page offset");
+  const recursionResult = await (await fetch(new URL(recursionLink[1], quickBase))).text();
+  assert.match(recursionResult, /<pre class="draft"[^>]*>Recursion<\/pre>/u, "link-only prefix selection applies automatic sentence capitalization");
+  const linkOnlyCandidate = integratedKeyboard.match(/<div class="choices" aria-label="Link-only predictions"><a rel="nofollow" href="([^"]+)">([^<]+)<\/a>/u);
+  assert.ok(linkOnlyCandidate, "link-only clients receive a first candidate link");
+  assert.match(integratedKeyboard, /Keep the model's exact casing/u, "automatic casing has an explicit link-only override");
+  const linkOnlyResult = await (await fetch(new URL(linkOnlyCandidate[1], quickBase))).text();
+  assert.match(linkOnlyResult, new RegExp(`<pre class="draft"[^>]*>${linkOnlyCandidate[2].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}<\/pre>`), "link-only prediction commits the exact displayed casing");
   const candidate = integratedKeyboard.match(/<button[^>]*name="pick" value="(word:[^"]+)"[^>]*>/u)?.[1];
   assert.ok(candidate, "keyboard supplies direct contextual word actions");
   const candidateParts = decodeHtml(candidate.slice("word:".length)).split(":");
@@ -1231,7 +1244,7 @@ try {
   assert.equal(addWord.status, 200, addedWordPage);
   const resultingDraft = addedWordPage.match(/<pre class="draft"[^>]*>([\s\S]*?)<\/pre>/u);
   assert.ok(resultingDraft, "keyboard response includes the updated draft");
-  assert.equal(decodeHtml(resultingDraft[1]), `${candidateText}.`, "word and punctuation are committed in one request without a trailing-space confirmation");
+  assert.equal(decodeHtml(resultingDraft[1]), `${candidateText}.`, "form case override keeps the selected candidate spelling and punctuation");
   // Use a fresh short-lived session here: this suite also exercises many older routes before reaching this point.
   const textEntryPage = await (await fetch(`${quickBase}/predictive-keyboard/html/word-links/`)).text();
   const textEntryScope = textEntryPage.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");

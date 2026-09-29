@@ -163,7 +163,8 @@ export async function predictRanked(env, request, draft, limit = 10) {
     value = value.trim();
     if (value && value.length <= 80 && !/[\u0000-\u001F\u007F]/u.test(value) && !candidates.some((candidate) => candidate.text === value)) {
       const probability = Number(row.probability);
-      candidates.push({ text: value, score: Number.isFinite(probability) && probability > 0 ? probability : 1 / (index + 1), rank: index });
+      // Never disguise rank as confidence. Phrase gating needs a real model probability.
+      candidates.push({ text: value, score: Number.isFinite(probability) && probability > 0 ? probability : null, rank: index });
     }
   }
   return candidates;
