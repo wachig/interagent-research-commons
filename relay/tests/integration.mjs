@@ -9,6 +9,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import composerSchemaFixtures from "./fixtures/composer-schema-0.9.json" with { type: "json" };
 import { isPresentablePhrase } from "../phrase_safety.js";
+import { PREFIX_VOCABULARY } from "../prefix_keyboard_vocabulary.js";
 
 const relayRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = path.resolve(relayRoot, "..");
@@ -19,6 +20,10 @@ assert.equal(isPresentablePhrase("cheap escorts"), false, "the reported adult-se
 assert.equal(isPresentablePhrase("of cheap"), false, "the reported spam phrase's incomplete leading fragment is hidden");
 assert.equal(isPresentablePhrase("escorts had"), false, "blocked terms stay hidden anywhere in the phrase");
 assert.equal(isPresentablePhrase("of cheap escorts had not"), false, "long recursive continuations are rejected");
+assert.equal(Object.values(PREFIX_VOCABULARY.prefixes).flat().length, 349, "the prefix keyboard uses only the supplied pairs plus approved vl");
+assert.equal(Object.values(PREFIX_VOCABULARY.extensions).flat().length, 3169, "the prefix keyboard retains all supplied three-letter extensions");
+assert.deepEqual(PREFIX_VOCABULARY.prefixes.v.includes("vl"), true, "the explicitly approved vl prefix is present");
+assert.deepEqual(PREFIX_VOCABULARY.prefixes.e.includes("e'"), true, "the prefix with no supplied trigrams remains selectable for word matches");
 
 async function freePort() {
   const server = net.createServer();
@@ -258,7 +263,7 @@ try {
         }
       } else {
         assert.equal(html.includes("/publish/"), false, "composer overview never exposes a publication capability");
-        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/" || crawlPath === "/predictive-keyboard/html/" || crawlPath === "/predictive-keyboard/html/word-links/") continue;
+        if (crawlPath === "/compose/token/experimental/" || crawlPath === "/compose/token/o200k/" || crawlPath === "/predictive-keyboard/html/" || crawlPath === "/predictive-keyboard/html/word-links/" || crawlPath === "/predictive-keyboard/html/prefix-keyboard/") continue;
       }
       for (const linkPart of html.split('href="').slice(1)) {
         const href = linkPart.split('"')[0].replaceAll("&amp;", "&");
@@ -1224,6 +1229,63 @@ try {
   assert.match(integratedKeyboard, /<summary>Choices for clients that can only follow links<\/summary>/u, "the link-only section is clearly for clients unable to submit forms");
   assert.match(integratedKeyboard, /<select\b[^>]*aria-label="More words"/u, "the same screen offers expanded contextual words");
   assert.doesNotMatch(integratedKeyboard, /<legend>(?:Punctuation|Capitalization|Wrap the word)<\/legend>|name="(?:suffix|case|wrapper)"|Keep the model(?:'s|’s) exact casing/u, "formatting controls are removed from the keyboard page");
+  const prefixKeyboardResponse = await fetch(`${quickBase}/predictive-keyboard/html/prefix-keyboard/`);
+  const prefixKeyboard = await prefixKeyboardResponse.text();
+  assert.equal(prefixKeyboardResponse.status, 200, prefixKeyboard);
+  assert.match(prefixKeyboard, /<h1>Prefix link keyboard<\/h1>/u);
+  assert.match(prefixKeyboard, /<h2>Likely continuation<\/h2>/u, "the new entry reuses contextual phrase predictions");
+  assert.match(prefixKeyboard, /<h2>Top 12 words<\/h2>/u, "the new entry reuses the top word predictions");
+  assert.equal((prefixKeyboard.match(/class="prefix-row"/gu) || []).length, 26, "one lowercase letter and dropdown are rendered for each alphabet letter");
+  assert.match(prefixKeyboard, /<option value="vl">vl<\/option>/u, "the explicitly approved vl prefix appears in the V dropdown");
+  assert.match(prefixKeyboard, /<option value="e&#39;">e&#39;<\/option>/u, "e-prime remains selectable despite having no supplied trigram");
+  assert.doesNotMatch(prefixKeyboard, /aria-label="Lowercase letters controls"/u, "the prefix entry does not duplicate the QWERTY keyboard");
+  assert.ok(new TextEncoder().encode(prefixKeyboard).byteLength < 80_000, "the prefix list uses compact native dropdowns instead of hundreds of long signed URLs");
+  const prefixSelectionUrl = (html, selectedPrefix) => {
+    const form = [...html.matchAll(/<form method="get" action="([^"]+)" class="prefix-select">([\s\S]*?)<\/form>/gu)]
+      .find((match) => match[2].includes(`value="${selectedPrefix.replaceAll("'", "&#39;")}"`));
+    assert.ok(form, `a native dropdown offers ${selectedPrefix}`);
+    const url = new URL(decodeHtml(form[1]), quickBase);
+    url.searchParams.set("prefix", selectedPrefix);
+    url.searchParams.set("action", "prefix");
+    return url;
+  };
+  const qLink = suppliedHref(prefixKeyboard, (anchor) => anchor.includes('aria-label="add q"'));
+  const qPageResponse = await fetch(new URL(decodeHtml(qLink), quickBase));
+  const qPage = await qPageResponse.text();
+  assert.equal(qPageResponse.status, 200, qPage);
+  assert.match(qPage, /<pre class="draft"[^>]*>q<\/pre>/u, "a lowercase letter button adds its letter");
+  const quPageResponse = await fetch(prefixSelectionUrl(qPage, "qu"));
+  const quPage = await quPageResponse.text();
+  assert.equal(quPageResponse.status, 200, quPage);
+  assert.match(quPage, /<pre class="draft"[^>]*>qu<\/pre>/u, "choosing qu after q adds only the missing character");
+  const quSection = quPage.match(/<h2>Three-letter choices for qu<\/h2>([\s\S]*?)<h2>Matching words<\/h2>/u)?.[1] || "";
+  const quChoices = [...quSection.matchAll(/<a\b[^>]*>([^<]+)<\/a>/gu)].map((match) => match[1]);
+  assert.deepEqual(quChoices, ["qua", "qub", "que", "qui", "quo", "qur"], "qu exposes exactly the supplied extensions");
+  assert.match(quPage, /Add quick/iu, "ordinary matching words remain available alongside fixed trigram choices");
+  const quaLink = suppliedHref(quSection, (anchor) => />qua<\/a>/u.test(anchor));
+  const quaPage = await (await fetch(new URL(decodeHtml(quaLink), quickBase))).text();
+  assert.match(quaPage, /<pre class="draft"[^>]*>qua<\/pre>/u, "choosing qua adds only its missing final character");
+  const vlPage = await (await fetch(prefixSelectionUrl(prefixKeyboard, "vl"))).text();
+  const vlSection = vlPage.match(/<h2>Three-letter choices for vl<\/h2>([\s\S]*?)<h2>Matching words<\/h2>/u)?.[1] || "";
+  assert.deepEqual([...vlSection.matchAll(/<a\b[^>]*>([^<]+)<\/a>/gu)].map((match) => match[1]), ["vle", "vlo"], "approved vl exposes its supplied extensions");
+  const ePrimePage = await (await fetch(prefixSelectionUrl(prefixKeyboard, "e'"))).text();
+  assert.match(ePrimePage, /Three-letter choices for e&#39;/u, "e-prime remains an expandable prefix state");
+  assert.match(ePrimePage, /No three-letter extensions are listed/u, "prefixes without listed extensions remain valid for word matching");
+  assert.match(ePrimePage, /<h2>Matching words<\/h2>/u, "prefixes without trigrams still use the word-matching system");
+  assert.match(ePrimePage, /Add e&#39;en/u, "the word browser can still offer e'en for its supplied prefix");
+  assert.match(ePrimePage, /Add e&#39;er/u, "the word browser can still offer e'er for its supplied prefix");
+  const symbolsLink = suppliedHref(prefixKeyboard, (anchor) => />\?123<\/a>/u.test(anchor));
+  const symbolsPage = await (await fetch(new URL(decodeHtml(symbolsLink), quickBase))).text();
+  assert.match(symbolsPage, /aria-label="Numbers and symbols controls"/u);
+  assert.match(symbolsPage, /aria-label="Add 1"/u);
+  assert.match(symbolsPage, /aria-label="Add @"/u);
+  assert.match(symbolsPage, /aria-label="Add Space"/u);
+  const spaceLink = suppliedHref(prefixKeyboard, (anchor) => anchor.includes('aria-label="add space"'));
+  const spacePage = await (await fetch(new URL(decodeHtml(spaceLink), quickBase))).text();
+  assert.match(spacePage, /aria-label="Backspace"/u, "backspace is available after draft content exists");
+  const backspaceLink = suppliedHref(spacePage, (anchor) => anchor.includes('aria-label="backspace"'));
+  const backspacePage = await (await fetch(new URL(decodeHtml(backspaceLink), quickBase))).text();
+  assert.match(backspacePage, /<pre class="draft"[^>]*> <\/pre>/u, "backspace removes the last character");
   assert.match(integratedKeyboard, /aria-label="Letters keyboard"/u, "clickable character keys stay on the primary screen");
   assert.match(integratedKeyboardResponse.headers.get("content-security-policy"), /form-action 'self'/u, "native GET forms are permitted by the page policy");
   const moreOptionCount = (integratedKeyboard.match(/<option\b/g) || []).length;
