@@ -165,7 +165,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.22\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.23\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -451,9 +451,11 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.22.0");
+  assert.equal(protocol.schema_version, "0.23.0");
   assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/" && operation.purpose.includes("Candidate order is deterministic")), "the current protocol documents the deterministic chunk keyboard");
-  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard-2/" && operation.purpose.includes("Exact independent clone")), "the current protocol documents the separately routed exact clone");
+  const chunkKeyboard2Operation = protocol.operations.find((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard-2/");
+  assert.ok(chunkKeyboard2Operation?.purpose.includes("Separate Chunk Word Keyboard 2 variant"), "the current protocol documents the separately routed variant");
+  assert.ok(!chunkKeyboard2Operation.returns.some((item) => item.includes("one- and two-letter")), "the current protocol no longer advertises removed short-word choices");
   assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/word-links/state/{state}" && operation.query.includes("pick_short and short_cap optional")), "protocol documents the scoped direct short-word choice");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
@@ -485,7 +487,7 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
-  assert.equal(service.identity.protocol_revision, "0.22.0");
+  assert.equal(service.identity.protocol_revision, "0.23.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
@@ -494,7 +496,7 @@ try {
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
   assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.22.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.23.0.schema.json");
   assert.equal(service.operations.experiments.chunk_word_keyboard, "/predictive-keyboard/html/chunk-keyboard/");
   assert.equal(service.operations.experiments.chunk_word_keyboard_2, "/predictive-keyboard/html/chunk-keyboard-2/");
   assert.equal(service.references.full_protocol_json, "/protocol.json");
@@ -582,7 +584,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["protocol", "0.22.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["protocol", "0.22.0"], ["protocol", "0.23.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -590,7 +592,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.22.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.23.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
@@ -1270,6 +1272,9 @@ try {
   assert.equal(chunkEntry2Response.status, 200, chunkEntry2);
   assert.match(chunkEntry2, /<h1>Chunk Word Keyboard 2<\/h1>/u);
   assert.match(chunkEntry2, /All 519 valid pairs are available directly/u);
+  assert.doesNotMatch(chunkEntry2, /Direct one- and two-letter words|Direct one-letter word choices|Direct two-letter word choices/u, "clone omits the direct short-word section");
+  assert.match(chunkEntry2, /class="workspace start-only"/u, "initial one-column START selection spans the workspace");
+  assert.match(chunkEntry2, /\.workspace\.start-only\{grid-template-columns:minmax\(0,1fr\)\}/u, "initial START column receives the full grid width");
   assert.doesNotMatch(chunkEntry2, /href="\/predictive-keyboard\/html\/chunk-keyboard\//u, "clone action links do not cross into the original route");
   assert.match(chunkEntry2, /href="\/predictive-keyboard\/html\/chunk-keyboard-2\/state\//u, "clone actions remain under their independent route");
   const chunkBaseUrl = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
@@ -1291,6 +1296,8 @@ try {
   assert.equal(cloneBo.count, 423, "clone offers the same lexicon candidates as the original");
   const cloneBoPage = await chunkFetch2(chunkEntry2, cloneBo.href);
   assert.match(cloneBoPage, /423 matching words from 423 entries beginning bo/u);
+  assert.match(cloneBoPage, /class="workspace"/u, "after START selection, the three-column constraint workspace returns");
+  assert.doesNotMatch(cloneBoPage, /class="workspace start-only"/u);
   const letterJump = (html, ariaLabel, letter) => {
     const region = html.match(new RegExp(`<nav class="letter-jumps" aria-label="${ariaLabel}">([\\s\\S]*?)<\\/nav>`, "u"))?.[1] || "";
     const match = region.match(new RegExp(`<a href="([^"]*)">${letter}<\\/a>`, "iu"));
