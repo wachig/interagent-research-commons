@@ -1249,7 +1249,11 @@ try {
     const form = [...html.matchAll(/<form method="get" action="([^"]+)" class="prefix-select">([\s\S]*?)<\/form>/gu)]
       .find((match) => match[2].includes(`name="prefix" value="${selectedPrefix.replaceAll("'", "&#39;")}"`) && match[2].includes(`option value="${selection.replaceAll("'", "&#39;")}"`));
     assert.ok(form, `an individual ${selectedPrefix} dropdown offers ${selection}`);
+    assert.match(form[2], /name="view" value="prefix"/u, "the GET form carries its keyboard view in submitted fields");
     const url = new URL(decodeHtml(form[1]), quickBase);
+    url.search = ""; // Native GET forms replace the action query with submitted controls.
+    url.searchParams.set("view", "prefix");
+    url.searchParams.set("layout", "letters");
     url.searchParams.set("prefix", selectedPrefix);
     url.searchParams.set("selection", selection);
     url.searchParams.set("action", "prefix");
