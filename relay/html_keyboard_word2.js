@@ -208,7 +208,7 @@ function chunkMatrix(counts, groupId, label, linkFor, jumpTarget = "?view=chunks
   }
   if (!groups.size) return `<p>No compatible ${escapeHtml(label.toLocaleLowerCase("en-US"))} remain.</p>`;
   const jumps = [...groups.keys()].map((initial) => `<a href="${escapeHtml(`${jumpTarget}#${groupId}-${initial}`)}">${initial.toUpperCase()}</a>`).join("");
-  const sections = [...groups].map(([initial, values]) => `<section id="${groupId}-${initial}"><h4>${initial.toUpperCase()}</h4><div class="chunks">${values.map(([value, count]) => linkFor(value, count)).join("")}</div></section>`).join("");
+  const sections = [...groups].map(([initial, values]) => `<section id="${groupId}-${initial}"><h4><a class="letter-choice" href="${escapeHtml(`${jumpTarget}#${groupId}-${initial}`)}" aria-label="Jump to ${escapeHtml(label)} choices beginning ${initial}">${initial}</a></h4><div class="chunks">${values.map(([value, count]) => linkFor(value, count)).join("")}</div></section>`).join("");
   return `<nav class="letter-jumps" aria-label="${escapeHtml(label)} letters">${jumps}</nav><div class="pair-groups">${sections}</div>`;
 }
 

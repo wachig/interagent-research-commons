@@ -1308,6 +1308,8 @@ try {
   assert.match(cloneBoPage, /Showing up to 20; choose a three-letter START/u, "two-letter starts explain the compact candidate preview");
   assert.doesNotMatch(cloneBoPage, />More words<|>Previous words</u, "Chunk Word Keyboard 2 has no candidate paging links");
   assert.match(cloneBoPage, /<nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">[\s\S]*?<a href="[^"]+"[^>]*>boa<\/a>/u, "the exact supplied B continuations replace candidate paging");
+  assert.match(cloneBoPage, /<h4><a class="letter-choice" href="[^"]+#inside-[a-z]" aria-label="Jump to INSIDE choices beginning [a-z]">[a-z]<\/a><\/h4>/u, "INSIDE group initials are lowercase button-style navigation links");
+  assert.match(cloneBoPage, /<h4><a class="letter-choice" href="[^"]+#end-[a-z]" aria-label="Jump to END choices beginning [a-z]">[a-z]<\/a><\/h4>/u, "END group initials are lowercase button-style navigation links");
   assert.match(cloneBoPage, /class="workspace"/u, "after START selection, the three-column constraint workspace returns");
   assert.doesNotMatch(cloneBoPage, /class="workspace start-only"/u);
   const cloneTe = directPair(chunkEntry2, "te");
