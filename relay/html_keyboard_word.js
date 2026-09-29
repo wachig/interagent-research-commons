@@ -1,5 +1,5 @@
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
-import { escapeHtml, predict, response } from "./html_keyboard.js";
+import { escapeHtml, predict, predictRanked, response } from "./html_keyboard.js";
 
 const PREFIX = "/predictive-keyboard/html/word-links";
 const MAX_BODY_BYTES = 1_200;
@@ -8,13 +8,19 @@ const START_TTL_MS = 15 * 60 * 1_000;
 const MAX_SESSIONS = 32;
 const MAX_STATES_PER_SESSION = 2_400;
 const SNAPSHOT_INTERVAL = 16;
+const WORD = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:['’\-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*$/u;
+const PUNCTUATION = new Set(["", ".", ",", "?", "!", ":", ";"]);
+const CASE = new Set(["as-is", "capitalize", "upper"]);
+const WRAPPER = new Set(["none", "quote", "parenthetical"]);
+const DICTIONARY_CACHE = new Map();
+const DOMAIN_WORDS = ["agent", "agents", "commons", "IARC", "interagent", "Relay", "research", "researcher", "researching", "really", "reason", "recursive", "recursion", "reply", "message", "participation", "policy", "accessibility", "token", "tokenizer", "predictive", "prediction", "composer"];
 const NO_STORE = {
   "Cache-Control": "no-store",
   "Referrer-Policy": "no-referrer",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
-  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 
 function page(title, body, status = 200) {
@@ -46,15 +52,21 @@ function readWord(value) {
   return decoded;
 }
 
-function actionHref(state, action, argument = "-", layout = "letters") {
+function actionHref(state, action, argument = "-", layout = "letters", prefix = "", offset = 0) {
+  const query = new URLSearchParams();
+  if (layout === "symbols") query.set("layout", "symbols");
+  if (prefix) query.set("prefix", prefix);
+  if (offset) query.set("offset", String(offset));
   return signCommonWordRoute(state.env, "keyboard-action", state.state_id, action, argument).then((cap) =>
-    `${PREFIX}/step/${word(state.state_id)}/${action}/${encodeURIComponent(argument)}/${word(cap)}${layout === "symbols" ? "?layout=symbols" : ""}`);
+    `${PREFIX}/step/${word(state.state_id)}/${action}/${encodeURIComponent(argument)}/${word(cap)}${query.size ? `?${query}` : ""}`);
 }
 
-function stateHref(stateId, layout = "letters", shifted = false) {
+function stateHref(stateId, layout = "letters", shifted = false, prefix = "", offset = 0) {
   const query = new URLSearchParams();
   if (layout !== "letters") query.set("layout", layout);
   if (shifted) query.set("shift", "1");
+  if (prefix) query.set("prefix", prefix);
+  if (offset) query.set("offset", String(offset));
   return `${PREFIX}/state/${word(stateId)}${query.size ? `?${query}` : ""}`;
 }
 
@@ -94,6 +106,33 @@ function queryParams(url, allowed) {
   return result;
 }
 
+async function dictionaryWords(env, request, prefix) {
+  if (DICTIONARY_CACHE.has(prefix)) return DICTIONARY_CACHE.get(prefix);
+  if (!env.ASSETS) throw new Error("The word browser is unavailable; use predictions, keys, or exact text.");
+  const manifestResponse = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/manifest.json", request.url)));
+  if (!manifestResponse.ok) throw new Error("The word browser index is unavailable; use predictions, keys, or exact text.");
+  const manifest = await manifestResponse.json();
+  if (manifest.lexicon_version !== "fluenttyper-9d4826d5-en_US-hunspell-base-1" || !Array.isArray(manifest.shards)) throw new Error("The word browser index has an unsupported version.");
+  const shards = manifest.shards.filter((shard) => shard.prefix.toLocaleLowerCase("en-US").startsWith(prefix) || prefix.startsWith(shard.prefix.toLocaleLowerCase("en-US")));
+  const words = [];
+  for (const shard of shards) {
+    const result = await env.ASSETS.fetch(new Request(new URL(`/semantic-lexicon/${shard.path}`, request.url)));
+    if (!result.ok) throw new Error("A word browser page is unavailable; use another input method.");
+    const raw = await result.text();
+    const canonical = raw.endsWith("\n") ? raw.slice(0, -1) : raw;
+    const bytes = new TextEncoder().encode(canonical);
+    const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((item) => item.toString(16).padStart(2, "0")).join("");
+    if (bytes.byteLength !== shard.bytes || hash !== shard.sha256) throw new Error("A word browser page failed its integrity check.");
+    const values = JSON.parse(canonical);
+    if (!Array.isArray(values) || values.length !== shard.count) throw new Error("A word browser page failed its integrity check.");
+    words.push(...values.filter((value) => value.toLocaleLowerCase("en-US").startsWith(prefix)));
+  }
+  const result = [...new Map(words.map((value) => [value.toLocaleLowerCase("en-US"), value])).values()];
+  DICTIONARY_CACHE.set(prefix, result);
+  while (DICTIONARY_CACHE.size > 8) DICTIONARY_CACHE.delete(DICTIONARY_CACHE.keys().next().value);
+  return result;
+}
+
 async function findState(env, stateId) {
   const row = await env.RELAY_DB.prepare("SELECT s.*, k.reply_to, k.expires_at AS session_expires_at FROM html_keyboard_states s JOIN html_keyboard_sessions k USING (session_id) WHERE s.state_id = ?")
     .bind(stateId).first();
@@ -122,21 +161,56 @@ async function createSession(env, sessionId, replyTo) {
   return { ...await findState(env, session.root_state_id), reply_to: session.reply_to };
 }
 
-async function makeChild(env, request, parent, action, argument, childId) {
+async function makeChild(env, request, parent, action, argument, childId, issuedCapability = false) {
   const parentDraft = await loadDraft(env, parent);
   let removed = "";
   let added = "";
+  let savedArgument = argument;
   if (action === "key") {
     added = keyArgument(argument);
     if (added === undefined) throw new Error("Unknown keyboard key.");
+    if (parent.operation === "pick" && /[\p{L}\p{N}]/u.test(added) && parentDraft && !/\s$/u.test(parentDraft)) added = ` ${added}`;
     if (added === " " && /\s$/u.test(parentDraft)) added = "";
   } else if (action === "pick") {
-    const available = await predict(env, request, parentDraft);
-    if (!available.some((candidate) => candidate.toLocaleLowerCase("en-US") === argument.toLocaleLowerCase("en-US"))) throw new Error("That prediction is no longer in the current top ten. Start from the current prediction links.");
+    let choice = { text: argument, case: "as-is", wrapper: "none", suffix: "" };
+    if (argument.startsWith("{")) {
+      try { choice = JSON.parse(argument); }
+      catch { throw new Error("The selected word action is malformed."); }
+    }
+    if (!choice || typeof choice.text !== "string" || !WORD.test(choice.text) && !choice.text.split(" ").every((part) => WORD.test(part))) throw new Error("Choose a word or phrase from the displayed predictions.");
+    if (!CASE.has(choice.case) || !WRAPPER.has(choice.wrapper) || !PUNCTUATION.has(choice.suffix)) throw new Error("Choose a supported case, wrapper, and punctuation option.");
+    const isPhrase = choice.text.includes(" ");
+    if (!issuedCapability) {
+      let available;
+      if (isPhrase) available = (await predictPhrases(env, request, parentDraft, parent, usableWords(await predictRanked(env, request, predictionContext(parentDraft, parent), 48)))).map((candidate) => candidate.text);
+      else available = await predict(env, request, predictionContext(parentDraft, parent), 48);
+      const predicted = available.some((candidate) => candidate.toLocaleLowerCase("en-US") === choice.text.toLocaleLowerCase("en-US"));
+      const dictionaryMatch = !isPhrase && !predicted && (await dictionaryWords(env, request, choice.text.toLocaleLowerCase("en-US"))).some((candidate) => candidate.toLocaleLowerCase("en-US") === choice.text.toLocaleLowerCase("en-US"));
+      if (!predicted && !dictionaryMatch) throw new Error("That candidate is not in the current prediction or word browser. Choose a displayed option.");
+    }
     const match = parentDraft.match(/[\p{L}\p{N}'’\-]*$/u);
-    removed = match?.[0] || "";
-    const separator = !removed && parentDraft.length && !/\s$/u.test(parentDraft) ? " " : "";
-    added = `${separator}${argument} `;
+    const mayReplace = parent.operation === "key" && WORD.test(match?.[0] || "") && /[\p{L}\p{N}'’\-]/u.test(keyArgument(parent.value) || "");
+    if (mayReplace) removed = match?.[0] || "";
+    const prefix = removed ? parentDraft.slice(0, -removed.length) : parentDraft;
+    const separator = prefix && !/\s$/u.test(prefix) ? " " : "";
+    let text = choice.text;
+    if (choice.case === "capitalize") text = text.charAt(0).toLocaleUpperCase("en-US") + text.slice(1);
+    else if (choice.case === "upper") text = text.toLocaleUpperCase("en-US");
+    if (choice.wrapper === "quote") text = `“${text}”`;
+    else if (choice.wrapper === "parenthetical") text = `(${text})`;
+    added = `${separator}${text}${choice.suffix}`;
+    if (argument.startsWith("{")) savedArgument = JSON.stringify(choice);
+  } else if (action === "typed") {
+    let choice;
+    try { choice = JSON.parse(argument); }
+    catch { throw new Error("The typed-text action is malformed."); }
+    if (!choice || typeof choice.text !== "string" || !["exact", "space-if-needed"].includes(choice.join)) throw new Error("Choose exact text or start a new word.");
+    if (new TextEncoder().encode(choice.text).byteLength > MAX_BODY_BYTES) throw new Error(`Message limit reached (${MAX_BODY_BYTES} UTF-8 bytes).`);
+    added = choice.join === "space-if-needed" && parentDraft && !/\s$/u.test(parentDraft) ? ` ${choice.text}` : choice.text;
+    savedArgument = JSON.stringify(choice);
+  } else if (action === "refresh") {
+    if (argument !== "-") throw new Error("Invalid refresh action.");
+    return parent;
   } else if (action === "clear") {
     if (argument !== "-") throw new Error("Invalid clear action.");
     removed = parentDraft;
@@ -148,44 +222,139 @@ async function makeChild(env, request, parent, action, argument, childId) {
   const depth = parent.depth + 1;
   const snapshot = depth % SNAPSHOT_INTERVAL === 0 ? nextDraft : null;
   const now = Date.now();
+  // Existing deployed schemas intentionally constrain operation to root/key/pick/clear.
+  // Store manual text as a pick with its {text, join} payload to remain schema-compatible.
+  const storedAction = action === "typed" ? "pick" : action;
   await env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_states (state_id, session_id, parent_state_id, operation, value, removed_text, added_text, snapshot, depth, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ? AND expires_at > ?) AND EXISTS (SELECT 1 FROM html_keyboard_states WHERE state_id = ? AND session_id = ?) AND (SELECT COUNT(*) FROM html_keyboard_states WHERE session_id = ?) < ?")
-    .bind(childId, parent.session_id, parent.state_id, action, argument, removed, added, snapshot, depth, now, parent.session_id, now, parent.state_id, parent.session_id, parent.session_id, MAX_STATES_PER_SESSION).run();
+    .bind(childId, parent.session_id, parent.state_id, storedAction, savedArgument, removed, added, snapshot, depth, now, parent.session_id, now, parent.state_id, parent.session_id, parent.session_id, MAX_STATES_PER_SESSION).run();
   const childExists = await env.RELAY_DB.prepare("SELECT state_id FROM html_keyboard_states WHERE state_id = ? AND session_id = ?").bind(childId, parent.session_id).first();
   if (!childExists) {
     const active = await env.RELAY_DB.prepare("SELECT expires_at FROM html_keyboard_sessions WHERE session_id = ?").bind(parent.session_id).first();
     if (!active || active.expires_at <= Date.now()) throw new Error("This keyboard session expired or is unavailable. Start a new draft.");
-    throw new Error("Keyboard session state limit reached (2,400 saved steps). Start a new draft.");
+    const stateCount = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM html_keyboard_states WHERE session_id = ?").bind(parent.session_id).first();
+    if (Number(stateCount?.count || 0) >= MAX_STATES_PER_SESSION) throw new Error(`Keyboard session state limit reached (${MAX_STATES_PER_SESSION} saved steps). Start a new draft.`);
+    throw new Error("This branch could not be saved. Return to the current draft and try again.");
   }
   const child = await findState(env, childId);
   if (child.session_id !== parent.session_id) throw new Error("This branch belongs to another keyboard session.");
-  if (child.parent_state_id !== parent.state_id || child.operation !== action || child.value !== argument) throw new Error("This link does not match the saved draft branch.");
+  if (child.parent_state_id !== parent.state_id || child.operation !== storedAction || child.value !== savedArgument) throw new Error("This link does not match the saved draft branch.");
   return child;
 }
 
-async function renderKeyboard(request, env, state, url) {
+function predictionContext(draft, state) {
+  if (!draft || /\s$/u.test(draft)) return draft;
+  const lastKey = state?.operation === "key" ? keyArgument(state.value) : "";
+  const isPartialKeyboardWord = typeof lastKey === "string" && /^[\p{L}\p{N}'’\-]$/u.test(lastKey);
+  return isPartialKeyboardWord ? draft : `${draft} `;
+}
+
+function usableWords(candidates) {
+  const seen = new Set();
+  return candidates.filter(({ text }) => {
+    const key = text.toLocaleLowerCase("en-US");
+    if (!WORD.test(text) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+async function predictPhrases(env, request, draft, state, rankedWords) {
+  const context = predictionContext(draft, state);
+  const starter = usableWords(rankedWords)[0];
+  if (!starter) return [];
+  const firstWords = usableWords(await predictRanked(env, request, `${context}${starter.text} `, 4))
+    .filter((candidate) => candidate.text.toLocaleLowerCase("en-US") !== starter.text.toLocaleLowerCase("en-US"))
+    .slice(0, 2);
+  const phrases = firstWords.map((candidate) => ({ text: `${starter.text} ${candidate.text}`, score: starter.score * candidate.score, rank: starter.rank + candidate.rank }));
+  let continuation = firstWords[0]
+    ? { text: `${starter.text} ${firstWords[0].text}`, score: starter.score * firstWords[0].score, rank: starter.rank + firstWords[0].rank }
+    : null;
+  for (let length = 3; continuation && length <= 5; length += 1) {
+    const nextWords = usableWords(await predictRanked(env, request, `${context}${continuation.text} `, 4));
+    const next = nextWords.find((candidate) => !continuation.text.toLocaleLowerCase("en-US").split(" ").includes(candidate.text.toLocaleLowerCase("en-US")));
+    if (!next) break;
+    continuation = { text: `${continuation.text} ${next.text}`, score: continuation.score * next.score, rank: continuation.rank + next.rank };
+    phrases.push(continuation);
+  }
+  phrases.sort((left, right) => Math.pow(right.score, 1 / right.text.split(" ").length) - Math.pow(left.score, 1 / left.text.split(" ").length) || left.rank - right.rank || left.text.localeCompare(right.text, "en-US"));
+  const seen = new Set();
+  return phrases.filter((phrase) => {
+    const key = phrase.text.toLocaleLowerCase("en-US");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 8);
+}
+
+async function renderKeyboard(request, env, state, url, pendingText = "") {
   const draft = await loadDraft(env, state);
-  const modeParams = queryParams(url, new Set(["layout", "shift"]));
+  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset"]));
   const layout = modeParams.get("layout") || "letters";
   const shifted = modeParams.get("shift") === "1";
+  const prefix = (modeParams.get("prefix") || "").normalize("NFC").toLocaleLowerCase("en-US");
+  const offset = Number(modeParams.get("offset") || 0);
   if (modeParams.has("shift") && !new Set(["0", "1"]).has(modeParams.get("shift"))) throw new Error("Keyboard layout link is invalid.");
   if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters")) throw new Error("Keyboard layout link is invalid.");
-  const predictions = await predict(env, request, draft);
-  const makeLink = (action, argument) => actionHref({ ...state, env }, action, argument, layout);
-  const predictionLinks = await Promise.all(predictions.map(async (candidate) => {
-    const shown = shifted ? candidate.charAt(0).toLocaleUpperCase("en-US") + candidate.slice(1) : candidate;
-    return `<a href="${escapeHtml(await makeLink("pick", shown))}" aria-label="Use prediction ${escapeHtml(shown)}">${escapeHtml(shown)}</a>`;
-  }));
-  const key = async (value, label = value, extraClass = "") => `<a class="key ${extraClass}" href="${escapeHtml(await makeLink("key", value))}" aria-label="Add ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
-  const mode = (label, nextLayout, nextShifted = false, extraClass = "", accessible = label) => `<a class="key ${extraClass}" href="${escapeHtml(stateHref(state.state_id, nextLayout, nextShifted))}" aria-label="${escapeHtml(accessible)}">${escapeHtml(label)}</a>`;
+  if ([...prefix].length > 20 || /[^\p{L}\p{N}'’\-]/u.test(prefix) || !Number.isSafeInteger(offset) || offset < 0 || offset % 20 !== 0) throw new Error("Word browser prefix or page is invalid.");
+  const context = predictionContext(draft, state);
+  const predictions = usableWords(await predictRanked(env, request, context, 48));
+  const phrases = !draft || /\s$/u.test(draft) || state.operation === "pick" || state.operation === "typed"
+    ? await predictPhrases(env, request, draft, state, predictions)
+    : [];
+  const directWords = predictions.slice(0, 12);
+  const moreWords = predictions.slice(12, 44);
+  const formAction = `${PREFIX}/form/${word(state.state_id)}`;
+  const choiceFormAction = `${formAction}#choices`;
+  const makeLink = (action, argument) => actionHref({ ...state, env }, action, argument, layout, prefix, offset);
+  const candidateToken = async (candidate) => {
+    const issued = JSON.stringify({ text: candidate, case: "as-is", wrapper: "none", suffix: "" });
+    return signCommonWordRoute(env, "keyboard-action", state.state_id, "pick", issued);
+  };
+  const candidateButton = async (kind, candidate) => `<button type="submit" name="pick" value="${escapeHtml(`${kind}:${candidate}:${await candidateToken(candidate)}`)}">${escapeHtml(candidate)}</button>`;
+  const phraseButtons = (await Promise.all(phrases.map((candidate) => candidateButton("phrase", candidate.text)))).join("");
+  const directButtons = (await Promise.all(directWords.map((candidate) => candidateButton("word", shifted ? candidate.text.charAt(0).toLocaleUpperCase("en-US") + candidate.text.slice(1) : candidate.text)))).join("");
+  const moreOptions = (await Promise.all(moreWords.map(async (candidate) => `<option value="${escapeHtml(`${candidate.text}:${await candidateToken(candidate.text)}`)}">${escapeHtml(candidate.text)}</option>`))).join("");
+  const linkChoices = await Promise.all([...phrases.map((item) => item.text), ...directWords.map((item) => item.text)].map(async (candidate) => `<a rel="nofollow" href="${escapeHtml(await makeLink("pick", candidate))}">${escapeHtml(candidate)}</a>`));
+  const key = async (value, label = value, extraClass = "") => `<a class="key ${extraClass}" rel="nofollow" href="${escapeHtml(`${await makeLink("key", value)}#keyboard`)}" aria-label="Add ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
+  const mode = (label, nextLayout, nextShifted = false, extraClass = "", accessible = label) => `<a class="key ${extraClass}" href="${escapeHtml(stateHref(state.state_id, nextLayout, nextShifted, prefix, offset))}" aria-label="${escapeHtml(accessible)}">${escapeHtml(label)}</a>`;
   const letters = `<div class="keyrow">${(await Promise.all("qwertyuiop".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow indented">${(await Promise.all("asdfghjkl".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow third">${mode("⇧", "letters", !shifted, "wide", shifted ? "Turn shift off" : "Turn shift on")} ${(await Promise.all("zxcvbnm".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")} ${state.parent_state_id ? `<a class="key wide" href="${escapeHtml(stateHref(state.parent_state_id, layout, shifted))}" aria-label="Remove last addition">⌫</a>` : `<span class="key wide spacer" aria-hidden="true"></span>`}</div><div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("question", "?", "wide")}</div>`;
   const symbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "("].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([" )", "_", "!", "?", "'", ":", ";", '"', "/"].map((value) => key(value.trim())))).join("")} ${state.parent_state_id ? `<a class="key" href="${escapeHtml(stateHref(state.parent_state_id, layout, shifted))}" aria-label="Remove last addition">⌫</a>` : ""}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
-  const clearHref = draft ? await makeLink("clear", "-") : "";
   const reviewHref = draft ? `${PREFIX}/review/${word(state.state_id)}` : "";
   const reply = state.reply_to ? `<p class="notice">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted) : "";
-  const controls = `${undoHref ? `<a href="${escapeHtml(undoHref)}">undo</a>` : ""}${clearHref ? `<a href="${escapeHtml(clearHref)}">clear</a>` : ""}${reviewHref ? `<a rel="nofollow" href="${escapeHtml(reviewHref)}">review</a>` : ""}`;
-  const body = `<h1>HTML keyboard · word links</h1><p class="notice">Opening this page starts a temporary Relay session. Keyboard links use readable word codes. Each choice saves a temporary draft step at Relay for up to 30 minutes. Steps are deleted after publication or expiry. Links are not encrypted; your environment or hosting provider may observe them. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a> · <a href="/predictive-keyboard/html/">Original HTML keyboard</a></p>${reply}<section><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre></section><section><h2>Predictions</h2><nav class="choices" aria-label="Top word predictions">${predictionLinks.join("") || "<span>no predictions</span>"}</nav></section><section><h2>${layout === "symbols" ? "Symbols" : "Letters"}</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav></section><nav class="controls" aria-label="Draft controls">${controls}</nav></main>`;
-  return response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>HTML keyboard · word links · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible,.key:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.key-grid{display:flex;flex-direction:column;gap:.4rem}.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.35rem}.keyrow.indented{margin-inline:5%}.keyrow.third{grid-template-columns:repeat(11,minmax(0,1fr))}.keyrow.symbols{grid-template-columns:repeat(10,minmax(0,1fr))}.keyrow.bottom{grid-template-columns:repeat(10,minmax(0,1fr))}.key{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:center;padding:.35rem .15rem;border:1px solid #ccd6df;border-radius:6px;background:#f8fafb;color:#25343b;text-decoration:none;font-weight:650;box-shadow:0 2px 0 #d6dfe2}.key.wide{grid-column:span 2}.key.space{grid-column:span 4}.key.spacer{visibility:hidden}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}.primary{display:inline-block;padding:.65rem .9rem;border:1px solid #086b62;border-radius:5px;color:#086b62;font-weight:700}@media(max-width:380px){main{padding:12px}.keyrow,.keyrow.third{gap:.2rem}.key{font-size:.82rem;min-height:44px}}</style></head><body><main>${body}</body></html>`);
+  const clearHref = draft ? await makeLink("clear", "-") : "";
+  const controls = `${undoHref ? `<a href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
+  const punctuation = [["", "None"], [".", "."], [",", ","], ["?", "?"], ["!", "!"], [":", ":"], [";", ";"]].map(([value, label], index) => `<label class="radio"><input type="radio" name="suffix" value="${value}"${index === 0 ? " checked" : ""}>${label}</label>`).join("");
+  const caseChoices = [["as-is", "As shown"], ["capitalize", "Capitalize"], ["upper", "ALL CAPS"]].map(([value, label], index) => `<label class="radio"><input type="radio" name="case" value="${value}"${index === 0 ? " checked" : ""}>${label}</label>`).join("");
+  const wrapperChoices = [["none", "None"], ["quote", "Quote"], ["parenthetical", "Parenthetical"]].map(([value, label], index) => `<label class="radio"><input type="radio" name="wrapper" value="${value}"${index === 0 ? " checked" : ""}>${label}</label>`).join("");
+  const moreSection = moreWords.length
+    ? `<label for="more-words">More words</label><div class="more-row"><select id="more-words" name="more" aria-label="More words">${moreOptions}</select><button type="submit" name="action" value="more">Add selected word</button></div>`
+    : `<p>No additional model suggestions are available for this context.</p>`;
+  let prefixBrowser;
+  if (!prefix) {
+    const alphabet = await Promise.all("abcdefghijklmnopqrstuvwxyz".split("").map(async (letter) => `<a href="${escapeHtml(stateHref(state.state_id, layout, shifted, letter))}">${letter}</a>`));
+    prefixBrowser = `<section><h2>Find another word</h2><p class="hint">Browse the pinned spelling list. Context-ranked model matches appear first; the remaining list is alphabetical.</p><form method="get" action="${PREFIX}/state/${word(state.state_id)}"><input type="hidden" name="layout" value="${layout}"><label for="word-prefix">Prefix</label><input id="word-prefix" name="prefix" maxlength="20" autocomplete="off"><button type="submit">Find words</button></form><div class="choices" aria-label="Browse by first letter">${alphabet.join("")}</div></section>`;
+  } else {
+    const dictionary = await dictionaryWords(env, request, prefix);
+    const modelMatches = predictions.map((item) => item.text).filter((item) => item.toLocaleLowerCase("en-US").startsWith(prefix));
+    const seen = new Set(modelMatches.map((item) => item.toLocaleLowerCase("en-US")));
+    const domainMatches = DOMAIN_WORDS.filter((item) => item.toLocaleLowerCase("en-US").startsWith(prefix) && !seen.has(item.toLocaleLowerCase("en-US")));
+    for (const item of domainMatches) seen.add(item.toLocaleLowerCase("en-US"));
+    const ordered = [...modelMatches, ...domainMatches, ...dictionary.filter((item) => !seen.has(item.toLocaleLowerCase("en-US")))];
+    const pageWords = ordered.slice(offset, offset + 20);
+    const wordLinks = await Promise.all(pageWords.map(async (item) => {
+      const href = await makeLink("pick", item);
+      return `<a rel="nofollow" href="${escapeHtml(href)}">Add ${escapeHtml(item)}</a>`;
+    }));
+    const chars = [...new Set([...dictionary, ...domainMatches].map((item) => [...item.slice(prefix.length)][0]).filter(Boolean))].slice(0, 26);
+    const childLinks = await Promise.all(chars.map(async (letter) => `<a href="${escapeHtml(stateHref(state.state_id, layout, shifted, prefix + letter))}">${escapeHtml(prefix + letter)}</a>`));
+    const previous = offset ? `<a href="${escapeHtml(stateHref(state.state_id, layout, shifted, prefix, Math.max(0, offset - 20)))}">Previous</a>` : "";
+    const next = offset + 20 < ordered.length ? `<a href="${escapeHtml(stateHref(state.state_id, layout, shifted, prefix, offset + 20))}">Next</a>` : "";
+    prefixBrowser = `<section id="prefix-browser"><h2>Find another word · ${escapeHtml(prefix)}</h2><p class="hint">Model-ranked matches first, then reviewed Commons terms, then the remaining dictionary alphabetically. Showing ${ordered.length ? offset + 1 : 0}–${Math.min(offset + 20, ordered.length)} of ${ordered.length} matches.</p><form method="get" action="${PREFIX}/state/${word(state.state_id)}#prefix-browser"><input type="hidden" name="layout" value="${layout}"><label for="word-prefix">Prefix</label><input id="word-prefix" name="prefix" maxlength="20" value="${escapeHtml(prefix)}" autocomplete="off"><button type="submit">Find words</button></form><p>${previous} ${next}</p><div class="choices" aria-label="Matching words">${wordLinks.join("") || "<span>No matching words.</span>"}</div><h3>Continue prefix</h3><div class="choices" aria-label="Child prefixes">${childLinks.join("") || "<span>No longer matches.</span>"}</div><p><a href="${escapeHtml(stateHref(state.state_id, layout, shifted))}">Clear prefix</a></p></section>`;
+  }
+  const editPanel = `<form method="get" action="${choiceFormAction}" class="compose-form"><input type="hidden" name="layout" value="${layout}">${prefix ? `<input type="hidden" name="prefix" value="${escapeHtml(prefix)}">` : ""}${offset ? `<input type="hidden" name="offset" value="${offset}">` : ""}<button type="submit" name="action" value="refresh" class="refresh">Refresh</button><section><h2>Likely continuation</h2><p class="hint">Phrase suggestions are generated one word at a time from this draft.</p><div class="choices" aria-label="Likely phrase continuations">${phraseButtons || "<span>Type or choose a word to continue.</span>"}</div></section><section><h2>Next word</h2><div class="choices" aria-label="Top word predictions">${directButtons || "<span>No word predictions are available.</span>"}</div></section><section><h2>More words</h2>${moreSection}</section><fieldset><legend>Punctuation</legend>${punctuation}</fieldset><fieldset><legend>Case</legend>${caseChoices}</fieldset><fieldset><legend>Wrapper</legend>${wrapperChoices}</fieldset><section><h2>Type text</h2><label for="typed-text">Add text</label><textarea id="typed-text" name="text" maxlength="1200" aria-describedby="typed-notice">${escapeHtml(pendingText)}</textarea><label for="join-mode">Boundary</label><select id="join-mode" name="join"><option value="exact">Exact continuation</option><option value="space-if-needed">Start a new word</option></select><button type="submit" name="action" value="typed">Add text</button><p id="typed-notice" class="hint">Only “Add text” commits this field. Prediction buttons preserve it without adding it to the draft. Link-only keyboard links cannot carry unsent field text, so add it first. The GET form includes text in the request URL and may appear in browser history or infrastructure logs. Never enter secrets.</p></section></form><details><summary>Prediction links for link-only clients</summary><p class="hint">Each link commits one displayed word or phrase. Use the keyboard links for individual characters and punctuation. Add typed text first; links cannot carry unsent field text.</p><div class="choices" aria-label="Link-only predictions">${linkChoices.join("")}</div></details>`;
+  const body = `<h1>Predictive HTML keyboard</h1><p class="notice">Predictions use the pinned English model and your current draft. Following a word or key link, or submitting a form, saves a private step. <strong>Some crawlers and prefetchers follow links automatically.</strong> Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>${reply}<section id="draft"><h2>Draft</h2><pre class="draft" aria-live="polite">${escapeHtml(draft) || " "}</pre><p class="hint">${new TextEncoder().encode(draft).byteLength} UTF-8 bytes · 1200 max</p></section><div id="choices">${editPanel}</div>${prefixBrowser}<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav></section><nav class="controls" aria-label="Draft controls">${controls}</nav></main>`;
+  return response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>HTML keyboard · word links · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible,.key:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.key-grid{display:flex;flex-direction:column;gap:.4rem}.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.35rem}.keyrow.indented{margin-inline:5%}.keyrow.third{grid-template-columns:repeat(11,minmax(0,1fr))}.keyrow.symbols{grid-template-columns:repeat(10,minmax(0,1fr))}.keyrow.bottom{grid-template-columns:repeat(10,minmax(0,1fr))}.key{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:center;padding:.35rem .15rem;border:1px solid #ccd6df;border-radius:6px;background:#f8fafb;color:#25343b;text-decoration:none;font-weight:650;box-shadow:0 2px 0 #d6dfe2}.key.wide{grid-column:span 2}.key.space{grid-column:span 4}.key.spacer{visibility:hidden}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}.primary{display:inline-block;padding:.65rem .9rem;border:1px solid #086b62;border-radius:5px;color:#086b62;font-weight:700}@media(max-width:380px){main{padding:12px}.keyrow,.keyrow.third{gap:.2rem}.key{font-size:.82rem;min-height:44px}}</style><style>.choices button,.more-row button,.compose-form>.refresh,.type-form button{min-height:44px;padding:.55rem .75rem;border:1px solid #086b62;border-radius:5px;background:#fff;color:#086b62;font:inherit;font-weight:650;cursor:pointer}.choices button{min-width:2.2rem}.choices button:hover,.more-row button:hover{background:#e9f4f1}.choices button:focus-visible,.key:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.compose-form,.type-form{display:grid;gap:.65rem}.compose-form .choices{margin:.5rem 0}.more-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.more-row select{flex:1;min-width:12rem}.compose-form select,.compose-form input:not([type=radio]),.type-form select,.type-form textarea{min-height:44px;padding:.55rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:inherit;font:inherit}.type-form textarea{min-height:5rem;resize:vertical}.compose-form fieldset{border:1px solid #ccd6df;border-radius:5px;padding:.5rem .7rem;display:flex;gap:.75rem;flex-wrap:wrap}.compose-form legend{font-weight:650;padding:0 .25rem}.radio{display:inline-flex;align-items:center;gap:.3rem;min-height:36px}.hint{font-size:.82rem;color:#526466;margin:.2rem 0}.draft{white-space:pre-wrap;overflow-wrap:anywhere}.refresh{justify-self:start}.controls{margin:1rem 0}@media(max-width:380px){main{padding:12px}.more-row{align-items:stretch}.more-row select{min-width:100%}}</style></head><body><main>${body}</body></html>`);
 }
 
 export function isWordKeyboardPath(pathname) {
@@ -197,7 +366,7 @@ export function isWordKeyboardStartPath(pathname) {
 }
 
 export function isWordKeyboardMutationPath(pathname) {
-  return isWordKeyboardStartPath(pathname) || /\/step\/|\/review\/|\/discard\//u.test(pathname);
+  return isWordKeyboardStartPath(pathname) || /\/(?:step|form|review|discard)\//u.test(pathname);
 }
 
 export async function handleWordKeyboard(request, env, url, createPublishDraft, discardPublishDraft) {
@@ -232,9 +401,62 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {
-      queryParams(url, new Set(["layout", "shift"]));
+      queryParams(url, new Set(["layout", "shift", "prefix", "offset"]));
       const state = await findState(env, readWord(stateMatch[1]));
       return await renderKeyboard(request, env, state, url);
+    }
+    const formMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/form\/([^/]+)$/u);
+    if (formMatch) {
+      const values = queryParams(url, new Set(["action", "pick", "more", "suffix", "case", "wrapper", "text", "join", "layout", "prefix", "offset"]));
+      const state = await findState(env, readWord(formMatch[1]));
+      const layout = values.get("layout") || "letters";
+      if (!new Set(["letters", "symbols"]).has(layout)) throw new Error("Keyboard layout link is invalid.");
+      if (values.has("action") && values.has("pick")) throw new Error("Choose one action at a time.");
+      const action = values.get("action") || (values.has("pick") ? "pick" : "");
+      const viewPrefix = values.get("prefix") || "";
+      const viewOffset = values.get("offset") || "0";
+      const pendingText = values.get("text") || "";
+      if (new TextEncoder().encode(pendingText).byteLength > MAX_BODY_BYTES || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(pendingText)) throw new Error(`Text field must be valid and no longer than ${MAX_BODY_BYTES} UTF-8 bytes.`);
+      if (action === "refresh") return await renderKeyboard(request, env, state, new URL(`${stateHref(state.state_id, layout, false, viewPrefix, Number(viewOffset))}#choices`, url), pendingText);
+      if (action === "typed") {
+        const text = values.get("text");
+        const join = values.get("join");
+        if (typeof text !== "string" || !["exact", "space-if-needed"].includes(join)) throw new Error("Add text using the displayed boundary choice.");
+        if (!text) throw new Error("Enter text before adding it.");
+        const argument = JSON.stringify({ text, join });
+        const childId = await signCommonWordRoute(env, "keyboard-action", state.state_id, "typed", argument);
+        const child = await makeChild(env, request, state, "typed", argument, childId);
+        return await renderKeyboard(request, env, child, new URL(`${stateHref(child.state_id, layout, false, viewPrefix, Number(viewOffset))}#draft`, url));
+      }
+      let kind;
+      let candidate;
+      let issuedToken;
+      if (action === "pick") {
+        const raw = values.get("pick") || "";
+        const first = raw.indexOf(":");
+        const last = raw.lastIndexOf(":");
+        if (first < 1 || last <= first) throw new Error("Choose one signed candidate from the displayed options.");
+        kind = raw.slice(0, first);
+        candidate = raw.slice(first + 1, last);
+        issuedToken = raw.slice(last + 1);
+      } else if (action === "more") {
+        kind = "word";
+        const raw = values.get("more") || "";
+        const split = raw.lastIndexOf(":");
+        if (split < 1) throw new Error("Choose one of the signed additional words shown.");
+        candidate = raw.slice(0, split);
+        issuedToken = raw.slice(split + 1);
+      } else throw new Error("Choose a displayed phrase, word, or keyboard action.");
+      if (!new Set(["word", "phrase"]).has(kind)) throw new Error("The selected candidate type is invalid.");
+      if (kind === "word" && candidate.includes(" ")) throw new Error("Choose a single word.");
+      if (kind === "phrase" && !candidate.includes(" ")) throw new Error("Choose a displayed phrase.");
+      const issuedArgument = JSON.stringify({ text: candidate, case: "as-is", wrapper: "none", suffix: "" });
+      if (await signCommonWordRoute(env, "keyboard-action", state.state_id, "pick", issuedArgument) !== issuedToken) throw new Error("This candidate was not issued for the current draft.");
+      const choice = { text: candidate, case: values.get("case") || "as-is", wrapper: values.get("wrapper") || "none", suffix: values.get("suffix") || "" };
+      const argument = JSON.stringify(choice);
+      const childId = await signCommonWordRoute(env, "keyboard-action", state.state_id, "pick", argument);
+      const child = await makeChild(env, request, state, "pick", argument, childId, true);
+      return await renderKeyboard(request, env, child, new URL(`${stateHref(child.state_id, layout, false, viewPrefix, Number(viewOffset))}#draft`, url), pendingText);
     }
     const stepMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/step\/([^/]+)\/(key|pick|clear)\/([^/]+)\/([^/]+)$/u);
     if (stepMatch) {
@@ -246,9 +468,9 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       const childId = readWord(stepMatch[4]);
       if (await signCommonWordRoute(env, "keyboard-action", parentId, action, argument) !== childId) throw new Error("This keyboard action link is invalid.");
       const parent = await findState(env, parentId);
-      const child = await makeChild(env, request, parent, action, argument, childId);
+      const child = await makeChild(env, request, parent, action, argument, childId, true);
       const nextUrl = new URL(`${PREFIX}/state/${word(child.state_id)}`, url);
-      const mode = queryParams(url, new Set(["layout"]));
+      const mode = queryParams(url, new Set(["layout", "prefix", "offset"]));
       for (const [key, value] of mode) nextUrl.searchParams.set(key, value);
       return await renderKeyboard(request, env, child, nextUrl);
     }

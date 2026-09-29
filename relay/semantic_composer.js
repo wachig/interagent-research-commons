@@ -134,15 +134,22 @@ async function choiceMarkup(env, deriveCapability, session, stateId, additions, 
   }
   if (layout === "links") return `<div class="choices">${controls.join("")}</div>`;
   const view = await signedView(env, deriveCapability, session.session_id, stateId, session.expires_at);
-  return `<form method="get" action="${PREFIX}/add"><input type="hidden" name="state" value="${esc(stateId)}"><input type="hidden" name="view" value="${esc(view)}"><button type="submit" name="action" value="refresh">Refresh options (does not add text)</button><div class="choices">${buttons.join("")}</div><input type="hidden" name="layout" value="${esc(layout)}"><input type="hidden" name="case" value="${esc(format.case)}"><input type="hidden" name="wrapper" value="${esc(format.wrapper)}"><input type="hidden" name="suffix" value="${esc(format.suffix)}"></form>`;
+  return `<form method="get" action="${PREFIX}/add"><input type="hidden" name="session" value="${esc(session.session_id)}"><input type="hidden" name="state" value="${esc(stateId)}"><input type="hidden" name="view" value="${esc(view)}"><button type="submit" name="action" value="refresh">Refresh options (does not add text)</button><div class="choices">${buttons.join("")}</div><input type="hidden" name="layout" value="${esc(layout)}"><input type="hidden" name="case" value="${esc(format.case)}"><input type="hidden" name="wrapper" value="${esc(format.wrapper)}"><input type="hidden" name="suffix" value="${esc(format.suffix)}"></form>`;
 }
 
 async function bumpQuota(env, sessionId, kind, now = Date.now()) {
   const column = kind === "addition" ? "addition_count" : kind === "prediction" ? "prediction_count" : "request_count";
   const maximum = kind === "addition" ? 60 : kind === "prediction" ? 20 : 120;
   const allowedStatus = kind === "addition" ? "status = 'editing'" : "status IN ('editing','review-staging','review-ready')";
-  const changed = await env.RELAY_DB.prepare(`UPDATE semantic_sessions SET rate_window_start = CASE WHEN rate_window_start <= ? THEN ? ELSE rate_window_start END, ${column} = CASE WHEN rate_window_start <= ? THEN 1 ELSE ${column} + 1 END WHERE session_id = ? AND expires_at > ? AND ${allowedStatus} AND CASE WHEN rate_window_start <= ? THEN 1 ELSE ${column} + 1 END <= ? RETURNING session_id`)
-    .bind(now - 60_000, now, now - 60_000, sessionId, now, now - 60_000, maximum).first();
+  const changed = await env.RELAY_DB.prepare(`UPDATE semantic_sessions SET
+      rate_window_start = CASE WHEN rate_window_start <= ? THEN ? ELSE rate_window_start END,
+      request_count = CASE WHEN rate_window_start <= ? THEN 0 ELSE request_count END,
+      addition_count = CASE WHEN rate_window_start <= ? THEN 0 ELSE addition_count END,
+      prediction_count = CASE WHEN rate_window_start <= ? THEN 0 ELSE prediction_count END,
+      ${column} = CASE WHEN rate_window_start <= ? THEN 1 ELSE ${column} + 1 END
+    WHERE session_id = ? AND expires_at > ? AND ${allowedStatus}
+      AND CASE WHEN rate_window_start <= ? THEN 1 ELSE ${column} + 1 END <= ? RETURNING session_id`)
+    .bind(now - 60_000, now, now - 60_000, now - 60_000, now - 60_000, now - 60_000, sessionId, now, now - 60_000, maximum).first();
   const row = await env.RELAY_DB.prepare("SELECT rate_window_start, status, expires_at FROM semantic_sessions WHERE session_id = ?").bind(sessionId).first();
   if (!row || row.expires_at <= now || row.status === "expired") throw Object.assign(new Error("This semantic composer session expired. Start a new one."), { status: 410 });
   if (!changed && row.status === "editing" || !changed && row.status === "review-staging" || !changed && row.status === "review-ready") {
@@ -338,6 +345,7 @@ async function renderState(request, env, url, deps, sessionId, stateId, viewToke
     }
     content += `<section class="panel"><h2>Starter phrases · fixed choices, not predictions</h2>${await choiceMarkup(env, deps.deriveCapability, session, stateId, choices.filter((item) => item.words?.length > 1), layout, format)}</section>`;
     content += `<section class="panel"><h2>Word choices · fixed palette, not predictions</h2>${await choiceMarkup(env, deps.deriveCapability, session, stateId, choices.filter((item) => item.words && item.words.length === 1), layout, format)}</section>`;
+    content += `<section class="panel"><h2>Punctuation</h2>${await choiceMarkup(env, deps.deriveCapability, session, stateId, choices.filter((item) => item.kind === "punctuation"), layout, format)}</section>`;
     const formatUrl = `${PREFIX}/format?${new URLSearchParams({ session: sessionId, state: stateId, view: viewToken, case: format.case, wrapper: format.wrapper, suffix: format.suffix })}`;
     content += `<nav class="toolbar"><a class="control" href="${esc(vocabUrl)}">Browse all words</a><a class="control" href="${esc(typedUrl)}">Type exact text</a><a class="control" href="${esc(charactersUrl)}">Compose characters</a><a class="control" href="${esc(formatUrl)}">Format next addition</a><a class="control" href="${esc(layoutUrl)}">${layout === "links" ? "Use button view" : "Use links-only view"}</a></nav>`;
     const review = await signedAction(env, deps.deriveCapability, session, stateId, "review", {});
@@ -538,10 +546,13 @@ export async function handleSemanticComposer(request, env, url, deps) {
       const action = await verifySemanticAction(env, deps.deriveCapability, values.get("action"));
       if (action.kind !== "discard") throw new TypeError("Discard action is invalid.");
       await bumpQuota(env, action.session_id, "request");
-      const cap = action.data?.publish_cap;
-      const capHash = await deps.capHash(cap);
-      const now = Date.now();
       const { attempt_id: attempt, generation } = action.data;
+      if (typeof attempt !== "string" || !Number.isSafeInteger(generation)) throw new TypeError("Discard action is incomplete.");
+      const current = await env.RELAY_DB.prepare("SELECT l.publish_cap_hash FROM semantic_publish_links l JOIN semantic_sessions m USING (session_id) WHERE l.session_id = ? AND l.state_id = ? AND l.review_attempt_id = ? AND l.review_generation = ? AND m.status = 'review-ready' AND m.review_state_id = ?")
+        .bind(action.session_id, action.state_id, attempt, generation, action.state_id).first();
+      if (!current?.publish_cap_hash) return problem("Reviewed draft unavailable", "The staged private draft is no longer eligible for discard.", 409);
+      const capHash = current.publish_cap_hash;
+      const now = Date.now();
       await env.RELAY_DB.batch([
         env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'semantic-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL AND expires_at > ? AND EXISTS (SELECT 1 FROM semantic_publish_links l JOIN semantic_sessions m USING (session_id) JOIN capabilities c ON c.cap_hash = l.publish_cap_hash JOIN pending_messages p ON p.pending_id = c.pending_id WHERE l.publish_cap_hash = capabilities.cap_hash AND l.review_attempt_id = ? AND l.review_generation = ? AND m.status = 'review-ready' AND m.review_attempt_id = ? AND m.review_generation = ? AND p.state = 'staged' AND p.expires_at > ?)")
           .bind(now, capHash, now, attempt, generation, attempt, generation, now),

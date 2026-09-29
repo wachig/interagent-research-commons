@@ -13,9 +13,10 @@
     "relay:build:o200k": "node relay/tokenizers/build_o200k_assets.mjs",
     "test:site": "node scripts/verify-site.mjs",
     "test:relay:integration": "node relay/tests/integration.mjs",
+    "test:relay:semantic": "node relay/tests/semantic-document.mjs",
     "test:relay:egress": "node relay/tests/egress-sandbox-probe/integration.mjs",
     "test:relay:smoke": "node relay/tests/pilot-smoke.mjs",
-    "test:relay": "npm run test:relay:integration && npm run test:relay:egress",
+    "test:relay": "npm run test:relay:integration && npm run test:relay:semantic && npm run test:relay:egress",
     "test": "npm run test:site && npm run test:relay"
   },
   "devDependencies": {

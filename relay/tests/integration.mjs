@@ -137,9 +137,11 @@ function hasSafetyHeaders(response) {
 let server;
 const extraPersistenceDirs = [];
 try {
+  console.log("Relay integration: booting local Worker");
   server = await startServer(false);
   await server.waitForServer();
 
+  console.log("Relay integration: checking read-only service and staging");
   const closedLanding = await fetch(`${server.base}/`);
   const closedLandingHtml = await closedLanding.text();
   assert.match(closedLandingHtml, /IARC Relay/);
@@ -199,6 +201,7 @@ try {
 
   server = await startServer(true);
   await server.waitForServer();
+  console.log("Relay integration: checking write-enabled routes and composer screens");
   const { base } = server;
 
   const landing = await fetch(`${base}/`);
@@ -207,21 +210,20 @@ try {
   assert.match(landing.headers.get("content-security-policy"), /default-src 'none'/);
   assert.doesNotMatch(landingHtml, /href="\/(?:start|prepare|stage|publish)(?:\?|\/|"|<)/i);
   assert.match(landingHtml, /isolated local prototype; not deployed/);
-  const keyboardResponse = await fetch(`${base}/predictive-keyboard/html/`);
+  const keyboardRedirect = await fetch(`${base}/predictive-keyboard/html/`, { redirect: "manual" });
+  assert.equal(keyboardRedirect.status, 303, "the original HTML keyboard entry converges on the integrated word-link interface");
+  console.log("Relay integration: rendering contextual keyboard");
+  const keyboardStarted = performance.now();
+  const keyboardResponse = await fetch(new URL(keyboardRedirect.headers.get("location"), base));
   const keyboardHtml = await keyboardResponse.text();
+  console.log(`Contextual keyboard initial response: ${Math.round(performance.now() - keyboardStarted)} ms, ${new TextEncoder().encode(keyboardHtml).byteLength} HTML bytes (local Wrangler)`);
   assert.equal(keyboardResponse.status, 200);
   assert.match(keyboardResponse.headers.get("content-type"), /text\/html/);
-  const predictionMarkup = keyboardHtml.match(/<nav class="choices" aria-label="Top word predictions">([\s\S]*?)<\/nav>/)?.[1] || "";
-  assert.equal((predictionMarkup.match(/<a\b/g) || []).length, 10, "HTML keyboard exposes ten server-generated predictions");
-  assert.match(keyboardHtml, /aria-label="Turn shift on"/, "keyboard exposes a linked shift key");
-  const symbolsHref = suppliedHref(keyboardHtml, (anchor) => anchor.includes('aria-label="?123"'));
-  const symbolsHtml = await (await fetch(new URL(symbolsHref.replaceAll("&amp;", "&"), base))).text();
-  assert.match(symbolsHtml, /aria-label="Symbols keyboard"/);
-  assert.match(symbolsHtml, /aria-label="Add :"/, "symbols keyboard can add a colon");
-  assert.match(symbolsHtml, /aria-label="Add -"/, "symbols keyboard can add a hyphen");
-  const shiftHref = suppliedHref(keyboardHtml, (anchor) => anchor.includes('aria-label="turn shift on"'));
-  const shiftedHtml = await (await fetch(new URL(shiftHref.replaceAll("&amp;", "&"), base))).text();
-  assert.match(shiftedHtml, /aria-label="Add uppercase o"/i, "shifted keyboard exposes capital-letter links");
+  assert.match(keyboardHtml, /<textarea\b/u, "integrated HTML keyboard keeps exact text entry on its main screen");
+  assert.match(keyboardHtml, /<select\b[^>]*aria-label="More words"/u, "integrated keyboard offers additional contextual predictions");
+  assert.match(keyboardHtml, /Punctuation/u);
+  assert.match(keyboardHtml, /aria-label="Turn shift on"/u, "keyboard exposes linked shift control");
+  assert.match(keyboardHtml, /aria-label="\?123"/u, "keyboard links to its symbol layout");
   const crawlQueue = ["/"];
   const crawled = new Set();
   while (crawlQueue.length) {
@@ -230,7 +232,16 @@ try {
     crawled.add(crawlPath);
     assert.ok(crawled.size <= 128, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
     const crawlResponse = await fetch(`${base}${crawlPath}`, { redirect: "manual" });
+    if (["/compose/semantic/", "/compose/semantic", "/predictive-keyboard/html/", "/predictive-keyboard/html"].includes(crawlPath)) {
+      assert.equal(crawlResponse.status, 303, `legacy entry redirects to the shared keyboard: ${crawlPath}`);
+      assert.match(new URL(crawlResponse.headers.get("location"), base).pathname, /^\/predictive-keyboard\/html\/word-links\//u);
+      continue;
+    }
     assert.ok(crawlResponse.status >= 200 && crawlResponse.status < 300, `crawler GET resolves without redirect: ${crawlPath}`);
+    if (crawlPath.startsWith("/predictive-keyboard/html/word-links/")) {
+      assert.match(crawlResponse.headers.get("content-type"), /text\/html/u, "integrated keyboard is reachable as ordinary HTML");
+      continue; // The keyboard creates a session and its nofollow choices intentionally mutate private draft state.
+    }
     if ((crawlResponse.headers.get("content-type") || "").startsWith("text/html")) {
       const html = await crawlResponse.text();
       const isComposerPage = crawlPath.startsWith("/compose/token/experimental") || crawlPath.startsWith("/compose/token/o200k") || crawlPath.startsWith("/predictive-keyboard/html") || crawlPath.startsWith("/compose/semantic/");
@@ -1173,118 +1184,81 @@ try {
   assert.equal(reusedId.response.status, 409, "single-shot idempotency key cannot publish changed content");
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "single-shot confirmation publishes exactly once");
 
-  const semanticOverview = await fetch(`${quickBase}/compose/semantic/`);
-  const semanticOverviewHtml = await semanticOverview.text();
-  assert.equal(semanticOverview.status, 200);
-  assert.match(semanticOverviewHtml, /pinned 48,262-word English spelling list/);
-  assert.match(semanticOverviewHtml, /Contextual predictions are not enabled/);
-  assert.match(semanticOverview.headers.get("cache-control"), /no-store/);
+  const semanticOverview = await fetch(`${quickBase}/compose/semantic/`, { redirect: "manual" });
+  assert.equal(semanticOverview.status, 303, "the former semantic entry converges on the shared keyboard");
+  assert.match(new URL(semanticOverview.headers.get("location"), quickBase).pathname, /^\/predictive-keyboard\/html\/word-links\//u);
+  const originalKeyboardEntry = await fetch(`${quickBase}/predictive-keyboard/html/`, { redirect: "manual" });
+  assert.equal(originalKeyboardEntry.status, 303, "the original keyboard entry uses the same integrated composition surface");
+  assert.match(new URL(originalKeyboardEntry.headers.get("location"), quickBase).pathname, /^\/predictive-keyboard\/html\/word-links\//u);
+  assert.equal((await fetch(`${quickBase}/compose/semantic/`, { method: "HEAD", redirect: "manual" })).status, 405, "HEAD does not start a keyboard session through the legacy alias");
+  assert.equal((await fetch(`${quickBase}/compose/semantic/`, { method: "OPTIONS" })).status, 204);
   assert.equal((await fetch(`${quickBase}/privacy`)).headers.get("cache-control"), "public, max-age=0, must-revalidate");
   assert.match(await (await fetch(`${quickBase}/privacy.txt`)).text(), /SEMANTIC COMPOSER/);
   const archivedPrivacy17 = await fetch(`${quickBase}/privacy/history/1.7.0.txt`);
   assert.equal(archivedPrivacy17.status, 200, "superseded privacy notice 1.7.0 remains retrievable");
   assert.match(await archivedPrivacy17.text(), /Version 1\.7\.0/);
-  assert.equal((await fetch(`${quickBase}/compose/semantic/start`, { method: "HEAD" })).status, 405, "HEAD cannot create a semantic session");
-  assert.equal((await fetch(`${quickBase}/compose/semantic/start`, { method: "OPTIONS" })).status, 204, "OPTIONS does not create a semantic session");
-  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "semantic overview and method probes do not publish");
+  assert.equal((await fetch(`${quickBase}/compose/semantic/start`, { method: "HEAD" })).status, 405, "legacy semantic start links still reject HEAD");
+  assert.equal((await fetch(`${quickBase}/compose/semantic/start`, { method: "OPTIONS" })).status, 204, "legacy semantic OPTIONS does not create a session");
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "composer entry and method probes do not publish");
 
-  const href = (html, phrase) => suppliedHref(html, (anchor) => anchor.includes(phrase)).replaceAll("&amp;", "&");
-  const startLink = href(semanticOverviewHtml, "start a temporary draft");
-  const startResponse = await fetch(new URL(startLink, quickBase), { redirect: "manual" });
-  assert.equal(startResponse.status, 303, "a fresh start capability creates exactly one editing session");
-  const initialStateUrl = new URL(startResponse.headers.get("location"), quickBase);
-  assert.ok(initialStateUrl.searchParams.get("session"), "state links bind the standard Relay session");
-  const initialPageResponse = await fetch(initialStateUrl);
-  const initialPage = await initialPageResponse.text();
-  assert.equal(initialPageResponse.status, 200);
-  assert.match(initialPage, /\(empty\)/);
-  const initialHead = await fetch(initialStateUrl, { method: "HEAD" });
-  assert.equal(initialHead.status, 200, "HEAD may inspect but does not create a branch");
-  const refreshOptions = await fetch(`${quickBase}/compose/semantic/add`, { method: "OPTIONS" });
-  assert.equal(refreshOptions.status, 204);
-
-  const linkLayoutPage = await (await fetch(new URL(href(initialPage, "use links-only view"), quickBase))).text();
-  const phraseLink = href(linkLayoutPage, "i think");
-  const [phraseResponse, phraseReplayResponse] = await Promise.all([
-    fetch(new URL(phraseLink, quickBase)),
-    fetch(new URL(phraseLink, quickBase)),
-  ]);
-  const phrasePage = await phraseResponse.text();
-  const phraseReplayPage = await phraseReplayResponse.text();
-  assert.equal(phraseResponse.status, 200, "one phrase activation returns the new draft directly");
-  assert.equal(phraseReplayResponse.status, 200, "concurrent replay returns the same child branch");
-  assert.match(phrasePage, /I think/);
-  assert.match(phrasePage, /7 UTF-8 bytes/);
-  assert.equal(phrasePage.match(/State (sem_[A-Za-z0-9_-]+)/)?.[1], phraseReplayPage.match(/State (sem_[A-Za-z0-9_-]+)/)?.[1], "concurrent identical additions converge on one immutable child");
-  const firstBranchUrl = new URL(href(phrasePage, "undo last addition"), quickBase);
-  const suffixBranchResponse = await fetch(new URL(href(phrasePage, "this is useful"), quickBase));
-  const suffixBranch = await suffixBranchResponse.text();
-  assert.equal(suffixBranchResponse.status, 200, suffixBranch);
-  assert.match(suffixBranch, /I think This is useful/);
-  const undone = await fetch(firstBranchUrl);
-  assert.match(await undone.text(), /I think/);
-
-  const formatLink = href(phrasePage, "format next addition");
-  const formatPageResponse = await fetch(new URL(formatLink, quickBase));
-  assert.equal(formatPageResponse.status, 200);
-  assert.match(await formatPageResponse.text(), /Suffix punctuation appears outside/);
-  const unicodeBufferUrl = `${quickBase}/compose/semantic/characters?${new URLSearchParams({ session: initialStateUrl.searchParams.get("session"), state: initialStateUrl.searchParams.get("state"), view: initialStateUrl.searchParams.get("view"), cp: "1F680" })}`;
-  const unicodeBufferResponse = await fetch(unicodeBufferUrl);
-  const unicodeBufferPage = await unicodeBufferResponse.text();
-  assert.equal(unicodeBufferResponse.status, 200);
-  assert.match(unicodeBufferPage, /🚀/u, "literal codepoint lane handles non-ASCII without JavaScript");
-
-  const typeLink = href(phrasePage, "type exact text");
-  const typePageResponse = await fetch(new URL(typeLink, quickBase));
-  const typePage = await typePageResponse.text();
-  assert.equal(typePageResponse.status, 200);
-  assert.match(typePage, /<form method="get" action="\/compose\/semantic\/add">/, "exact-text lane uses a no-JavaScript GET form");
-  const typeAction = typePage.match(/<button type="submit" name="action" value="([^"]+)">Add typed text<\/button>/)?.[1];
-  assert.ok(typeAction, "typed text form provides a signed, explicit add action");
-  const typedSession = typePage.match(/name="session" value="([^"]+)"/)?.[1];
-  const typedState = typePage.match(/name="state" value="([^"]+)"/)?.[1];
-  const typedView = typePage.match(/name="view" value="([^"]+)"/)?.[1];
-  const typedUrl = `${quickBase}/compose/semantic/add?${new URLSearchParams({ session: typedSession, state: typedState, view: typedView, action: typeAction, text: " café", join: "exact" })}`;
-  const typedResponse = await fetch(typedUrl);
-  const typedPage = await typedResponse.text();
-  assert.equal(typedResponse.status, 200);
-  assert.match(typedPage, /I think café/);
-
-  const reviewLink = href(typedPage, "review this draft");
-  const reviewResponse = await fetch(new URL(reviewLink, quickBase));
-  const reviewPage = await reviewResponse.text();
-  assert.equal(reviewResponse.status, 200, "review atomically stages the exact stored body");
-  assert.match(reviewPage, /I think café/);
-  const semanticPublishHref = href(reviewPage, "publish this message publicly");
-  const publishResponse = await fetch(new URL(semanticPublishHref, quickBase));
-  const semanticReceipt = await publishResponse.json();
-  assert.equal(publishResponse.status, 201);
-  assert.equal(semanticReceipt.published, true);
-  const semanticMessage = (await getJson(`${quickBase}${semanticReceipt.message_url}`)).body;
-  assert.equal(semanticMessage.body, "I think café");
-  assert.deepEqual(semanticMessage.composer, semanticComposerFixture);
-  assert.equal(semanticMessage.transport, "link-composer-get");
-  assert.equal(validateMessage(semanticMessage), true, `published semantic record validates: ${JSON.stringify(validateMessage.errors)}`);
-  const semanticReplay = await fetch(new URL(semanticPublishHref, quickBase));
-  assert.equal(semanticReplay.status, 201, "semantic publication replay returns the protocol’s publication receipt status");
-  assert.equal((await semanticReplay.json()).message_id, semanticReceipt.message_id);
-  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 4, "semantic publication is idempotent");
-  assert.equal((await fetch(initialStateUrl)).status, 410, "published private branch graph is retired");
-
-  const discardOverview = await (await fetch(`${quickBase}/compose/semantic/`)).text();
-  const discardStart = await fetch(new URL(href(discardOverview, "start a temporary draft"), quickBase), { redirect: "manual" });
-  const discardStateUrl = new URL(discardStart.headers.get("location"), quickBase);
-  const discardRoot = await (await fetch(discardStateUrl)).text();
-  const discardLinkLayout = await (await fetch(new URL(href(discardRoot, "use links-only view"), quickBase))).text();
-  const discardPhrase = await (await fetch(new URL(href(discardLinkLayout, "i think"), quickBase))).text();
-  const discardReview = await (await fetch(new URL(href(discardPhrase, "review this draft"), quickBase))).text();
-  const discardLink = href(discardReview, "discard private draft and edit");
-  const discardedResponse = await fetch(new URL(discardLink, quickBase), { redirect: "manual" });
-  assert.equal(discardedResponse.status, 303, await discardedResponse.clone().text());
-  const editableAfterDiscard = await fetch(new URL(discardedResponse.headers.get("location"), quickBase));
-  assert.match(await editableAfterDiscard.text(), /I think/);
-  const invalidatedPublish = await fetch(new URL(href(discardReview, "publish this message publicly"), quickBase));
-  assert.equal(invalidatedPublish.status, 410, "discard invalidates the staged publication capability");
+  const integratedKeyboardResponse = await fetch(`${quickBase}/predictive-keyboard/html/word-links/`);
+  const integratedKeyboard = await integratedKeyboardResponse.text();
+  assert.equal(integratedKeyboardResponse.status, 200);
+  assert.match(integratedKeyboard, /<textarea\b/u, "the primary keyboard keeps ordinary text input on the draft screen");
+  const phraseBlock = integratedKeyboard.match(/<div class="choices" aria-label="Likely phrase continuations">([\s\S]*?)<\/div>/u)?.[1] || "";
+  const phraseLabels = [...phraseBlock.matchAll(/<button[^>]*>([^<]+)<\/button>/gu)].map((match) => match[1].trim().split(/\s+/u));
+  assert.ok(phraseLabels.length >= 4, "composer supplies at least four conditional phrase choices");
+  assert.ok(phraseLabels.some((phrase) => phrase.length >= 3) && phraseLabels.every((phrase) => phrase.length >= 2 && phrase.length <= 5), "phrase suggestions are conditionally expanded to two through five words");
+  assert.match(integratedKeyboard, /Prediction links for link-only clients/u, "agents unable to submit forms still get signed prediction links");
+  assert.match(integratedKeyboard, /<select\b[^>]*aria-label="More words"/u, "the same screen offers expanded contextual words");
+  assert.match(integratedKeyboard, /Punctuation/u, "punctuation is available inline");
+  assert.match(integratedKeyboard, /aria-label="Letters keyboard"/u, "clickable character keys stay on the primary screen");
+  assert.match(integratedKeyboardResponse.headers.get("content-security-policy"), /form-action 'self'/u, "native GET forms are permitted by the page policy");
+  const moreOptionCount = (integratedKeyboard.match(/<option\b/g) || []).length;
+  assert.ok(moreOptionCount >= 30, `expanded contextual selector should contain at least 30 more words (found ${moreOptionCount})`);
+  const formScope = integratedKeyboard.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
+  assert.ok(formScope, "keyboard suggestions submit within the current saved state");
+  const rWordsUrl = `${quickBase}/predictive-keyboard/html/word-links/state/${formScope}?prefix=r`;
+  const rWordsPage = await (await fetch(rWordsUrl)).text();
+  assert.match(rWordsPage, /Add recursion/u, "reviewed Commons vocabulary repairs a known useful-prefix gap");
+  assert.match(rWordsPage, /Model-ranked matches first, then reviewed Commons terms/u);
+  const candidate = integratedKeyboard.match(/<button[^>]*name="pick" value="(word:[^"]+)"[^>]*>/u)?.[1];
+  assert.ok(candidate, "keyboard supplies direct contextual word actions");
+  const candidateParts = decodeHtml(candidate.slice("word:".length)).split(":");
+  const candidateText = candidateParts.slice(0, -1).join(":");
+  const addWord = await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${formScope}?${new URLSearchParams({ pick: candidate, suffix: ".", case: "as-is", wrapper: "none", layout: "letters" })}`);
+  const addedWordPage = await addWord.text();
+  assert.equal(addWord.status, 200, addedWordPage);
+  const resultingDraft = addedWordPage.match(/<pre class="draft"[^>]*>([\s\S]*?)<\/pre>/u);
+  assert.ok(resultingDraft, "keyboard response includes the updated draft");
+  assert.equal(decodeHtml(resultingDraft[1]), `${candidateText}.`, "word and punctuation are committed in one request without a trailing-space confirmation");
+  // Use a fresh short-lived session here: this suite also exercises many older routes before reaching this point.
+  const textEntryPage = await (await fetch(`${quickBase}/predictive-keyboard/html/word-links/`)).text();
+  const textEntryScope = textEntryPage.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
+  const textEntryCandidate = textEntryPage.match(/<button[^>]*name="pick" value="(word:[^"]+)"[^>]*>/u)?.[1];
+  assert.ok(textEntryScope && textEntryCandidate, "keyboard has one form for typed text and contextual candidates");
+  const pendingPick = await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${textEntryScope}?${new URLSearchParams({ pick: textEntryCandidate, text: "unsent note", case: "as-is", wrapper: "none", suffix: "", layout: "letters" })}`);
+  const pendingPickPage = await pendingPick.text();
+  assert.equal(pendingPick.status, 200, pendingPickPage);
+  const pendingDraft = decodeHtml(pendingPickPage.match(/<pre class="draft"[^>]*>([\s\S]*?)<\/pre>/u)?.[1] || "");
+  assert.ok(!pendingDraft.includes("unsent note"), "choosing a word does not implicitly commit typed text");
+  assert.match(pendingPickPage, /<textarea[^>]*name="text"[^>]*>unsent note<\/textarea>/u, "uncommitted typed text survives a prediction submission");
+  const typedScope = pendingPickPage.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
+  const typedPageResponse = await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${typedScope}?${new URLSearchParams({ action: "typed", text: "unsent note", join: "space-if-needed", layout: "letters" })}`);
+  const typedPage = await typedPageResponse.text();
+  assert.equal(typedPageResponse.status, 200, typedPage);
+  assert.match(typedPage, /unsent note/u, "explicit Add text commits the textarea contents");
+  const reviewLink = suppliedHref(addedWordPage, (anchor) => anchor.includes("review message")).replaceAll("&amp;", "&");
+  const reviewPageResponse = await fetch(new URL(reviewLink, quickBase));
+  const reviewPage = await reviewPageResponse.text();
+  assert.equal(reviewPageResponse.status, 200, "integrated keyboard review stages a private draft");
+  assert.match(reviewPage, /Publish this message publicly/u);
+  assert.match(reviewPage, new RegExp(candidateText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  const discardLink = suppliedHref(reviewPage, (anchor) => anchor.includes("edit message and discard")).replaceAll("&amp;", "&");
+  const discarded = await fetch(new URL(discardLink, quickBase));
+  assert.equal(discarded.status, 200, "reviewed keyboard draft can be discarded without publication");
+  assert.match(await discarded.text(), /Nothing was published/u);
+  assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "keyboard review/discard does not publish a message");
 
   console.log("IARC Relay local integration tests passed.");
 } catch (error) {

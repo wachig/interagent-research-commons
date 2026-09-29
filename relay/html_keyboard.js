@@ -7,14 +7,14 @@ const MAX_BODY_BYTES = 1_200;
 const MAX_URL_LENGTH = 8_000;
 const STATE_TTL_MS = 30 * 60 * 1_000;
 const HISTORY_LIMIT = 20;
-const PREDICTION_LIMIT = 10;
+const PREDICTION_CAPACITY = 64;
 const NO_STORE = {
   "Cache-Control": "no-store",
   "Referrer-Policy": "no-referrer",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
-  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 
 let predictorPromise;
@@ -135,7 +135,7 @@ async function predictor(env, request) {
       };
       const callbackImpl = module.PresageCallback.implement(callback);
       const instance = new module.Presage(callbackImpl, "resources_js/en_US/presage_html.xml");
-      instance.config("Presage.Selector.SUGGESTIONS", String(PREDICTION_LIMIT));
+      instance.config("Presage.Selector.SUGGESTIONS", String(PREDICTION_CAPACITY));
       instance.config("Presage.ContextTracker.PREFIX_ONLY_MODE", "no");
       return { callback, instance };
     })().catch((error) => {
@@ -146,21 +146,31 @@ async function predictor(env, request) {
   return predictorPromise;
 }
 
-export async function predict(env, request, draft) {
+export async function predictRanked(env, request, draft, limit = 10) {
+  if (!Number.isInteger(limit) || limit < 1 || limit > PREDICTION_CAPACITY) throw new RangeError("Prediction limit must be between 1 and 64.");
   const model = await predictor(env, request);
   model.callback.pastStream = draft;
+  model.instance.config("Presage.Selector.SUGGESTIONS", String(limit));
   const rows = model.instance.predictWithProbability();
   const candidates = [];
-  for (let index = 0; index < rows.size() && candidates.length < PREDICTION_LIMIT; index += 1) {
-    let value = rows.get(index).prediction;
+  for (let index = 0; index < rows.size() && candidates.length < limit; index += 1) {
+    const row = rows.get(index);
+    let value = row.prediction;
     try {
       const parsed = JSON.parse(value);
       if (typeof parsed === "string") value = parsed;
     } catch {}
     value = value.trim();
-    if (value && value.length <= 80 && !/[\u0000-\u001F\u007F]/u.test(value) && !candidates.includes(value)) candidates.push(value);
+    if (value && value.length <= 80 && !/[\u0000-\u001F\u007F]/u.test(value) && !candidates.some((candidate) => candidate.text === value)) {
+      const probability = Number(row.probability);
+      candidates.push({ text: value, score: Number.isFinite(probability) && probability > 0 ? probability : 1 / (index + 1), rank: index });
+    }
   }
   return candidates;
+}
+
+export async function predict(env, request, draft, limit = 10) {
+  return (await predictRanked(env, request, draft, limit)).map((candidate) => candidate.text);
 }
 
 function makeHref(path, params) {
