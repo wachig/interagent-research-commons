@@ -188,11 +188,12 @@ async function lexiconStartPairs(env, request) {
   return LEXICON_START_PAIRS_PROMISE;
 }
 
-function chunkHref(stateId, { start = "", inside = [], end = "", wordPage = 0, insidePage = 0, endPage = 0 } = {}) {
+function chunkHref(stateId, { start = "", inside = [], end = "", startPage = 0, wordPage = 0, insidePage = 0, endPage = 0 } = {}) {
   const query = new URLSearchParams({ view: "chunks" });
   if (start) query.set("start", start);
   if (inside.length) query.set("inside", inside.join("."));
   if (end) query.set("end", end);
+  if (startPage) query.set("start_page", String(startPage));
   if (wordPage) query.set("word_page", String(wordPage));
   if (insidePage) query.set("inside_page", String(insidePage));
   if (endPage) query.set("end_page", String(endPage));
@@ -250,7 +251,7 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     if (!/^\d+$/u.test(raw) || !Number.isSafeInteger(value) || value < 0 || value > 10_000) throw new Error("A chunk-choice page is invalid.");
     return value;
   };
-  const current = { start, inside, end, wordPage: pageValue("word_page"), insidePage: pageValue("inside_page"), endPage: pageValue("end_page") };
+  const current = { start, inside, end, startPage: pageValue("start_page"), wordPage: pageValue("word_page"), insidePage: pageValue("inside_page"), endPage: pageValue("end_page") };
   const chunkValid = (value) => /^\p{L}{2}$/u.test(value);
   if ((start && !chunkValid(start)) || (end && !chunkValid(end)) || inside.length > 8 || inside.some((value) => !chunkValid(value)) || new Set(inside).size !== inside.length) throw new Error("Choose distinct two-letter chunks from the displayed options.");
   const startIndex = await lexiconStartPairs(env, request);
@@ -267,7 +268,11 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
     return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add short word ${escapeHtml(autoCase(value, context))}">${escapeHtml(autoCase(value, context))}</a>`;
   }));
-  let search = `<section><h2>START</h2><p>Choose the first two letters. Each option shows how many dictionary entries begin with it.</p><div class="chunks" aria-label="Starting letter pairs">${startPairs.map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Start ${escapeHtml(value)}, ${count} matching words">${escapeHtml(value)} <small>${count}</small></a>`).join("")}</div><h3>One-character words and digits</h3><div class="chunks" aria-label="Direct one-character candidates">${shortLinks.join("")}</div></section>`;
+  const startPageSize = 48;
+  const startPage = current.startPage;
+  const visibleStartPairs = startPairs.slice(startPage * startPageSize, startPage * startPageSize + startPageSize);
+  const startPages = `${startPage ? `<a href="${escapeHtml(chunkHref(state.state_id, { startPage: startPage - 1 }))}">Previous starting pairs</a>` : ""} ${(startPage + 1) * startPageSize < startPairs.length ? `<a href="${escapeHtml(chunkHref(state.state_id, { startPage: startPage + 1 }))}">More starting pairs</a>` : ""}`;
+  let search = `<section><h2>START</h2><p>Choose the first two letters. Each option shows how many dictionary entries begin with it.</p><div class="chunks" aria-label="Starting letter pairs">${visibleStartPairs.map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Start ${escapeHtml(value)}, ${count} matching words">${escapeHtml(value)} <small>${count}</small></a>`).join("")}</div><nav class="paging" aria-label="Starting-pair pages">${startPages}</nav><p class="hint">Showing ${startPage * startPageSize + 1}–${Math.min((startPage + 1) * startPageSize, startPairs.length)} of ${startPairs.length} starting pairs.</p><h3>One-character words and digits</h3><div class="chunks" aria-label="Direct one-character candidates">${shortLinks.join("")}</div></section>`;
   let resultSummary = "Choose a starting pair to search the pinned spelling lexicon.";
   if (start) {
     const lexicon = await dictionaryWords(env, request, start);

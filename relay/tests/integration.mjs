@@ -1258,9 +1258,19 @@ try {
   assert.match(chunkEntry, /deterministic word search, not a prediction of intent/u);
   assert.match(chunkEntry, /The local English predictor only ranks matching words/u);
   assert.doesNotMatch(chunkEntry, /<select\b|<button\b|<form\b/u, "all lexical constraints and short candidates are ordinary links");
-  assert.match(chunkEntry, /aria-label="Start bo, 423 matching words"/u, "the lexicon index offers only real starting pairs and reports their counts");
-  const boHref = chunkEntry.match(/<a href="([^"]+)" aria-label="Start bo, 423 matching words">/u)?.[1];
-  assert.ok(boHref, "bo is an offered START chunk");
+  const chunkEntryBytes = new TextEncoder().encode(chunkEntry).byteLength;
+  assert.ok(chunkEntryBytes < 40_000, `the entry pages starting choices rather than sending the entire lexicon index (${chunkEntryBytes} bytes)`);
+  assert.match(chunkEntry, /Showing 1–48 of 519 starting pairs/u);
+  let startPageHtml = chunkEntry;
+  let boHref;
+  for (let page = 0; page < 12 && !boHref; page += 1) {
+    boHref = startPageHtml.match(/<a href="([^"]+)" aria-label="Start bo, 423 matching words">/u)?.[1];
+    if (boHref) break;
+    const morePairs = startPageHtml.match(/<a href="([^"]+)">More starting pairs<\/a>/u)?.[1];
+    assert.ok(morePairs, "starting-pair pages expose the remaining dictionary choices");
+    startPageHtml = await (await fetch(new URL(decodeHtml(morePairs), quickBase))).text();
+  }
+  assert.ok(boHref, "bo is an offered START chunk across linked pages");
   const boPage = await (await fetch(new URL(decodeHtml(boHref), quickBase))).text();
   assert.match(boPage, /423 matching words from 423 lexicon entries beginning bo/u);
   const findChunkChoice = async (html, group, accessibleName) => {
