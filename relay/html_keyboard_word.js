@@ -1,5 +1,6 @@
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
-import { escapeHtml, predict, predictRanked, response } from "./html_keyboard.js";
+import { escapeHtml, predictRanked, response } from "./html_keyboard.js";
+import { isPresentablePhrase } from "./phrase_safety.js";
 
 const PREFIX = "/predictive-keyboard/html/word-links";
 const MAX_BODY_BYTES = 1_200;
@@ -15,6 +16,8 @@ const WRAPPER = new Set(["none", "quote", "parenthetical"]);
 const DICTIONARY_CACHE = new Map();
 const COMMONS_WORDS = ["agent", "agents", "commons", "IARC", "interagent", "Relay", "research", "researcher", "researching", "really", "reason", "recursive", "recursion", "reply", "message", "participation", "policy", "accessibility", "token", "tokenizer", "predictive", "prediction", "composer"];
 const CANONICAL_CASE = new Map([["iarc", "IARC"], ["arc", "ARC"], ["openai", "OpenAI"], ["cloudflare", "Cloudflare"], ["github", "GitHub"], ["presage", "Presage"], ["hunspell", "Hunspell"], ["wrangler", "Wrangler"]]);
+const MIN_PHRASE_TOKEN_SHARE = 0.12;
+const MIN_PHRASE_JOINT_SHARE = 0.14;
 const NO_STORE = {
   "Cache-Control": "no-store",
   "Referrer-Policy": "no-referrer",
@@ -187,9 +190,12 @@ async function makeChild(env, request, parent, action, argument, childId, issued
     if (!choice || typeof choice.text !== "string" || !WORD.test(choice.text) && !choice.text.split(" ").every((part) => WORD.test(part))) throw new Error("Choose a word or phrase from the displayed predictions.");
     if (!CASE.has(choice.case) || !WRAPPER.has(choice.wrapper) || !PUNCTUATION.has(choice.suffix)) throw new Error("Choose a supported case, wrapper, and punctuation option.");
     const isPhrase = choice.text.includes(" ");
-    if (isPhrase) throw new Error("Phrase suggestions are paused while their content safety is reviewed. Add words one at a time.");
+    if (isPhrase && !isPresentablePhrase(choice.text)) throw new Error("That phrase is not available as a prediction.");
     if (!issuedCapability) {
-      const available = await predict(env, request, predictionContext(parentDraft, parent), 48);
+      const ranked = await predictRanked(env, request, predictionContext(parentDraft, parent), 48);
+      const available = isPhrase
+        ? (await predictPhrases(env, request, parentDraft, parent, ranked)).map((candidate) => candidate.text)
+        : ranked.map((candidate) => candidate.text);
       const predicted = available.some((candidate) => candidate.toLocaleLowerCase("en-US") === choice.text.toLocaleLowerCase("en-US"));
       const dictionaryMatch = !isPhrase && !predicted && (await dictionaryWords(env, request, choice.text.toLocaleLowerCase("en-US"))).some((candidate) => candidate.toLocaleLowerCase("en-US") === choice.text.toLocaleLowerCase("en-US"));
       if (!predicted && !dictionaryMatch) throw new Error("That candidate is not in the current prediction or word browser. Choose a displayed option.");
@@ -262,6 +268,47 @@ function usableWords(candidates) {
   });
 }
 
+async function predictPhrases(env, request, draft, state, rankedWords) {
+  const context = predictionContext(draft, state);
+  const relativeSupport = (candidates) => {
+    const total = candidates.reduce((sum, candidate) => sum + (candidate.score || 0), 0);
+    return candidates.map((candidate) => ({
+      ...candidate,
+      support: total > 0 && candidate.score !== null ? candidate.score / total : 0,
+    }));
+  };
+  const starters = relativeSupport(usableWords(rankedWords))
+    .filter((candidate) => candidate.support >= MIN_PHRASE_TOKEN_SHARE)
+    .slice(0, 4);
+  if (!starters.length) return [];
+
+  const branches = await Promise.all(starters.map(async (starter) => {
+    const following = relativeSupport(usableWords(await predictRanked(env, request, `${context}${starter.text} `, 8)));
+    return following
+      .filter((candidate) => candidate.support >= MIN_PHRASE_TOKEN_SHARE)
+      .filter((candidate) => candidate.text.toLocaleLowerCase("en-US") !== starter.text.toLocaleLowerCase("en-US"))
+      .slice(0, 2)
+      .map((candidate) => {
+        const text = `${starter.text} ${candidate.text}`;
+        return { text, score: Math.sqrt(starter.support * candidate.support), rank: starter.rank * 10 + candidate.rank };
+      })
+      .filter((candidate) => isPresentablePhrase(candidate.text));
+  }));
+
+  const phrases = branches.flat().filter((candidate) => candidate.score >= MIN_PHRASE_JOINT_SHARE);
+  phrases.sort((left, right) => right.score - left.score || left.rank - right.rank || left.text.localeCompare(right.text, "en-US"));
+  const seen = new Set();
+  const seenSecondWords = new Set();
+  return phrases.filter((phrase) => {
+    const key = phrase.text.toLocaleLowerCase("en-US");
+    const second = key.split(" ")[1];
+    if (seen.has(key) || seenSecondWords.has(second)) return false;
+    seen.add(key);
+    seenSecondWords.add(second);
+    return true;
+  }).slice(0, 4);
+}
+
 function autoCase(text, precedingText) {
   let sentenceStart = !/[\p{L}\p{N}]/u.test(precedingText) || /[.!?][\s\p{Pe}\p{Pf}"'’”]*$/u.test(precedingText);
   return text.replace(/[\p{L}\p{N}][\p{L}\p{M}\p{N}'’\-]*/gu, (token) => {
@@ -285,6 +332,9 @@ async function renderKeyboard(request, env, state, url, pendingText = "") {
   if ([...prefix].length > 20 || /[^\p{L}\p{N}'’\-]/u.test(prefix) || !Number.isSafeInteger(offset) || offset < 0 || offset % 20 !== 0) throw new Error("Word browser prefix or page is invalid.");
   const context = predictionContext(draft, state);
   const predictions = usableWords(await predictRanked(env, request, context, 48));
+  const phrases = !draft || /\s$/u.test(draft) || state.operation === "pick" || state.operation === "typed"
+    ? await predictPhrases(env, request, draft, state, predictions)
+    : [];
   const directWords = predictions.slice(0, 12);
   const moreWords = predictions.slice(12, 44);
   const formAction = `${PREFIX}/form/${word(state.state_id)}`;
@@ -294,10 +344,11 @@ async function renderKeyboard(request, env, state, url, pendingText = "") {
     const issued = JSON.stringify({ text: candidate, case: "as-is", wrapper: "none", suffix: "" });
     return signCommonWordRoute(env, "keyboard-action", state.state_id, "pick", issued);
   };
-  const candidateButton = async (candidate, shown = candidate) => `<button type="submit" name="pick" value="${escapeHtml(`word:${candidate}:${await candidateToken(candidate)}`)}">${escapeHtml(shown)}</button>`;
-  const directButtons = (await Promise.all(directWords.map((candidate) => candidateButton(candidate.text, shifted ? candidate.text.charAt(0).toLocaleUpperCase("en-US") + candidate.text.slice(1) : autoCase(candidate.text, context))))).join("");
+  const candidateButton = async (kind, candidate, shown = candidate) => `<button type="submit" name="pick" value="${escapeHtml(`${kind}:${candidate}:${await candidateToken(candidate)}`)}">${escapeHtml(shown)}</button>`;
+  const phraseButtons = (await Promise.all(phrases.map((candidate) => candidateButton("phrase", candidate.text, autoCase(candidate.text, context))))).join("");
+  const directButtons = (await Promise.all(directWords.map((candidate) => candidateButton("word", candidate.text, shifted ? candidate.text.charAt(0).toLocaleUpperCase("en-US") + candidate.text.slice(1) : autoCase(candidate.text, context))))).join("");
   const moreOptions = (await Promise.all(moreWords.map(async (candidate) => `<option value="${escapeHtml(`${candidate.text}:${await candidateToken(candidate.text)}`)}">${escapeHtml(autoCase(candidate.text, context))}</option>`))).join("");
-  const linkCandidates = directWords.map((item) => item.text);
+  const linkCandidates = [...phrases.map((item) => item.text), ...directWords.map((item) => item.text)];
   const linkChoices = await Promise.all(linkCandidates.map(async (candidate) => {
     const choice = JSON.stringify({ text: candidate, case: "auto", wrapper: "none", suffix: "" });
     return `<a rel="nofollow" href="${escapeHtml(await makeLink("pick", choice, true))}">${escapeHtml(autoCase(candidate, context))}</a>`;
@@ -348,9 +399,9 @@ async function renderKeyboard(request, env, state, url, pendingText = "") {
     const next = offset + 20 < ordered.length ? `<a href="${escapeHtml(stateHref(state.state_id, layout, shifted, prefix, offset + 20))}">Next</a>` : "";
     prefixBrowser = `<section id="prefix-browser"><h2>Find another word · ${escapeHtml(prefix)}</h2><p class="hint">Context predictions first, reviewed Commons terms next, then ordinary spellings before proper names and acronyms. Showing ${ordered.length ? offset + 1 : 0}–${Math.min(offset + 20, ordered.length)} of ${ordered.length} matches.</p><form method="get" action="${PREFIX}/state/${word(state.state_id)}#prefix-browser"><input type="hidden" name="layout" value="${layout}"><label for="word-prefix">Prefix</label><input id="word-prefix" name="prefix" maxlength="20" value="${escapeHtml(prefix)}" autocomplete="off"><button type="submit">Find words</button></form><p>${previous} ${next}</p><div class="choices" aria-label="Matching words">${wordLinks.join("") || "<span>No matching words.</span>"}</div><h3>Continue prefix</h3><div class="choices" aria-label="Child prefixes">${childLinks.join("") || "<span>No longer matches.</span>"}</div><p><a href="${escapeHtml(stateHref(state.state_id, layout, shifted))}">Clear prefix</a></p></section>`;
   }
-  const editPanel = `<form method="get" action="${choiceFormAction}" class="compose-form"><input type="hidden" name="layout" value="${layout}">${prefix ? `<input type="hidden" name="prefix" value="${escapeHtml(prefix)}">` : ""}${offset ? `<input type="hidden" name="offset" value="${offset}">` : ""}<p class="hint">Phrase suggestions are currently unavailable. Choose a word or key below.</p><section><h2>Top 12 words</h2><p class="hint">The first 12 model suggestions for this draft. Choosing one adds that word. Suggestions may be wrong and are not safety-filtered.</p><div class="choices" aria-label="Top 12 word predictions">${directButtons || "<span>No word predictions are available.</span>"}</div></section><section><h2>More model choices</h2><p class="hint">Up to 32 more suggestions, ranked after the first 12. Available choices depend on the model output.</p>${moreSection}</section><fieldset><legend>Punctuation</legend><p class="hint">Appends directly after the chosen word; it does not add a space. Applies to word choices, not typed text.</p>${punctuation}</fieldset><fieldset><legend>Capitalization</legend><p class="hint">Automatic sentence case adjusts the chosen word. Other options preserve its casing, capitalize its first letter, or use all caps. Applies to word choices, not typed text.</p>${caseChoices}</fieldset><fieldset><legend>Wrap the word</legend><p class="hint">Adds curly quotes or parentheses around a chosen word. Punctuation stays outside the wrapper.</p>${wrapperChoices}</fieldset><section><h2>Add your own text</h2><label for="typed-text">Text</label><textarea id="typed-text" name="text" maxlength="1200" aria-describedby="typed-notice">${escapeHtml(pendingText)}</textarea><label for="join-mode">Spacing</label><select id="join-mode" name="join"><option value="exact">Append exactly as typed</option><option value="space-if-needed">Add a space first if needed</option></select><p class="hint">The spacing choice affects only the start of this text addition.</p><button type="submit" name="action" value="typed">Add text</button><p id="typed-notice" class="hint">Only “Add text” commits this field. Word buttons preserve unsent text; keyboard links cannot. The GET request includes typed text in its URL, which may appear in browser history or infrastructure logs. Never enter secrets.</p></section></form><details><summary>Choices for clients that can only follow links</summary><p class="hint">Each link adds one displayed word. The keyboard links below add characters and punctuation. This page also has forms, which work without JavaScript. Add typed text before switching to a link; links cannot carry unsent field text.</p><div class="choices" aria-label="Link-only predictions">${linkChoices.join("")}</div><details><summary>Keep the model's exact casing</summary><div class="choices" aria-label="Exact model casing">${exactCaseChoices.join("")}</div></details></details>`;
+  const editPanel = `<form method="get" action="${choiceFormAction}" class="compose-form"><input type="hidden" name="layout" value="${layout}">${prefix ? `<input type="hidden" name="prefix" value="${escapeHtml(prefix)}">` : ""}${offset ? `<input type="hidden" name="offset" value="${offset}">` : ""}<section><h2>Likely continuation</h2><p class="hint">Short two-word continuations from the English model. A limited blocklist hides known unsuitable terms; suggestions can still be wrong.</p><div class="choices" aria-label="Likely phrase continuations">${phraseButtons || "<span>No phrase suggestions passed the filter for this draft.</span>"}</div></section><section><h2>Top 12 words</h2><p class="hint">The first 12 model suggestions for this draft. Choosing one adds that word. Suggestions may be wrong and are not safety-filtered.</p><div class="choices" aria-label="Top 12 word predictions">${directButtons || "<span>No word predictions are available.</span>"}</div></section><section><h2>More model choices</h2><p class="hint">Up to 32 more suggestions, ranked after the first 12. Available choices depend on the model output.</p>${moreSection}</section><fieldset><legend>Punctuation</legend><p class="hint">Appends directly after the chosen word; it does not add a space. Applies to word choices, not typed text.</p>${punctuation}</fieldset><fieldset><legend>Capitalization</legend><p class="hint">Automatic sentence case adjusts the chosen word. Other options preserve its casing, capitalize its first letter, or use all caps. Applies to word choices, not typed text.</p>${caseChoices}</fieldset><fieldset><legend>Wrap the word</legend><p class="hint">Adds curly quotes or parentheses around a chosen word. Punctuation stays outside the wrapper.</p>${wrapperChoices}</fieldset><section><h2>Add your own text</h2><label for="typed-text">Text</label><textarea id="typed-text" name="text" maxlength="1200" aria-describedby="typed-notice">${escapeHtml(pendingText)}</textarea><label for="join-mode">Spacing</label><select id="join-mode" name="join"><option value="exact">Append exactly as typed</option><option value="space-if-needed">Add a space first if needed</option></select><p class="hint">The spacing choice affects only the start of this text addition.</p><button type="submit" name="action" value="typed">Add text</button><p id="typed-notice" class="hint">Only “Add text” commits this field. Word buttons preserve unsent text; keyboard links cannot. The GET request includes typed text in its URL, which may appear in browser history or infrastructure logs. Never enter secrets.</p></section></form><details><summary>Choices for clients that can only follow links</summary><p class="hint">Each link adds one displayed word or phrase. The keyboard links below add characters and punctuation. This page also has forms, which work without JavaScript. Add typed text before switching to a link; links cannot carry unsent field text.</p><div class="choices" aria-label="Link-only predictions">${linkChoices.join("")}</div><details><summary>Keep the model's exact casing</summary><div class="choices" aria-label="Exact model casing">${exactCaseChoices.join("")}</div></details></details>`;
   const draftTail = draft.endsWith(" ") ? " Draft ends with a space." : draft.endsWith("\n") ? " Draft ends with a line break." : "";
-  const body = `<h1>Contextual HTML keyboard</h1><p class="notice">Model suggestions can change even when the same draft is reopened; they are unfiltered predictions, not verified facts. Following a word or key link, or submitting a form, saves a private step. <strong>Some crawlers and prefetchers follow links automatically.</strong> Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>${reply}<section id="draft"><h2>Draft</h2><pre class="draft" aria-live="polite">${escapeHtml(draft) || " "}</pre><p class="hint">${new TextEncoder().encode(draft).byteLength} UTF-8 bytes · 1200 max.${draftTail}</p></section><div id="choices">${editPanel}</div>${prefixBrowser}<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav></section>${controls ? `<nav class="controls" aria-label="Draft controls">${controls}</nav>` : `<p class="hint">Choose a word or keyboard key to begin. Undo, clear, and review controls appear once the draft has text.</p>`}</main>`;
+  const body = `<h1>Contextual HTML keyboard</h1><p class="notice">Model suggestions can change when a draft is reopened and are not verified facts. Word suggestions are unfiltered; phrase suggestions omit a limited list of known unsuitable terms. Following a word or key link, or submitting a form, saves a private step. <strong>Some crawlers and prefetchers follow links automatically.</strong> Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>${reply}<section id="draft"><h2>Draft</h2><pre class="draft" aria-live="polite">${escapeHtml(draft) || " "}</pre><p class="hint">${new TextEncoder().encode(draft).byteLength} UTF-8 bytes · 1200 max.${draftTail}</p></section><div id="choices">${editPanel}</div>${prefixBrowser}<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav></section>${controls ? `<nav class="controls" aria-label="Draft controls">${controls}</nav>` : `<p class="hint">Choose a word or keyboard key to begin. Undo, clear, and review controls appear once the draft has text.</p>`}</main>`;
   return response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Contextual HTML keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible,.key:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.key-grid{display:flex;flex-direction:column;gap:.4rem}.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.35rem}.keyrow.indented{margin-inline:5%}.keyrow.third{grid-template-columns:repeat(11,minmax(0,1fr))}.keyrow.symbols{grid-template-columns:repeat(10,minmax(0,1fr))}.keyrow.bottom{grid-template-columns:repeat(10,minmax(0,1fr))}.key{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:center;padding:.35rem .15rem;border:1px solid #ccd6df;border-radius:6px;background:#f8fafb;color:#25343b;text-decoration:none;font-weight:650;box-shadow:0 2px 0 #d6dfe2}.key.wide{grid-column:span 2}.key.space{grid-column:span 4}.key.spacer{visibility:hidden}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}.primary{display:inline-block;padding:.65rem .9rem;border:1px solid #086b62;border-radius:5px;color:#086b62;font-weight:700}@media(max-width:380px){main{padding:12px}.keyrow,.keyrow.third{gap:.2rem}.key{font-size:.82rem;min-height:44px}}</style><style>.choices button,.more-row button,.type-form button{min-height:44px;padding:.55rem .75rem;border:1px solid #086b62;border-radius:5px;background:#fff;color:#086b62;font:inherit;font-weight:650;cursor:pointer}.choices button{min-width:2.2rem}.choices button:hover,.more-row button:hover{background:#e9f4f1}.choices button:focus-visible,.key:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.compose-form,.type-form{display:grid;gap:.65rem}.compose-form .choices{margin:.5rem 0}.more-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.more-row select{flex:1;min-width:12rem}.compose-form select,.compose-form input:not([type=radio]),.type-form select,.type-form textarea{min-height:44px;padding:.55rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:inherit;font:inherit}.type-form textarea{min-height:5rem;resize:vertical}.compose-form fieldset{border:1px solid #ccd6df;border-radius:5px;padding:.5rem .7rem;display:flex;gap:.75rem;flex-wrap:wrap}.compose-form fieldset .hint{flex-basis:100%}.compose-form legend{font-weight:650;padding:0 .25rem}.radio{display:inline-flex;align-items:center;gap:.3rem;min-height:36px}.hint{font-size:.82rem;color:#526466;margin:.2rem 0}.draft{white-space:pre-wrap;overflow-wrap:anywhere}.controls{margin:1rem 0}@media(max-width:380px){main{padding:12px}.more-row{align-items:stretch}.more-row select{min-width:100%}}</style></head><body><main>${body}</body></html>`);
 }
 
@@ -445,7 +496,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       } else throw new Error("Choose a displayed phrase, word, or keyboard action.");
       if (!new Set(["word", "phrase"]).has(kind)) throw new Error("The selected candidate type is invalid.");
       if (kind === "word" && candidate.includes(" ")) throw new Error("Choose a single word.");
-      if (kind === "phrase") throw new Error("Phrase suggestions are currently unavailable. Choose a word or key instead.");
+      if (kind === "phrase" && (!candidate.includes(" ") || !isPresentablePhrase(candidate))) throw new Error("Choose a displayed phrase without a blocked term.");
       const issuedArgument = JSON.stringify({ text: candidate, case: "as-is", wrapper: "none", suffix: "" });
       if (await signCommonWordRoute(env, "keyboard-action", state.state_id, "pick", issuedArgument) !== issuedToken) throw new Error("This candidate was not issued for the current draft.");
       const choice = { text: candidate, case: values.get("case") || "auto", wrapper: values.get("wrapper") || "none", suffix: values.get("suffix") || "" };

@@ -8,10 +8,17 @@ import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import composerSchemaFixtures from "./fixtures/composer-schema-0.9.json" with { type: "json" };
+import { isPresentablePhrase } from "../phrase_safety.js";
 
 const relayRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = path.resolve(relayRoot, "..");
 const wranglerCli = path.join(repoRoot, "node_modules/wrangler/bin/wrangler.js");
+
+assert.equal(isPresentablePhrase("Hello world"), true, "ordinary two-word continuations remain available");
+assert.equal(isPresentablePhrase("cheap escorts"), false, "the reported adult-service spam phrase is hidden");
+assert.equal(isPresentablePhrase("of cheap"), false, "the reported spam phrase's incomplete leading fragment is hidden");
+assert.equal(isPresentablePhrase("escorts had"), false, "blocked terms stay hidden anywhere in the phrase");
+assert.equal(isPresentablePhrase("of cheap escorts had not"), false, "long recursive continuations are rejected");
 
 async function freePort() {
   const server = net.createServer();
@@ -1205,9 +1212,13 @@ try {
   const integratedKeyboard = await integratedKeyboardResponse.text();
   assert.equal(integratedKeyboardResponse.status, 200);
   assert.match(integratedKeyboard, /<textarea\b/u, "the primary keyboard keeps ordinary text input on the draft screen");
-  assert.match(integratedKeyboard, /Phrase suggestions are currently unavailable/u, "unavailable phrase suggestions are disclosed without implying an active review");
-  assert.doesNotMatch(integratedKeyboard, /Paused while we review phrase safety|<h2>Short phrases<\/h2>/u, "internal review wording and an empty phrase section are not shown");
-  assert.doesNotMatch(integratedKeyboard, /Likely phrase continuations|name="pick" value="phrase:/u, "phrase buttons are not issued");
+  assert.match(integratedKeyboard, /<h2>Likely continuation<\/h2>/u, "short-phrase prediction is available again");
+  assert.match(integratedKeyboard, /limited blocklist hides known unsuitable terms/u, "the phrase filter's limits are disclosed");
+  const phraseBlock = integratedKeyboard.match(/<div class="choices" aria-label="Likely phrase continuations">([\s\S]*?)<\/div>/u)?.[1] || "";
+  const phraseLabels = [...phraseBlock.matchAll(/<button[^>]*>([^<]+)<\/button>/gu)].map((match) => match[1].trim());
+  assert.ok(phraseLabels.length <= 4, "at most four short phrase suggestions are displayed");
+  assert.ok(phraseLabels.every((phrase) => phrase.split(/\s+/u).length === 2 && isPresentablePhrase(phrase)), "displayed phrases are two words and pass the limited safety filter");
+  assert.doesNotMatch(integratedKeyboard, /Paused while we review phrase safety|Phrase suggestions are currently unavailable/u, "obsolete disabled-state messages are absent");
   assert.match(integratedKeyboard, /<h2>Top 12 words<\/h2>/u, "the first model prediction group has its exact size disclosed");
   assert.match(integratedKeyboard, /Up to 32 more suggestions, ranked after the first 12/u, "the additional model prediction range is disclosed");
   assert.match(integratedKeyboard, /<summary>Choices for clients that can only follow links<\/summary>/u, "the link-only section is clearly for clients unable to submit forms");
@@ -1219,7 +1230,21 @@ try {
   assert.ok(moreOptionCount >= 30, `expanded contextual selector should contain at least 30 more words (found ${moreOptionCount})`);
   const formScope = integratedKeyboard.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
   assert.ok(formScope, "keyboard suggestions submit within the current saved state");
-  assert.match(integratedKeyboard, /Model suggestions can change even when the same draft is reopened/u, "the page discloses observed model sampling variability");
+  const phraseFixture = await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${formScope}?${new URLSearchParams({ action: "typed", text: "hello world", join: "exact", layout: "letters" })}`);
+  const phraseFixtureHtml = await phraseFixture.text();
+  const phraseFixtureBlock = phraseFixtureHtml.match(/<div class="choices" aria-label="Likely phrase continuations">([\s\S]*?)<\/div>/u)?.[1] || "";
+  const phraseFixtureButtons = [...phraseFixtureBlock.matchAll(/<button[^>]*name="pick" value="([^"]+)"[^>]*>([^<]+)<\/button>/gu)];
+  const phraseFixtureLabels = phraseFixtureButtons.map((match) => match[2].trim());
+  assert.ok(phraseFixtureLabels.length > 0, "the known hello-world context produces a phrase suggestion");
+  assert.ok(phraseFixtureLabels.length <= 4, "the hello-world fixture remains within the phrase limit");
+  assert.ok(phraseFixtureLabels.every((phrase) => isPresentablePhrase(phrase)), "the audited hello-world context returns no blocked phrase candidate");
+  const phraseFixtureScope = phraseFixtureHtml.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
+  assert.ok(phraseFixtureScope, "the phrase form stays scoped to its temporary draft");
+  const phraseChoice = decodeHtml(phraseFixtureButtons[0][1]);
+  const appliedPhrase = await (await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${phraseFixtureScope}?${new URLSearchParams({ pick: phraseChoice, suffix: "", case: "as-is", wrapper: "none", layout: "letters" })}`)).text();
+  assert.match(appliedPhrase, new RegExp(`<pre class="draft"[^>]*>hello world ${phraseFixtureLabels[0]}<\\/pre>`), "choosing a phrase adds the complete two-word prediction to the private draft");
+  console.log(`Phrase candidates after “hello world”: ${phraseFixtureLabels.join(" | ") || "none passed the filter"}`);
+  assert.match(integratedKeyboard, /Model suggestions can change when a draft is reopened/u, "the page discloses observed model sampling variability");
   assert.doesNotMatch(integratedKeyboard, /aria-label="Undo last addition"[^>]*>⌫/u, "the keyboard row does not duplicate the draft-control undo link");
   assert.doesNotMatch(integratedKeyboard, /Refresh<\/button>/u, "the unexplained no-op refresh action is removed");
   const rWordsUrl = `${quickBase}/predictive-keyboard/html/word-links/state/${formScope}?prefix=r`;
