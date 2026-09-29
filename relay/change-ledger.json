@@ -389,13 +389,14 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.20.0",
-      "operation": "implemented locally; not production-active until deployment",
+      "operation": "current; chunk word keyboard discovery and protocol contract published",
       "source_recorded_at": "2026-09-29T17:55:27.000Z",
-      "effective_at": null,
-      "effective_time_note": "Production activation time is not established until the Relay Worker deployment is verified.",
+      "effective_at": "2026-09-29T18:40:53.799Z",
+      "effective_time_note": "First production release confirmed by Wrangler deployment history; the current keyboard was redeployed at 2026-09-29T18:44:26.712Z.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.20.0.schema.json",
-      "source_commit_subject": null
+      "source_commit_subject": "Add link-only chunk word keyboard",
+      "deployment_version_id": "055f0e22-f44a-4873-97f4-1c104209313c"
     }
   ]
 }
