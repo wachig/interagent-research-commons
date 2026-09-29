@@ -1271,7 +1271,7 @@ try {
   const chunkEntry2 = await chunkEntry2Response.text();
   assert.equal(chunkEntry2Response.status, 200, chunkEntry2);
   assert.match(chunkEntry2, /<h1>Chunk Word Keyboard 2<\/h1>/u);
-  assert.match(chunkEntry2, /All 519 valid pairs are available directly/u);
+  assert.match(chunkEntry2, /Choose a lowercase letter or one of the 519 valid two-letter beginnings/u);
   assert.doesNotMatch(chunkEntry2, /Direct one- and two-letter words|Direct one-letter word choices|Direct two-letter word choices/u, "clone omits the direct short-word section");
   assert.match(chunkEntry2, /class="workspace start-only"/u, "initial one-column START selection spans the workspace");
   assert.match(chunkEntry2, /\.workspace\.start-only\{grid-template-columns:minmax\(0,1fr\)\}/u, "initial START column receives the full grid width");
@@ -1296,11 +1296,16 @@ try {
   };
   const chunkBaseUrl2 = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
   const chunkFetch2 = async (html, href) => { const target = new URL(decodeHtml(href), chunkBaseUrl2(html)); assert.match(target.pathname, /^\/predictive-keyboard\/html\/chunk-keyboard-2\//u, "clone traversal stays under its separate route"); return (await fetch(target)).text(); };
+  const singleLetterStartHref = chunkEntry2.match(/<a class="letter-choice" href="([^"]+)" aria-label="Choose single-letter START a">a<\/a>/u)?.[1];
+  assert.ok(singleLetterStartHref, "the A category heading is a lowercase selectable button");
+  const cloneAStartPage = await chunkFetch2(chunkEntry2, singleLetterStartHref);
+  assert.match(cloneAStartPage, /START <strong>a<\/strong>/u, "selecting a letter sets a one-letter START");
+  assert.match(cloneAStartPage, /<nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">[\s\S]*?>aa<small>/u, "one-letter START exposes its available two-letter continuations");
   const cloneBo = directPair(chunkEntry2, "bo");
   assert.equal(cloneBo.count, 423, "clone offers the same lexicon candidates as the original");
   const cloneBoPage = await chunkFetch2(chunkEntry2, cloneBo.href);
   assert.match(cloneBoPage, /423 matching words from 423 entries beginning bo/u);
-  assert.match(cloneBoPage, /Showing up to 20; choose a listed three-letter START/u, "two-letter starts explain the compact candidate preview");
+  assert.match(cloneBoPage, /Showing up to 20; choose a three-letter START/u, "two-letter starts explain the compact candidate preview");
   assert.doesNotMatch(cloneBoPage, />More words<|>Previous words</u, "Chunk Word Keyboard 2 has no candidate paging links");
   assert.match(cloneBoPage, /<nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">[\s\S]*?<a href="[^"]+"[^>]*>boa<\/a>/u, "the exact supplied B continuations replace candidate paging");
   assert.match(cloneBoPage, /class="workspace"/u, "after START selection, the three-column constraint workspace returns");
