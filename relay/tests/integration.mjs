@@ -1310,7 +1310,13 @@ try {
   assert.match(cloneBoPage, /<nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">[\s\S]*?<a href="[^"]+"[^>]*>boa<\/a>/u, "the exact supplied B continuations replace candidate paging");
   assert.match(cloneBoPage, /<h4><a class="letter-choice" href="[^"]+#inside-[a-z]" aria-label="Jump to INSIDE choices beginning [a-z]">[a-z]<\/a><\/h4>/u, "INSIDE group initials are lowercase button-style navigation links");
   assert.match(cloneBoPage, /<h4><a class="letter-choice" href="[^"]+#end-[a-z]" aria-label="Jump to END choices beginning [a-z]">[a-z]<\/a><\/h4>/u, "END group initials are lowercase button-style navigation links");
-  assert.match(cloneBoPage, /class="workspace"/u, "after START selection, the three-column constraint workspace returns");
+  assert.match(cloneBoPage, /class="workspace filters-only"/u, "after START selection, only the INSIDE and END columns remain");
+  assert.match(cloneBoPage, /\.workspace\.filters-only\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/u, "INSIDE and END expand into two equal columns");
+  assert.doesNotMatch(cloneBoPage, /<section class="constraint"><h2>START<\/h2>/u, "the redundant START constraint card is removed");
+  const restartSearchHref = cloneBoPage.match(/<a class="reset-search" href="([^"]+)">Restart search<\/a>/u)?.[1];
+  assert.ok(restartSearchHref, "a visible restart control remains beside the current filters");
+  const restartedSearch = await chunkFetch2(cloneBoPage, restartSearchHref);
+  assert.match(restartedSearch, /class="workspace start-only"/u, "restart returns to the beginning selector");
   assert.doesNotMatch(cloneBoPage, /class="workspace start-only"/u);
   const cloneTe = directPair(chunkEntry2, "te");
   const cloneTePage = await chunkFetch2(chunkEntry2, cloneTe.href);
