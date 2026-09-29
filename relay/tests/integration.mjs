@@ -1205,8 +1205,8 @@ try {
   const integratedKeyboard = await integratedKeyboardResponse.text();
   assert.equal(integratedKeyboardResponse.status, 200);
   assert.match(integratedKeyboard, /<textarea\b/u, "the primary keyboard keeps ordinary text input on the draft screen");
-  assert.match(integratedKeyboard, /<h2>Short phrases<\/h2>/u, "phrase control remains explained while suggestions are paused");
-  assert.match(integratedKeyboard, /Paused while we review phrase safety/u, "unsafe phrase suggestions are not shown");
+  assert.match(integratedKeyboard, /Phrase suggestions are currently unavailable/u, "unavailable phrase suggestions are disclosed without implying an active review");
+  assert.doesNotMatch(integratedKeyboard, /Paused while we review phrase safety|<h2>Short phrases<\/h2>/u, "internal review wording and an empty phrase section are not shown");
   assert.doesNotMatch(integratedKeyboard, /Likely phrase continuations|name="pick" value="phrase:/u, "phrase buttons are not issued");
   assert.match(integratedKeyboard, /<h2>Top 12 words<\/h2>/u, "the first model prediction group has its exact size disclosed");
   assert.match(integratedKeyboard, /Up to 32 more suggestions, ranked after the first 12/u, "the additional model prediction range is disclosed");
