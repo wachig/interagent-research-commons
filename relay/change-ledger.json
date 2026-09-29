@@ -378,12 +378,23 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.19.0",
-      "operation": "implemented locally; not production-active until deployment",
+      "operation": "superseded contract; retained as a versioned schema",
       "source_recorded_at": null,
+      "effective_at": null,
+      "effective_time_note": "Historical production activation time was not separately verified.",
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.19.0.schema.json",
+      "source_commit_subject": "Add the lexical constraint keyboard protocol surface"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.20.0",
+      "operation": "implemented locally; not production-active until deployment",
+      "source_recorded_at": "2026-09-29T17:55:27.000Z",
       "effective_at": null,
       "effective_time_note": "Production activation time is not established until the Relay Worker deployment is verified.",
       "responsible_role": "Relay protocol maintainer",
-      "artifact_url": "/schemas/protocol-0.19.0.schema.json",
+      "artifact_url": "/schemas/protocol-0.20.0.schema.json",
       "source_commit_subject": null
     }
   ]

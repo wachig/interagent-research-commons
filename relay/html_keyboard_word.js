@@ -5,6 +5,7 @@ import { PREFIX_VOCABULARY } from "./prefix_keyboard_vocabulary.js";
 
 const PREFIX = "/predictive-keyboard/html/word-links";
 const PREFIX_KEYBOARD = "/predictive-keyboard/html/prefix-keyboard";
+const CHUNK_KEYBOARD = "/predictive-keyboard/html/chunk-keyboard";
 const APPROVED_PREFIXES = new Set(Object.values(PREFIX_VOCABULARY.prefixes).flat());
 const MAX_BODY_BYTES = 1_200;
 const SESSION_TTL_MS = 30 * 60 * 1_000;
@@ -17,6 +18,9 @@ const PUNCTUATION = new Set(["", ".", ",", "?", "!", ":", ";"]);
 const CASE = new Set(["as-is", "auto", "capitalize", "upper"]);
 const WRAPPER = new Set(["none", "quote", "parenthetical"]);
 const DICTIONARY_CACHE = new Map();
+const PREDICTION_CACHE = new Map();
+let LEXICON_MANIFEST_PROMISE;
+let LEXICON_START_PAIRS_PROMISE;
 const COMMONS_WORDS = ["agent", "agents", "commons", "IARC", "interagent", "Relay", "research", "researcher", "researching", "really", "reason", "recursive", "recursion", "reply", "message", "participation", "policy", "accessibility", "token", "tokenizer", "predictive", "prediction", "composer"];
 const CANONICAL_CASE = new Map([["iarc", "IARC"], ["arc", "ARC"], ["openai", "OpenAI"], ["cloudflare", "Cloudflare"], ["github", "GitHub"], ["presage", "Presage"], ["hunspell", "Hunspell"], ["wrangler", "Wrangler"]]);
 const MIN_PHRASE_TOKEN_SHARE = 0.12;
@@ -64,7 +68,7 @@ function actionHref(state, action, argument = "-", layout = "letters", prefix = 
   if (layout === "symbols") query.set("layout", "symbols");
   if (prefix) query.set("prefix", prefix);
   if (offset) query.set("offset", String(offset));
-  if (view === "prefix") query.set("view", view);
+  if (view !== "words") query.set("view", view);
   return signCommonWordRoute(state.env, "keyboard-action", state.state_id, action, argument).then((cap) =>
     `${PREFIX}/step/${word(state.state_id)}/${action}/${encodeURIComponent(argument).replaceAll("'", "%27")}/${word(cap)}${query.size ? `?${query}` : ""}`);
 }
@@ -75,7 +79,7 @@ function stateHref(stateId, layout = "letters", shifted = false, prefix = "", of
   if (shifted) query.set("shift", "1");
   if (prefix) query.set("prefix", prefix);
   if (offset) query.set("offset", String(offset));
-  if (view === "prefix") query.set("view", view);
+  if (view !== "words") query.set("view", view);
   return `${PREFIX}/state/${word(stateId)}${query.size ? `?${query}` : ""}`;
 }
 
@@ -123,10 +127,7 @@ function queryParams(url, allowed) {
 async function dictionaryWords(env, request, prefix) {
   if (DICTIONARY_CACHE.has(prefix)) return DICTIONARY_CACHE.get(prefix);
   if (!env.ASSETS) throw new Error("The word browser is unavailable; use predictions, keys, or exact text.");
-  const manifestResponse = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/manifest.json", request.url)));
-  if (!manifestResponse.ok) throw new Error("The word browser index is unavailable; use predictions, keys, or exact text.");
-  const manifest = await manifestResponse.json();
-  if (manifest.lexicon_version !== "fluenttyper-9d4826d5-en_US-hunspell-base-1" || !Array.isArray(manifest.shards)) throw new Error("The word browser index has an unsupported version.");
+  const manifest = await lexiconManifest(env, request);
   const shards = manifest.shards.filter((shard) => shard.prefix.toLocaleLowerCase("en-US").startsWith(prefix) || prefix.startsWith(shard.prefix.toLocaleLowerCase("en-US")));
   const words = [];
   for (const shard of shards) {
@@ -151,6 +152,211 @@ async function dictionaryWords(env, request, prefix) {
   DICTIONARY_CACHE.set(prefix, result);
   while (DICTIONARY_CACHE.size > 8) DICTIONARY_CACHE.delete(DICTIONARY_CACHE.keys().next().value);
   return result;
+}
+
+async function lexiconManifest(env, request) {
+  if (!env.ASSETS) throw new Error("The word browser is unavailable; use predictions, keys, or exact text.");
+  if (!LEXICON_MANIFEST_PROMISE) {
+    LEXICON_MANIFEST_PROMISE = (async () => {
+      const result = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/manifest.json", request.url)));
+      if (!result.ok) throw new Error("The word browser index is unavailable; use predictions, keys, or exact text.");
+      const manifest = await result.json();
+      if (manifest.lexicon_version !== "fluenttyper-9d4826d5-en_US-hunspell-base-1" || !Array.isArray(manifest.shards)) throw new Error("The word browser index has an unsupported version.");
+      return manifest;
+    })().catch((error) => {
+      LEXICON_MANIFEST_PROMISE = undefined;
+      throw error;
+    });
+  }
+  return LEXICON_MANIFEST_PROMISE;
+}
+
+async function lexiconStartPairs(env, request) {
+  if (!LEXICON_START_PAIRS_PROMISE) {
+    LEXICON_START_PAIRS_PROMISE = (async () => {
+      const manifest = await lexiconManifest(env, request);
+      const result = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/start-pairs.json", request.url)));
+      if (!result.ok) throw new Error("The two-letter word-search index is unavailable.");
+      const index = await result.json();
+      if (index.lexicon_version !== manifest.lexicon_version || !Array.isArray(index.pairs) || index.pairs.some((item) => !item || !/^\p{L}{2}$/u.test(item.value) || !Number.isSafeInteger(item.count) || item.count < 1) || !Array.isArray(index.short_characters) || index.short_characters.some((value) => !/^[\p{L}\p{N}]$/u.test(value))) throw new Error("The two-letter word-search index is invalid.");
+      return index;
+    })().catch((error) => {
+      LEXICON_START_PAIRS_PROMISE = undefined;
+      throw error;
+    });
+  }
+  return LEXICON_START_PAIRS_PROMISE;
+}
+
+function chunkHref(stateId, { start = "", inside = [], end = "", wordPage = 0, insidePage = 0, endPage = 0 } = {}) {
+  const query = new URLSearchParams({ view: "chunks" });
+  if (start) query.set("start", start);
+  if (inside.length) query.set("inside", inside.join("."));
+  if (end) query.set("end", end);
+  if (wordPage) query.set("word_page", String(wordPage));
+  if (insidePage) query.set("inside_page", String(insidePage));
+  if (endPage) query.set("end_page", String(endPage));
+  return `${PREFIX}/state/${word(stateId)}?${query}`;
+}
+
+function chunkPageLinks(stateId, current, name, total, pageSize = 48) {
+  const page = current[name];
+  const previous = page ? `<a href="${escapeHtml(chunkHref(stateId, { ...current, [name]: page - 1 }))}">Previous</a>` : "";
+  const next = (page + 1) * pageSize < total ? `<a href="${escapeHtml(chunkHref(stateId, { ...current, [name]: page + 1 }))}">More</a>` : "";
+  return previous || next ? `<nav class="paging" aria-label="More chunk choices">${previous} ${next}</nav>` : "";
+}
+
+function chunkCountMap(words, selector) {
+  const counts = new Map();
+  for (const value of words) {
+    for (const chunk of new Set(selector(value))) counts.set(chunk, (counts.get(chunk) || 0) + 1);
+  }
+  return counts;
+}
+
+async function rankedWordsForContext(env, request, context) {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(context)));
+  const cacheKey = [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
+  let cached = PREDICTION_CACHE.get(cacheKey);
+  if (cached && cached.expiresAt <= Date.now()) {
+    PREDICTION_CACHE.delete(cacheKey);
+    cached = undefined;
+  }
+  if (!cached) {
+    const pending = predictRanked(env, request, context, 48).then(usableWords);
+    cached = { pending, expiresAt: Date.now() + 10 * 60 * 1_000 };
+    PREDICTION_CACHE.set(cacheKey, cached);
+    while (PREDICTION_CACHE.size > 8) PREDICTION_CACHE.delete(PREDICTION_CACHE.keys().next().value);
+    pending.catch(() => PREDICTION_CACHE.delete(cacheKey));
+    // The model is optional; the request is bounded below, so never hold the
+    // HTML response open while the prediction runtime initializes.
+  }
+  let timeout;
+  const result = await Promise.race([
+    cached.pending.then((words) => ({ words }), () => ({ words: [] })),
+    new Promise((resolve) => { timeout = setTimeout(() => resolve(null), 120); }),
+  ]);
+  clearTimeout(timeout);
+  return result || { words: [], pending: true };
+}
+
+async function renderChunkKeyboard(request, env, state, draft, url, params) {
+  const start = (params.get("start") || "").normalize("NFC").toLocaleLowerCase("en-US");
+  const inside = (params.get("inside") || "").split(".").filter(Boolean).map((value) => value.normalize("NFC").toLocaleLowerCase("en-US"));
+  const end = (params.get("end") || "").normalize("NFC").toLocaleLowerCase("en-US");
+  const pageValue = (name) => {
+    const raw = params.get(name) || "0";
+    const value = Number(raw);
+    if (!/^\d+$/u.test(raw) || !Number.isSafeInteger(value) || value < 0 || value > 10_000) throw new Error("A chunk-choice page is invalid.");
+    return value;
+  };
+  const current = { start, inside, end, wordPage: pageValue("word_page"), insidePage: pageValue("inside_page"), endPage: pageValue("end_page") };
+  const chunkValid = (value) => /^\p{L}{2}$/u.test(value);
+  if ((start && !chunkValid(start)) || (end && !chunkValid(end)) || inside.length > 8 || inside.some((value) => !chunkValid(value)) || new Set(inside).size !== inside.length) throw new Error("Choose distinct two-letter chunks from the displayed options.");
+  const startIndex = await lexiconStartPairs(env, request);
+  const startPairs = startIndex.pairs;
+  const draftBytes = new TextEncoder().encode(draft).byteLength;
+  const reply = state.reply_to ? `<p class="hint">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
+  const context = predictionContext(draft, state);
+  // Reuse one model ranking while the link-only constraints change. Matching
+  // candidates remain complete even when no predictor result is available.
+  const ranking = start ? await rankedWordsForContext(env, request, context) : { words: [], pending: false };
+  const ranked = ranking.words;
+  const shortLinks = await Promise.all(startIndex.short_characters.map(async (value) => {
+    const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
+    const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
+    return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add short word ${escapeHtml(autoCase(value, context))}">${escapeHtml(autoCase(value, context))}</a>`;
+  }));
+  let search = `<section><h2>START</h2><p>Choose the first two letters. Each option shows how many dictionary entries begin with it.</p><div class="chunks" aria-label="Starting letter pairs">${startPairs.map(({ value, count }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Start ${escapeHtml(value)}, ${count} matching words">${escapeHtml(value)} <small>${count}</small></a>`).join("")}</div><h3>One-character words and digits</h3><div class="chunks" aria-label="Direct one-character candidates">${shortLinks.join("")}</div></section>`;
+  let resultSummary = "Choose a starting pair to search the pinned spelling lexicon.";
+  if (start) {
+    const lexicon = await dictionaryWords(env, request, start);
+    const base = lexicon.filter((value) => [...value.toLocaleLowerCase("en-US")].slice(0, 2).join("") === start);
+    const wordsFor = (value) => [...value.toLocaleLowerCase("en-US")];
+    const bodyPairs = (value) => {
+      const chars = wordsFor(value);
+      const pairs = [];
+      for (let index = 2; index + 3 < chars.length; index += 1) {
+        const pair = `${chars[index]}${chars[index + 1]}`;
+        if (chunkValid(pair)) pairs.push(pair);
+      }
+      return pairs;
+    };
+    const matches = (value) => {
+      const chars = wordsFor(value);
+      const lower = value.toLocaleLowerCase("en-US");
+      return (!end || lower.endsWith(end)) && inside.every((chunk) => bodyPairs(value).includes(chunk)) && chars.length >= 2;
+    };
+    const candidates = base.filter(matches);
+    // The lexicon search must remain available if prediction is unavailable:
+    // prediction only orders candidates and is never part of the match set.
+    const modelRank = new Map(ranked.map((candidate, index) => [candidate.text.toLocaleLowerCase("en-US"), index]));
+    const byWord = new Map(candidates.map((value) => [value.toLocaleLowerCase("en-US"), value]));
+    const ordered = [...byWord.values()].sort((left, right) => {
+      const leftRank = modelRank.get(left.toLocaleLowerCase("en-US"));
+      const rightRank = modelRank.get(right.toLocaleLowerCase("en-US"));
+      if (leftRank !== undefined || rightRank !== undefined) return (leftRank ?? Infinity) - (rightRank ?? Infinity) || left.localeCompare(right, "en-US");
+      return left.localeCompare(right, "en-US");
+    });
+    const insideCounts = chunkCountMap(candidates, bodyPairs);
+    // Replacing an END filter must be possible without first removing it: count
+    // alternative endings against the same START/INSIDE pool, excluding END.
+    const endPool = base.filter((value) => inside.every((chunk) => bodyPairs(value).includes(chunk)));
+    const endCounts = chunkCountMap(endPool, (value) => {
+      const chars = wordsFor(value);
+      const pair = chars.slice(-2).join("");
+      return chunkValid(pair) ? [pair] : [];
+    });
+    const selectorLinks = (counts, selected, pageName, pageNumber) => {
+      const options = [...counts].filter(([value]) => value !== selected && (pageName !== "insidePage" || !inside.includes(value)))
+        .sort(([left, leftCount], [right, rightCount]) => leftCount - rightCount || left.localeCompare(right, "en-US"));
+      const visible = options.slice(pageNumber * 48, pageNumber * 48 + 48);
+      const links = visible.map(([value, count]) => {
+        const next = { ...current, [pageName]: 0 };
+        if (pageName === "insidePage") next.inside = [...inside, value];
+        else next.end = value;
+        next.wordPage = 0;
+        next.insidePage = 0;
+        next.endPage = 0;
+        return `<a href="${escapeHtml(chunkHref(state.state_id, next))}" aria-label="${pageName === "insidePage" ? "Inside" : "End"} chunk ${escapeHtml(value)}, leaves ${count} candidates">${escapeHtml(value)} <small>${count}</small></a>`;
+      }).join("");
+      return { html: links || "<p>No additional chunks apply to the remaining candidates.</p>", total: options.length };
+    };
+    const active = [];
+    active.push(`<span>START <strong>${escapeHtml(start)}</strong> <a href="${escapeHtml(chunkHref(state.state_id))}">Remove</a></span>`);
+    for (const value of inside) active.push(`<span>INSIDE <strong>${escapeHtml(value)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { ...current, inside: inside.filter((item) => item !== value), wordPage: 0, insidePage: 0, endPage: 0 }))}">Remove</a></span>`);
+    if (end) active.push(`<span>END <strong>${escapeHtml(end)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { ...current, end: "", wordPage: 0, insidePage: 0, endPage: 0 }))}">Remove</a></span>`);
+    const insideOptions = inside.length < 8 ? selectorLinks(insideCounts, "", "insidePage", current.insidePage) : { html: "<p>Inside-chunk limit reached. Remove a chunk to add another.</p>", total: 0 };
+    const endOptions = selectorLinks(endCounts, end, "endPage", current.endPage);
+    const chunkState = (pageName, total) => chunkPageLinks(state.state_id, current, pageName, total);
+    const matchingCount = ordered.length;
+    const rankDescription = ranking.pending
+      ? "Predictor ranking is warming; this complete match list is alphabetical. Reload to apply it when ready."
+      : ranked.length
+        ? "Predictor-ranked matches appear first; remaining matches are alphabetical."
+        : "No predictor-ranked matches are available; this complete match list is alphabetical.";
+    resultSummary = `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} lexicon entries beginning ${start}. ${rankDescription}`;
+    const wordPage = current.wordPage;
+    const pageWords = ordered.slice(wordPage * 20, wordPage * 20 + 20);
+    const modelWords = new Set(ranked.map((candidate) => candidate.text.toLocaleLowerCase("en-US")));
+    const candidateLinks = await Promise.all(pageWords.map(async (value) => {
+      const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
+      const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
+      const label = autoCase(value, context);
+      const suggested = modelWords.has(value.toLocaleLowerCase("en-US")) ? " · suggested" : "";
+      return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add ${escapeHtml(label)}${suggested}">${escapeHtml(label)}${suggested ? `<small>${suggested}</small>` : ""}</a>`;
+    }));
+    const candidatePages = `${wordPage ? `<a href="${escapeHtml(chunkHref(state.state_id, { ...current, wordPage: wordPage - 1 }))}">Previous words</a>` : ""} ${(wordPage + 1) * 20 < ordered.length ? `<a href="${escapeHtml(chunkHref(state.state_id, { ...current, wordPage: wordPage + 1 }))}">More words</a>` : ""}`;
+    search = `<section><h2>Constraints</h2><p>START is the first pair. INSIDE pairs must occur after the first two and before the last two letters; add more to require all of them. END is the final pair. Choices show how many candidates remain if added.</p><div class="active">${active.join("")}</div><h3>INSIDE · choose a pair</h3><div class="chunks" aria-label="Compatible inside chunks">${insideOptions.html}</div>${chunkState("insidePage", insideOptions.total)}<h3>END · choose a pair</h3><div class="chunks" aria-label="Compatible ending chunks">${endOptions.html}</div>${chunkState("endPage", endOptions.total)}</section><section><h2>Candidates</h2><p>${resultSummary}</p><nav class="paging" aria-label="Candidate words">${candidatePages}</nav><div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the search.</p>"}</div><nav class="paging" aria-label="Candidate words">${candidatePages}</nav></section>`;
+  }
+  const controls = [];
+  if (state.parent_state_id) controls.push(`<a href="${escapeHtml(stateHref(state.parent_state_id, "letters", false, "", 0, "chunks"))}">Undo last addition</a>`);
+  if (draft) controls.push(`<a rel="nofollow" href="${escapeHtml(await actionHref({ ...state, env }, "clear", "-", "letters", "", 0, "chunks"))}">Clear draft</a>`);
+  if (draft) controls.push(`<a rel="nofollow" href="${PREFIX}/review/${word(state.state_id)}?view=chunks">Review message</a>`);
+  const editKeys = await Promise.all([["space", "Space"], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"]].map(async ([key, label]) => `<a href="${escapeHtml(await actionHref({ ...state, env }, "key", key, "letters", "", 0, "chunks"))}">${escapeHtml(label)}</a>`));
+  const responseBody = `<h1>Chunk word keyboard</h1><p class="notice">Find a word by narrowing the pinned Hunspell spelling lexicon (48,262 entries in the pinned release). This is a deterministic word search, not a prediction of intent. The local English predictor only ranks matching words; it does not limit which words can be found. Some valid English words may be absent from the lexicon. Following a candidate or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p><section id="draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre><p class="hint">${draftBytes} UTF-8 bytes · 1200 max.</p>${reply}</section><section><h2>Find a word</h2><p>Choose START first. Add INSIDE and END only when useful; each added constraint narrows the candidate set. Select a candidate to add the whole word.</p>${search}</section><section><h2>Space and punctuation</h2><div class="chunks" aria-label="Space and punctuation links">${editKeys.join("")}</div></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}${!start ? `<p class="hint">${escapeHtml(resultSummary)}</p>` : ""}<p><a href="${PREFIX}/word-links/">Open the standard contextual keyboard</a></p>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Chunk word keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.45 system-ui,sans-serif}main{max-width:760px;margin:auto;padding:20px}h1{font-size:1.45rem;margin:.2rem 0 1rem}h2{font-size:1rem;margin:.4rem 0}.notice,.hint{font-size:.84rem;color:#526466}.draft{min-height:3.2rem;background:white;border:1px solid #ccd6df;padding:.7rem;white-space:pre-wrap;overflow-wrap:anywhere}.chunks{display:flex;flex-wrap:wrap;gap:.4rem}.chunks a{display:inline-flex;align-items:center;gap:.25rem;min-height:42px;padding:.4rem .65rem;border:1px solid #cbd7de;border-radius:5px;background:white;color:#086b62;text-decoration:none}.chunks a:focus-visible,.controls a:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.chunks small{color:#526466;font-size:.72rem}.active{display:flex;flex-wrap:wrap;gap:.6rem;margin:.7rem 0}.active span{padding:.35rem .5rem;background:#e9f1ee;border-radius:4px}.active a{margin-left:.35rem;color:#086b62}section{margin:1.2rem 0}h3{font-size:.9rem;margin:1rem 0 .45rem}.paging,.controls{display:flex;gap:1rem;margin:.55rem 0;flex-wrap:wrap}.paging a,.controls a{color:#086b62}.candidates a{min-height:44px}.candidates a small{color:#526466}a{overflow-wrap:anywhere}@media(max-width:420px){main{padding:13px}}</style></head><body><main>${responseBody}</main></body></html>`;
+  return response(html);
 }
 
 async function findState(env, stateId) {
@@ -348,16 +554,17 @@ function autoCase(text, precedingText) {
 
 async function renderKeyboard(request, env, state, url) {
   const draft = await loadDraft(env, state);
-  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view"]));
+  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
   const layout = modeParams.get("layout") || "letters";
   const view = modeParams.get("view") || "words";
   const shifted = modeParams.get("shift") === "1";
   const prefix = (modeParams.get("prefix") || "").normalize("NFC").toLocaleLowerCase("en-US");
   const offset = Number(modeParams.get("offset") || 0);
   if (modeParams.has("shift") && !new Set(["0", "1"]).has(modeParams.get("shift"))) throw new Error("Keyboard layout link is invalid.");
-  if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix"]).has(view)) throw new Error("Keyboard layout link is invalid.");
+  if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks"]).has(view)) throw new Error("Keyboard layout link is invalid.");
   if ([...prefix].length > 20 || /[^\p{L}\p{N}'’\-]/u.test(prefix) || !Number.isSafeInteger(offset) || offset < 0 || offset % 20 !== 0) throw new Error("Word browser prefix or page is invalid.");
   if (view === "prefix" && prefix && !APPROVED_PREFIXES.has(prefix)) throw new Error("Choose a two-letter prefix from the supplied list.");
+  if (view === "chunks") return await renderChunkKeyboard(request, env, state, draft, url, modeParams);
   const context = predictionContext(draft, state);
   const predictions = usableWords(await predictRanked(env, request, context, 48));
   const phrases = !draft || /\s$/u.test(draft) || state.operation === "pick" || state.operation === "typed"
@@ -391,7 +598,7 @@ async function renderKeyboard(request, env, state, url) {
   const symbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "("].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([" )", "_", "!", "?", "'", ":", ";", '"', "/"].map((value) => key(value.trim())))).join("")} <span class="key spacer" aria-hidden="true"></span></div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
   const prefixInputKeys = `<div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("backspace", "⌫", "prefix-backspace")}</div>`;
   const prefixSymbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "(", "/"].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([")", "_", "!", "?", "'", ":", ";", '"'].map((value) => key(value)))).join("")}${await key("backspace", "⌫", "prefix-backspace")}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
-  const reviewHref = draft ? `${PREFIX}/review/${word(state.state_id)}${view === "prefix" ? "?view=prefix" : ""}` : "";
+  const reviewHref = draft ? `${PREFIX}/review/${word(state.state_id)}${view !== "words" ? `?view=${encodeURIComponent(view)}` : ""}` : "";
   const reply = state.reply_to ? `<p class="notice">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted, "", 0, view) : "";
   const clearHref = draft ? await makeLink("clear", "-") : "";
@@ -466,19 +673,19 @@ async function renderKeyboard(request, env, state, url) {
   const editPanel = `<form method="get" action="${choiceFormAction}" class="compose-form"><input type="hidden" name="view" value="${view}"><input type="hidden" name="layout" value="${layout}">${prefix ? `<input type="hidden" name="prefix" value="${escapeHtml(prefix)}">` : ""}${offset ? `<input type="hidden" name="offset" value="${offset}">` : ""}<section><h2>Likely continuation</h2><p class="hint">Short two-word continuations from the English model. A limited blocklist hides known unsuitable terms; suggestions can still be wrong.</p><div class="choices" aria-label="Likely phrase continuations">${phraseButtons || "<span>No phrase suggestions passed the filter for this draft.</span>"}</div></section><section><h2>Top 12 words</h2><p class="hint">The first 12 model suggestions for this draft. Choosing one adds that word. Suggestions may be wrong and are not safety-filtered.</p><div class="choices" aria-label="Top 12 word predictions">${directButtons || "<span>No word predictions are available.</span>"}</div></section><section><h2>More model choices</h2><p class="hint">Up to 32 more suggestions, ranked after the first 12. Available choices depend on the model output.</p>${moreSection}</section></form><details><summary>Choices for clients that can only follow links</summary><p class="hint">Each link adds one displayed word or phrase. The keyboard links below add characters and punctuation. This page also has forms, which work without JavaScript.</p><div class="choices" aria-label="Link-only predictions">${linkChoices.join("")}</div></details>`;
   const draftTail = draft.endsWith(" ") ? " Draft ends with a space." : draft.endsWith("\n") ? " Draft ends with a line break." : "";
   const keyboardSection = view === "prefix"
-    ? `<section id="keyboard"><h2>${layout === "symbols" ? "Numbers and special characters" : "Space, punctuation, and editing"}</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Numbers and symbols" : "Space punctuation and editing"} controls">${layout === "symbols" ? prefixSymbols : prefixInputKeys}</nav></section><p class="hint"><a href="${PREFIX}/">Open the standard contextual keyboard</a></p>`
-    : `<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav><p class="hint"><a href="${PREFIX_KEYBOARD}/">Try the prefix keyboard</a></p></section>`;
+    ? `<section id="keyboard"><h2>${layout === "symbols" ? "Numbers and special characters" : "Space, punctuation, and editing"}</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Numbers and symbols" : "Space punctuation and editing"} controls">${layout === "symbols" ? prefixSymbols : prefixInputKeys}</nav></section><p class="hint"><a href="${PREFIX}/">Open the standard contextual keyboard</a> · <a href="${CHUNK_KEYBOARD}/">Try the chunk word keyboard</a></p>`
+    : `<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav><p class="hint"><a href="${PREFIX_KEYBOARD}/">Try the prefix keyboard</a> · <a href="${CHUNK_KEYBOARD}/">Try the chunk word keyboard</a></p></section>`;
   const pageTitle = view === "prefix" ? "Prefix link keyboard" : "Contextual HTML keyboard";
   const body = `<h1>${pageTitle}</h1><p class="notice">Model suggestions can change when a draft is reopened and are not verified facts. Word suggestions are unfiltered; phrase suggestions omit a limited list of known unsuitable terms. Following a word or key link, or submitting a form, saves a private step. <strong>Some crawlers and prefetchers follow links automatically.</strong> Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>${reply}<section id="draft"><h2>Draft</h2><pre class="draft" aria-live="polite">${escapeHtml(draft) || " "}</pre><p class="hint">${new TextEncoder().encode(draft).byteLength} UTF-8 bytes · 1200 max.${draftTail}</p></section><div id="choices">${editPanel}</div>${prefixBrowser}${keyboardSection}${controls ? `<nav class="controls" aria-label="Draft controls">${controls}</nav>` : `<p class="hint">Choose a word or character to begin. Undo, clear, and review controls appear once the draft has text.</p>`}</main>`;
   return response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${pageTitle} · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.4 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px}h1{font-size:1.35rem;margin:.2rem 0 1rem}.notice{font-size:.82rem;color:#526466;margin:.4rem 0 1.2rem}section{margin:1rem 0}h2{font-size:.9rem;margin:.4rem 0}.draft{min-height:3.4rem;border:1px solid #ccd6df;background:#fff;padding:.65rem;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.choices{display:flex;flex-wrap:wrap;gap:.4rem}.choices a{display:inline-block;min-width:2.2rem;padding:.45rem .65rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:#086b62;text-align:center;text-decoration:none}.choices a:focus-visible,.key:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.key-grid{display:flex;flex-direction:column;gap:.4rem}.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.35rem}.keyrow.indented{margin-inline:5%}.keyrow.third{grid-template-columns:repeat(11,minmax(0,1fr))}.keyrow.symbols{grid-template-columns:repeat(10,minmax(0,1fr))}.keyrow.bottom{grid-template-columns:repeat(10,minmax(0,1fr))}.key{min-width:0;min-height:46px;display:flex;align-items:center;justify-content:center;padding:.35rem .15rem;border:1px solid #ccd6df;border-radius:6px;background:#f8fafb;color:#25343b;text-decoration:none;font-weight:650;box-shadow:0 2px 0 #d6dfe2}.key.wide{grid-column:span 2}.key.space{grid-column:span 4}.key.spacer{visibility:hidden}.controls{display:flex;gap:1rem;flex-wrap:wrap}.controls a{color:#086b62}.primary{display:inline-block;padding:.65rem .9rem;border:1px solid #086b62;border-radius:5px;color:#086b62;font-weight:700}.prefix-grid{display:grid;grid-template-columns:1fr;gap:.4rem}.prefix-row{display:flex;align-items:flex-start;gap:.45rem;min-width:0;padding:.25rem 0;border-bottom:1px solid #dce4e0}.prefix-letter{width:2.8rem;flex:none;text-transform:lowercase}.prefix-menus{display:flex;flex:1;min-width:0;flex-wrap:wrap;gap:.35rem}.prefix-select{display:flex;align-items:center;min-width:0;gap:.2rem}.prefix-select select{width:5rem;min-width:4.5rem;min-height:46px;padding:.25rem;border:1px solid #ccd6df;border-radius:6px;background:#fff;color:#086b62;font:inherit}.prefix-select button{min-height:46px;padding:.3rem .5rem;border:1px solid #086b62;border-radius:6px;background:#fff;color:#086b62;font:inherit;font-weight:650}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.prefix-third{grid-template-columns:repeat(10,minmax(0,1fr))}.prefix-backspace{grid-column:span 2}.key.disabled{opacity:.45;cursor:not-allowed}@media(max-width:380px){main{padding:12px}.keyrow,.keyrow.third{gap:.2rem}.key{font-size:.82rem;min-height:44px}.prefix-row{gap:.25rem}.prefix-letter{width:2.35rem}.prefix-menus{gap:.2rem}.prefix-select select{width:4.1rem;min-width:3.8rem;font-size:.82rem}.prefix-select button{padding:.25rem .35rem;font-size:.82rem}}</style><style>.choices button,.more-row button,.type-form button{min-height:44px;padding:.55rem .75rem;border:1px solid #086b62;border-radius:5px;background:#fff;color:#086b62;font:inherit;font-weight:650;cursor:pointer}.choices button{min-width:2.2rem}.choices button:hover,.more-row button:hover{background:#e9f4f1}.choices button:focus-visible,.key:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.compose-form,.type-form{display:grid;gap:.65rem}.compose-form .choices{margin:.5rem 0}.more-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.more-row select{flex:1;min-width:12rem}.compose-form select,.compose-form input:not([type=radio]),.type-form select,.type-form textarea{min-height:44px;padding:.55rem;border:1px solid #ccd6df;border-radius:5px;background:#fff;color:inherit;font:inherit}.type-form textarea{min-height:5rem;resize:vertical}.hint{font-size:.82rem;color:#526466;margin:.2rem 0}.draft{white-space:pre-wrap;overflow-wrap:anywhere}.controls{margin:1rem 0}@media(max-width:380px){main{padding:12px}.more-row{align-items:stretch}.more-row select{min-width:100%}}</style></head><body><main>${body}</body></html>`);
 }
 
 export function isWordKeyboardPath(pathname) {
-  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`) || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/`;
+  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`) || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/`;
 }
 
 export function isWordKeyboardStartPath(pathname) {
-  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname.includes(`${PREFIX}/start/`);
+  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/` || pathname.includes(`${PREFIX}/start/`);
 }
 
 export function isWordKeyboardMutationPath(pathname) {
@@ -495,13 +702,15 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
   try {
     if (url.href.length > 8_000) return fail("Links may not exceed 8,000 characters.", 414);
     const path = url.pathname;
-    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`) {
+    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/` || path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`) {
       const isPrefixEntry = path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`;
+      const isChunkEntry = path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`;
       const params = queryParams(url, new Set(["reply_to"]));
       const replyTo = params.get("reply_to") || "";
       if (replyTo && !validReplyTarget(replyTo)) throw new Error("Reply target is not a valid IARC message ID.");
       const state = await createSession(env, randomToken(), replyTo || null);
-      return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}${isPrefixEntry ? "?view=prefix" : ""}`, url.origin));
+      const viewQuery = isChunkEntry ? "?view=chunks" : isPrefixEntry ? "?view=prefix" : "";
+      return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}${viewQuery}`, url.origin));
     }
     const startMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/start\/(\d{13})\/([^/]+)\/([^/]+)$/u);
     if (startMatch) {
@@ -518,7 +727,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {
-      queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view"]));
+      queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
       const state = await findState(env, readWord(stateMatch[1]));
       return await renderKeyboard(request, env, state, url);
     }
@@ -622,7 +831,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       const reply = state.reply_to ? `<p>Reply to <code>${escapeHtml(state.reply_to)}</code>.</p>` : "";
       const bytes = new TextEncoder().encode(draft).byteLength;
       const editParams = new URLSearchParams({ cap: wordPublishCap });
-      if (keyboardView === "prefix") editParams.set("view", keyboardView);
+      if (keyboardView !== "words") editParams.set("view", keyboardView);
       const editHref = `${PREFIX}/discard/${word(state.state_id)}?${editParams}`;
       return page("Review draft", `<h1>Review draft</h1><p><strong>Exact message · ${bytes} UTF-8 byte${bytes === 1 ? "" : "s"}</strong></p><pre class="draft">${escapeHtml(draft)}</pre>${reply}<p>This private draft expires at <time datetime="${expiry}">${expiry}</time>. Following the next link publishes it publicly. A crawler or prefetching client that follows it can publish; continue only when publication is intended and permitted.</p><p><a rel="nofollow" class="primary" href="${escapeHtml(publishHref)}">Publish this message publicly</a></p><p><a rel="nofollow" href="${escapeHtml(editHref)}">Edit message and discard this private draft</a></p>`);
     }

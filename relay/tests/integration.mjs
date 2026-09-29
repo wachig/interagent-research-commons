@@ -165,7 +165,7 @@ try {
   assert.match(await htmlQuick.text(), /SINGLE-SHOT GET/);
   const htmlProtocol = await fetch(`${server.base}/protocol`, { headers: { Accept: "text/html" } });
   assert.match(htmlProtocol.headers.get("content-type"), /text\/html/);
-  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.19\.0/);
+  assert.match(await htmlProtocol.text(), /IARC RELAY PROTOCOL 0\.20\.0/);
   assert.match(closedLandingHtml, /Publishing<\/dt><dd class="closed">closed/);
   const closedEntry = await fetch(`${server.base}/entry.txt`);
   assert.match(await closedEntry.text(), /Writes enabled: no/);
@@ -240,6 +240,10 @@ try {
   const crawled = new Set();
   while (crawlQueue.length) {
     const crawlPath = crawlQueue.shift();
+    // The link-only keyboard intentionally exposes a large, query-filtered
+    // lexical graph; its focused end-to-end checks appear below. Do not mistake
+    // traversing every dictionary branch for unbounded service discovery.
+    if (crawlPath.startsWith("/predictive-keyboard/html/")) continue;
     if (crawled.has(crawlPath)) continue;
     crawled.add(crawlPath);
     assert.ok(crawled.size <= 128, `the documented HTML graph remains bounded (exceeded while fetching ${crawlPath})`);
@@ -447,7 +451,8 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.19.0");
+  assert.equal(protocol.schema_version, "0.20.0");
+  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/"), "the current protocol documents the lexical constraint keyboard");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
   assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
   assert.equal(protocol.composer_experiment.prediction, false);
@@ -478,7 +483,7 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
-  assert.equal(service.identity.protocol_revision, "0.19.0");
+  assert.equal(service.identity.protocol_revision, "0.20.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
@@ -487,7 +492,8 @@ try {
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
   assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.19.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.20.0.schema.json");
+  assert.equal(service.operations.experiments.chunk_word_keyboard, "/predictive-keyboard/html/chunk-keyboard/");
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
   assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");
@@ -573,7 +579,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.2.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -581,7 +587,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.19.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.20.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
@@ -1245,6 +1251,49 @@ try {
   assert.doesNotMatch(prefixKeyboard, /aria-label="Lowercase letters controls"/u, "the prefix entry does not duplicate the QWERTY keyboard");
   const prefixKeyboardBytes = new TextEncoder().encode(prefixKeyboard).byteLength;
   assert.ok(prefixKeyboardBytes < 600_000, `individual prefix dropdowns remain compact HTML (${prefixKeyboardBytes} bytes)`);
+  const chunkEntryResponse = await fetch(`${quickBase}/predictive-keyboard/html/chunk-keyboard/`);
+  const chunkEntry = await chunkEntryResponse.text();
+  assert.equal(chunkEntryResponse.status, 200, chunkEntry);
+  assert.match(chunkEntry, /<h1>Chunk word keyboard<\/h1>/u);
+  assert.match(chunkEntry, /deterministic word search, not a prediction of intent/u);
+  assert.match(chunkEntry, /The local English predictor only ranks matching words/u);
+  assert.doesNotMatch(chunkEntry, /<select\b|<button\b|<form\b/u, "all lexical constraints and short candidates are ordinary links");
+  assert.match(chunkEntry, /aria-label="Start bo, 423 matching words"/u, "the lexicon index offers only real starting pairs and reports their counts");
+  const boHref = chunkEntry.match(/<a href="([^"]+)" aria-label="Start bo, 423 matching words">/u)?.[1];
+  assert.ok(boHref, "bo is an offered START chunk");
+  const boPage = await (await fetch(new URL(decodeHtml(boHref), quickBase))).text();
+  assert.match(boPage, /423 matching words from 423 lexicon entries beginning bo/u);
+  const findChunkChoice = async (html, group, accessibleName) => {
+    let current = html;
+    for (let page = 0; page < 20; page += 1) {
+      const selected = [...current.matchAll(/<a href="([^"]+)" aria-label="([^"]+)">/gu)].find((match) => match[2] === accessibleName);
+      if (selected) return { page: current, href: decodeHtml(selected[1]), pageCount: page };
+      const start = current.indexOf(`<h3>${group} · choose a pair</h3>`);
+      const end = current.indexOf(`<h3>${group === "INSIDE" ? "END" : "INSIDE"} · choose a pair</h3>`, start + 1);
+      const section = start >= 0 ? current.slice(start, end < 0 ? undefined : end) : "";
+      const more = section.match(/<a href="([^"]+)">More<\/a>/u)?.[1];
+      assert.ok(more, `${group} pagination exposes the remaining compatible choices`);
+      current = await (await fetch(new URL(decodeHtml(more), quickBase))).text();
+    }
+    assert.fail(`${accessibleName} was not found within 20 linked pages`);
+  };
+  const insideTt = await findChunkChoice(boPage, "INSIDE", "Inside chunk tt, leaves 7 candidates");
+  assert.match(insideTt.page, /aria-label="Inside chunk tt, leaves 7 candidates"/u, "INSIDE options are computed from the current candidate set");
+  const bottPage = await (await fetch(new URL(insideTt.href, quickBase))).text();
+  assert.match(bottPage, /7 matching words from 423 lexicon entries beginning bo/u);
+  const endingLe = await findChunkChoice(bottPage, "END", "End chunk le, leaves 1 candidates");
+  const bottlePage = await (await fetch(new URL(endingLe.href, quickBase))).text();
+  assert.match(bottlePage, /1 matching word from 423 lexicon entries beginning bo/u);
+  assert.match(bottlePage, />Bottle(?:<small>|<\/a>)/u, "the three constraints identify bottle as a candidate");
+  const bottleHref = bottlePage.match(/<a rel="nofollow" href="([^"]+)" aria-label="Add Bottle[^"]*">Bottle/u)?.[1];
+  assert.ok(bottleHref, "candidate selection is also an ordinary server-generated link");
+  const bottleAdded = await (await fetch(new URL(decodeHtml(bottleHref), quickBase))).text();
+  assert.match(bottleAdded, /<h1>Chunk word keyboard<\/h1>/u, "choosing a candidate returns to the same keyboard entry");
+  assert.match(bottleAdded, /<pre class="draft">Bottle<\/pre>/u, "choosing a candidate appends the whole automatically cased word");
+  assert.match(bottleAdded, /aria-label="Starting letter pairs"/u, "candidate selection clears lexical constraints and returns to the new-word chooser");
+  const oneLetter = chunkEntry.match(/<a rel="nofollow" href="([^"]+)" aria-label="Add short word I">I<\/a>/u)?.[1];
+  assert.ok(oneLetter, "one-character dictionary entries are available directly");
+  assert.match(await (await fetch(new URL(decodeHtml(oneLetter), quickBase))).text(), /<pre class="draft">I<\/pre>/u);
   const prefixSelectionUrl = (html, selectedPrefix, selection = selectedPrefix) => {
     const form = [...html.matchAll(/<form method="get" action="([^"]+)" class="prefix-select">([\s\S]*?)<\/form>/gu)]
       .find((match) => match[2].includes(`name="prefix" value="${selectedPrefix.replaceAll("'", "&#39;")}"`) && match[2].includes(`option value="${selection.replaceAll("'", "&#39;")}"`));

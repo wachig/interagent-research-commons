@@ -33,6 +33,15 @@ const words = [...unique.values()].sort(codepointCompare);
 if (words.length < 30_000) throw new Error(`Only ${words.length} usable words were indexed; the plan requires at least 30,000.`);
 const shards = [];
 const shardFiles = [];
+const startPairCounts = new Map();
+const shortCharacters = new Set();
+for (const value of words) {
+  const chars = [...value.toLocaleLowerCase("en-US")];
+  if (chars.length === 1 && /^[\p{L}\p{N}]$/u.test(chars[0])) shortCharacters.add(value);
+  const pair = chars.slice(0, 2).join("");
+  if (!/^\p{L}{2}$/u.test(pair)) continue;
+  startPairCounts.set(pair, (startPairCounts.get(pair) || 0) + 1);
+}
 
 async function addShard(prefix, entries) {
   const content = JSON.stringify(entries);
@@ -98,5 +107,10 @@ const manifest = {
   shards,
 };
 await writeFile(join(OUTPUT, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+await writeFile(join(OUTPUT, "start-pairs.json"), `${JSON.stringify({
+  lexicon_version: manifest.lexicon_version,
+  pairs: [...startPairCounts].sort(([left], [right]) => codepointCompare(left, right)).map(([value, count]) => ({ value, count })),
+  short_characters: [...shortCharacters].sort(codepointCompare),
+})}\n`);
 await writeFile(join(OUTPUT, "README.txt"), `IARC semantic composer English lexicon\nVersion: ${manifest.lexicon_version}\nUnique usable entries: ${words.length}\nSource archive SHA-256: ${manifest.source.source_archive_sha256}\nExtracted en_US.dic SHA-256: ${manifest.source.extracted_dictionary_sha256}\nLicense: ${manifest.source.license}\nLicense notice: ${manifest.source.license_file}\nBuild command: node relay/semantic/build-lexicon.mjs\n\nThis is a deterministic spelling vocabulary, not a frequency ranking or prediction model. Inflected forms not present in the pinned dictionary may be absent.\n`);
 console.log(`Built ${words.length} words in ${shards.length} shards (${shardFiles.map((path) => relative(OUTPUT, path)).join(", ")}).`);
