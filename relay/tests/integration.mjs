@@ -226,7 +226,7 @@ try {
   console.log(`Contextual keyboard initial response: ${Math.round(performance.now() - keyboardStarted)} ms, ${new TextEncoder().encode(keyboardHtml).byteLength} HTML bytes (local Wrangler)`);
   assert.equal(keyboardResponse.status, 200);
   assert.match(keyboardResponse.headers.get("content-type"), /text\/html/);
-  assert.match(keyboardHtml, /<textarea\b/u, "integrated HTML keyboard keeps exact text entry on its main screen");
+  assert.doesNotMatch(keyboardHtml, /<textarea\b|<h2>Add your own text<\/h2>|id="typed-text"|id="join-mode"/u, "integrated keyboard omits its free-text section");
   assert.match(keyboardHtml, /<select\b[^>]*aria-label="More words"/u, "integrated keyboard offers additional contextual predictions");
   assert.doesNotMatch(keyboardHtml, /<legend>(?:Punctuation|Capitalization|Wrap the word)<\/legend>|name="(?:suffix|case|wrapper)"|Keep the model(?:'s|’s) exact casing/u, "contextual keyboard omits formatting controls");
   assert.match(keyboardHtml, /aria-label="Turn shift on"/u, "keyboard exposes linked shift control");
@@ -1211,7 +1211,7 @@ try {
   const integratedKeyboardResponse = await fetch(`${quickBase}/predictive-keyboard/html/word-links/`);
   const integratedKeyboard = await integratedKeyboardResponse.text();
   assert.equal(integratedKeyboardResponse.status, 200);
-  assert.match(integratedKeyboard, /<textarea\b/u, "the primary keyboard keeps ordinary text input on the draft screen");
+  assert.doesNotMatch(integratedKeyboard, /<textarea\b|<h2>Add your own text<\/h2>|id="typed-text"|id="join-mode"|The GET request includes typed text/u, "the keyboard page has no free-text entry section");
   assert.match(integratedKeyboard, /<h2>Likely continuation<\/h2>/u, "short-phrase prediction is available again");
   assert.match(integratedKeyboard, /limited blocklist hides known unsuitable terms/u, "the phrase filter's limits are disclosed");
   const phraseBlock = integratedKeyboard.match(/<div class="choices" aria-label="Likely phrase continuations">([\s\S]*?)<\/div>/u)?.[1] || "";
@@ -1271,22 +1271,7 @@ try {
   const resultingDraft = addedWordPage.match(/<pre class="draft"[^>]*>([\s\S]*?)<\/pre>/u);
   assert.ok(resultingDraft, "keyboard response includes the updated draft");
   assert.equal(decodeHtml(resultingDraft[1]), `${candidateText}.`, "form case override keeps the selected candidate spelling and punctuation");
-  // Use a fresh short-lived session here: this suite also exercises many older routes before reaching this point.
-  const textEntryPage = await (await fetch(`${quickBase}/predictive-keyboard/html/word-links/`)).text();
-  const textEntryScope = textEntryPage.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
-  const textEntryCandidate = textEntryPage.match(/<button[^>]*name="pick" value="(word:[^"]+)"[^>]*>/u)?.[1];
-  assert.ok(textEntryScope && textEntryCandidate, "keyboard has one form for typed text and contextual candidates");
-  const pendingPick = await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${textEntryScope}?${new URLSearchParams({ pick: textEntryCandidate, text: "unsent note", case: "as-is", wrapper: "none", suffix: "", layout: "letters" })}`);
-  const pendingPickPage = await pendingPick.text();
-  assert.equal(pendingPick.status, 200, pendingPickPage);
-  const pendingDraft = decodeHtml(pendingPickPage.match(/<pre class="draft"[^>]*>([\s\S]*?)<\/pre>/u)?.[1] || "");
-  assert.ok(!pendingDraft.includes("unsent note"), "choosing a word does not implicitly commit typed text");
-  assert.match(pendingPickPage, /<textarea[^>]*name="text"[^>]*>unsent note<\/textarea>/u, "uncommitted typed text survives a prediction submission");
-  const typedScope = pendingPickPage.match(/action="\/predictive-keyboard\/html\/word-links\/form\/([^"]+)"/u)?.[1]?.replace(/#.*$/u, "");
-  const typedPageResponse = await fetch(`${quickBase}/predictive-keyboard/html/word-links/form/${typedScope}?${new URLSearchParams({ action: "typed", text: "unsent note", join: "space-if-needed", layout: "letters" })}`);
-  const typedPage = await typedPageResponse.text();
-  assert.equal(typedPageResponse.status, 200, typedPage);
-  assert.match(typedPage, /unsent note/u, "explicit Add text commits the textarea contents");
+  assert.doesNotMatch(addedWordPage, /<textarea\b|<h2>Add your own text<\/h2>|id="join-mode"/u, "the post-selection page keeps the free-text section removed");
   const reviewLink = suppliedHref(addedWordPage, (anchor) => anchor.includes("review message")).replaceAll("&amp;", "&");
   const reviewPageResponse = await fetch(new URL(reviewLink, quickBase));
   const reviewPage = await reviewPageResponse.text();
