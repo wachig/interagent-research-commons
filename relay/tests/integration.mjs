@@ -1235,17 +1235,23 @@ try {
   assert.match(prefixKeyboard, /<h1>Prefix link keyboard<\/h1>/u);
   assert.match(prefixKeyboard, /<h2>Likely continuation<\/h2>/u, "the new entry reuses contextual phrase predictions");
   assert.match(prefixKeyboard, /<h2>Top 12 words<\/h2>/u, "the new entry reuses the top word predictions");
-  assert.equal((prefixKeyboard.match(/class="prefix-row"/gu) || []).length, 26, "one lowercase letter and dropdown are rendered for each alphabet letter");
-  assert.match(prefixKeyboard, /<option value="vl">vl<\/option>/u, "the explicitly approved vl prefix appears in the V dropdown");
-  assert.match(prefixKeyboard, /<option value="e&#39;">e&#39;<\/option>/u, "e-prime remains selectable despite having no supplied trigram");
+  assert.equal((prefixKeyboard.match(/class="prefix-row"/gu) || []).length, 26, "one lowercase letter button is rendered for each alphabet letter");
+  assert.equal((prefixKeyboard.match(/class="prefix-select"/gu) || []).length, 349, "each approved two-letter prefix has its own dropdown");
+  const qPrefixRow = prefixKeyboard.split('class="prefix-row"')[1].split('class="prefix-row"')[0];
+  assert.equal((qPrefixRow.match(/class="prefix-select"/gu) || []).length, 6, "q has six individual prefix dropdowns beside its letter button");
+  assert.match(qPrefixRow, /<option value="qu" selected>qu<\/option><option value="qua">qua<\/option>/u, "each q dropdown offers its two-letter prefix and only its own extensions");
+  assert.match(prefixKeyboard, /<option value="vl" selected>vl<\/option>/u, "the explicitly approved vl prefix appears in its own V dropdown");
+  assert.match(prefixKeyboard, /<option value="e&#39;" selected>e&#39;<\/option>/u, "e-prime remains selectable despite having no supplied trigram");
   assert.doesNotMatch(prefixKeyboard, /aria-label="Lowercase letters controls"/u, "the prefix entry does not duplicate the QWERTY keyboard");
-  assert.ok(new TextEncoder().encode(prefixKeyboard).byteLength < 80_000, "the prefix list uses compact native dropdowns instead of hundreds of long signed URLs");
-  const prefixSelectionUrl = (html, selectedPrefix) => {
+  const prefixKeyboardBytes = new TextEncoder().encode(prefixKeyboard).byteLength;
+  assert.ok(prefixKeyboardBytes < 600_000, `individual prefix dropdowns remain compact HTML (${prefixKeyboardBytes} bytes)`);
+  const prefixSelectionUrl = (html, selectedPrefix, selection = selectedPrefix) => {
     const form = [...html.matchAll(/<form method="get" action="([^"]+)" class="prefix-select">([\s\S]*?)<\/form>/gu)]
-      .find((match) => match[2].includes(`value="${selectedPrefix.replaceAll("'", "&#39;")}"`));
-    assert.ok(form, `a native dropdown offers ${selectedPrefix}`);
+      .find((match) => match[2].includes(`name="prefix" value="${selectedPrefix.replaceAll("'", "&#39;")}"`) && match[2].includes(`option value="${selection.replaceAll("'", "&#39;")}"`));
+    assert.ok(form, `an individual ${selectedPrefix} dropdown offers ${selection}`);
     const url = new URL(decodeHtml(form[1]), quickBase);
     url.searchParams.set("prefix", selectedPrefix);
+    url.searchParams.set("selection", selection);
     url.searchParams.set("action", "prefix");
     return url;
   };
@@ -1261,6 +1267,8 @@ try {
   const quSection = quPage.match(/<h2>Three-letter choices for qu<\/h2>([\s\S]*?)<h2>Matching words<\/h2>/u)?.[1] || "";
   const quChoices = [...quSection.matchAll(/<a\b[^>]*>([^<]+)<\/a>/gu)].map((match) => match[1]);
   assert.deepEqual(quChoices, ["qua", "qub", "que", "qui", "quo", "qur"], "qu exposes exactly the supplied extensions");
+  const directQu = await (await fetch(prefixSelectionUrl(prefixKeyboard, "qu"))).text();
+  assert.match(directQu, /<pre class="draft"[^>]*>qu<\/pre>/u, "the qu dropdown adds its two-letter prefix without first selecting q");
   assert.match(quPage, /Add quick/iu, "ordinary matching words remain available alongside fixed trigram choices");
   const quaLink = suppliedHref(quSection, (anchor) => />qua<\/a>/u.test(anchor));
   const quaPage = await (await fetch(new URL(decodeHtml(quaLink), quickBase))).text();
