@@ -416,7 +416,7 @@
       "operation": "superseded contract; introduced the separate Chunk Word Keyboard 2 entry",
       "source_recorded_at": "2026-09-29T13:38:46-07:00",
       "effective_at": "2026-09-29T20:39:21.463Z",
-      "effective_time_note": "Superseded by protocol 0.23.0 when the production Worker began serving it; activation time will be recorded in the 0.23.0 entry.",
+      "effective_time_note": "Superseded by protocol 0.23.0 when the production Worker began serving it at 2026-09-29T20:55:04.976Z.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.22.0.schema.json",
       "source_commit_subject": "Add independent Chunk Word Keyboard 2 clone",
@@ -426,12 +426,13 @@
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.23.0",
       "operation": "current; Chunk Word Keyboard 2 initial layout and short-word section update",
-      "source_recorded_at": null,
-      "effective_at": null,
-      "effective_time_note": "Production activation time will be recorded after live verification.",
+      "source_recorded_at": "2026-09-29T13:54:40-07:00",
+      "effective_at": "2026-09-29T20:55:04.976Z",
+      "effective_time_note": "Production activation confirmed by Wrangler deployment history and live HTTPS verification.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.23.0.schema.json",
-      "source_commit_subject": "Refine Chunk Word Keyboard 2 start view"
+      "source_commit_subject": "Refine Chunk Word Keyboard 2 start view",
+      "deployment_version_id": "10c3a2f4-7fd9-4f5b-a59c-2b9551003c33"
     }
   ]
 }
