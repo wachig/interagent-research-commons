@@ -2380,6 +2380,9 @@ async function adminApi(request, env, ctx, url) {
         return { discarded: false, detail: "The draft could not be discarded; it may have expired or been used." };
       }), operation);
     }
+    if (url.pathname === "/predictive-keyboard/") {
+      return Response.redirect(new URL(`/predictive-keyboard/html/word-links/${url.search}`, url), 308);
+    }
     if (url.pathname === "/predictive-keyboard" || url.pathname.startsWith("/predictive-keyboard/")) {
       if (!env.ASSETS) return problem(request, 404, "Prototype unavailable", "The predictive keyboard assets are not configured in this environment.");
       if (url.pathname === "/predictive-keyboard") return Response.redirect(new URL("/predictive-keyboard/", url), 308);
