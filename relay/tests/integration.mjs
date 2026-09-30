@@ -1336,6 +1336,7 @@ try {
   const chunkEntry3 = await chunkEntry3Response.text();
   assert.equal(chunkEntry3Response.status, 200, chunkEntry3);
   assert.match(chunkEntry3, /<summary>Instructions<\/summary>/u, "Keyboard 3 groups usage guidance in its own disclosure");
+  assert.match(chunkEntry3, /INSIDE pairs must occur after the first two letters, with their first letter before the final two\. A pair may overlap the ending by one letter/u, "Instructions explain the one-letter INSIDE/ending overlap");
   assert.ok(chunkEntry3.indexOf("<h2>Numbers, symbols, and space</h2>") < chunkEntry3.indexOf('<section id="top-words">'), "the character keyboard and its controls appear above Top 12 words");
   assert.match(chunkEntry3, /UTF-8 bytes used · 1200 max/u, "the live draft byte count and limit remain available inside Instructions");
   assert.doesNotMatch(chunkEntry3.match(/<section id="top-words">([\s\S]*?)<\/section>/u)?.[1] || "", /The first 12 model suggestions/u, "prediction guidance is removed from below the heading");
@@ -1382,6 +1383,16 @@ try {
   const chunk3ToHref = chunkEntry3.match(/<a href="([^"]+)" aria-label="Set START to to">to<\/a>/u)?.[1];
   assert.ok(chunk3ToHref, "the to starting prefix is selectable");
   const chunk3ToPage = await chunk3Fetch(chunkEntry3, chunk3ToHref);
+  const chunk3MoHref = chunkEntry3.match(/<a href="([^"]+)" aria-label="Set START to mo">mo<\/a>/u)?.[1];
+  assert.ok(chunk3MoHref, "the mo starting prefix is available for the overlap example");
+  const chunk3MoPage = await chunk3Fetch(chunkEntry3, chunk3MoHref);
+  const chunk3MotHref = chunk3MoPage.match(/<a href="([^"]+)"[^>]*aria-label="Set START to mot">mot<\/a>/u)?.[1];
+  assert.ok(chunk3MotHref, "mot is available as a three-letter START");
+  const chunk3MotPage = await chunk3Fetch(chunk3MoPage, chunk3MotHref);
+  const chunk3HeHref = chunk3MotPage.match(/<a href="([^"]*inside=he[^"]*)"[^>]*aria-label="Add INSIDE he">he<\/a>/u)?.[1];
+  assert.ok(chunk3HeHref, "he is available as an INSIDE pair for mot");
+  const chunk3MotherPage = await chunk3Fetch(chunk3MotPage, chunk3HeHref);
+  assert.match(chunk3MotherPage.match(/<div class="chunks candidates" aria-label="Matching candidate words">([\s\S]*?)<\/div>/u)?.[1] || "", /aria-label="Add Mother">Mother<\/a>/u, "mother matches mot plus inside he when the pair overlaps the ending by one letter");
   const insideHeadingAt3 = chunk3ToPage.indexOf("<h2>INSIDE</h2>");
   const endHeadingAfterInside3 = chunk3ToPage.indexOf("<h2>END</h2>", insideHeadingAt3);
   const insideRegion3 = insideHeadingAt3 >= 0 && endHeadingAfterInside3 > insideHeadingAt3 ? chunk3ToPage.slice(insideHeadingAt3, endHeadingAfterInside3) : "";
