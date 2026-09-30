@@ -1344,7 +1344,7 @@ try {
   assert.match(chunkEntry3, /h2\{font-size:\.9rem/u, "section headings use the more compact size");
   assert.match(chunkEntry3, /class="page-top">[\s\S]*class="top-readout"[\s\S]*id="draft" class="top-draft"[\s\S]*class="constraint main-board start-layout"/u, "Find a word and Draft sit above and outside the grid box");
   assert.doesNotMatch(chunkEntry3, /Open the standard contextual keyboard/u, "Keyboard 3 omits the standard-keyboard footer link");
-  assert.match(chunkEntry3, /\.start-prefixes a\{[^}]*width:25px;min-width:25px;height:25px;min-height:25px/u, "three-letter START choices match the compact prefix-grid tile size");
+  assert.match(chunkEntry3, /\.start-prefixes\{flex-wrap:wrap;overflow:visible[^}]*gap:\.25rem\}\.start-prefixes a\{[^}]*min-width:2\.45rem;height:31px;min-height:31px/u, "three-letter START choices have readable spacing and larger compact boxes without a scrollbar");
   assert.match(chunkEntry3, /\.chunks\.predictions a,\.candidate-panel \.chunks a\{height:26px;min-height:26px/u, "prediction and candidate words use compact single-line buttons");
   const chunk3BaseUrl = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
   const chunk3Fetch = async (html, href) => (await fetch(new URL(decodeHtml(href), chunk3BaseUrl(html)))).text();
