@@ -733,14 +733,16 @@ export async function handleWordKeyboard2(request, env, url, createPublishDraft,
   try {
     if (url.href.length > 8_000) return fail("Links may not exceed 8,000 characters.", 414);
     const path = url.pathname;
-    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/` || path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`) {
+    if (path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`) {
+      return new Response(null, { status: 308, headers: { ...NO_STORE, Location: `/predictive-keyboard/html/chunk-keyboard-3/${url.search}` } });
+    }
+    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`) {
       const isPrefixEntry = path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`;
-      const isChunkEntry = path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`;
       const params = queryParams(url, new Set(["reply_to"]));
       const replyTo = params.get("reply_to") || "";
       if (replyTo && !validReplyTarget(replyTo)) throw new Error("Reply target is not a valid IARC message ID.");
       const state = await createSession(env, randomToken(), replyTo || null);
-      const viewQuery = isChunkEntry ? "?view=chunks" : isPrefixEntry ? "?view=prefix" : "";
+      const viewQuery = isPrefixEntry ? "?view=prefix" : "";
       return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}${viewQuery}`, url.origin));
     }
     const startMatch = path.match(/^\/predictive-keyboard\/html\/chunk-keyboard-2\/start\/(\d{13})\/([^/]+)\/([^/]+)$/u);
