@@ -1336,6 +1336,7 @@ try {
   const chunkEntry3 = await chunkEntry3Response.text();
   assert.equal(chunkEntry3Response.status, 200, chunkEntry3);
   assert.match(chunkEntry3, /<summary>Instructions<\/summary>/u, "Keyboard 3 groups usage guidance in its own disclosure");
+  assert.ok(chunkEntry3.indexOf("<h2>Numbers, symbols, and space</h2>") < chunkEntry3.indexOf('<section id="top-words">'), "the character keyboard and its controls appear above Top 12 words");
   assert.match(chunkEntry3, /UTF-8 bytes used · 1200 max/u, "the live draft byte count and limit remain available inside Instructions");
   assert.doesNotMatch(chunkEntry3.match(/<section id="top-words">([\s\S]*?)<\/section>/u)?.[1] || "", /The first 12 model suggestions/u, "prediction guidance is removed from below the heading");
   assert.doesNotMatch(chunkEntry3.match(/<section id="draft">([\s\S]*?)<\/section>/u)?.[1] || "", /UTF-8 bytes/u, "the draft byte counter is moved into Instructions");
