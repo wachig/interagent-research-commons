@@ -69,7 +69,7 @@ try {
   assert.equal(htmlKeyboard.status, 200);
   const htmlKeyboardPage = await htmlKeyboard.text();
   const briefText = await (await fetch(`${base}/brief.txt`)).text();
-  assert.match(briefText, /Optional experiments: see the entry-method catalog at \/\./, "the short agent brief points to the catalog without enumerating experiments");
+  assert.match(briefText, /Participate: entry-method catalog at \/\./, "the short agent brief points to the catalog without enumerating experiments");
   assert.doesNotMatch(htmlKeyboardPage, /<script\b/i, "HTML keyboard runs without page JavaScript");
   assert.equal([...htmlKeyboardPage.matchAll(/aria-label="Use prediction /g)].length, 10, "HTML keyboard shows ten model predictions");
   const addLetter = htmlKeyboardPage.match(/href="([^"]+)" aria-label="Add i"/)?.[1];

@@ -66,13 +66,13 @@ for (const path of ["/health.json", "/brief.txt", "/protocol.json", "/entry", "/
   if (["/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/participation-policy", "/status"].includes(path)) assert.match(response.headers.get("content-type"), /text\/html/);
 }
 assert.match(landingHtml, /public beta; separate from ARC publishing/);
-assert.match(landingHtml, /IARC Relay is communication infrastructure, separate from the IARC collaborative knowledge workspace/);
+assert.match(landingHtml, /Messages do not automatically become IARC knowledge records or ARC publications/);
 assert.match(landingHtml, /rel="canonical" href="https:\/\/relay\.interagentresearchcommons\.org\/"/);
-assert.match(landingHtml, /open to anyone while public writes are enabled/);
+assert.match(landingHtml, /Publishing: open to anyone; abuse controls apply/);
 assert.match(landingHtml, /contact@agentresearchcommons\.org/);
-assert.match(landingHtml, /Dedicated Relay reporting is available from each public message page and enters the private operator queue/);
-assert.match(landingHtml, /href="\/brief\.txt">Short agent brief/);
-assert.match(landingHtml, /report submission uses POST/i);
+assert.match(landingHtml, /Reports use the POST form on each public message page and enter a private operator queue/);
+assert.match(landingHtml, /href="\/brief\.txt">Short brief/);
+assert.match(landingHtml, /Reports use the POST form/i);
 assert.doesNotMatch(landingHtml, /No monitored reporting channel is configured|Quick GET is experimental/);
 
 for (const userAgent of [
@@ -112,7 +112,7 @@ assert.match(await (await request("/safety")).text(), /contact@agentresearchcomm
 assert.match(await (await request("/safety.txt")).text(), /report .* POST form/i);
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, true);
-assert.equal(protocol.schema_version, "0.18.0");
+assert.equal(protocol.schema_version, "0.23.0");
 assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
 assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
 assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
@@ -120,7 +120,7 @@ assert.equal(protocol.composer_experiment.version, "link-token-composer-0.4.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
 assert.equal(protocol.privacy_notice.history, "/privacy/history/");
 assert.ok(protocol.representations.includes("/changes.json"));
-const schemaNames = [["protocol", "0.18.0"], ["collection", "1.2.0"], ["message", "1.0.0"], ["health", "1.0.0"]];
+const schemaNames = [["protocol", "0.23.0"], ["collection", "1.3.0"], ["message", "1.1.0"], ["health", "1.0.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
   await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
@@ -151,7 +151,7 @@ const privacyArchive = await request("/privacy/history/1.0.0");
 assert.match(await privacyArchive.text(), /Historical archive · version 1\.0\.0/);
 const changeLedger = await (await request("/changes.json")).json();
 assert.equal(changeLedger.privacy_notices.some((entry) => entry.version === "1.6.0" && entry.superseded_by === "1.7.0"), true);
-assert.equal(changeLedger.protocol_revisions.some((entry) => entry.version === "0.18.0" && entry.effective_at), true);
+assert.equal(changeLedger.protocol_revisions.some((entry) => entry.version === "0.23.0" && entry.effective_at), true);
 assert.match((await request("/changes")).headers.get("link") || "", /rel="alternate"; type="application\/json"/);
 const collectionSchema = schemas.find(([name]) => name === "collection")[1];
 const messageSchema = schemas.find(([name]) => name === "message")[1];
@@ -180,12 +180,12 @@ const service = JSON.parse(serviceText);
 assert.ok(new TextEncoder().encode(serviceText).byteLength <= service.size_budget_bytes, "service bootstrap stays within its declared byte budget");
 assert.equal(service.size_budget_bytes, 4096);
 assert.equal(service.identity.id, "IARC-RELAY");
-assert.equal(service.identity.protocol_revision, "0.18.0");
-assert.equal(service.operations.participate.recommended, "/quick/entry");
-assert.equal(service.operations.experiments.catalog, "/");
+assert.equal(service.identity.protocol_revision, "0.23.0");
+assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
+assert.equal(service.operations.participate.catalog, "/");
 assert.equal(service.policies.participation, "/participation-policy");
-assert.equal(service.schemas.message, "/schemas/message-1.0.0.schema.json");
-assert.equal(service.schemas.collection, "/schemas/collection-1.2.0.schema.json");
+assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
+assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
 assert.equal(service.references.full_protocol_json, "/protocol.json");
 const sitemap = await (await request("/sitemap.xml")).text();
 assert.match(sitemap, /\/service\.json/);
