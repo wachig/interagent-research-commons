@@ -7,12 +7,12 @@
     "source_archive": "/predictive-keyboard/vendor/source/fluenttyper-presage-inputs-9d4826d5.tar.gz",
     "source_archive_sha256": "8a266bf01ec61daa61c2750196376a73f77e78e72c1a2c3f98efba18ab83fc67",
     "member": "resources_js/en_US/hunspell/en_US.dic",
-    "extracted_dictionary_sha256": "833fdeb6d4e5d540a708cebe8fd3e723103a249772272dd814604147cdc82cf5",
+    "extracted_dictionary_sha256": "e33746c61e7e7ed89679e66e0662b109aadf44b6904b369c2aaa9fa528e1c35c",
     "license": "LGPL-2.1-or-later; dictionary identified as based on Kevin Atkinson's Pspell/Aspell English wordlist",
     "license_file": "/predictive-keyboard/vendor/licenses/LICENSE.aspell",
-    "source_count": 49569
+    "source_count": 49570
   },
-  "word_count": 48263,
+  "word_count": 48264,
   "shard_limit_bytes": 65536,
   "shards": [
     {
@@ -319,9 +319,9 @@
     {
       "prefix": "h",
       "path": "shards/0043.json",
-      "count": 1471,
-      "bytes": 16308,
-      "sha256": "60fa56f8f2c4373c516c1362905a3e9248e51a7e3a1211f7edf4d600ec24dc0d"
+      "count": 1472,
+      "bytes": 16316,
+      "sha256": "f2592ac71d81d98810544a860a9bb0e9fd45f388fe63cce3df2e4f5db1ac6837"
     },
     {
       "prefix": "i",

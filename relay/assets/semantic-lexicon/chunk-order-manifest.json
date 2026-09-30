@@ -5,8 +5,8 @@
   "source_url": "https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus",
   "source_sha256": "c5f86f065fc5d057fbf366433b8c5ca550aa7c24e128362dea4394f2b29c86e4",
   "lexicon_version": "fluenttyper-9d4826d5-en_US-hunspell-base-1",
-  "lexicon_word_count": 48263,
-  "ranked_word_count": 30511,
+  "lexicon_word_count": 48264,
+  "ranked_word_count": 30512,
   "unranked_policy": "All Hunspell entries remain included; words without a lowercase SUBTLEX-US score follow ranked entries in capitalization-aware alphabetical order.",
   "reuse_terms": "Credit SUBTLEX authors and make clear the dataset remains freely available; see relay/semantic/SUBTLEX_US_ATTRIBUTION.md.",
   "ordering": "Cdlow descending, FREQlow descending, then lowercase/title-case/all-capital group and alphabetical order.",
@@ -1141,9 +1141,9 @@
     {
       "prefix": "h",
       "path": "chunk-order/h.json",
-      "count": 1995,
-      "bytes": 21363,
-      "sha256": "b789f9e19ba7156ec199d7d21887c02ef9b4e802e4a7fd52fbe8700034322d43"
+      "count": 1996,
+      "bytes": 21371,
+      "sha256": "96e1fae1f10948691fbf20387a07be785fdf259607ba9bbb3caba52885cbf6ef"
     },
     {
       "prefix": "ha",
@@ -1211,9 +1211,9 @@
     {
       "prefix": "ho",
       "path": "chunk-order/ho.json",
-      "count": 470,
-      "bytes": 5017,
-      "sha256": "563a18950ab2612f19b0c951d1e15dcb748d08fd8f2529b0c822272af55a79c4"
+      "count": 471,
+      "bytes": 5025,
+      "sha256": "ced8b96218436742cc9e2c86094477bfbbaca044d073f34228775559381e2930"
     },
     {
       "prefix": "hp",
