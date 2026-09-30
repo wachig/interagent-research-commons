@@ -15,6 +15,7 @@ const MAX_SESSIONS = 32;
 const MAX_STATES_PER_SESSION = 2_400;
 const SNAPSHOT_INTERVAL = 16;
 const WORD = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:['’\-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*$/u;
+const COMMON_TWO_LETTER_WORDS = ["am", "an", "as", "at", "be", "by", "do", "go", "he", "if", "in", "is", "it", "me", "my", "no", "of", "oh", "on", "or", "so", "to", "up", "us", "we"];
 const PUNCTUATION = new Set(["", ".", ",", "?", "!", ":", ";"]);
 const CASE = new Set(["as-is", "auto", "capitalize", "upper"]);
 const WRAPPER = new Set(["none", "quote", "parenthetical"]);
@@ -324,6 +325,21 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     const remainingLabel = (count) => `${count} ${count === 1 ? "candidate" : "candidates"} remain`;
     const currentFilters = chunkHref(state.state_id, { start, inside, end });
     const twoLetterOptions = start.length === 1 ? startPairs.filter(({ value }) => value.startsWith(start)) : [];
+    const directShortWords = start.length === 1 && !inside.length && !end
+      ? COMMON_TWO_LETTER_WORDS.filter((value) => value.startsWith(start))
+      : [];
+    const directShortWordLinks = await Promise.all(directShortWords.map(async (value) => {
+      const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
+      const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
+      const label = autoCase(value, context);
+      return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add complete word ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
+    }));
+    const directShortWordArea = directShortWordLinks.length
+      ? `<section class="short-word-picker"><h3>Two-letter words</h3><p class="hint">Choose one to add the complete word.</p><div class="chunks" aria-label="Add complete two-letter words">${directShortWordLinks.join("")}</div></section>`
+      : "";
+    const exactShortWordArea = start.length === 2 && COMMON_TWO_LETTER_WORDS.includes(start)
+      ? `<section class="short-word-picker"><h3>Exact word</h3><div class="chunks" aria-label="Add this complete word"><a rel="nofollow" href="${escapeHtml(await actionHref({ ...state, env }, "pick", JSON.stringify({ text: start, case: "auto", wrapper: "none", suffix: "" }), "letters", "", 0, "chunks"))}" aria-label="Add complete word ${escapeHtml(autoCase(start, context))}">${escapeHtml(autoCase(start, context))}</a></div></section>`
+      : "";
     const threeLetterOptions = start.length >= 2
       ? (CHUNK_KEYBOARD_THREE_LETTER_PREFIXES[startFamily[0]] || []).filter((value) => value.startsWith(startFamily))
       : [];
@@ -349,7 +365,7 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     const endArea = end ? `<p>Selected END <strong>${escapeHtml(end)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { start, inside }))}">Remove END ${escapeHtml(end)}</a></p><details><summary>Change END (replaces ${escapeHtml(end)})</summary><p>Replacement choices are computed before the current ending and may broaden the results.</p>${replacementMatrix}</details>` : endMatrix;
     const insideArea = inside.length < 8 ? renderInsideMatrix(insideOptions) : "<p>Limit of eight INSIDE chunks reached. Remove one to add another.</p>";
     const workspace = `<div class="workspace filters-only"><section class="constraint"><h2>INSIDE</h2><p>Pairs must fit fully between the first and last two letters. Add another pair to narrow the current candidates.</p><div class="active">${inside.map((value) => `<span><strong>${escapeHtml(value)}</strong> <a href="${escapeHtml(chunkHref(state.state_id, { start, inside: inside.filter((item) => item !== value), end }))}">Remove INSIDE ${escapeHtml(value)}</a></span>`).join("")}</div>${insideArea}</section><section class="constraint"><h2>END</h2><p>Each additive choice narrows the current candidates.</p>${endArea}</section></div>`;
-    search = `<p class="summary" aria-label="Current constraints"><span>START <strong>${escapeHtml(start)}</strong> | INSIDE <strong>${inside.map(escapeHtml).join(", ") || "—"}</strong> | END <strong>${escapeHtml(end) || "—"}</strong></span><a class="reset-search" href="${escapeHtml(chunkHref(state.state_id))}">Restart search</a></p><section class="candidate-panel"><h2>Candidates <span>(${matchingCount.toLocaleString("en-US")})</span></h2><p>${escapeHtml(resultSummary)}</p>${prefixBar}<div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the search.</p>"}</div></section>${workspace}`;
+    search = `<p class="summary" aria-label="Current constraints"><span>START <strong>${escapeHtml(start)}</strong> | INSIDE <strong>${inside.map(escapeHtml).join(", ") || "—"}</strong> | END <strong>${escapeHtml(end) || "—"}</strong></span><a class="reset-search" href="${escapeHtml(chunkHref(state.state_id))}">Restart search</a></p><section class="candidate-panel"><h2>Candidates <span>(${matchingCount.toLocaleString("en-US")})</span></h2><p>${escapeHtml(resultSummary)}</p>${directShortWordArea}${exactShortWordArea}${prefixBar}<div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the search.</p>"}</div></section>${workspace}`;
   }
   const controls = [];
   if (state.parent_state_id) controls.push(`<a href="${escapeHtml(stateHref(state.parent_state_id, "letters", false, "", 0, "chunks"))}">Undo last addition</a>`);
