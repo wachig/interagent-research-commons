@@ -1342,6 +1342,7 @@ try {
   assert.doesNotMatch(chunkEntry3, /Choose a lowercase letter or one of the 519 valid two-letter beginnings/u, "the START helper text is moved into Instructions");
   assert.match(chunkEntry3, /h2\{font-size:\.9rem/u, "section headings use the more compact size");
   assert.match(chunkEntry3, /class="page-top">[\s\S]*class="top-readout"[\s\S]*id="draft" class="top-draft"[\s\S]*class="constraint main-board start-layout"/u, "Find a word and Draft sit above and outside the grid box");
+  assert.doesNotMatch(chunkEntry3, /Open the standard contextual keyboard/u, "Keyboard 3 omits the standard-keyboard footer link");
   const chunk3BaseUrl = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
   const chunk3Fetch = async (html, href) => (await fetch(new URL(decodeHtml(href), chunk3BaseUrl(html)))).text();
   const chunk3KeyRegion = chunkEntry3.match(/<div class="typing-keyboard"[^>]*>([\s\S]*?)<\/div><\/section>/u)?.[1] || "";
