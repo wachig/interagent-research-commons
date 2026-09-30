@@ -1341,6 +1341,7 @@ try {
   assert.doesNotMatch(chunkEntry3.match(/<section id="draft">([\s\S]*?)<\/section>/u)?.[1] || "", /UTF-8 bytes/u, "the draft byte counter is moved into Instructions");
   assert.doesNotMatch(chunkEntry3, /Choose a lowercase letter or one of the 519 valid two-letter beginnings/u, "the START helper text is moved into Instructions");
   assert.match(chunkEntry3, /h2\{font-size:\.9rem/u, "section headings use the more compact size");
+  assert.match(chunkEntry3, /class="page-top">[\s\S]*class="top-readout"[\s\S]*id="draft" class="top-draft"[\s\S]*class="constraint main-board start-layout"/u, "Find a word and Draft sit above and outside the grid box");
   const chunk3BaseUrl = (html) => new URL(decodeHtml(html.match(/<base href="([^"]+)"/u)?.[1]), quickBase);
   const chunk3Fetch = async (html, href) => (await fetch(new URL(decodeHtml(href), chunk3BaseUrl(html)))).text();
   const chunk3KeyRegion = chunkEntry3.match(/<div class="typing-keyboard"[^>]*>([\s\S]*?)<\/div><\/section>/u)?.[1] || "";
@@ -1367,6 +1368,7 @@ try {
   assert.match(chunk3PairPage, /class="start-value selected">qu<\/strong>/u, "the Find a word START value uses the same selected state");
   assert.match(chunk3PairPage, /<section class="candidate-panel">/u, "candidates remain on the same page after choosing START");
   assert.match(chunk3PairPage, /class="constraint main-board start-layout"/u, "selected searches keep the original one-screen layout");
+  assert.match(chunk3PairPage, /class="top-readout"[\s\S]*class="start-value selected">qu<\/strong>[\s\S]*id="draft" class="top-draft"[\s\S]*class="constraint main-board start-layout"/u, "the selected constraint readout and Draft remain above the bordered grids");
   assert.match(chunk3PairPage, /<pre class="draft"> <\/pre>/u, "selecting a two-letter prefix does not type it into the draft");
   const chunk3ToHref = chunkEntry3.match(/<a href="([^"]+)" aria-label="Set START to to">to<\/a>/u)?.[1];
   assert.ok(chunk3ToHref, "the to starting prefix is selectable");
