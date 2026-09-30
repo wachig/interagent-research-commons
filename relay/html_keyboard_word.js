@@ -514,16 +514,18 @@ function autoCase(text, precedingText) {
 
 async function renderKeyboard(request, env, state, url) {
   const draft = await loadDraft(env, state);
-  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
+  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "menu_prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
   const layout = modeParams.get("layout") || "letters";
   const view = modeParams.get("view") || "words";
   const shifted = modeParams.get("shift") === "1";
   const prefix = (modeParams.get("prefix") || "").normalize("NFC").toLocaleLowerCase("en-US");
+  const menuPrefix = (modeParams.get("menu_prefix") || "").normalize("NFC").toLocaleLowerCase("en-US");
   const offset = Number(modeParams.get("offset") || 0);
   if (modeParams.has("shift") && !new Set(["0", "1"]).has(modeParams.get("shift"))) throw new Error("Keyboard layout link is invalid.");
   if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks"]).has(view)) throw new Error("Keyboard layout link is invalid.");
   if ([...prefix].length > 20 || /[^\p{L}\p{N}'’\-]/u.test(prefix) || !Number.isSafeInteger(offset) || offset < 0 || offset % 20 !== 0) throw new Error("Word browser prefix or page is invalid.");
   if (view === "prefix" && prefix && !APPROVED_PREFIXES.has(prefix)) throw new Error("Choose a two-letter prefix from the supplied list.");
+  if (view === "prefix" && menuPrefix && !APPROVED_PREFIXES.has(menuPrefix)) throw new Error("Choose a two-letter prefix from the supplied list.");
   if (view === "chunks") return await renderChunkKeyboard(request, env, state, draft, url, modeParams);
   const context = predictionContext(draft, state);
   const predictions = usableWords(await predictRanked(env, request, context, 48));
@@ -574,16 +576,18 @@ async function renderKeyboard(request, env, state, url) {
         const letterHref = await makeLink("key", letter, true, "");
         const prefixId = `prefixes-${letter}`;
         const trigramId = `trigrams-${letter}`;
-        const prefixOptions = [`<option value="" selected>2-letter</option>`, ...choices.map((choice) => `<option value="${escapeHtml(choice)}">${escapeHtml(choice)}</option>`)].join("");
-        const trigrams = (PREFIX_VOCABULARY.extensions[letter] || []).filter((extension) => extension.length === 3);
+        const prefixOptions = [`<option value=""${choices.includes(menuPrefix) ? "" : " selected"}>2-letter</option>`, ...choices.map((choice) => `<option value="${escapeHtml(choice)}"${choice === menuPrefix ? " selected" : ""}>${escapeHtml(choice)}</option>`)].join("");
+        const trigrams = menuPrefix.startsWith(letter)
+          ? (PREFIX_VOCABULARY.extensions[letter] || []).filter((extension) => extension.length === 3 && extension.startsWith(menuPrefix))
+          : [];
         const trigramOptions = trigrams.length
           ? [`<option value="" selected>3-letter</option>`, ...trigrams.map((trigram) => `<option value="${escapeHtml(trigram)}">${escapeHtml(trigram)}</option>`)].join("")
-          : `<option value="" selected>No 3-letter starts</option>`;
+          : `<option value="" selected>${menuPrefix.startsWith(letter) ? "No 3-letter starts" : "Choose 2-letter first"}</option>`;
         const prefixMenu = `<div class="prefix-select"><label class="sr-only" for="${prefixId}">${letter.toUpperCase()} approved two-letter prefixes</label><select id="${prefixId}" name="selection" aria-label="${letter.toUpperCase()} approved two-letter prefixes">${prefixOptions}</select></div>`;
         const trigramMenu = `<div class="prefix-select"><label class="sr-only" for="${trigramId}">${letter.toUpperCase()} approved three-letter starts</label><select id="${trigramId}" name="selection" aria-label="${letter.toUpperCase()} approved three-letter starts"${trigrams.length ? "" : " disabled"}>${trigramOptions}</select></div>`;
         return `<div class="prefix-row"><a class="key prefix-letter" rel="nofollow" href="${escapeHtml(letterHref)}" aria-label="Add ${letter}">${letter}</a><div class="prefix-menus" aria-label="${letter.toUpperCase()} prefix choices">${prefixMenu}${trigramMenu}</div></div>`;
       }));
-    const letterRows = `<section id="prefix-choices"><h2>Letters and prefix menus</h2><p class="hint">Each letter has two dropdowns: approved two-letter prefixes first, then approved three-letter starts. Choose one option, then press Add. Characters already at the end of the draft are added once.</p><form method="get" action="${formAction}" class="prefix-menu-form"><input type="hidden" name="view" value="prefix"><input type="hidden" name="layout" value="${layout}"><div class="prefix-menu-submit-bar"><button type="submit" name="action" value="prefix">Add</button></div><div class="prefix-grid" aria-label="Letters with two prefix menus each">${rows.join("")}</div></form></section>`;
+    const letterRows = `<section id="prefix-choices"><h2>Letters and prefix menus</h2><p class="hint">Each letter has two dropdowns: approved two-letter prefixes first, then three-letter starts filtered for the chosen pair. Choose a pair and press Show 3-letter starts, then choose a start and press Add. Press Add with only a pair selected to add the two letters.</p><form method="get" action="${formAction}" class="prefix-menu-form"><input type="hidden" name="view" value="prefix"><input type="hidden" name="layout" value="${layout}"><input type="hidden" name="menu_prefix" value="${escapeHtml(menuPrefix)}"><div class="prefix-menu-submit-bar"><button type="submit" name="action" value="filter-prefix">Show 3-letter starts</button><button type="submit" name="action" value="prefix">Add</button></div><div class="prefix-grid" aria-label="Letters with two prefix menus each">${rows.join("")}</div></form></section>`;
     let expanded = "";
     if (prefix) {
       const extensions = Object.values(PREFIX_VOCABULARY.extensions).flat().filter((value) => value.startsWith(prefix));
@@ -738,23 +742,32 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     }
     const formMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/form\/([^/]+)$/u);
     if (formMatch) {
-      const values = queryParams(url, new Set(["action", "pick", "more", "suffix", "case", "wrapper", "text", "join", "layout", "prefix", "selection", "offset", "view"]), new Set(["selection"]));
+      const values = queryParams(url, new Set(["action", "pick", "more", "suffix", "case", "wrapper", "text", "join", "layout", "prefix", "menu_prefix", "selection", "offset", "view"]), new Set(["selection"]));
       const state = await findState(env, readWord(formMatch[1]));
       const layout = values.get("layout") || "letters";
       if (!new Set(["letters", "symbols"]).has(layout)) throw new Error("Keyboard layout link is invalid.");
       if (values.has("action") && values.has("pick")) throw new Error("Choose one action at a time.");
       const action = values.get("action") || (values.has("pick") ? "pick" : "");
-      if (action !== "prefix" && url.searchParams.has("selection")) throw new Error("Dropdown selections are only accepted with the Add action.");
+      if (!new Set(["prefix", "filter-prefix"]).has(action) && url.searchParams.has("selection")) throw new Error("Dropdown selections are only accepted with the prefix menu actions.");
       const viewPrefix = values.get("prefix") || "";
       const viewOffset = values.get("offset") || "0";
       const keyboardView = values.get("view") || "words";
+      if (action === "filter-prefix") {
+        const selectedPairs = url.searchParams.getAll("selection").filter((selection) => selection.length === 2 && APPROVED_PREFIXES.has(selection));
+        if (keyboardView !== "prefix" || selectedPairs.length !== 1) throw new Error("Choose one approved two-letter prefix, then show its three-letter starts.");
+        const nextUrl = new URL(stateHref(state.state_id, layout, false, "", 0, keyboardView), url);
+        nextUrl.searchParams.set("menu_prefix", selectedPairs[0]);
+        return await renderKeyboard(request, env, state, nextUrl);
+      }
       if (action === "prefix") {
         const selectedChoices = url.searchParams.getAll("selection").filter(Boolean);
-        if (selectedChoices.length !== 1) throw new Error("Choose one dropdown option, then press Add.");
-        const selection = selectedChoices[0];
-        const selectedPrefix = selection.slice(0, 2);
+        const selectedPairs = selectedChoices.filter((selection) => selection.length === 2);
+        const selectedTrigrams = selectedChoices.filter((selection) => selection.length === 3);
+        if (selectedChoices.length < 1 || selectedChoices.length > 2 || selectedPairs.length !== 1 || selectedTrigrams.length > 1) throw new Error("Choose one two-letter prefix, optionally with one of its three-letter starts, then press Add.");
+        const selectedPrefix = selectedPairs[0];
+        const selection = selectedTrigrams[0] || selectedPrefix;
         const extensions = (PREFIX_VOCABULARY.extensions[selectedPrefix[0]] || []).filter((extension) => extension.startsWith(selectedPrefix));
-        if (keyboardView !== "prefix" || !APPROVED_PREFIXES.has(selectedPrefix) || (selection !== selectedPrefix && !extensions.includes(selection))) throw new Error("Choose one approved prefix or one of its supplied three-letter continuations.");
+        if (keyboardView !== "prefix" || !APPROVED_PREFIXES.has(selectedPrefix) || (selection !== selectedPrefix && !extensions.includes(selection))) throw new Error("Choose one approved prefix and, optionally, one of its supplied three-letter starts.");
         const viewPrefix = selectedPrefix;
         const argument = `gram:${selection}`;
         const childId = await signCommonWordRoute(env, "keyboard-action", state.state_id, "key", argument);
