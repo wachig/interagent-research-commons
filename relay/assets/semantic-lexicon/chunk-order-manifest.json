@@ -5,7 +5,7 @@
   "source_url": "https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus",
   "source_sha256": "c5f86f065fc5d057fbf366433b8c5ca550aa7c24e128362dea4394f2b29c86e4",
   "lexicon_version": "fluenttyper-9d4826d5-en_US-hunspell-base-1",
-  "lexicon_word_count": 48262,
+  "lexicon_word_count": 48263,
   "ranked_word_count": 30511,
   "unranked_policy": "All Hunspell entries remain included; words without a lowercase SUBTLEX-US score follow ranked entries in capitalization-aware alphabetical order.",
   "reuse_terms": "Credit SUBTLEX authors and make clear the dataset remains freely available; see relay/semantic/SUBTLEX_US_ATTRIBUTION.md.",
@@ -2625,9 +2625,9 @@
     {
       "prefix": "r",
       "path": "chunk-order/r.json",
-      "count": 2040,
-      "bytes": 21767,
-      "sha256": "7ece7450af2e692d8e92856ec9eeb02e5dc7d85f08e67a4bcbecfcc1d86fef7c"
+      "count": 2041,
+      "bytes": 21777,
+      "sha256": "02647e8f8f8991b4a2689e2f9f99a83e9b71095528e184bd47e705bac7169ec3"
     },
     {
       "prefix": "ra",
@@ -2660,9 +2660,9 @@
     {
       "prefix": "re",
       "path": "chunk-order/re.json",
-      "count": 896,
-      "bytes": 10443,
-      "sha256": "99531fa987b383b9b5774bdc3b5194a968a929da390129f6eddd60e54d19308a"
+      "count": 897,
+      "bytes": 10453,
+      "sha256": "3e6b34e4e0fdc9bfed9a7ce8885147857aa9f0fa246f0a3f8240e546e1edad87"
     },
     {
       "prefix": "rf",
