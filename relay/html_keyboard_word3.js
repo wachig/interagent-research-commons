@@ -3,6 +3,7 @@ import { escapeHtml, predictRanked, response } from "./html_keyboard.js";
 import { isPresentablePhrase } from "./phrase_safety.js";
 import { PREFIX_VOCABULARY } from "./prefix_keyboard_vocabulary.js";
 import { CHUNK_KEYBOARD_THREE_LETTER_PREFIXES, CHUNK_KEYBOARD_THREE_LETTER_SET } from "./chunk_keyboard_three_letter_vocabulary.js";
+import { exactKeyText, unicodeChoices, exactWordEffect } from "./chunk_exact.js";
 
 const PREFIX = "/predictive-keyboard/html/chunk-keyboard-3";
 const PREFIX_KEYBOARD = "/predictive-keyboard/html/chunk-keyboard-3/prefix-keyboard";
@@ -16,7 +17,7 @@ const MAX_STATES_PER_SESSION = 2_400;
 const SNAPSHOT_INTERVAL = 16;
 const WORD = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:['’\-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*$/u;
 const PUNCTUATION = new Set(["", ".", ",", "?", "!", ":", ";"]);
-const CASE = new Set(["as-is", "auto", "capitalize", "upper"]);
+const CASE = new Set(["as-is", "auto", "capitalize", "upper", "lower"]);
 const WRAPPER = new Set(["none", "quote", "parenthetical"]);
 const DICTIONARY_CACHE = new Map();
 const CHUNK_ORDER_CACHE = new Map();
@@ -93,10 +94,7 @@ function keyArgument(value) {
     const sequence = value.slice(5);
     return /^[a-z']{1,3}$/u.test(sequence) ? sequence : undefined;
   }
-  if (new Set(["space", "period", "comma", "question", "exclamation", "apostrophe", "colon", "hyphen", "semicolon", "quote", "enter"]).has(value)) {
-    return new Map([["space", " "], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"], ["apostrophe", "'"], ["colon", ":"], ["hyphen", "-"], ["semicolon", ";"], ["quote", '"'], ["enter", "\n"]]).get(value);
-  }
-  return /^[A-Za-z0-9@#$%&*+()_!'"/:;.,?-]$/u.test(value) ? value : undefined;
+  return exactKeyText(value);
 }
 
 function appendDelta(draft, removed, added) {
@@ -231,7 +229,7 @@ async function chunkCandidateOrder(env, request, prefix) {
   return words;
 }
 
-function chunkHref(stateId, { start = "", inside = [], end = "", startPage = 0, insidePage = 0, endPage = 0 } = {}) {
+function chunkHref(stateId, { start = "", inside = [], end = "", startPage = 0, insidePage = 0, endPage = 0, effect = "", wordCase = "" } = {}) {
   const query = new URLSearchParams({ view: "chunks" });
   if (start) query.set("start", start);
   if (inside.length) query.set("inside", inside.join("."));
@@ -239,6 +237,8 @@ function chunkHref(stateId, { start = "", inside = [], end = "", startPage = 0, 
   if (startPage) query.set("start_page", String(startPage));
   if (insidePage) query.set("inside_page", String(insidePage));
   if (endPage) query.set("end_page", String(endPage));
+  if (effect) query.set("effect", effect);
+  if (wordCase) query.set("word_case", wordCase);
   return `?${query}`;
 }
 
@@ -262,7 +262,34 @@ function chunkCountMap(words, selector) {
   return counts;
 }
 
+async function renderExactCharacters(env, state, draft, range = "") {
+  const choices = unicodeChoices(range);
+  const browseHref = (prefix) => `${PREFIX}/characters/${word(state.state_id)}${prefix ? `/${prefix}` : ""}`;
+  const labelFor = (codepoint) => codepoint === 9 ? "Tab" : codepoint === 10 ? "Line feed" : codepoint === 13 ? "Carriage return" : codepoint === 32 ? "Space" : `U+${codepoint.toString(16).toUpperCase().padStart(4, "0")}`;
+  const characterLink = async (codepoint) => {
+    const label = labelFor(codepoint);
+    const href = await actionHref({ ...state, env }, "key", `unicode:${codepoint.toString(16)}`, "letters", "", 0, "chunks");
+    return `<a rel="nofollow" aria-label="Append ${label}" href="${escapeHtml(href)}"><code>${label}</code> <bdi>${escapeHtml(String.fromCodePoint(codepoint))}</bdi></a>`;
+  };
+  const rangeLink = (prefix) => {
+    const first = prefix.padEnd(6, "0").toUpperCase();
+    const last = prefix.padEnd(6, "f").toUpperCase();
+    return `<a href="${browseHref(prefix)}">U+${first}–U+${last}</a>`;
+  };
+  const selection = range.length === 4
+    ? (await Promise.all(choices.map(characterLink))).join(" ")
+    : choices.map(rangeLink).join(" ");
+  const ascii = !range ? `<h2>Exact ASCII characters</h2><div class="choices">${(await Promise.all([9, 10, 13, ...Array.from({ length: 95 }, (_, i) => 32 + i)].map(characterLink))).join(" ")}</div>` : "";
+  return page("Exact characters and Unicode", `<h1>Exact characters and Unicode</h1><p>These links append exactly one character to the existing draft. They never insert spaces, change case, normalize text, or publish. Browsing ranges is read-only and does not renew session expiry.</p><h2>Current draft</h2><pre class="draft">${escapeHtml(draft)}</pre>${state.reply_to ? `<p>Reply to ${escapeHtml(state.reply_to)}</p>` : ""}<p><a href="${PREFIX}/state/${word(state.state_id)}?view=chunks">Return to Chunk word choices</a>${range ? ` · <a href="${browseHref(range.length === 2 ? "" : range.slice(0, -1))}">Parent Unicode range</a> · <a href="${browseHref("")}">All Unicode ranges</a>` : ""}</p>${ascii}<h2>${range ? `Unicode range ${range.toUpperCase()}` : "Unicode ranges"}</h2><div class="choices">${selection || "<p>This range contains no Relay-permitted Unicode scalar values.</p>"}</div><p>Relay accepts tab, line feed, carriage return and Unicode scalar values except the other C0 controls and DEL. Surrogate code points are excluded. Each addition uses one saved state; the draft still has a 1,200-byte limit, a 2,400-state session limit and a 30-minute lifetime. Existing edits and branches also consume that state budget. Expiry or exhausted capacity can prevent completion.</p>`);
+}
+
 async function renderChunkKeyboard(request, env, state, draft, url, params) {
+  const effect = params.get("effect") || "compose";
+  const wordCase = params.get("word_case") || (["exact", "complete"].includes(effect) ? "as-is" : "auto");
+  if (!["compose", "next", "complete", "exact"].includes(effect) || !CASE.has(wordCase)) throw new Error("Choose a supplied word effect and case.");
+  const searchHref = (id, filters = {}) => chunkHref(id, { ...filters, effect, wordCase });
+  const wordChoice = (text) => JSON.stringify({ text, case: wordCase, wrapper: "none", suffix: "", effect });
+  const wordLabel = (text) => wordCase === "upper" ? text.toLocaleUpperCase("en-US") : wordCase === "lower" ? text.toLocaleLowerCase("en-US") : wordCase === "capitalize" ? text.charAt(0).toLocaleUpperCase("en-US") + text.slice(1) : wordCase === "auto" && !(effect === "compose" && /[@/_=\-]$/u.test(draft)) ? autoCase(text, predictionContext(draft, state)) : text;
   const start = (params.get("start") || "").normalize("NFC").toLocaleLowerCase("en-US");
   const inside = (params.get("inside") || "").split(".").filter(Boolean).map((value) => value.normalize("NFC").toLocaleLowerCase("en-US"));
   const end = (params.get("end") || "").normalize("NFC").toLocaleLowerCase("en-US");
@@ -273,6 +300,11 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
   const startIndex = await lexiconStartPairs(env, request);
   const startPairs = startIndex.pairs;
   const baseHref = `${PREFIX}/state/${word(state.state_id)}`;
+  const settingHref = (nextEffect, nextCase) => `${baseHref}${chunkHref(state.state_id, { start, inside, end, effect: nextEffect, wordCase: nextCase })}`;
+  const completable = state.operation === "key" && WORD.test(draft.match(/[\p{L}\p{N}’'\-]*$/u)?.[0] || "") && /[\p{L}\p{N}’'\-]/u.test(keyArgument(state.value) || "");
+  const effectNames = { compose: "Standard composition", next: "Add next word", complete: "Complete current word", exact: "Append exact spelling" };
+  const caseNames = { auto: "Automatic case", "as-is": "Keep spelling case", lower: "Lowercase", upper: "Uppercase", capitalize: "Initial capital" };
+  const wordControls = `<details class="word-effects"><summary>Next word: ${effectNames[effect]} · ${caseNames[wordCase]}</summary><p>These choices affect the next word selection and preserve your draft and search. Standard composition completes a typed ending or adds a next word with a separator; after @, /, _, =, or a hyphen it appends without a separator or automatic capitalization. Complete current word replaces the typed ending without adding a separator. Add next word leaves existing text intact and inserts a separator if needed. Append exact spelling only appends the chosen spelling. Character keys always append literally; use Space to finish a typed word before choosing a new one.</p><nav aria-label="Next word effect">${Object.entries(effectNames).filter(([value]) => value !== "complete" || completable).map(([value, name]) => `<a href="${escapeHtml(settingHref(value, ["exact", "complete"].includes(value) ? "as-is" : "auto"))}"${effect === value ? ' aria-current="true"' : ""}>${name}</a>`).join(" · ")}</nav><nav aria-label="Next word case">${Object.entries(caseNames).map(([value, name]) => `<a href="${escapeHtml(settingHref(effect, value))}"${wordCase === value ? ' aria-current="true"' : ""}>${name}</a>`).join(" · ")}</nav></details>`;
   const draftBytes = new TextEncoder().encode(draft).byteLength;
   const reply = state.reply_to ? `<p class="hint">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const context = predictionContext(draft, state);
@@ -280,16 +312,16 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     ? usableWords(await predictRanked(env, request, context, 48)).slice(0, 18)
     : CHUNK_KEYBOARD_INITIAL_WORDS.map((text) => ({ text }));
   const predictionLinks = await Promise.all(predictions.map(async (candidate) => {
-    const choice = JSON.stringify({ text: candidate.text, case: "auto", wrapper: "none", suffix: "" });
+    const choice = wordChoice(candidate.text);
     const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
-    const label = autoCase(candidate.text, context);
+    const label = wordLabel(candidate.text);
     return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add top word ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
   }));
-  const predictionSection = `<section id="top-words"><h2>Top Words</h2><div class="chunks predictions" aria-label="Top word choices">${predictionLinks.join("") || "<span>No word predictions are available.</span>"}</div></section>`;
+  const predictionSection = `<section id="top-words"><h2>Top Words</h2>${wordControls}<div class="chunks predictions" aria-label="Top word choices">${predictionLinks.join("") || "<span>No word predictions are available.</span>"}</div></section>`;
   const initials = [...new Set(startPairs.map(({ value }) => value[0]))].sort();
   const startGroups = (await Promise.all(initials.map(async (initial) => {
     const letterHref = await actionHref({ ...state, env }, "key", initial, "letters", "", 0, "chunks");
-    return `<section id="start-${initial}"><div class="chunks"><a class="letter-choice" href="${escapeHtml(letterHref)}" aria-label="Type ${initial} into draft">${initial}</a>${startPairs.filter(({ value }) => value[0] === initial).map(({ value }) => `<a${value === start ? ' class="is-start" aria-current="true"' : ""} href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a>`).join("")}</div></section>`;
+    return `<section id="start-${initial}"><div class="chunks"><a class="letter-choice" href="${escapeHtml(letterHref)}" aria-label="Type ${initial} into draft">${initial}</a>${startPairs.filter(({ value }) => value[0] === initial).map(({ value }) => `<a${value === start ? ' class="is-start" aria-current="true"' : ""} href="${escapeHtml(searchHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a>`).join("")}</div></section>`;
   }))).join("");
   const startGrid = `<div class="pair-groups prefix-grid">${startGroups}</div>`;
   let search = "";
@@ -330,33 +362,33 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     const endOptions = new Map([...endCounts].filter(([value]) => value !== end));
     const replacementEnds = new Map([...chunkCountMap(endPool, endingPairs)].filter(([value]) => value !== end));
     const remainingLabel = (count) => `${count} ${count === 1 ? "candidate" : "candidates"} remain`;
-    const currentFilters = chunkHref(state.state_id, { start, inside, end });
+    const currentFilters = searchHref(state.state_id, { start, inside, end });
     const twoLetterOptions = start.length === 1 ? startPairs.filter(({ value }) => value.startsWith(start)) : [];
     const threeLetterOptions = start.length >= 2
       ? (CHUNK_KEYBOARD_THREE_LETTER_PREFIXES[startFamily[0]] || []).filter((value) => value.startsWith(startFamily))
       : [];
     const prefixBar = start.length === 1 && twoLetterOptions.length
-      ? `<section class="start-prefix-picker"><h3>Two-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">${twoLetterOptions.map(({ value }) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
+      ? `<section class="start-prefix-picker"><h3>Two-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Two-letter START choices">${twoLetterOptions.map(({ value }) => `<a href="${escapeHtml(searchHref(state.state_id, { start: value }))}" aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
       : threeLetterOptions.length
-        ? `<section class="start-prefix-picker"><h3>Three-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">${threeLetterOptions.map((value) => `<a href="${escapeHtml(chunkHref(state.state_id, { start: value, inside, end }))}"${start === value ? ' aria-current="true"' : ""} aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
+        ? `<section class="start-prefix-picker"><h3>Three-letter START</h3><nav class="letter-jumps start-prefixes" aria-label="Three-letter START choices">${threeLetterOptions.map((value) => `<a href="${escapeHtml(searchHref(state.state_id, { start: value, inside, end }))}"${start === value ? ' aria-current="true"' : ""} aria-label="Set START to ${value}">${value}</a>`).join("")}</nav></section>`
         : "";
     startPicker = prefixBar;
     const renderInsideMatrix = (counts) => chunkMatrix(counts, "inside", "INSIDE", (value) => inside.includes(value)
-      ? `<a class="is-inside" aria-current="true" href="${escapeHtml(chunkHref(state.state_id, { start, inside: inside.filter((item) => item !== value), end }))}" aria-label="Remove INSIDE ${value}">${value}</a>`
-      : `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside: [...inside, value], end }))}" aria-label="Add INSIDE ${value}">${value}</a>`, currentFilters);
+      ? `<a class="is-inside" aria-current="true" href="${escapeHtml(searchHref(state.state_id, { start, inside: inside.filter((item) => item !== value), end }))}" aria-label="Remove INSIDE ${value}">${value}</a>`
+      : `<a href="${escapeHtml(searchHref(state.state_id, { start, inside: [...inside, value], end }))}" aria-label="Add INSIDE ${value}">${value}</a>`, currentFilters);
     const matchingCount = ordered.length;
     const candidateChoices = start.length < 3 ? ordered.slice(0, 20) : ordered;
     resultSummary = `${matchingCount.toLocaleString("en-US")} matching ${matchingCount === 1 ? "word" : "words"} from ${base.length.toLocaleString("en-US")} entries beginning ${start}.`;
     const candidateLinks = await Promise.all(candidateChoices.map(async (value) => {
-      const choice = JSON.stringify({ text: value, case: "auto", wrapper: "none", suffix: "" });
+      const choice = wordChoice(value);
       const href = await actionHref({ ...state, env }, "pick", choice, "letters", "", 0, "chunks");
-      const label = autoCase(value, context);
+      const label = wordLabel(value);
       return `<a rel="nofollow" href="${escapeHtml(href)}" aria-label="Add ${escapeHtml(label)}">${escapeHtml(label)}</a>`;
     }));
     const visibleEndOptions = end ? new Map([...replacementEnds, [end, endCounts.get(end) || 0]]) : endOptions;
     const visibleEndMatrix = chunkMatrix(visibleEndOptions, "end", "END", (value) => value === end
-      ? `<a class="is-end" aria-current="true" href="${escapeHtml(chunkHref(state.state_id, { start, inside }))}" aria-label="Remove END ${value}">${value}</a>`
-      : `<a href="${escapeHtml(chunkHref(state.state_id, { start, inside, end: value }))}" aria-label="Set END to ${value}">${value}</a>`, currentFilters);
+      ? `<a class="is-end" aria-current="true" href="${escapeHtml(searchHref(state.state_id, { start, inside }))}" aria-label="Remove END ${value}">${value}</a>`
+      : `<a href="${escapeHtml(searchHref(state.state_id, { start, inside, end: value }))}" aria-label="Set END to ${value}">${value}</a>`, currentFilters);
     const insideArea = inside.length < 8 ? renderInsideMatrix(insideOptions) : "<p>Limit of eight INSIDE chunks reached. Remove one to add another.</p>";
     filterGrids = `<section class="filter-grid inside-grid"><h2>INSIDE</h2>${insideArea}</section><section class="filter-grid end-grid"><h2>END</h2>${visibleEndMatrix}</section>`;
     search = `<section class="candidate-panel"><h2>Candidates <span>(${matchingCount.toLocaleString("en-US")})</span></h2><p>${escapeHtml(resultSummary)}</p><div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the results.</p>"}</div></section>`;
@@ -376,8 +408,8 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
   }));
   const leftStart = start ? startPicker : `<section class="start-grid"><h2>START</h2>${startGrid}</section>`;
   const leftColumn = `<div class="board-left">${leftStart}${filterGrids}</div>`;
-  const currentSummary = `<section class="top-readout"><h2>Find a word</h2><p class="summary" aria-label="Current constraints"><span class="constraint-readout">START <strong class="start-value${start ? " selected" : ""}">${escapeHtml(start) || "—"}</strong> | INSIDE <strong class="inside-value${inside.length ? " selected" : ""}">${inside.map(escapeHtml).join(", ") || "—"}</strong> | END <strong class="end-value${end ? " selected" : ""}">${escapeHtml(end) || "—"}</strong></span>${start ? `<a class="reset-search" href="${escapeHtml(chunkHref(state.state_id))}">Restart search</a>` : ""}</p></section>`;
-  const responseBody = `<div class="page-top"><div class="page-intro"><h1>Chunk Word Keyboard</h1><p class="keyboard-home"><a href="/">Return to Relay home</a> · <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p><details class="help"><summary>About this keyboard</summary><p>The pinned Hunspell spelling lexicon is searched deterministically. Candidate words are ordered by lowercase frequency and contextual diversity from <a href="https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus">SUBTLEX-US</a>; unranked spellings remain available after them. Top Words starts with a fixed set when the draft is empty, then shows contextual model predictions. Some valid words may be absent from the lexicon.</p><p>Following a word, key, or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets.</p></details><details class="instructions"><summary>Instructions</summary><p>Use a lowercase single-letter tile to type one character. Choose a two-letter START tile to find words beginning with it. The START grid stays on this page until a prefix is selected; then it is replaced by matching three-letter START choices above INSIDE and END.</p><p>For a two-letter START, up to 20 candidate spellings are shown. Choose a three-letter START to see all matches for that beginning. The word list ranks common English usage first when available.</p><p>INSIDE pairs must occur after the first two letters. They may overlap the ending or be the complete final pair, so an INSIDE pair can finish a word without an END chunk. Each added pair narrows the candidates. Choose an orange selected pair again to remove it. END matches the word's final two letters and narrows the list; choose a different END tile to replace it, or choose the red selected tile to clear it.</p><p>Selected START is green, INSIDE is orange, and END is red; the matching Find a word values use the same colors.</p><p>Top Words shows a fixed set of 36 choices while the draft is empty, then up to 18 contextual model predictions. Choosing one adds it to the draft. Suggestions may be wrong and are not safety-filtered.</p><p>Number and symbol keys add their displayed character. Space adds a space, ↵ adds a line break, and ⌫ deletes exactly one character. “Undo last addition” reverses the previous action instead. ${draftBytes} UTF-8 bytes used · 1200 max.</p></details></div>${currentSummary}<section id="draft" class="top-draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre>${reply}</section></div><section class="constraint main-board start-layout${start ? " selected-start-layout" : ""}">${leftColumn}<div class="board-right"><section><h2>Numbers, symbols, and space</h2><div class="typing-keyboard" aria-label="Numbers and special character keys"><div class="typing-row">${editKeys.slice(0, 10).join("")}</div><div class="typing-row">${editKeys.slice(10, 19).join("")}</div><div class="typing-row">${editKeys.slice(19, 28).join("")}</div><div class="typing-row bottom-row">${editKeys.slice(28).join("")}</div></div></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}${predictionSection}${search}</div></section>`;
+  const currentSummary = `<section class="top-readout"><h2>Find a word</h2><p class="summary" aria-label="Current constraints"><span class="constraint-readout">START <strong class="start-value${start ? " selected" : ""}">${escapeHtml(start) || "—"}</strong> | INSIDE <strong class="inside-value${inside.length ? " selected" : ""}">${inside.map(escapeHtml).join(", ") || "—"}</strong> | END <strong class="end-value${end ? " selected" : ""}">${escapeHtml(end) || "—"}</strong></span>${start ? `<a class="reset-search" href="${escapeHtml(searchHref(state.state_id))}">Restart search</a>` : ""}</p></section>`;
+  const responseBody = `<div class="page-top"><div class="page-intro"><h1>Chunk Word Keyboard</h1><p class="keyboard-home"><a href="/">Return to Relay home</a> · <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p><details class="help"><summary>About this keyboard</summary><p>The pinned Hunspell spelling lexicon is searched deterministically. Candidate words are ordered by lowercase frequency and contextual diversity from <a href="https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus">SUBTLEX-US</a>; unranked spellings remain available after them. Top Words starts with a fixed set when the draft is empty, then shows contextual model predictions. This index contains base entries, without Hunspell prefix or suffix expansion; a spelling such as reply, context, or preserves may therefore need character keys. START chooses one beginning for the word being searched. Its grid is then replaced by refinements and INSIDE/END choices so the workspace fits on one page. Restart search changes only these filters.</p><p>Standard word selections may replace a typed ending, insert a separator, and apply automatic case. After @, /, _, =, or a hyphen, standard composition appends without an inserted separator or automatic capitalization. Finish a typed word with Space before selecting the next word. The Next word controls distinguish completion, next-word insertion, and exact append, with explicit case choices.</p><p>Following a word, key, or editing link saves a temporary private draft step. Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets.</p></details><details class="instructions"><summary>Instructions</summary><p>Use a lowercase single-letter tile to type one character. Choose a two-letter START tile to find words beginning with it. The START grid stays on this page until a prefix is selected; then it is replaced by matching three-letter START choices above INSIDE and END.</p><p>For a two-letter START, up to 20 candidate spellings are shown. Choose a three-letter START to see all matches for that beginning. The word list ranks common English usage first when available.</p><p>INSIDE pairs must occur after the first two letters. They may overlap the ending or be the complete final pair, so an INSIDE pair can finish a word without an END chunk. Each added pair narrows the candidates. Choose an orange selected pair again to remove it. END matches the word's final two letters and narrows the list; choose a different END tile to replace it, or choose the red selected tile to clear it.</p><p>Selected START is green, INSIDE is orange, and END is red; the matching Find a word values use the same colors.</p><p>Top Words shows a fixed set of 36 choices while the draft is empty, then up to 18 contextual model predictions. Choosing one adds it to the draft. Suggestions may be wrong and are not safety-filtered.</p><p>All character keys append exactly their displayed character without inserting a separator or collapsing whitespace. Space adds one space, ↵ adds a line break, and ⌫ deletes exactly one character. “Undo last addition” reverses the previous action instead. ${draftBytes} UTF-8 bytes used · 1200 max.</p></details></div>${currentSummary}<section id="draft" class="top-draft"><h2>Draft</h2><pre class="draft">${escapeHtml(draft) || " "}</pre>${reply}</section></div><section class="constraint main-board start-layout${start ? " selected-start-layout" : ""}">${leftColumn}<div class="board-right"><section><h2>Numbers, symbols, and space</h2><div class="typing-keyboard" aria-label="Numbers and special character keys"><div class="typing-row">${editKeys.slice(0, 10).join("")}</div><div class="typing-row">${editKeys.slice(10, 19).join("")}</div><div class="typing-row">${editKeys.slice(19, 28).join("")}</div><div class="typing-row bottom-row">${editKeys.slice(28).join("")}</div></div><p class="hint"><a href="${PREFIX}/characters/${word(state.state_id)}">Exact characters and Unicode</a> · character keys append literally</p></section>${controls.length ? `<nav class="controls" aria-label="Draft controls">${controls.join("")}</nav>` : ""}${predictionSection}${search}</div></section>`;
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><base href="${baseHref}"><title>Chunk Word Keyboard · IARC Relay</title><meta name="robots" content="noindex,nofollow,noarchive"><style>*{box-sizing:border-box}body{margin:0;background:#f5f7f3;color:#172527;font:16px/1.45 system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:20px}h1{font-size:1.45rem;margin:.2rem 0 1rem}.keyboard-home{margin:.1rem 0 .45rem;font-size:.8rem}.keyboard-home a{color:#086b62}h2{font-size:.9rem;margin:.4rem 0}.notice,.hint{font-size:.84rem;color:#526466}.draft{min-height:3.2rem;background:white;border:1px solid #ccd6df;padding:.7rem;white-space:pre-wrap;overflow-wrap:anywhere}.chunks{display:flex;flex-wrap:wrap;gap:.35rem}.chunks a,.counted-choice a{display:inline-flex;align-items:center;gap:.2rem;min-height:38px;padding:.3rem .5rem;border:1px solid #cbd7de;border-radius:5px;background:white;color:#086b62;text-decoration:none}.counted-choice{display:inline-flex;align-items:center;gap:.2rem}.chunks a:focus-visible,.counted-choice a:focus-visible,.controls a:focus-visible,.letter-jumps a:focus-visible,.letter-choice:focus-visible,.reset-search:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.chunks small,.counted-choice small{color:#526466;font-size:.7rem}.active{display:flex;flex-wrap:wrap;gap:.6rem;margin:.7rem 0}.active span{padding:.35rem .5rem;background:#e9f1ee;border-radius:4px}.active span.selected-inside{background:#fff0d8;border:1px solid #d78b22;color:#a65b00}.active span.selected-inside a{color:#a65b00}.selected-end{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .5rem;background:#ffebeb;border:1px solid #cc4943;border-radius:4px;color:#a82720}.selected-end a{color:#a82720}.active a{margin-left:.35rem;color:#086b62}section{margin:1rem 0}h3{font-size:.85rem;margin:.7rem 0 .35rem}.letter-choice{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:.25rem .45rem;border:1px solid #cbd7de;border-radius:5px;background:#fff;color:#086b62;text-decoration:none;text-align:center;text-transform:lowercase}.letter-choice:hover{background:#e9f1ee}h4{font-size:.8rem;margin:.3rem 0}.letter-jumps{display:flex;gap:.3rem;flex-wrap:wrap;margin:.4rem 0}.letter-jumps a{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:.25rem .45rem;border:1px solid #cbd7de;border-radius:5px;background:#fff;color:#086b62;text-decoration:none;text-align:center}.letter-jumps a:hover{background:#e9f1ee}.start-prefixes{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:.15rem .1rem .55rem}.start-prefixes .counted-choice{flex:0 0 auto}.start-prefixes a{min-width:48px}.start-prefixes a[aria-current="true"]{background:#e4f3e8;border-color:#26834a;color:#176637;font-weight:700}.pair-groups>section{margin:.5rem 0;scroll-margin-top:4.5rem}.pair-groups .chunks a{min-height:32px;padding:.2rem .4rem}.pair-groups .chunks a.letter-choice{min-height:38px;padding:.25rem .45rem}.prefix-grid>section{margin:0;scroll-margin-top:0}.prefix-grid .chunks{gap:0}.prefix-grid .chunks a{display:inline-flex;align-items:center;justify-content:center;width:25px;min-width:25px;height:25px;min-height:25px;padding:0;margin:0 -1px -1px 0;border:1px solid #536165;border-radius:0;background:#fff;font-size:.74rem;line-height:1;text-align:center}.prefix-grid .chunks a.letter-choice{width:25px;min-width:25px;height:25px;min-height:25px;padding:0}.prefix-grid .chunks a.is-start{background:#e4f3e8;border-color:#26834a;color:#176637;font-weight:700}.prefix-grid .chunks a.is-inside{background:#fff0d8;border-color:#d78b22;color:#a65b00;font-weight:700}.prefix-grid .chunks a.is-end{background:#ffebeb;border-color:#cc4943;color:#a82720;font-weight:700}.filter-grid{margin:.8rem 0}.filter-grid>h2{margin:.3rem 0}.filter-grid .pair-groups>section{margin:0;scroll-margin-top:0}.filter-grid .prefix-grid .chunks{gap:0}.workspace{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.workspace.start-only{grid-template-columns:minmax(0,1fr)}.workspace.filters-only{grid-template-columns:repeat(2,minmax(0,1fr))}.constraint,.candidate-panel{min-width:0;padding:.7rem;border:1px solid #d3dcdd;border-radius:6px;background:#fff}.main-board{margin:.5rem 0}.main-board.start-layout{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1rem;align-items:start}.board-left{min-width:0}.board-right{min-width:0}.board-right>section{margin:.7rem 0}.typing-keyboard{display:grid;gap:.3rem}.typing-row{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:.3rem}.typing-row a{display:flex;min-width:0;min-height:36px;align-items:center;justify-content:center;padding:.2rem;border:1px solid #cbd7de;border-radius:4px;background:#fff;color:#086b62;text-decoration:none;line-height:1}.typing-row .space-key{grid-column:span 4}.typing-row .backspace-key{grid-column:span 2}.typing-row .enter-key{grid-column:span 2}.typing-row a:focus-visible{outline:3px solid #7c3b25;outline-offset:2px}.candidate-panel{margin:1rem 0}.candidate-panel .chunks a{min-height:42px}details{margin:.5rem 0}summary{cursor:pointer;color:#086b62}.summary{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem;background:#e9f1ee;border:1px solid #cbd6df;border-radius:5px}.constraint-readout .start-value.selected{color:#176637}.constraint-readout .inside-value.selected{color:#a65b00}.constraint-readout .end-value.selected{color:#a82720}.reset-search{flex:none;padding:.35rem .55rem;border:1px solid #086b62;border-radius:5px;background:#fff;color:#086b62;font-weight:650;text-decoration:none}.controls{display:flex;gap:1rem;margin:.55rem 0;flex-wrap:wrap}.controls a{color:#086b62}a{overflow-wrap:anywhere}@media(max-width:860px){.main-board.start-layout{grid-template-columns:1fr}.board-left{width:auto;max-width:100%;overflow-x:auto}}@media(max-width:720px){main{padding:14px}.workspace{grid-template-columns:1fr}.summary{position:static;align-items:flex-start;flex-wrap:wrap}}@media(max-width:420px){main{padding:11px}}</style></head><body><main>${responseBody}</main><script>${POINTER_JUMP_SCRIPT}</script></body></html>`;
   const scriptDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(POINTER_JUMP_SCRIPT)));
   const scriptHash = btoa(String.fromCharCode(...scriptDigest));
@@ -433,11 +465,8 @@ async function makeChild(env, request, parent, action, argument, childId, issued
           if (draftChars.slice(-size).join("").toLocaleLowerCase("en-US") === sequenceChars.slice(0, size).join("")) { overlap = size; break; }
         }
         added = sequenceChars.slice(overlap).join("");
-        if (parent.operation === "pick" && added && parentDraft && !/\s$/u.test(parentDraft)) added = ` ${added}`;
       } else {
         added = selected;
-        if (parent.operation === "pick" && /[\p{L}\p{N}]/u.test(added) && parentDraft && !/\s$/u.test(parentDraft)) added = ` ${added}`;
-        if (added === " " && /\s$/u.test(parentDraft)) added = "";
       }
     }
   } else if (action === "pick") {
@@ -461,13 +490,15 @@ async function makeChild(env, request, parent, action, argument, childId, issued
     }
     const match = parentDraft.match(/[\p{L}\p{N}'’\-]*$/u);
     const mayReplace = parent.operation === "key" && WORD.test(match?.[0] || "") && /[\p{L}\p{N}'’\-]/u.test(keyArgument(parent.value) || "");
-    if (mayReplace) removed = match?.[0] || "";
-    const prefix = removed ? parentDraft.slice(0, -removed.length) : parentDraft;
-    const separator = prefix && !/\s$/u.test(prefix) ? " " : "";
+    const effect = choice.effect || "compose";
+    const insertion = exactWordEffect(parentDraft, mayReplace ? match?.[0] || "" : "", choice.text, effect);
+    removed = insertion.removed;
+    const { prefix, separator } = insertion;
     let text = choice.text;
-    if (choice.case === "auto") text = autoCase(text, `${prefix}${separator}`);
+    if (choice.case === "auto" && !(effect === "compose" && /[@/_=\-]$/u.test(prefix))) text = autoCase(text, `${prefix}${separator}`);
     else if (choice.case === "capitalize") text = text.charAt(0).toLocaleUpperCase("en-US") + text.slice(1);
     else if (choice.case === "upper") text = text.toLocaleUpperCase("en-US");
+    else if (choice.case === "lower") text = text.toLocaleLowerCase("en-US");
     if (choice.wrapper === "quote") text = `“${text}”`;
     else if (choice.wrapper === "parenthetical") text = `(${text})`;
     added = `${separator}${text}${choice.suffix}`;
@@ -581,7 +612,7 @@ function autoCase(text, precedingText) {
 
 async function renderKeyboard(request, env, state, url) {
   const draft = await loadDraft(env, state);
-  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
+  const modeParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", "effect", "word_case"]));
   const layout = modeParams.get("layout") || "letters";
   const view = modeParams.get("view") || "words";
   const shifted = modeParams.get("shift") === "1";
@@ -759,9 +790,15 @@ export async function handleWordKeyboard3(request, env, url, createPublishDraft,
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/chunk-keyboard-3\/state\/([^/]+)$/u);
     if (stateMatch) {
-      const stateParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page"]));
+      const stateParams = queryParams(url, new Set(["layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", "effect", "word_case"]));
       const state = await findState(env, readWord(stateMatch[1]));
       return await renderKeyboard(request, env, state, url);
+    }
+    const charactersMatch = path.match(/^\/predictive-keyboard\/html\/chunk-keyboard-3\/characters\/([^/]+)(?:\/([0-9a-f]+))?$/u);
+    if (charactersMatch) {
+      queryParams(url, new Set());
+      const state = await findState(env, readWord(charactersMatch[1]));
+      return renderExactCharacters(env, state, await loadDraft(env, state), charactersMatch[2] || "");
     }
     const formMatch = path.match(/^\/predictive-keyboard\/html\/chunk-keyboard-3\/form\/([^/]+)$/u);
     if (formMatch) {

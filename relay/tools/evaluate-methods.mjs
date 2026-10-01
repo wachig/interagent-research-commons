@@ -4,7 +4,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 const out=path.join(root,'relay/assets/evaluation'); await mkdir(out,{recursive:true});
-const sourceFiles=['relay/runtime.js','relay/worker.js','relay/schema.js','relay/html_keyboard_word.js','relay/html_keyboard_word3.js','relay/token_composer.js','relay/tools/evaluate-methods.mjs','relay/tools/local-evaluation.mjs','relay/assets/semantic-lexicon/manifest.json','relay/assets/semantic-lexicon/inside-pairs.json'];
+const sourceFiles=['relay/runtime.js','relay/worker.js','relay/schema.js','relay/html_keyboard_word.js','relay/html_keyboard_word3.js','relay/chunk_exact.js','relay/token_composer.js','relay/tools/evaluate-methods.mjs','relay/tools/local-evaluation.mjs','relay/assets/semantic-lexicon/manifest.json','relay/assets/semantic-lexicon/inside-pairs.json'];
 async function sourceHashes(){const hashes={};for(const file of sourceFiles){try{hashes[file]=createHash('sha256').update(await readFile(path.join(root,file))).digest('hex');}catch(error){if(error.code!=='ENOENT')throw error;hashes[file]=null;}}return hashes;}
 const initialSourceHashes=await sourceHashes();
 let local,base;
@@ -14,7 +14,7 @@ const conditions=[['chunk3','/predictive-keyboard/html/chunk-keyboard-3/','links
 const ranks=new Map((await readFile(path.join(root,'relay/tokenizers/o200k_base.tiktoken'),'utf8')).trim().split('\n').map(l=>{const [b,r]=l.split(' ');return [Number(r),Buffer.from(b,'base64')];}));
 function keyValue(link) {
  const m=new URL(link.url).pathname.match(/\/step\/[^/]+\/key\/([^/]+)\//); if(!m)return null;
- const key=decodeURIComponent(m[1]);return ({space:' ',period:'.',comma:',',question:'?',exclamation:'!',apostrophe:"'",colon:':',hyphen:'-',semicolon:';',quote:'"',enter:'\n',backspace:'\b'}[key]??key);
+ const key=decodeURIComponent(m[1]);if(/^unicode:[0-9a-f]{1,6}$/.test(key))return String.fromCodePoint(parseInt(key.slice(8),16));return ({space:' ',period:'.',comma:',',question:'?',exclamation:'!',apostrophe:"'",colon:':',hyphen:'-',semicolon:';',quote:'"',enter:'\n',backspace:'\b'}[key]??key);
 }
 function pickValue(link) {const m=new URL(link.url).pathname.match(/\/step\/[^/]+\/pick\/([^/]+)\//);if(!m)return null; try {JSON.parse(decodeURIComponent(m[1]));return link.text.replace(/^Add /,'');}catch{return null;}}
 function tokenValue(link) {const m=new URL(link.url).pathname.match(/\/branch\/[^/]+\/o(\d+)\//);return m?ranks.get(Number(m[1])):null;}
@@ -31,7 +31,7 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
  try {
   await get('/','home');if(replyTarget) await get('/reply/'+replyTarget,'reply-discovery'); page=await get(replyTarget?(condition==='o200k'?entry+'reply/'+replyTarget:entry+'?reply_to='+replyTarget):entry,'entry');
   if(condition==='o200k') {const start=page.links.find(l=>l.text===(replyTarget?'Start an o200k token composer reply':'Begin free-generation task'));if(!start)throw Error('No supplied start link');page=await get(start.url,'start');}
-  let draft='',visited=new Set(),searchSteps=0,tokenDraft=Buffer.alloc(0);
+  let draft='',visited=new Set(),searchSteps=0,tokenDraft=Buffer.alloc(0),lastWasCharacter=false;
   if(condition==='o200k' && profile==='forms' && !target.includes('\n')) {
    const action=page.html.match(/<form method="get" action="([^"]+\/search\/[^"]+)"/)?.[1];if(!action)throw Error('Search form unavailable');
    page=await get(decode(action)+'?'+new URLSearchParams({q:target}),'form-search');
@@ -60,9 +60,10 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
    if(draft===target)break;
    if(draft===null||!target.startsWith(draft))throw Error(`Exact-text divergence at ${JSON.stringify(draft)}`);
    const remaining=target.slice(draft.length),word=remaining.match(/^ ?([\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*)/u)?.[1];
+   if(condition==='chunk3' && lastWasCharacter && remaining.startsWith(' ')){const space=page.links.find(l=>keyValue(l)===' ');if(space){page=await get(space.url,'character: ');lastWasCharacter=true;visited.clear();searchSteps=0;continue;}}
    if(condition!=='character-control' && (draft==='' || /\s$/.test(draft) || remaining.startsWith(' '))) {
     const picks=page.links.map(l=>({l,v:pickValue(l)})).filter(x=>x.v&& (remaining.startsWith(x.v)||remaining.startsWith(' '+x.v)) && (x.v===word || x.v.includes(' '))).sort((a,b)=>b.v.length-a.v.length);
-    if(picks.length){page=await get(picks[0].l.url,'word');visited.clear();searchSteps=0;continue;}
+    if(picks.length){page=await get(picks[0].l.url,'word');lastWasCharacter=false;visited.clear();searchSteps=0;continue;}
     if(filteredChunkPilot && condition==='chunk3' && word && (new URL(page.url).searchParams.get('start')||'').length>=2) {
      const lower=word.toLowerCase(),params=new URL(page.url).searchParams;
      const end=lower.slice(-2),endLink=!params.get('end')&&page.links.find(l=>l['aria-label']==='Set END to '+end);
@@ -73,7 +74,7 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
      if(insideLink){page=await get(insideLink.url,'word-inside');continue;}
     }
     if(condition==='prefix' && profile==='forms' && word && searchSteps<1) {
-     const form=page.html.match(/<form method="get" action="([^"]+)" class="prefix-filter-form">([\s\S]*?)<\/form>/);
+     const form=page.html.match(/<form[^>]* method="get" action="([^"]+)" class="prefix-filter-form">([\s\S]*?)<\/form>/);
      if(form) {
       const params=new URLSearchParams({view:'prefix',layout:'letters'}),lower=word.toLowerCase();
       for(const [role,pair] of [['start',lower.slice(0,2)],['end',lower.slice(-2)],['inside',lower.length>4?lower.slice(2,4):'']]) {
@@ -98,8 +99,14 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
     }
    }
    const char=[...remaining][0];const key=page.links.find(l=>keyValue(l)===char);
-   if(key){page=await get(key.url,'character:'+char);visited.clear();searchSteps=0;continue;}
-   if(condition==='chunk3') {const reset=page.links.find(l=>l.text==='Restart search');if(reset){page=await get(reset.url,'reset-search');searchSteps=4;continue;}}
+   if(key){page=await get(key.url,'character:'+char);lastWasCharacter=true;visited.clear();searchSteps=0;continue;}
+   if(condition==='chunk3') {
+    const cp=char.codePointAt(0).toString(16).padStart(6,'0');
+    const range=page.links.filter(l=>{const m=new URL(l.url).pathname.match(/\/characters\/[^/]+\/([0-9a-f]{2,4})$/);return m&&cp.startsWith(m[1])&&new URL(l.url).pathname!==new URL(page.url).pathname;}).sort((a,b)=>b.url.length-a.url.length)[0];
+    if(range){page=await get(range.url,'character-range');continue;}
+    const exact=page.links.find(l=>l.text==='Exact characters and Unicode');
+    if(exact){page=await get(exact.url,'character-browser');continue;}
+    const reset=page.links.find(l=>l.text==='Restart search');if(reset){page=await get(reset.url,'reset-search');searchSteps=4;continue;}}
    if(condition!=='chunk3') {
     const mode=page.links.find(l=>!visited.has(l.url) && (/[A-Z]/.test(char)?l['aria-label']==='Turn shift on':/[a-z]/.test(char)?l['aria-label']==='Turn shift off'||l.text==='ABC':l.text==='?123'));
     if(mode){visited.add(mode.url);page=await get(mode.url,'keyboard-mode');continue;}
@@ -145,8 +152,8 @@ for(const [condition,entry,profile] of conditions){
   }
  }finally {await local.close();}
 }
-const report={evaluation_version:'1.0.0',date:'2026-09-30',corpus:cases,profiles:{links:'Only offered hrefs. No forms or editing composition URLs.',forms:'Offered GET forms plus offered action links; includes form controls that accept exact text.', 'url-construction':'Construct GET URLs from the read-only instructions.'},method:'Known-target deterministic greedy supplied-link strategy; bounded 350 composition steps. Three normal repetitions and one trial dropping every successful composition, review, arm, staging and publication response after server completion, then replaying the exact request. Counts home, reply chooser where applicable, entry/instructions, redirects, composition, review, arm and publication. Receipt verification and synthetic fixture setup excluded. Failures remain in results. Form profiles are distinct capabilities; token form receives the target text. Published vocabulary used only to decode offered tokens. Local HTTP timings exclude participant reasoning and WAN latency; this is not an optimal-path proof or an observed agent-speed ranking. Missing strategy choices do not prove a route lacks every possible path. Quotas, expiry, stale branches and entry loss are evaluated separately by recovery-contract.mjs. Synthetic loopback IP headers isolate per-trial network throttling; quotas are not bypassed in recovery tests. Never targets production.',results};
+const report={evaluation_version:'1.1.0',date:'2026-09-30',corpus:cases,profiles:{links:'Only offered hrefs. No forms or editing composition URLs.',forms:'Offered GET forms plus offered action links; includes form controls that accept exact text.', 'url-construction':'Construct GET URLs from the read-only instructions.'},strategy_changes_from_1_0_0:'Chunk strategy now explicitly separates typed words with Space and follows the optional exact-character browser. Differences combine strategy and interface changes.',method:'Known-target deterministic greedy supplied-link strategy; bounded 350 composition steps. Three normal repetitions and one trial dropping every successful composition, review, arm, staging and publication response after server completion, then replaying the exact request. Counts home, reply chooser where applicable, entry/instructions, redirects, composition, review, arm and publication. Receipt verification and synthetic fixture setup excluded. Failures remain in results. Form profiles are distinct capabilities; token form receives the target text. Published vocabulary used only to decode offered tokens. Local HTTP timings exclude participant reasoning and WAN latency; this is not an optimal-path proof or an observed agent-speed ranking. Missing strategy choices do not prove a route lacks every possible path. Quotas, expiry, stale branches and entry loss are evaluated separately by recovery-contract.mjs. Synthetic loopback IP headers isolate per-trial network throttling; quotas are not bypassed in recovery tests. Never targets production.',results};
 const finalSourceHashes=await sourceHashes();
 if(JSON.stringify(initialSourceHashes)!==JSON.stringify(finalSourceHashes))throw Error('Evaluation source changed during the run; results were not released. Run again against a stable revision.');
 report.node_version=process.version;report.source_sha256=initialSourceHashes;
-await writeFile(path.join(out,'recovery-1.0.0.json'),JSON.stringify(report,null,2)+'\n');
+await writeFile(path.join(out,'recovery-1.1.0.json'),JSON.stringify(report,null,2)+'\n');

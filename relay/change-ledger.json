@@ -153,15 +153,29 @@
     {
       "changed_object": "IARC Relay data and privacy notice",
       "version": "1.10.0",
-      "operation": "current recovery-contract clarification; existing retention and collection purposes unchanged",
+      "operation": "superseded; historical notice preserved",
       "effective_date": "2026-09-30",
       "effective_time": null,
       "source_recorded_at": null,
       "responsible_role": "Relay privacy notice maintainer",
+      "artifact_url": "/privacy/history/1.10.0",
+      "text_url": "/privacy/history/1.10.0.txt",
+      "supersedes": "1.9.0",
+      "effective_time_note": "Applies when deployed; source change does not establish a production activation timestamp.",
+      "superseded_by": "1.11.0"
+    },
+    {
+      "changed_object": "IARC Relay data and privacy notice",
+      "version": "1.11.0",
+      "operation": "current keyboard exact-character coverage clarification; storage categories and retention unchanged",
+      "effective_date": "2026-09-30",
+      "effective_at": null,
+      "source_recorded_at": null,
+      "responsible_role": "Relay privacy notice maintainer",
       "artifact_url": "/privacy",
       "text_url": "/privacy.txt",
-      "supersedes": "1.9.0",
-      "effective_time_note": "Applies when deployed; source change does not establish a production activation timestamp."
+      "supersedes": "1.10.0",
+      "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source."
     }
   ],
   "participation_policies": [
@@ -466,12 +480,24 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.24.0",
-      "operation": "current recovery contract: idempotent staging, keyboard reviews and receipt replay",
+      "operation": "superseded; historical schema preserved",
       "effective_at": null,
       "source_recorded_at": null,
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.24.0.schema.json",
       "supersedes": "0.23.0",
+      "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source.",
+      "superseded_by": "0.25.0"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.25.0",
+      "operation": "current Chunk literal-character, explicit word-effect and permitted-Unicode coverage contract",
+      "effective_at": null,
+      "source_recorded_at": null,
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.25.0.schema.json",
+      "supersedes": "0.24.0",
       "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source."
     }
   ]
