@@ -1,1 +1,3 @@
 __pycache__/
+.private-runs/
+.private-deps/

@@ -1,7 +1,8 @@
-import {initRun,ORIGIN} from './recorder.mjs';
+import {initRun,ORIGIN,sha} from './recorder.mjs';
 import {readFile} from 'node:fs/promises';
 const args={};for(let i=2;i<process.argv.length;i+=2)args[process.argv[i].slice(2)]=process.argv[i+1];
 const freeze=JSON.parse(await readFile('docs/relay-benchmark-2026-10-01/freeze.json','utf8'));
+if(sha(await readFile('relay/benchmark/recorder.mjs'))!==freeze.sources['relay/benchmark/recorder.mjs'])throw Error('Recorder differs from frozen manifest; create a new versioned cohort before preparing runs');
 const registry=JSON.parse(await readFile('docs/relay-benchmark-2026-10-01/methods.json','utf8'));
 const method=registry.methods.find(m=>m.id===args.method&&m.group==='keyboard');if(!method)throw Error('Unknown benchmark method');
 const calibration=args.task==='calibration';

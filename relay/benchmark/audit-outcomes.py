@@ -1,8 +1,8 @@
 """Reconcile tester claims against stored rendered drafts; no HTTP or route construction."""
-import json, hashlib
+import json, hashlib, os
 from pathlib import Path
 from extract import extract
-root=Path('/private/tmp/relay-benchmark-runs')
+root=Path(os.environ.get('RELAY_BENCH_RUNS',str(Path(__file__).parent/'.private-runs')))
 for p in root.glob('*/state.json'):
     s=json.loads(p.read_text())
     if not s['config'].get('scored') or not s.get('finished'): continue

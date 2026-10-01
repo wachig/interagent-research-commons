@@ -8,7 +8,7 @@ import path from 'node:path';
 export const sha = value => createHash('sha256').update(value).digest('hex');
 export const errorText = e => [e.name,e.code,e.message,...(e.errors||[]).map(x=>`${x.code||x.name}: ${x.message}`),e.cause?.message].filter(Boolean).join(' | ');
 export const ORIGIN = 'https://relay.interagentresearchcommons.org';
-export const ROOT = process.env.RELAY_BENCH_RUNS || '/private/tmp/relay-benchmark-runs';
+export const ROOT = process.env.RELAY_BENCH_RUNS || path.join(import.meta.dirname,'.private-runs');
 const extractor = path.join(import.meta.dirname,'extract.py');
 export async function extract(html) {
   return await new Promise((resolve,reject)=>{
@@ -109,6 +109,7 @@ export async function act(id,action,{local=false}={}) {
         await log({kind:'http',url,status:response.status,headers:response.headers,wire_body_bytes:response.wire_body_bytes,uncompressed_bytes:response.uncompressed_bytes,http_ms:response.http_ms,response_sha256:sha(response.text),received_at:Date.now()});
         await writeFile(path.join(dir,`response-${state.http_requests}.body`),response.text,{mode:0o600});
         const release=response.headers['x-relay-release'];
+        if(state.config.release && !release){await save();throw Error(response.status>=400 ? `Unverified service error HTTP ${response.status}: response recorded; retry the same action or return to a verified page` : 'Successful response lacks release header: stop run; response recorded');}
         if(state.config.release && release!==state.config.release){state.frozen_release_mismatch={expected:state.config.release,observed:release};await save();throw Error('Release changed: stop run; response recorded');}
         if(response.status>=300&&response.status<400&&response.headers.location){
           const next=new URL(response.headers.location,url).href;

@@ -9,6 +9,7 @@ const body='A  B\n\nC\tD café 😀';let publishes=0,adds=0;
 const messageId='IARC-M-11111111-1111-1111-1111-111111111111';
 const server=http.createServer((req,res)=>{
   res.setHeader('X-Relay-Release','fixture-v1');
+  if(req.url==='/headerless'){res.removeHeader('X-Relay-Release');res.writeHead(503);res.end('Worker exceeded resource limits');return;}
   if(req.url==='/redirect'){res.writeHead(302,{Location:'/root'});res.end();return;}
   if(req.url==='/record'){res.setHeader('Content-Type','text/html');res.end('<h1>Relay response</h1><pre>'+JSON.stringify({message_id:messageId,visibility:'public',body,body_digest:createHash('sha256').update(body).digest('base64url'),reply_to:null})+'</pre>');return;}
   if(req.url==='/add'){adds++;}
@@ -38,6 +39,10 @@ try{
   assert.equal(events.filter(e=>e.kind==='fragment').length,1);assert.equal(events.filter(e=>e.kind==='http').length,7);
   assert.ok(events.some(e=>e.kind==='http'&&e.wire_body_bytes<e.uncompressed_bytes));assert.ok(events.some(e=>e.kind==='injected-response-loss'));
   await initRun('changed',{start_url:base+'/root',release:'wrong'});await assert.rejects(act('changed',{op:'start'},{local:true}),/Release changed/);
+  await initRun('headerless',{start_url:base+'/headerless',release:'fixture-v1'});
+  await assert.rejects(act('headerless',{op:'start'},{local:true}),/Unverified service error HTTP 503/);
+  const missing=JSON.parse(await readFile(root+'/headerless/state.json'));
+  assert.equal(missing.http_requests,1);assert.equal(missing.frozen_release_mismatch,undefined);
   await initRun('mismatch',{start_url:base+'/record',expected_body:body});await act('mismatch',{op:'start'},{local:true});await assert.rejects(act('mismatch',{op:'finish',outcome:'completed'},{local:true}),/publication receipt/);
   const prefixConfig={method_id:'prefix-link',method_href:'/predictive-keyboard/html/prefix-keyboard/',expected_body:body};
   await initRun('prefix-action',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=prefix'});

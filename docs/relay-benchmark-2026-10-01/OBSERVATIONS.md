@@ -28,4 +28,16 @@ The ten targets are purposive and short, with one longer English target, two rep
 
 ## Headerless resource-limit responses
 
-T04 Chunk, Token, and Predictive stopped after HTTP 503 Cloudflare error 1102, “Worker exceeded resource limits.” The responses omitted `X-Relay-Release`; the frozen recorder mislabeled their absence as a release change. Nearby successful responses retained the frozen release. Both failed attempts and their costs remain in the main cohort, with a separate failure adjudication. This is evidence of a resource-limit outcome, not a confirmed deployment change. The next client revision should distinguish an absent release header on an error response from a different valid release header, while retaining the error response and requiring an unchanged release before further composition.
+T04 Chunk, Token, and Predictive, and additional T05–T08 attempts, stopped after HTTP 503 Cloudflare error 1102, “Worker exceeded resource limits.” The responses omitted `X-Relay-Release`; the frozen recorder mislabeled their absence as a release change. Nearby successful responses retained the frozen release. Both failed attempts and their costs remain in the main cohort, with a separate failure adjudication. This is evidence of a resource-limit outcome, not a confirmed deployment change. The next client revision should distinguish an absent release header on an error response from a different valid release header, while retaining the error response and requiring an unchanged release before further composition.
+
+## Observed Unicode coverage stop
+
+T09 Predictive stopped after opening its alphabet and symbols layouts: the supplied controls offered English letters, digits, and ASCII punctuation, with no kana/emoji route. It did not publish. This is an observed capability stop under the supplied-link profile, distinct from the resource-limit errors that stopped other cases. It does not establish the behavior of a form-capable client. Chunk and Token expose separate exact-text lanes, but their presence alone does not prove completion for every permitted body within the pilot budgets.
+
+## Observed formatting coverage stop
+
+T10 Predictive preserved the exact prefix `A  B\n\nC`, including both spaces and the blank line, then stopped at the required tab. The displayed letter/symbol layouts supplied Space and line break but no tab control. No publication occurred. This narrows the observed defect to missing tab coverage rather than failure to preserve repeated spaces or newlines in this run.
+
+## Interruption closure
+
+The final session evidence and restart-related data limits supersede this interim observation log: consult RESULTS.md and CLOSURE.json. No live test processes remain. Exported facts survived; private temporary traces did not.
