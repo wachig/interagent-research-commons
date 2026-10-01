@@ -1,21 +1,28 @@
-import {wireGet,sha,ORIGIN} from './recorder.mjs';
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+// Create a NEW directory. Historical cohorts and evidence are never overwritten.
+import {wireGet,ORIGIN} from './recorder.mjs';
+import {hash,runtimeFingerprint,REPO,plannedSlots} from './manifest.mjs';
+import {atomicJson} from './storage.mjs';
+import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import path from 'node:path';
-const dir=path.resolve('docs/relay-benchmark-2026-10-01');await mkdir(dir,{recursive:true});
+const args={};for(let i=2;i<process.argv.length;i+=2)args[process.argv[i].slice(2)]=process.argv[i+1];
+if(!args.output||!args.plan)throw Error('Required: --output NEW_DIRECTORY --plan PLAN_FILE');
+const dir=path.resolve(args.output),plan=JSON.parse(await readFile(args.plan));plannedSlots(plan);
+if(!plan.cohort||!plan.benchmark_version||!plan.spending_limits)throw Error('Plan needs cohort, version and spending limits');
+if(!plan.pilot_target_ids?.length||plan.pilot_target_ids.some(id=>!plan.targets.some(t=>t.id===id)))throw Error('Plan needs valid pilot_target_ids');for(const limits of [plan.spending_limits,plan.expanded_spending_limits])for(const value of Object.values(limits||{}))if(!Number.isFinite(value)||value<=0)throw Error('Spending limits must be finite and positive');
+let replyParent=null;if(plan.targets.some(t=>t.reply)){if(!args['reply-parent'])throw Error('Reply targets require --reply-parent VERIFIED_PUBLIC_PARENT.json');const parent=JSON.parse(await readFile(args['reply-parent']));if(!/^IARC-M-[a-f0-9-]+$/i.test(parent.message_id||'')||!/^IARC-C-[a-f0-9-]+$/i.test(parent.conversation_id||''))throw Error('Invalid verified reply parent');replyParent={message_id:parent.message_id,conversation_id:parent.conversation_id,record_sha256:hash(JSON.stringify(parent))};}
+const runtime=runtimeFingerprint();await mkdir(dir,{mode:0o700});
 const resources={};let release;
 for(const route of ['/service.json','/methods.json','/protocol.json','/privacy.txt','/participation-policy.txt']){
-  const r=await wireGet(ORIGIN+route,{accept:'application/json'});
-  if(r.status!==200)throw Error(`Freeze read ${route}: HTTP ${r.status}`);
-  if(release&&release!==r.headers['x-relay-release'])throw Error('Release changed during freeze');
-  release=r.headers['x-relay-release'];
-  const filename=route.slice(1).replaceAll('/','_');await writeFile(path.join(dir,filename),r.text);
-  resources[route]={sha256:sha(r.text),release,headers:r.headers};
+ const r=await wireGet(ORIGIN+route,{accept:'application/json'});
+ if(r.status!==200||!r.headers['x-relay-release'])throw Error('Freeze read failed: '+route);
+ if(release&&release!==r.headers['x-relay-release'])throw Error('Release changed during freeze');release=r.headers['x-relay-release'];
+ await writeFile(path.join(dir,route.slice(1)),r.text,{mode:0o600});resources[route]={sha256:hash(r.text),release,headers:r.headers};
 }
-if(!release)throw Error('Live release header missing');
-const sourceFiles=['relay/runtime.js','relay/chunk_exact.js','relay/phrase_safety.js','relay/prefix_keyboard_vocabulary.js','relay/chunk_keyboard_three_letter_vocabulary.js','relay/html_keyboard.js','relay/html_keyboard_word.js','relay/html_keyboard_word2.js','relay/html_keyboard_word3.js','relay/token_composer.js','relay/html_keyboard_model.json','relay/assets/semantic-lexicon/manifest.json','relay/assets/semantic-lexicon/chunk-order-manifest.json','relay/assets/o200k/manifest.json','relay/tokenizers/o200k_base.tiktoken','relay/benchmark/recorder.mjs','relay/benchmark/client.mjs','relay/benchmark/broker.mjs','relay/benchmark/extract.py','relay/benchmark/plan.json','relay/benchmark/requirements.txt'];
-const sources={};for(const f of sourceFiles)sources[f]=sha(await readFile(f));
-const plan=JSON.parse(await readFile(path.join(import.meta.dirname,'plan.json'),'utf8'));
-const methods=JSON.parse(await readFile(path.join(dir,'methods.json'),'utf8'));
-const freeze={benchmark:plan.benchmark_version,frozen_at:new Date().toISOString(),origin:ORIGIN,release,source_commit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),deployed_service_commit:'0e2e153028d09c3c14e6541446c6bad787f13f2b',source_attestation:'source_commit identifies the benchmark checkout. deployed_service_commit is the previously recorded owner deployment source; HTTP release identifies the Worker, not a cryptographic source attestation. Runtime file hashes are recorded separately.',registry_version:methods.registry_version,resources,sources,plan_sha256:sha(JSON.stringify(plan)),client:{version:'1.0.0',node:process.version,python:execFileSync('python3',['--version'],{encoding:'utf8'}).trim(),tokenizer:'tiktoken 0.12.0 with pinned local o200k ranks',transport:'Shared loopback broker using curl HTTPS, gzip/br advertised and decoded by recorder, no JS/forms/prefetch/cache; one request per selected supplied link unless redirect or same-document fragment',payload:'encoded HTTP response body bytes measured before decompression; excludes headers/TLS; extracted tokens use o200k as a declared common proxy, not Luna billing tokens',reading:'all static HTML text including closed disclosure content is exposed uniformly; scripts/styles/SVG excluded; link label and aria-label preserved; no claims about attention'},plan};
-await writeFile(path.join(dir,'freeze.json'),JSON.stringify(freeze,null,2)+'\n');console.log(JSON.stringify({release,registry_version:methods.registry_version,freeze:path.join(dir,'freeze.json')}));
+const serviceFiles=['relay/runtime.js','relay/chunk_exact.js','relay/phrase_safety.js','relay/prefix_keyboard_vocabulary.js','relay/chunk_keyboard_three_letter_vocabulary.js','relay/html_keyboard.js','relay/html_keyboard_word.js','relay/html_keyboard_word2.js','relay/html_keyboard_word3.js','relay/token_composer.js','relay/html_keyboard_model.json','relay/assets/semantic-lexicon/manifest.json','relay/assets/semantic-lexicon/chunk-order-manifest.json','relay/assets/o200k/manifest.json','relay/tokenizers/o200k_base.tiktoken'];
+const harness=(await readdir(import.meta.dirname)).filter(f=>!f.startsWith('.')&&/\.(?:mjs|py|txt)$/.test(f)).map(f=>'relay/benchmark/'+f);
+const files=[...new Set([...serviceFiles,...harness,path.relative(REPO,path.resolve(args.plan))])];
+const sources={};for(const f of files)sources[f]=hash(await readFile(path.join(REPO,f)));
+const registry=JSON.parse(await readFile(path.join(dir,'methods.json')));
+await atomicJson(path.join(dir,'freeze.json'),{schema_version:2,benchmark:plan.benchmark_version,cohort:plan.cohort,frozen_at:new Date().toISOString(),origin:ORIGIN,release,source_commit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),deployed_service_commit:args['deployed-commit']||null,source_attestation:'Local file hashes and owner-supplied deployment provenance; release header is not cryptographic source attestation.',registry_version:registry.registry_version,reply_parent:replyParent,resources,sources,runtime,plan_sha256:hash(JSON.stringify(plan)),plan});
+console.log(JSON.stringify({directory:dir,release,cohort:plan.cohort}));

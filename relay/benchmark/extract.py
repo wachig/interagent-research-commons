@@ -1,7 +1,7 @@
 """Static supplied-link client extraction; no JavaScript, forms, or URL inference."""
 import json, sys, os
 from html.parser import HTMLParser
-sys.path.insert(0, os.environ.get('RELAY_BENCH_TOKENIZER_PATH', '/private/tmp/relay-benchmark-deps'))
+sys.path.insert(0, os.environ.get('RELAY_BENCH_TOKENIZER_PATH', os.path.join(os.path.dirname(__file__), '.private-deps')))
 
 class Page(HTMLParser):
     def __init__(self):

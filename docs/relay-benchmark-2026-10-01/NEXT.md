@@ -9,3 +9,7 @@ Keep Chunk as the provisional primary candidate. Do not announce a comparative w
 5. **Run a small new comparison after repairs.** Freeze a separately versioned service/client cohort. Start with matched English, identifier, Unicode, and formatting cases, then repeat the ten-case comparison if stable. Retain the original baseline rather than replacing failures. Use fresh agents, exact public-record verification, all spent requests, and the same capability boundary. Treat reused targets as regression cases; reserve new held-out targets for additional generalization claims. Add observed agent recovery sessions and near-limit targets before making broad coverage claims. Fifty cases per method should wait until basic completion is reliable.
 
 The current recorder is client-side instrumentation; no participant analytics were added to production. GET with preview, immediate GET, ordinary-browser JavaScript, and form submission need their own declared profiles and must not enter the strict supplied-link score. The sixteen deterministic recovery probes are contract evidence, not agent-efficiency measurements.
+
+## Infrastructure follow-up
+
+The client-side gaps identified after this pilot are addressed; see [repair evidence and limits](INFRASTRUCTURE-REPAIRS.md) and [the updated operator workflow](../../relay/benchmark/README.md). Use a new schema-2 cohort for future tests; this historical cohort remains read-only. Stabilize the Worker before dispatching the six-slot regression. No new live comparison was run during the infrastructure repair.

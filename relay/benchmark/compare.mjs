@@ -1,20 +1,26 @@
-import {readFile,writeFile} from 'node:fs/promises';
-const dir='docs/relay-benchmark-2026-10-01';
-const report=JSON.parse(await readFile(dir+'/runs.json'));
-const plan=JSON.parse(await readFile('relay/benchmark/plan.json'));
-const scored=report.runs.filter(r=>r.scored),finished=scored.filter(r=>r.finished);
+import {readFile} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+import {selectCohort,loadManifest} from './manifest.mjs';
+import {atomicJson} from './storage.mjs';
 const verified=r=>r.outcome==='completed'&&['body_exact','reply_exact','digest_exact','conversation_exact','designation_exact'].every(k=>r.verification?.[k]===true);
-const median=xs=>{const a=xs.filter(x=>x!==null).sort((a,b)=>a-b);return a.length?(a[Math.floor((a.length-1)/2)]+a[Math.ceil((a.length-1)/2)])/2:null;};
-const methods=plan.methods.map(method=>{
- const rs=scored.filter(r=>r.method===method),complete=rs.filter(verified);
- return {method,attempts:rs.length,closed:rs.filter(r=>r.finished).length,exact_completed:complete.length,failed:rs.filter(r=>r.finished&&r.outcome!=='infrastructure_interruption'&&(!verified(r))).length,interrupted:rs.filter(r=>r.outcome==='infrastructure_interruption').length,costs_complete:rs.every(r=>!r.recovery_provenance),completion_fraction_closed:rs.filter(r=>r.finished).length?complete.length/rs.filter(r=>r.finished).length:null,median_completed_activations:median(complete.map(r=>r.activations)),median_completed_entry_to_finish_ms:median(complete.map(r=>r.entry_to_finish_ms)),spent_activations_all_attempts:rs.reduce((n,r)=>n+r.activations,0),spent_http_all_attempts:rs.reduce((n,r)=>n+r.http_attempts,0)};
-});
-const pairs=[];for(let i=0;i<plan.methods.length;i++)for(let j=i+1;j<plan.methods.length;j++){
- const a=plan.methods[i],b=plan.methods[j],cases=plan.targets.map(t=>{const x=scored.find(r=>r.task===t.id&&r.method===a&&verified(r)),y=scored.find(r=>r.task===t.id&&r.method===b&&verified(r));return x&&y?{task:t.id,class:t.class,a_activations:x.activations,b_activations:y.activations,activation_delta_a_minus_b:x.activations-y.activations,a_ms:x.entry_to_finish_ms,b_ms:y.entry_to_finish_ms,a_wire_bytes:x.wire_body_bytes,b_wire_bytes:y.wire_body_bytes,a_extracted_tokens:x.extracted_tokens_o200k,b_extracted_tokens:y.extracted_tokens_o200k}:null;}).filter(Boolean);pairs.push({a,b,completed_pairs:cases.length,cases});
+const median=xs=>{const a=xs.filter(Number.isFinite).sort((a,b)=>a-b);return a.length?(a[Math.floor((a.length-1)/2)]+a[Math.ceil((a.length-1)/2)])/2:null;};
+export function comparisonFor(report,freeze){
+ const {rows:scored,slots,missing}=selectCohort(report,freeze),finished=scored.filter(r=>r.finished),plan=freeze.plan;
+ const methods=plan.methods.map(method=>{
+  const rs=scored.filter(r=>r.method===method),complete=rs.filter(verified),costsComplete=rs.every(r=>r.costs_complete!==false&&!r.recovery_provenance);
+  return {method,attempts:rs.length,closed:rs.filter(r=>r.finished).length,exact_completed:complete.length,failed:rs.filter(r=>r.finished&&r.outcome!=='infrastructure_interruption'&&!verified(r)).length,interrupted:rs.filter(r=>r.outcome==='infrastructure_interruption').length,costs_complete:costsComplete,spent_totals_are_lower_bounds:!costsComplete,completion_fraction_closed:rs.filter(r=>r.finished).length?complete.length/rs.filter(r=>r.finished).length:null,failure_categories:Object.fromEntries([...new Set(rs.filter(r=>!verified(r)).map(r=>r.failure_category||r.failure_adjudication?.category||'unclassified'))].map(k=>[k,rs.filter(r=>!verified(r)&&(r.failure_category||r.failure_adjudication?.category||'unclassified')===k).length])),median_completed_activations:median(complete.map(r=>r.activations)),median_completed_entry_to_finish_ms:median(complete.map(r=>r.entry_to_finish_ms)),spent_activations_all_attempts:rs.reduce((n,r)=>n+(r.activations||0),0),spent_http_all_attempts:rs.reduce((n,r)=>n+(r.http_attempts||0),0)};
+ });
+ const pairs=[];for(let i=0;i<plan.methods.length;i++)for(let j=i+1;j<plan.methods.length;j++){
+  const a=plan.methods[i],b=plan.methods[j],cases=plan.targets.map(t=>{
+   const x=scored.find(r=>r.task===t.id&&r.method===a&&verified(r)),y=scored.find(r=>r.task===t.id&&r.method===b&&verified(r));
+   return x&&y?{task:t.id,class:t.class,a_activations:x.activations,b_activations:y.activations,activation_delta_a_minus_b:x.activations-y.activations,a_ms:x.entry_to_finish_ms,b_ms:y.entry_to_finish_ms,a_wire_bytes:x.wire_body_bytes,b_wire_bytes:y.wire_body_bytes,a_extracted_tokens:x.extracted_tokens_o200k,b_extracted_tokens:y.extracted_tokens_o200k}:null;
+  }).filter(Boolean);pairs.push({a,b,completed_pairs:cases.length,cases});
+ }
+ return {benchmark:freeze.benchmark,cohort:freeze.cohort,manifest_sha256:freeze.manifest_sha256,generated_at:new Date().toISOString(),attempted_all_planned_slots:missing.length===0,all_attempts_closed:missing.length===0&&finished.length===slots.length,missing_slots:missing,not_attempted:missing.length,planned:slots.length,closed:finished.length,complete:missing.length===0&&finished.length===slots.length&&!finished.some(r=>r.outcome==='infrastructure_interruption'),methods,pairs,limitations:report.limitations};
 }
-const comparison={attempted_all_planned_slots:scored.length===40,all_attempts_closed:finished.length===40,interruption:report.interruption||null,not_attempted:40-scored.length,generated_at:new Date().toISOString(),closed:finished.length,planned:40,complete:finished.length===40&&!report.interruption,methods,pairs,recovery:report.runs.filter(r=>r.profile==='deterministic-engineering-recovery').map(r=>({run:r.run,method:r.method,outcome:r.outcome,activations:r.activations,http_attempts:r.http_attempts,recovery_facts:r.recovery_facts,verification:r.verification,note:r.note})),limitations:report.limitations};
-await writeFile(dir+'/comparison.json',JSON.stringify(comparison,null,2)+'\n');
-let md=`# Live Relay keyboard pilot\n\n${finished.length}/40 scored attempts are closed. ${comparison.complete?'The fixed pilot cohort is complete.':'This is an interim checkpoint, not a winner or a finished comparison.'}\n\nThe same ten exact targets are attempted by fresh GPT-6 Luna instances at high reasoning effort, using only supplied links. Forms, JavaScript and constructed URLs are excluded. Exact body, reply and digest verification gate completion. Failed attempts remain in the denominator; a successful rerun cannot replace one.\n\n| Method | Closed | Exact completions | Failures | Median completed activations | Spent activations, all attempts |\n| --- | ---: | ---: | ---: | ---: | ---: |\n`;
-for(const m of methods)md+=`| ${m.method} | ${m.closed} | ${m.exact_completed} | ${m.failed} | ${m.median_completed_activations??'—'} | ${m.spent_activations_all_attempts} |\n`;
-md+='\nCompleted-case medians use different subsets when completion differs; consult the paired case data before comparing them. Entry-to-finish time starts at the first recorded activation; preparation/dispatch queue delay is exported separately. Full wall time remains available and includes that delay. Neither timing removes tool latency or client decisions.\n\nCalibration and receipt-parser faults precede the scored cohort and are retained separately. The owner also reported a quota interruption during T04 Chunk and Token; its duration was not measured and full elapsed time is retained. An early Prefix failure reflects the observed tester’s inability to proceed under the supplied-link profile; it is not a proof that every text is unreachable. Recovery probes are deterministic engineering checks and do not estimate agent speed.\n\nThis purposive short pilot supports workload-specific observations, not confidence intervals, a graph optimum, universal coverage or broad model performance. It does not include a near-1,200-byte target or ordinary-browser/form conditions. Wire bytes exclude headers/TLS, and o200k extraction tokens are a common volume proxy rather than Luna billing.\n\nSee [fixed plan](../../relay/benchmark/plan.json), [release and client freeze](freeze.json), [paired comparison](comparison.json), [per-run facts](runs.json), and [CSV](runs.csv). Raw bearer traces remain private.\n';
-if(!report.interruption)await writeFile(dir+'/RESULTS.md',md);console.log(JSON.stringify({closed:finished.length,planned:40,methods}));
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+ const dir=process.argv[2];if(!dir)throw Error('Required cohort directory; historical results are never overwritten by default');
+ const freeze=await loadManifest(dir);if(freeze.schema_version!==2)throw Error('Historical cohort is read-only');
+ const report=JSON.parse(await readFile(dir+'/runs.json'));const comparison=comparisonFor(report,freeze);
+ await atomicJson(dir+'/comparison.json',comparison);console.log(JSON.stringify({closed:comparison.closed,planned:comparison.planned,missing:comparison.missing_slots}));
+}

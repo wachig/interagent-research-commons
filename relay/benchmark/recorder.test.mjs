@@ -4,6 +4,7 @@ import {gzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';
 const root=await mkdtemp('/private/tmp/relay-recorder-contract-');process.env.RELAY_BENCH_RUNS=root;
+const {saveState,loadState}=await import('./storage.mjs');
 const {initRun,act,extract}=await import('./recorder.mjs');
 const body='A  B\n\nC\tD café 😀';let publishes=0,adds=0;
 const messageId='IARC-M-11111111-1111-1111-1111-111111111111';
@@ -11,7 +12,7 @@ const server=http.createServer((req,res)=>{
   res.setHeader('X-Relay-Release','fixture-v1');
   if(req.url==='/headerless'){res.removeHeader('X-Relay-Release');res.writeHead(503);res.end('Worker exceeded resource limits');return;}
   if(req.url==='/redirect'){res.writeHead(302,{Location:'/root'});res.end();return;}
-  if(req.url==='/record'){res.setHeader('Content-Type','text/html');res.end('<h1>Relay response</h1><pre>'+JSON.stringify({message_id:messageId,visibility:'public',body,body_digest:createHash('sha256').update(body).digest('base64url'),reply_to:null})+'</pre>');return;}
+  if(req.url==='/record'){res.setHeader('Content-Type','text/html');res.end('<h1>Relay response</h1><pre>'+JSON.stringify({message_id:messageId,visibility:'public',conversation_id:messageId.replace("IARC-M-","IARC-C-"),contributor_designation:null,body,body_digest:createHash('sha256').update(body).digest('base64url'),reply_to:null})+'</pre>');return;}
   if(req.url==='/add'){adds++;}
   if(req.url==='/publish/cap'){publishes++;}
   const html='<!doctype html><html><head><title>Fixture</title><style>invisible css</style></head><body><h1>Test</h1>'+ (req.url==='/publish/cap'?`<p>Message ID: <code>${messageId}</code></p>`:'')+'<pre class="draft">'+body+'</pre><a href="/add" aria-label="Add colon">:</a><a href="#anchor">Jump</a><a href="/publish/cap">Publish publicly</a><a href="https://example.com/">External</a><a href="/record">Machine record</a><a href="/review/exact">Review</a><script>invisible script</script></body></html>';
@@ -39,6 +40,7 @@ try{
   assert.equal(events.filter(e=>e.kind==='fragment').length,1);assert.equal(events.filter(e=>e.kind==='http').length,7);
   assert.ok(events.some(e=>e.kind==='http'&&e.wire_body_bytes<e.uncompressed_bytes));assert.ok(events.some(e=>e.kind==='injected-response-loss'));
   await initRun('changed',{start_url:base+'/root',release:'wrong'});await assert.rejects(act('changed',{op:'start'},{local:true}),/Release changed/);
+  await assert.rejects(act('changed',{op:'retry'},{local:true}),/persistent/);
   await initRun('headerless',{start_url:base+'/headerless',release:'fixture-v1'});
   await assert.rejects(act('headerless',{op:'start'},{local:true}),/Unverified service error HTTP 503/);
   const missing=JSON.parse(await readFile(root+'/headerless/state.json'));
@@ -49,5 +51,6 @@ try{
   await act('prefix-action',{op:'start'},{local:true});
   await initRun('prefix-switch',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/'});
   await assert.rejects(act('prefix-switch',{op:'start'},{local:true}),/Changing assigned method/);
+  await initRun('byline',{start_url:base+'/record',expected_body:body,expected_designation:'Tester'});await act('byline',{op:'start'},{local:true});const byline=await loadState(root+'/byline');byline.publication_receipt_id=messageId;await saveState(root+'/byline',byline);assert.equal((await act('byline',{op:'finish',outcome:'completed'},{local:true})).outcome,'published_mismatch');
   console.log('Recorder contract passed: exact text, supplied links, stale selections, fragments, redirects, compressed bytes, dropped responses, publication intent, receipt checks, and release freeze.');
 }finally{await new Promise(r=>server.close(r));await rm(root,{recursive:true});}

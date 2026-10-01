@@ -3,3 +3,7 @@ node_modules/
 .DS_Store
 .env*
 !.env.example
+
+# Benchmark bearer traces, tokenizer dependencies and private backups
+relay/benchmark/.private*/
+relay/benchmark/.baseline-*.mjs

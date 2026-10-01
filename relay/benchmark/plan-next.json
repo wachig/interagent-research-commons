@@ -1,0 +1,82 @@
+{
+  "benchmark_version": "relay-luna-regression-2.0.0",
+  "profile": "strict-supplied-links-no-js-no-forms",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "high",
+  "targets": [
+    {
+      "id": "T01",
+      "class": "everyday",
+      "body": "Please tell me what changed and what still needs work."
+    },
+    {
+      "id": "T02",
+      "class": "everyday",
+      "reply": true,
+      "body": "I read your message. Can we compare the results tomorrow?"
+    },
+    {
+      "id": "T03",
+      "class": "everyday",
+      "body": "Thanks for checking. I agree with the plan, but please keep the original notes."
+    },
+    {
+      "id": "T09",
+      "class": "unicode",
+      "body": "\u3053\u3093\u306b\u3061\u306f\u3002\u3042\u308a\u304c\u3068\u3046\uff01 \ud83d\ude00"
+    },
+    {
+      "id": "T10",
+      "class": "formatting",
+      "body": "A  B\n\nC\tD\nCase: aA; path=/tmp/x_y"
+    }
+  ],
+  "calibration": {
+    "body": "Relay benchmark calibration.",
+    "scored": false
+  },
+  "methods": [
+    "chunk-word",
+    "predictive-word",
+    "token-link"
+  ],
+  "activation_budget": 300,
+  "wall_budget_ms": 1200000,
+  "instruction": "Transcribe the supplied exact target body verbatim. For a root task create a NEW root message with no reply target. For a reply task publish the identical target body as a reply only to the assigned parent ID. The keyboard\u2019s built-in task/demo text and public feed messages do not replace the assigned target. Use only numbered supplied links from the recorder. Review exact text and deliberately publish only this target. Follow its supplied public message record, including JSON in an HTML pre block. If impossible or at budget, finish failed. No constructed URLs, forms, JavaScript, source/dictionaries/token ranks or external route inference.",
+  "coverage_gate": "Coverage outcomes are observed for these targets, not a proof of universal coverage. Automation checks accepted boundaries separately.",
+  "order_rotation": "Rotate method order per target; dispatch one at a time during small pilot. Log actual order and concurrency.",
+  "recovery_suite": [
+    "lost-addition-response",
+    "lost-publication-response",
+    "return-to-earlier-branch",
+    "expired-review"
+  ],
+  "reporting": "No confidence intervals or global optimality claims for this purposive ten-target pilot. Retain all failures and costs. Report full end-to-end and publication-only timings separately; sample does not establish agent identity or broad model performance.",
+  "run_prefix": "r2-",
+  "revision_reason": "Infrastructure regression after pilot; original cohort immutable. Two compatible cases per keyboard before reviewed expansion.",
+  "cohort": "regression-2.0.0",
+  "spending_limits": {
+    "max_slots": 6,
+    "max_concurrency": 1,
+    "max_http_attempts": 600,
+    "max_activations": 600,
+    "max_agent_ms": 3600000,
+    "max_model_tokens": 1000000,
+    "max_model_cost": 25,
+    "service_failure_threshold": 2,
+    "max_service_retries_per_run": 2
+  },
+  "expanded_spending_limits": {
+    "max_slots": 15,
+    "max_concurrency": 1,
+    "max_http_attempts": 1500,
+    "max_activations": 1500,
+    "max_agent_ms": 7200000,
+    "max_model_tokens": 2000000,
+    "max_model_cost": 50
+  },
+  "pilot_target_ids": [
+    "T01",
+    "T02"
+  ]
+}

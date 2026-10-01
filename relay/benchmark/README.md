@@ -1,34 +1,82 @@
-# Controlled Luna keyboard benchmark
+# Controlled keyboard benchmark infrastructure (2.0)
 
-The owner authorizes real publication on the live Relay. This client is an engineering test harness, not a Relay product feature. It adds no participant tracking to the deployed service.
+This is a client-side engineering harness. It adds no participant tracking or production routes. Real publication on the live Relay was owner-authorized, but local contract checks are the default first stage. The original forty-slot pilot and its limitations remain in `docs/relay-benchmark-2026-10-01/`; never regenerate its freeze or replace a failed/interrupted attempt.
 
-## Setup and boundary
+## Local verification
 
-Install the pinned tokenizer in the ignored private dependency directory:
+Use the ignored private dependency directory; `requirements.txt` pins tiktoken, and new manifests record the actual installed dependency versions as well.
 
 ```sh
 python3 -m pip install --target relay/benchmark/.private-deps -r relay/benchmark/requirements.txt
-RELAY_BENCH_TOKENIZER_PATH="$PWD/relay/benchmark/.private-deps" node relay/benchmark/recorder.test.mjs
-node relay/benchmark/freeze.mjs
-RELAY_BENCH_TOKENIZER_PATH="$PWD/relay/benchmark/.private-deps" node relay/benchmark/broker.mjs
+npm run test:relay:benchmark
 ```
 
-The broker listens on loopback with a private random key. Raw events, capabilities, responses, and broker credentials remain in a mode-0700 directory at `relay/benchmark/.private-runs`. Do not stage or publish those files. `report.mjs` exports only bounded measurement facts and one-way URL hashes. Session bearer URLs must never appear in the public report.
+The four suites cover recorder boundaries, storage/scoring/control invariants, offline export/privacy checks, and nine expanded recovery cases against disposable localhost Worker/SQLite fixtures. Near-limit/Unicode drafts are seeded in the fixture database; these checks measure recovery contracts, not transcription efficiency or agent speed. No production messages are created. Existing `test:relay:recovery` additionally covers quota, stale-review conflicts, discarded permissions, and session expiry.
 
-Prepare each run with `prepare.mjs --run ID --method METHOD --task TASK`. Reply tasks require `--reply` with the selected published calibration parent. Each tester receives only its target, assigned method, common instructions, and client command. Fresh Luna instances do not receive local dictionaries, source, token ranks, or route hints. Allowed actions: initial navigation, current supplied-link selection, exact retry, refetch of an observed page, view, and finish. No JavaScript, form submission, URL edits, or automatic prefetch. Current-page link IDs prevent stale selections. Same-document fragments count as activations without network requests.
+## New cohort workflow
 
-The client checks `X-Relay-Release` on every received response. An observed release change stops a run. Before publication it requires an exact draft/reply review witness and explicit intent; Token's arm link must originate in that witnessed review. Completion requires the public message ID to match this run's publication receipt, exact UTF-8 body and reply equality, and the public digest. Publication receipt loss is recorded before returning an unknown outcome to the tester.
+Use separate ignored private storage per cohort. Set `RELAY_BENCH_TOKENIZER_PATH` if using dependencies outside `.private-deps`. A freeze requires a new output directory and refuses to overwrite an existing one.
 
-## Measurement
+```sh
+export RELAY_BENCH_RUNS="$PWD/relay/benchmark/.private-runs/regression-2"
+node relay/benchmark/freeze.mjs --output docs/relay-benchmark-regression-2 --plan relay/benchmark/plan-next.json --reply-parent docs/relay-benchmark-2026-10-01/reply-parent.json
+node relay/benchmark/manage.mjs preflight --manifest docs/relay-benchmark-regression-2
+node relay/benchmark/manage.mjs pilot --manifest docs/relay-benchmark-regression-2
+node relay/benchmark/broker.mjs docs/relay-benchmark-regression-2
+```
 
-The common curl transport records compressed response-body bytes before decoding, decoded UTF-8 bytes, HTTP status, timing, redirects, retries, and failures. Transport failures with no response still count as request attempts; received body-byte sums cannot account for bytes lost before a transport error. HTTP timing includes subprocess setup and transfer. It is not an agent speed metric. End-to-end wall time includes client decisions and tool/orchestration delay. `entry_to_finish_ms` starts with the first activation and ends at run closure, including public-record verification for successful runs; it does not mean the arrival time of the publication receipt. Do not subtract quota interruptions silently.
+Freeze records the plan, registry/protocol/policy snapshots, service and harness source hashes, Node/Python, installed tokenizer dependency versions, and live release. Optional `--deployed-commit` records owner-supplied provenance; HTTP release headers are not cryptographic source attestations. Preparation, broker startup and navigation validate frozen conditions. Changing any frozen file requires a new cohort.
 
-Extraction exposes all static text, including disclosure content, uniformly. Scripts/styles/SVG are excluded. Draft whitespace is preserved. `o200k` token counts are measured with a pinned rank table and are a common text-volume proxy, not model billing. “Links presented” means supplied links in extracted pages, not proven attention or inspected links.
+Preflight reads the assigned entry and follows bounded redirects, without publication. Compatibility is distinct from coverage: Prefix's observed GET-form word discovery is incompatible with the strict supplied-link profile and belongs in a separate form-capable study. The current recorder supports strict links only; it does not manufacture a form-capable score. The next regression plan retains Chunk, Predictive and Token, with two initial targets per keyboard and three optional expansion targets. These are regression targets from the pilot, not a new held-out corpus.
 
-Twenty minutes and 300 activations are deliberate pilot stopping budgets, not service capability claims. Coverage failure under a budget differs from structural lack of an offered operation. Store calibration failures, quota interruptions, and scored outcomes separately. No automatic rerun can replace a scored failure. Any expanded or changed-condition cohort needs a new manifest/version.
+Prepare one unique task–method slot at a time:
 
-Calibration target is outside the headline comparison. Ten shared exact targets are fixed in `plan.json`. Fresh task-method agents and rotation reduce carryover; record actual execution order and concurrency rather than claiming an ideal experimental design. Recovery fault injection belongs to the orchestrator, not tester-selected shortcuts.
+```sh
+node relay/benchmark/prepare.mjs --manifest docs/relay-benchmark-regression-2 --run r2-t01-chunk-word --method chunk-word --task T01
+node relay/benchmark/cohort.mjs docs/relay-benchmark-regression-2
+```
 
-The first freeze occurred before client calibration repairs. Re-freeze the final client before scored runs and retain the earlier freeze as historical evidence. Live service source/release remains unchanged. Generated machine snapshots identify that release; the source commit is owner-controlled provenance, not cryptographic remote attestation.
+Reply preparation also requires `--reply IARC-M-… --conversation IARC-C-…` from the verified public parent record frozen as the common parent. The example uses the retained calibration metadata; verify that parent is still available before a live cohort. A reservation that is interrupted before initialization remains spent; inspect and close it explicitly. Never reuse it as an unrecorded fresh attempt. Fresh Luna testers receive only their target, assigned method, common instructions and `client.mjs` commands. General shell/source access remains a trusted experimental restriction, not an OS sandbox supplied by this harness.
 
-The 1.1.0 live cohort was interrupted: see CLOSURE.json and RESULTS.md. Its original freeze remains historical. The repaired recorder uses ignored durable storage and distinguishes headerless service errors from a changed valid release. Future runs require a new manifest/version; do not regenerate or silently replace the original cohort. Raw data must be backed up privately before restart, with disk usage checked; ignored storage is not a backup.
+The small pilot permits six slots, one concurrent slot, 600 activations/HTTP attempts, and one hour of aggregate active-run wall time. Each run retains its 300-activation/20-minute boundary. Dispatch delay is separate from the run's active budget. The counters include retries and redirects; fragments consume activations without HTTP requests. Repeated service/transport errors (threshold two) persistently pause requests and dispatch. Success on a lightweight route does not clear that pause. Retry allowances are bounded; failures and spent costs remain in their original slot.
+
+Resume a service-error pause only after inspecting it, using a successful probe of the affected composition/search operation:
+
+```sh
+node relay/benchmark/manage.mjs resume --manifest docs/relay-benchmark-regression-2 --operation 'PRIVATE_OBSERVED_OPERATION_URL'
+```
+
+This operation must remain on Relay and cannot publish. A changed/unverified successful release stops the individual run persistently; it cannot be resumed into a different release. Spending-limit pauses require a newly authorized cohort. Small-pilot expansion requires all six slots closed, no recorded service/transport failure, and an explicit evidence review (`--review PRIVATE_REVIEW.json`) identifying the cohort/manifest, `infrastructure_stable`, `comparable_evidence`, `reason`, and `evidence_sha256` of the exported `comparison.json`. At least one completed pair must exist. The manifest fixes the optional targets and expanded limits before any testing. The `expand` command is a director decision, not an automatic rerun or automatic claim of a winner.
+
+## Telemetry and provider usage
+
+curl records encoded body bytes before decompression, decoded bytes, status, redirects and transport timing. Timeouts preserve available status, partial byte counts and elapsed time. Partial transfers remain lower bounds: the client cannot measure bytes it never received. Request counters and pending operations are checkpointed before transport; a crash during publication records an uncertain outcome, requiring exact retry rather than a guessed second publication.
+
+All static HTML text, including closed disclosures, is extracted uniformly; scripts/styles/SVG are excluded and draft whitespace is preserved. o200k counts measure exposed text volume, not model billing. Links presented do not prove links inspected. End-to-end timing includes decisions/tools; curl timing is not agent speed.
+
+The client cannot query provider billing itself. When the director has measured provider usage, import a private JSON record with unique `id`, `source`, optional `run`, `tokens`, and `cost` using `manage.mjs usage --file PATH`. Costs must use one consistently declared accounting unit. Imports are deduplicated and pause subsequent work at the plan's measured-token/cost ceiling. Unknown usage stays unknown; the request, slot and time caps still operate. Provider usage is checked at observation boundaries, so this does not interrupt a model already thinking. Do not claim a live provider-level spending cap.
+
+Tool failures outside the broker (for example a failed shell invocation), tool time and orchestration details can be attached using `manage.mjs observe --run ID --file PATH`. Records need unique `id`/`source`; optional `tool_error_count` and `tool_ms` are exported. These observations are separate from recorder errors and are not inferred from extraction tokens. Keep source records private.
+
+## Crash recovery and backups
+
+Private storage is mode 0700; checkpoints/journals are mode 0600. Atomic synced checkpoints recover if the main state file is truncated. Journal repair accepts only a torn final entry and refuses interior corruption. Activation sequence reconciliation preserves a logged activation across a checkpoint interruption. Locks from a provably dead local process or previous boot can be reclaimed; unknown ownership requires inspection. Disk checks stop mutations when insufficient space remains for checkpoints.
+
+Stop the broker before backup. Backup takes run locks and refuses to overwrite a destination:
+
+```sh
+node relay/benchmark/manage.mjs backup --destination "$PWD/relay/benchmark/.private-backups/regression-2-before-restart"
+```
+
+This copy contains bearer capabilities and raw messages. Never stage it or publish it. The same-disk copy protects against interrupted writes/restarts; make an additional private copy on another disk for disk-loss protection. Ignored storage is not a backup. SIGINT/SIGTERM remove the broker credentials; after a forced restart, inspect and remove a stale `broker.json` before an offline backup.
+
+## Safe exports and scoring
+
+```sh
+node relay/benchmark/report.mjs docs/relay-benchmark-regression-2
+node relay/benchmark/compare.mjs docs/relay-benchmark-regression-2
+```
+
+Exports require an explicit schema-2 cohort directory. They contain bounded facts and URL/source hashes, not raw responses, broker keys or bearer URLs. Scoring reads the frozen plan, filters its cohort/manifest/release, rejects duplicate/unplanned pairs and checks missing unique slots. Exact publication requires a same-run receipt, public visibility, exact body/digest/reply/designation and conversation checks. Incomplete costs are marked as lower bounds. Service errors, capability failures, interruptions and other failures must be adjudicated separately; all remain visible.
+
+Completed-case medians use different subsets when completion differs; consult paired cases and completion rates together. Purposive regression targets support no population confidence intervals, universal coverage or shortest-path claim. Preserve the original pilot's exported evidence and documented lost raw traces. The older live recovery/audit scripts remain historical pilot tools; use the new local suites for infrastructure validation rather than rerunning those against production.
