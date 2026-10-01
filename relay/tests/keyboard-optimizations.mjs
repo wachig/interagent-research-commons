@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {fixture,parse} from '../tools/local-evaluation.mjs';
+import {fixture,parse,decode} from '../tools/local-evaluation.mjs';
 import {extract} from '../benchmark/recorder.mjs';
 import {parseByteBody} from '../keyboard_foundation.js';
 import {collectPredictionResults} from '../prediction_results.js';
@@ -18,7 +18,11 @@ try{
  const wanted='Relay: café 🌱\tA  \n';
  for(const [id,entry] of [['chunk','/predictive-keyboard/html/chunk-keyboard-3/'],['predictive','/predictive-keyboard/html/word-links/'],['prefix','/predictive-keyboard/html/prefix-keyboard/']]){
   let p=await page(entry+'?reply_to='+seed.message_id);p=await page(choice(p,'Exact characters and Unicode'));
-  for(const ch of wanted)p=await textGlyph(p,ch.codePointAt(0));assert.equal(p.draft,wanted);assert.equal(p.headers.get('x-relay-keyboard'),id);
+  for(const ch of wanted){p=await textGlyph(p,ch.codePointAt(0));if(ch==='🌱'){const range=new URL(p.url).searchParams.get('range');const original=p.draft;const erase=await page(choice(p,'Backspace'));assert.equal(erase.draft,[...original].slice(0,-1).join(''));assert.equal(new URL(erase.url).searchParams.get('range'),range);p=await page(choice(erase,'Undo last addition'));assert.equal(p.draft,original);}}assert.equal(p.draft,wanted);assert.equal(p.headers.get('x-relay-keyboard'),id);
+  // Corrections stay inside the exact lane, including its Unicode range and identity.
+  const beforeCorrection=p.draft;
+  const erased=await page(choice(p,'Backspace'));assert.equal(erased.draft,beforeCorrection.slice(0,-1));assert.equal(erased.headers.get('x-relay-keyboard'),id);
+  const restored=await page(choice(erased,'Undo last addition'));assert.equal(restored.draft,beforeCorrection);p=restored;
   const review=await page(choice(p,'Review message'));const pub=choice(review,'Publish this message publicly');const receipt=(await f.request(pub)).body;assert.equal((await f.request(pub)).body.message_id,receipt.message_id);
   const record=(await f.request('/message/'+receipt.message_id)).body;assert.equal(record.body,wanted);assert.equal(record.reply_to,seed.message_id);assert.equal(record.conversation_id,seed.conversation_id);
   outcomes.push(id+' literal Unicode/formatting publication and receipt replay');
@@ -39,6 +43,44 @@ try{
  let root=await page('/predictive-keyboard/html/chunk-keyboard-3/');p=await page(choice(root,l=>l['aria-label']==='Set START to co'));p=await page(choice(p,l=>l['aria-label']==='Set START to con'));
  assert.ok(p.links.filter(l=>l['aria-label']?.startsWith('Add ')&&!l['aria-label']?.startsWith('Add top word ')&&new URL(l.url).pathname.includes('/pick/')).length<=40);
  const next=await page(choice(p,'Next candidate page'));assert.ok(new URL(choice(next,'Previous candidate page')).searchParams.get('start')==='con');outcomes.push('Chunk candidate pages bounded and filters preserved');
+ // A new prefix-result word must preserve an explicitly typed ending.
+ for(const entry of ['/predictive-keyboard/html/word-links/','/predictive-keyboard/html/prefix-keyboard/']) {
+   let typed=await page(entry);typed=await page(choice(typed,'Exact characters and Unicode'));
+   for(const ch of 'needs') typed=await textGlyph(typed,ch.codePointAt(0));
+   typed=await page(choice(typed,'Return to word choices'));
+   const nextLabels=typed.links.filter(l=>l['aria-label']?.startsWith('Add top word ')).map(l=>l['aria-label']);
+   const spaced=await page(choice(typed,l=>/\/key\/space\//.test(l.url)));
+   assert.deepEqual(spaced.links.filter(l=>l['aria-label']?.startsWith('Add top word ')).map(l=>l['aria-label']),nextLabels,'Next suggestions use the same completed-word context with or without a stored trailing space');
+   if(!entry.includes('prefix-keyboard')) {
+     const button=typed.text.match(/name="pick" value="([^"]+)"/u);assert.ok(button);
+     const form=typed.text.match(/<form method="get" action="([^"]+)" class="compose-form"/u);assert.ok(form);
+     const selected=decode(button[1]);const candidate=selected.split(':').slice(1,-1).join(':');
+     const next=new URL(decode(form[1]),typed.url);next.searchParams.set('pick',selected);next.searchParams.set('effect','next');next.searchParams.set('case','as-is');
+     assert.equal((await page(next)).draft,'needs '+candidate);
+     next.searchParams.set('effect','complete');assert.equal((await page(next)).draft,candidate);
+     next.searchParams.set('effect','exact');assert.equal((await page(next)).draft,'needs'+candidate);
+   }
+
+   if(entry.includes('prefix-keyboard')) {
+     // GET forms are a separate capability; submit the displayed form's START input.
+     const route=new URL(typed.url);route.searchParams.set('start_w','wo');route.searchParams.set('end_r','rk');typed=await page(route);
+   } else {
+     typed=await page(choice(typed,l=>l.text==='w'&&new URL(l.url).searchParams.get('prefix')==='w'));
+     typed=await page(choice(typed,l=>new URL(l.url).searchParams.get('prefix')==='wo'));
+     for(const prefix of ['wor','work']) { if(typed.links.some(l=>l.text==='Add work'&&new URL(l.url).pathname.includes('/pick/'))) break; typed=await page(choice(typed,l=>new URL(l.url).searchParams.get('prefix')===prefix)); }
+   }
+   const workLink=typed.links.find(l=>['work','Add work'].includes(l.text)&&new URL(l.url).pathname.includes('/pick/'));assert.ok(workLink,JSON.stringify({entry,choices:typed.links.filter(l=>l['aria-label']?.startsWith('Add ')).map(l=>l['aria-label'])}));const added=await page(workLink.url);assert.equal(added.draft,'needs work');
+ }
+ outcomes.push('Predictive and Prefix browsing preserve typed endings');
+ // The whole-word Token lane is an intersection of genuine tokens and sourced spelling.
+ let words=await page('/compose/token/o200k/');words=await page(choice(words,'Begin free-generation task'));
+ words=await page(choice(words,l=>/\/browse\/prefix\/[^/]+$/.test(new URL(l.url).pathname)));
+ words=await page(choice(words,l=>new URL(l.url).pathname.endsWith('/group/letter')));
+ words=await page(choice(words,l=>/^[“"]?t[”"]?$/.test(l.text)));
+ words=await page(choice(words,l=>new URL(l.url).pathname.endsWith('/dGU')));
+ assert.match(words.text,/Whole-word token choices/);assert.match(words.text,/SUBTLEX-US usage order/);
+ const full=await page(choice(words,l=>l['aria-label']==='Add tell to the draft'));assert.equal(full.draft,'tell');
+ outcomes.push('Token whole-word acceleration appends genuine token bytes');
  // Repeated model-backed requests exercise result disposal in a warm isolate.
  root=await page('/predictive-keyboard/html/word-links/');assert.ok(root.links.some(l=>l['aria-label']?.startsWith('Add top word ')),'Predictive exposes direct word suggestions');const typed=choice(root,l=>/\/key\/a\//.test(l.url));
  for(let i=0;i<100;i++){const warm=await page(typed);assert.equal(warm.draft,'a');}outcomes.push('100 warm model-backed requests completed without an HTTP failure');

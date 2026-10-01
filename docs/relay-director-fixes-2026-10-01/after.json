@@ -1,0 +1,131 @@
+{
+  "scope": "local Wrangler; HTTP elapsed time is not Worker CPU or agent speed",
+  "measurements": [
+    {
+      "name": "chunk-empty",
+      "http_ms": [
+        19.172750000000065,
+        8.629415999999992,
+        9.589249999999993,
+        9.074582999999961,
+        7.875249999999937
+      ],
+      "html_bytes": 90598,
+      "links": 464,
+      "extracted_utf8_bytes": 13789,
+      "extracted_tokens_proxy": 3432
+    },
+    {
+      "name": "chunk-co",
+      "http_ms": [
+        71.27479199999993,
+        50.31600000000003,
+        54.19324999999981,
+        49.62391600000001,
+        50.400249999999915
+      ],
+      "html_bytes": 133429,
+      "links": 736,
+      "extracted_utf8_bytes": 20580,
+      "extracted_tokens_proxy": 5133
+    },
+    {
+      "name": "chunk-con",
+      "http_ms": [
+        25.885500000000093,
+        25.471915999999965,
+        24.7650000000001,
+        24.535125000000107,
+        24.08270800000014
+      ],
+      "html_bytes": 116087,
+      "links": 524,
+      "extracted_utf8_bytes": 15291,
+      "extracted_tokens_proxy": 3815
+    },
+    {
+      "name": "chunk-typed-a",
+      "http_ms": [
+        30.51616600000034,
+        9.24758299999985,
+        7.89416700000038,
+        8.925458000000162,
+        9.46612499999992
+      ],
+      "html_bytes": 83836,
+      "links": 450,
+      "extracted_utf8_bytes": 13362,
+      "extracted_tokens_proxy": 3325
+    },
+    {
+      "name": "predictive-empty",
+      "http_ms": [
+        13.843875000000025,
+        10.79016700000011,
+        13.034708000000137,
+        11.244708000000173,
+        9.5615829999997
+      ],
+      "html_bytes": 53680,
+      "links": 100,
+      "extracted_utf8_bytes": 4339,
+      "extracted_tokens_proxy": 1083
+    },
+    {
+      "name": "predictive-typed-a",
+      "http_ms": [
+        12.129500000000007,
+        8.34783299999981,
+        8.59333400000014,
+        8.58404100000007,
+        9.286125000000084
+      ],
+      "html_bytes": 49608,
+      "links": 92,
+      "extracted_utf8_bytes": 4141,
+      "extracted_tokens_proxy": 1033
+    },
+    {
+      "name": "token-overview",
+      "http_ms": [
+        4.05429200000026,
+        2.912667000000056,
+        2.835458000000017,
+        2.740625000000364,
+        2.6548330000000533
+      ],
+      "html_bytes": 7768,
+      "links": 11,
+      "extracted_utf8_bytes": 3328,
+      "extracted_tokens_proxy": 828
+    },
+    {
+      "name": "token-start",
+      "http_ms": [
+        13.76320799999985,
+        8.636791999999787,
+        9.784042000000227,
+        7.73629099999971,
+        7.646167000000332
+      ],
+      "html_bytes": 69971,
+      "links": 241,
+      "extracted_utf8_bytes": 9155,
+      "extracted_tokens_proxy": 2213
+    },
+    {
+      "name": "token-byte-overview",
+      "http_ms": [
+        8.364958000000115,
+        7.110165999999936,
+        6.376874999999927,
+        6.542709000000286,
+        6.643583000000035
+      ],
+      "html_bytes": 40467,
+      "links": 123,
+      "extracted_utf8_bytes": 3879,
+      "extracted_tokens_proxy": 960
+    }
+  ]
+}

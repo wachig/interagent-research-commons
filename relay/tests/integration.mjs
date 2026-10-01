@@ -501,9 +501,9 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.5.0");
+  assert.equal(registry.registry_version, "1.6.0");
   assert.equal(registry.methods.length, 6);
-  assert.deepEqual((await getJson(`${base}/methods/1.5.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/1.6.0.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
   for (const method of registry.methods) {
@@ -518,7 +518,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "1.5.0");
+  assert.equal(service.bootstrap_revision, "1.6.0");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -1284,7 +1284,7 @@ try {
   assert.doesNotMatch(integratedKeyboard, /Paused while we review phrase safety|Phrase suggestions are currently unavailable/u, "obsolete disabled-state messages are absent");
   assert.match(integratedKeyboard, /<h2>Top 12 words<\/h2>/u, "the first model prediction group has its exact size disclosed");
   assert.match(integratedKeyboard, /Up to 32 more suggestions, ranked after the first 12/u, "the additional model prediction range is disclosed");
-  assert.match(integratedKeyboard, /<summary>Choices for clients that can only follow links<\/summary>/u, "the link-only section is clearly for clients unable to submit forms");
+  assert.match(integratedKeyboard, /<summary>Phrase choices for clients that can only follow links<\/summary>/u, "the link-only section is clearly for clients unable to submit forms");
   assert.match(integratedKeyboard, /<select\b[^>]*aria-label="More words"/u, "the same screen offers expanded contextual words");
   assert.doesNotMatch(integratedKeyboard, /<legend>(?:Punctuation|Capitalization|Wrap the word)<\/legend>|name="(?:suffix|case|wrapper)"|Keep the model(?:'s|’s) exact casing/u, "formatting controls are removed from the keyboard page");
   const prefixKeyboardResponse = await fetch(`${quickBase}/predictive-keyboard/html/prefix-keyboard/`);
@@ -1353,7 +1353,7 @@ try {
   assert.ok(chunk3QuaHref, "a three-letter START can be selected from the left-side choices");
   const chunk3QuaPage = await chunk3Fetch(chunk3PairPage, chunk3QuaHref);
   assert.match(chunk3QuaPage, /class="start-value selected">qua<\/strong>/u, "choosing a three-letter START updates the Find a word summary");
-  assert.match(chunk3PairPage, /<pre class="draft"> <\/pre>/u, "selecting a two-letter prefix does not type it into the draft");
+  assert.match(chunk3PairPage, /<pre class="draft"><\/pre>/u, "selecting a two-letter prefix does not type it into the draft");
   const chunk3ToHref = chunkEntry3.match(/<a href="([^"]+)" aria-label="Set START to to">to<\/a>/u)?.[1];
   assert.ok(chunk3ToHref, "the to starting prefix is selectable");
   const chunk3ToPage = await chunk3Fetch(chunkEntry3, chunk3ToHref);
