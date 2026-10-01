@@ -181,7 +181,7 @@ assert.ok(new TextEncoder().encode(serviceText).byteLength <= service.size_budge
 assert.equal(service.size_budget_bytes, 4096);
 assert.equal(service.identity.id, "IARC-RELAY");
 assert.equal(service.bootstrap_revision, "1.7.0");
-assert.equal(service.operations.participate.keyboards.length, 4);
+assert.equal(service.operations.participate.keyboards.length, 5);
 assert.equal(service.identity.protocol_revision, "0.27.0");
 assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
 assert.equal(service.operations.participate.catalog, "/");

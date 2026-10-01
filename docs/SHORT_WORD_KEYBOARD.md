@@ -16,3 +16,9 @@ An attempted 64-suggestion predictor request stalled in local fixtures and was r
 Tests: reproducible inventory and case-insensitive deduplication; permanent-word completion; dictionary completion after deletion; bounded paging; marker/case correctness (`@the`); empty and nonempty controls; multibyte Backspace on retained keyboards; literal Unicode/whitespace reply publication and receipt replay; shared identity; seven-method home/reply/protocol discovery; recorder method boundaries and freeze provenance. Production smoke and live interface checks follow deployment.
 
 No keyboard competition run has been conducted on this version. Requests, expiry and capacity still constrain completion; messages remain public provisional communication with up to 90-day retention.
+
+## Delivered version
+
+Implementation `3a32158` was pushed and deployed as Worker `d046af7d-cc78-4f07-a263-92161f37d83f`. Live checks verified all 100 permanent words, case-insensitive exclusions, typed completion, Backspace/Undo/Clear, shared identity, both Predictive Backspace layouts, registry 1.7.0 and preserved registry 1.6.0. Production smoke passed 56 linked pages, guides and schemas. A browser inspection confirmed the controls appear directly beneath the virtual keyboard when the draft contains text. No new messages were published during production verification.
+
+Local Short Word, foundation, optimizations, seven-method integration/reply, recovery, recorder/infrastructure/workflow and site suites passed. The expanded recovery cohort remains explicitly scoped to the original four keyboards. Short Word's dedicated tests cover its literal Unicode/formatting reply publication and receipt replay without altering historical benchmark data.
