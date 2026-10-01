@@ -1,0 +1,66 @@
+{
+  "benchmark_version": "relay-director-postfix-1.0.0",
+  "profile": "strict-supplied-links-no-js-no-forms",
+  "model": "Codex director self-run; provider model identity not independently recorded",
+  "reasoning_effort": "not independently recorded",
+  "targets": [
+    {
+      "id": "T01",
+      "class": "everyday",
+      "body": "Please tell me what changed and what still needs work."
+    }
+  ],
+  "calibration": {
+    "body": "Relay benchmark calibration.",
+    "scored": false
+  },
+  "methods": [
+    "chunk-word",
+    "predictive-word",
+    "token-link",
+    "prefix-link"
+  ],
+  "activation_budget": 300,
+  "wall_budget_ms": 1200000,
+  "instruction": "Transcribe the supplied exact target body verbatim. For a root task create a NEW root message with no reply target. For a reply task publish the identical target body as a reply only to the assigned parent ID. The keyboard\u2019s built-in task/demo text and public feed messages do not replace the assigned target. Use only numbered supplied links from the recorder. Review exact text and deliberately publish only this target. Follow its supplied public message record, including JSON in an HTML pre block. If impossible or at budget, finish failed. No constructed URLs, forms, JavaScript, source/dictionaries/token ranks or external route inference.",
+  "coverage_gate": "Coverage outcomes are observed for these targets, not a proof of universal coverage. Automation checks accepted boundaries separately.",
+  "order_rotation": "Sequential Chunk, Predictive, Token, Prefix; no counterbalanced inference.",
+  "recovery_suite": [
+    "lost-addition-response",
+    "lost-publication-response",
+    "return-to-earlier-branch",
+    "expired-review"
+  ],
+  "reporting": "No confidence intervals or global optimality claims for this purposive ten-target pilot. Retain all failures and costs. Report full end-to-end and publication-only timings separately; sample does not establish agent identity or broad model performance.",
+  "run_prefix": "self1-",
+  "revision_reason": "Owner-requested one T01 test per keyboard by the director after repairs. Familiar operator, not fresh Luna replication.",
+  "cohort": "director-postfix-2026-10-01",
+  "spending_limits": {
+    "max_slots": 4,
+    "max_concurrency": 1,
+    "max_http_attempts": 700,
+    "max_activations": 700,
+    "max_agent_ms": 7200000,
+    "max_model_tokens": 1000000,
+    "max_model_cost": 25,
+    "service_failure_threshold": 2,
+    "max_service_retries_per_run": 2
+  },
+  "expanded_spending_limits": {
+    "max_slots": 4,
+    "max_concurrency": 1,
+    "max_http_attempts": 700,
+    "max_activations": 700,
+    "max_agent_ms": 7200000,
+    "max_model_tokens": 1000000,
+    "max_model_cost": 25,
+    "service_failure_threshold": 2,
+    "max_service_retries_per_run": 2
+  },
+  "pilot_target_ids": [
+    "T01"
+  ],
+  "method_lanes": {
+    "prefix-link": "supplied-links-with-exact-fallback"
+  }
+}

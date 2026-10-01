@@ -1,0 +1,209 @@
+{
+  "benchmark": "relay-director-postfix-1.0.0",
+  "cohort": "director-postfix-2026-10-01",
+  "manifest_sha256": "98bd66e1d3aa4c0cdee3999ca997dcd74cfd70d2f164a2a0992f6b5fbbd91297",
+  "generated_at": "2026-10-01T21:12:17.312Z",
+  "attempted_all_planned_slots": true,
+  "all_attempts_closed": true,
+  "missing_slots": [],
+  "not_attempted": 0,
+  "planned": 4,
+  "closed": 4,
+  "complete": true,
+  "methods": [
+    {
+      "method": "chunk-word",
+      "attempts": 1,
+      "closed": 1,
+      "exact_completed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "costs_complete": true,
+      "spent_totals_are_lower_bounds": false,
+      "completion_fraction_closed": 1,
+      "failure_categories": {},
+      "median_completed_activations": 25,
+      "median_completed_entry_to_finish_ms": 277533,
+      "spent_activations_all_attempts": 25,
+      "spent_http_all_attempts": 25
+    },
+    {
+      "method": "predictive-word",
+      "attempts": 1,
+      "closed": 1,
+      "exact_completed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "costs_complete": true,
+      "spent_totals_are_lower_bounds": false,
+      "completion_fraction_closed": 1,
+      "failure_categories": {},
+      "median_completed_activations": 35,
+      "median_completed_entry_to_finish_ms": 402280,
+      "spent_activations_all_attempts": 35,
+      "spent_http_all_attempts": 35
+    },
+    {
+      "method": "token-link",
+      "attempts": 1,
+      "closed": 1,
+      "exact_completed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "costs_complete": true,
+      "spent_totals_are_lower_bounds": false,
+      "completion_fraction_closed": 1,
+      "failure_categories": {},
+      "median_completed_activations": 29,
+      "median_completed_entry_to_finish_ms": 259201,
+      "spent_activations_all_attempts": 29,
+      "spent_http_all_attempts": 29
+    },
+    {
+      "method": "prefix-link",
+      "attempts": 1,
+      "closed": 1,
+      "exact_completed": 1,
+      "failed": 0,
+      "interrupted": 0,
+      "costs_complete": true,
+      "spent_totals_are_lower_bounds": false,
+      "completion_fraction_closed": 1,
+      "failure_categories": {},
+      "median_completed_activations": 53,
+      "median_completed_entry_to_finish_ms": 258939,
+      "spent_activations_all_attempts": 53,
+      "spent_http_all_attempts": 53
+    }
+  ],
+  "pairs": [
+    {
+      "a": "chunk-word",
+      "b": "predictive-word",
+      "completed_pairs": 1,
+      "cases": [
+        {
+          "task": "T01",
+          "class": "everyday",
+          "a_activations": 25,
+          "b_activations": 35,
+          "activation_delta_a_minus_b": -10,
+          "a_ms": 277533,
+          "b_ms": 402280,
+          "a_wire_bytes": 254231,
+          "b_wire_bytes": 325633,
+          "a_extracted_tokens": 104603,
+          "b_extracted_tokens": 37996
+        }
+      ]
+    },
+    {
+      "a": "chunk-word",
+      "b": "token-link",
+      "completed_pairs": 1,
+      "cases": [
+        {
+          "task": "T01",
+          "class": "everyday",
+          "a_activations": 25,
+          "b_activations": 29,
+          "activation_delta_a_minus_b": -4,
+          "a_ms": 277533,
+          "b_ms": 259201,
+          "a_wire_bytes": 254231,
+          "b_wire_bytes": 188280,
+          "a_extracted_tokens": 104603,
+          "b_extracted_tokens": 74927
+        }
+      ]
+    },
+    {
+      "a": "chunk-word",
+      "b": "prefix-link",
+      "completed_pairs": 1,
+      "cases": [
+        {
+          "task": "T01",
+          "class": "everyday",
+          "a_activations": 25,
+          "b_activations": 53,
+          "activation_delta_a_minus_b": -28,
+          "a_ms": 277533,
+          "b_ms": 258939,
+          "a_wire_bytes": 254231,
+          "b_wire_bytes": 416443,
+          "a_extracted_tokens": 104603,
+          "b_extracted_tokens": 99426
+        }
+      ]
+    },
+    {
+      "a": "predictive-word",
+      "b": "token-link",
+      "completed_pairs": 1,
+      "cases": [
+        {
+          "task": "T01",
+          "class": "everyday",
+          "a_activations": 35,
+          "b_activations": 29,
+          "activation_delta_a_minus_b": 6,
+          "a_ms": 402280,
+          "b_ms": 259201,
+          "a_wire_bytes": 325633,
+          "b_wire_bytes": 188280,
+          "a_extracted_tokens": 37996,
+          "b_extracted_tokens": 74927
+        }
+      ]
+    },
+    {
+      "a": "predictive-word",
+      "b": "prefix-link",
+      "completed_pairs": 1,
+      "cases": [
+        {
+          "task": "T01",
+          "class": "everyday",
+          "a_activations": 35,
+          "b_activations": 53,
+          "activation_delta_a_minus_b": -18,
+          "a_ms": 402280,
+          "b_ms": 258939,
+          "a_wire_bytes": 325633,
+          "b_wire_bytes": 416443,
+          "a_extracted_tokens": 37996,
+          "b_extracted_tokens": 99426
+        }
+      ]
+    },
+    {
+      "a": "token-link",
+      "b": "prefix-link",
+      "completed_pairs": 1,
+      "cases": [
+        {
+          "task": "T01",
+          "class": "everyday",
+          "a_activations": 29,
+          "b_activations": 53,
+          "activation_delta_a_minus_b": -24,
+          "a_ms": 259201,
+          "b_ms": 258939,
+          "a_wire_bytes": 188280,
+          "b_wire_bytes": 416443,
+          "a_extracted_tokens": 74927,
+          "b_extracted_tokens": 99426
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Purposive targets: no population confidence intervals or universal winner.",
+    "HTTP transport time includes subprocess setup and transfer but excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
+    "Wire bytes count encoded response bodies only, not headers/TLS.",
+    "o200k extracted tokens are a declared proxy, not Luna usage/billing tokens.",
+    "Historical raw temporary traces were lost after restart; durable new traces stay private. Export URL hashes cannot be followed.",
+    "Calibration and infrastructure interruptions are separate from scored keyboard outcomes."
+  ]
+}

@@ -1,0 +1,5 @@
+run,scored,task,method,outcome,activations,http_attempts,wall_ms,wire_body_bytes,uncompressed_bytes,extracted_tokens_o200k,links_presented,costs_complete,provider_tokens,provider_cost,external_tool_errors,partial_transfer_bytes
+"self1-t01-chunk-word","true","T01","chunk-word","completed","25","25","277803","254231","1797776","104603","9243","true","","","","0"
+"self1-t01-predictive-word","true","T01","predictive-word","completed","35","35","402568","325633","1572843","37996","2973","true","","","","0"
+"self1-t01-prefix-link","true","T01","prefix-link","completed","53","53","259209","416443","2632280","99426","5317","true","","","","0"
+"self1-t01-token-link","true","T01","token-link","completed","29","29","259471","188280","1391683","74927","4313","true","","","","0"

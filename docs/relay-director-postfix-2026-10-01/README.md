@@ -1,0 +1,29 @@
+# One self-run per keyboard after repairs
+
+Owner requested the director personally repeat an original Luna task once on each keyboard through the same telemetry interface. All four published the exact 54-byte T01 body, with no reply target, and their supplied public records passed receipt/body/digest/designation/conversation verification. No HTTP failures occurred.
+
+> Please tell me what changed and what still needs work.
+
+The frozen release was `0e7fe6a8-45bd-4a47-9270-5a0ab8d97af6`, registry 1.5.0, protocol 0.27.0. These are sequential, familiar-director runs, not fresh Luna sessions or an estimate of model success rates. The model identifier and provider billing were not independently recorded. No forms, JavaScript, constructed URLs, external dictionary lookup or token-rank lookup were used during composition. Choices were manually selected numeric links; known stable link sequences were batched. A private wrapper displayed selected sections of already recorded pages and intermediate drafts; the recorder still extracted and counted each complete page uniformly. That display differs from the earlier Luna presentation and limits time/token comparisons. No production keyboard changes were made during these runs.
+
+| Keyboard | Activations | HTTP attempts | Full-page extracted o200k tokens | Encoded response bodies |
+|---|---:|---:|---:|---:|
+| Chunk | 25 | 25 | 104,603 | 254.2 KB |
+| Predictive | 35 | 35 | 37,996 | 325.6 KB |
+| Token | 29 | 29 | 74,927 | 188.3 KB |
+| Prefix fallback | 53 | 53 | 99,426 | 416.4 KB |
+
+The counts include home discovery, entry, browsing, corrections, review, arm where applicable, publication and public-record verification. Extracted tokens measure exposed text, not provider billing or proven attention. Chunk included two extra activations for the director selecting `ng` instead of `ne` and restarting. Predictive included an observed replacement and recovery, plus exploratory prefix browsing. Keep those costs; these are not shortest-path estimates. Recorded wall times include decisions, tool scheduling and batching differences and do not establish an overall speed ranking.
+
+## Findings and recommendations
+
+1. **Predictive still has an insertion inconsistency.** After adding `need` then a literal `s`, the draft ended in `needs`. Browsing `w → wo → wor → work` and selecting the visible **Add work** replaced `needs`, yielding `Please tell me what changed and what still work`. Undo restored the original draft; Space followed by `w → wo → Add work` preserved both words. New prefix-result links should use the same explicit add-next-word operation as new Top Words links. Keep an explicitly labeled complete-current-word action and historical signed-operation compatibility.
+2. **Predictive and Prefix mislabel completion suggestions as next words.** After literal typing, Predictive showed only `needs`; Prefix showed `tell`, `telling`, `tells` after typing `tell`. Both displayed the add-next-word claim. Space restored genuine next-word suggestions. Predict next words using a virtual completed-word boundary without changing stored text, and label completion choices separately. Avoid appending a duplicate completed word under a misleading next-word heading.
+3. **Chunk was the easiest word-discovery interface in this task.** `te/tell`, `ch/changed`, `wh/what`, `st/still`, `ne/needs` and `wo/work` all found the desired word on the first candidate page; INSIDE/END and pagination were unnecessary here. Restart search preserved the draft after the wrong prefix. Despite fewer activations, its full-page extraction was the largest: 104,603 tokens versus Predictive's 37,996. Investigate repeated grid labels and help text while preserving the visible START/INSIDE/END workflow; do not infer that the smallest activation count is the cheapest client workload.
+4. **Token was reliable, with browsing friction.** Exact token labels, including visible spaces, matched their additions; draft/search separation and review were clear. Token-rank lists mixed ordinary words with fragments, so `tell`, `changed` and `still` needed a second prefix choice. Consider an independently sourced ordinary-word browsing lane alongside the full token vocabulary; do not tune a palette to this one benchmark sentence. The improved exact byte lane was not exercised in this T01 run.
+5. **Prefix is now usable through supplied links, but its main discovery remains form-based.** Top Words plus exact typing completed the task, at 53 activations. The form-option text precedes the draft and contributes extraction overhead for this profile. Clearly present it as a form-capable method with an exact-link fallback; avoid positioning it as an equally efficient link-only word-search alternative to Chunk. This run did not test its forms.
+6. **The shared exact lane has no direct Undo/Backspace controls.** Correction requires returning to word choices. Add correction links within the persistent lane, retaining its current range/view, to avoid unnecessary exits. This is a visible affordance gap; no typo recovery was forced in this run.
+
+Recommendation: first fix insertion consistency and completion/next-word labeling. Preserve the frozen runs before another evaluation. This four-message check does not re-establish Unicode/formatting/recovery coverage, reproduce the entire ten-task pilot, or prove historic resource-limit failures eliminated.
+
+Safe exports: [runs.json](runs.json), [runs.csv](runs.csv), [comparison.json](comparison.json), [freeze.json](freeze.json). Raw HTML, signed capabilities and broker state remain in ignored private storage with a completed-run backup; they are not public report files. The broker was stopped after all four slots closed. The preflight extension only admits Prefix's explicitly requested, visibly supplied exact fallback; ordinary strict-link preflight still rejects its form discovery.

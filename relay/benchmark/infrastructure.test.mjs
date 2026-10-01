@@ -37,6 +37,8 @@ try{
  const mixed={runs:[row('a','1'),{...row('a','2'),cohort:'old'}]};assert.equal(comparisonFor(mixed,f).not_attempted,3);
  assert.throws(()=>selectCohort({runs:[{...row('a','1'),manifest_sha256:'other'}]},f),/Mixed/);
  assert.equal(compatibility({id:'prefix-link',required_capabilities:['follow-links']},'strict-supplied-links-no-js-no-forms','<form action="/search">').status,'incompatible');
+ assert.equal(compatibility({id:'prefix-link',required_capabilities:['follow-links','submit-get-form']},'strict-supplied-links-no-js-no-forms','<form></form>','supplied-links-with-exact-fallback').status,'incompatible');
+ const fallback=compatibility({id:'prefix-link',required_capabilities:['follow-links','submit-get-form']},'strict-supplied-links-no-js-no-forms','<a href="/predictive-keyboard/html/word-links/characters/state?view=prefix">Exact</a>','supplied-links-with-exact-fallback');assert.equal(fallback.status,'compatible');assert.equal(fallback.primary_discovery_status,'incompatible');
  await assert.rejects(probePath(base+'/publish/no',{local:true}),/cannot publish/);
  await initRun('redirect-method',{start_url:base+'/predictive-keyboard/assigned/',method_href:'/predictive-keyboard/assigned/',release:'fixture'});
  await assert.rejects(act('redirect-method',{op:'start'},{local:true}),/Changing assigned method/);assert.equal(hitUnsafe,0);
