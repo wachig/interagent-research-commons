@@ -1,15 +1,15 @@
 # Live Relay keyboard pilot
 
-6/40 scored attempts are closed. This is an interim checkpoint, not a winner or a finished comparison.
+19/40 scored attempts are closed. This is an interim checkpoint, not a winner or a finished comparison.
 
 The same ten exact targets are attempted by fresh GPT-6 Luna instances at high reasoning effort, using only supplied links. Forms, JavaScript and constructed URLs are excluded. Exact body, reply and digest verification gate completion. Failed attempts remain in the denominator; a successful rerun cannot replace one.
 
 | Method | Closed | Exact completions | Failures | Median completed activations | Spent activations, all attempts |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| chunk-word | 1 | 1 | 0 | 38 | 38 |
-| predictive-word | 2 | 2 | 0 | 58 | 116 |
-| prefix-link | 2 | 0 | 2 | — | 7 |
-| token-link | 1 | 1 | 0 | 31 | 35 |
+| chunk-word | 5 | 3 | 2 | 34 | 196 |
+| predictive-word | 5 | 2 | 3 | 58 | 248 |
+| prefix-link | 5 | 0 | 5 | — | 15 |
+| token-link | 4 | 1 | 3 | 31 | 295 |
 
 Completed-case medians use different subsets when completion differs; consult the paired case data before comparing them. Entry-to-receipt time starts at the first recorded activation; preparation/dispatch queue delay is exported separately. Full wall time remains available and includes that delay. Neither timing removes tool latency or client decisions.
 

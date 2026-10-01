@@ -1,0 +1,437 @@
+{
+  "scope": "Deterministic single-character root-message contract probes, separate from observed Luna efficiency. Selected valid probe versions; all earlier attempts retained in runs.json.",
+  "cases": [
+    {
+      "method": "chunk-word",
+      "case": "lost-addition",
+      "run": "recovery-chunk-lost-add-v2",
+      "activations": 8,
+      "http_attempts": 8,
+      "verification": {
+        "message_id": "IARC-M-d40e0b57-00d6-4008-a522-15bca82c3b5e",
+        "conversation_id": "IARC-C-4169abec-07a0-4940-879a-30168d03a097",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": true,
+        "retry_addition_same_review_link": true,
+        "lost_addition_draft_exact": true,
+        "retried_addition_draft_exact": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "chunk-word",
+      "case": "lost-publication",
+      "run": "recovery-chunk-lost-publish-v2",
+      "activations": 8,
+      "http_attempts": 8,
+      "verification": {
+        "message_id": "IARC-M-b42b0d69-dbcf-41a9-83b8-7baceccaf38b",
+        "conversation_id": "IARC-C-7ba0edb7-4ff9-45ad-8f3c-930d6581c988",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "lost_publication_receipt_id": "IARC-M-b42b0d69-dbcf-41a9-83b8-7baceccaf38b",
+        "retried_publication_receipt_id": "IARC-M-b42b0d69-dbcf-41a9-83b8-7baceccaf38b",
+        "retry_publication_same_receipt": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "chunk-word",
+      "case": "immutable-branch",
+      "run": "recovery-chunk-branch-v4",
+      "activations": 9,
+      "http_attempts": 9,
+      "verification": {
+        "message_id": "IARC-M-69be3206-2030-42c4-ba35-550598d97bbb",
+        "conversation_id": "IARC-C-cfacb662-d3b0-4e7e-9dae-c4b309b51570",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "branch_draft": [
+          "I."
+        ],
+        "branch_differed": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "chunk-word",
+      "case": "expired-review",
+      "run": "recovery-chunk-expired-v7",
+      "activations": 10,
+      "http_attempts": 10,
+      "verification": {
+        "message_id": "IARC-M-1f300373-63e0-4351-b520-57346f262fe0",
+        "conversation_id": "IARC-C-327362d4-0807-4cfa-a06c-537c2d2ef355",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "expiry": "2026-10-01T09:05:01.447Z",
+        "wait_ms": 601159,
+        "expired_status": 410,
+        "publication_receipt_present": false,
+        "no_publication_observed": true,
+        "recovered_expired_review_without_retyping": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "predictive-word",
+      "case": "lost-addition",
+      "run": "recovery-predictive-lost-add-v2",
+      "activations": 8,
+      "http_attempts": 8,
+      "verification": {
+        "message_id": "IARC-M-8884a900-2fe3-4afe-b61f-6b3b98d71999",
+        "conversation_id": "IARC-C-fc862d41-736e-4644-b963-55dc57b4bb13",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": true,
+        "retry_addition_same_review_link": true,
+        "lost_addition_draft_exact": true,
+        "retried_addition_draft_exact": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "predictive-word",
+      "case": "lost-publication",
+      "run": "recovery-predictive-lost-publish-v2",
+      "activations": 8,
+      "http_attempts": 8,
+      "verification": {
+        "message_id": "IARC-M-f923cfd7-8c56-4008-8b85-abf5b59369ad",
+        "conversation_id": "IARC-C-98c7282e-5b40-4a01-afe7-b731b3364175",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "lost_publication_receipt_id": "IARC-M-f923cfd7-8c56-4008-8b85-abf5b59369ad",
+        "retried_publication_receipt_id": "IARC-M-f923cfd7-8c56-4008-8b85-abf5b59369ad",
+        "retry_publication_same_receipt": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "predictive-word",
+      "case": "immutable-branch",
+      "run": "recovery-predictive-branch-v8",
+      "activations": 9,
+      "http_attempts": 9,
+      "verification": {
+        "message_id": "IARC-M-b74292e7-3beb-44cf-87bf-a10586dd03ea",
+        "conversation_id": "IARC-C-40738a69-2b3e-4ab6-95c9-632c62452b49",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "branch_draft": [
+          "I."
+        ],
+        "branch_differed": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "predictive-word",
+      "case": "expired-review",
+      "run": "recovery-predictive-expired-v9",
+      "activations": 10,
+      "http_attempts": 10,
+      "verification": {
+        "message_id": "IARC-M-f6082b26-f70e-4867-9ec1-9e0362603d6d",
+        "conversation_id": "IARC-C-5118d017-462e-4bc9-9dd5-df0ba865c91d",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "expiry": "2026-10-01T09:10:54.156Z",
+        "wait_ms": 601182,
+        "expired_status": 410,
+        "publication_receipt_present": false,
+        "no_publication_observed": true,
+        "recovered_expired_review_without_retyping": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "prefix-link",
+      "case": "lost-addition",
+      "run": "recovery-prefix-lost-add-v3",
+      "activations": 8,
+      "http_attempts": 8,
+      "verification": {
+        "message_id": "IARC-M-51e27b26-6f0b-4fbd-8ba7-9d986ff166e6",
+        "conversation_id": "IARC-C-ba8f0188-502c-4f66-b4fe-c1b1582b8f25",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": true,
+        "retry_addition_same_review_link": true,
+        "lost_addition_draft_exact": true,
+        "retried_addition_draft_exact": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "prefix-link",
+      "case": "lost-publication",
+      "run": "recovery-prefix-lost-publish-v3",
+      "activations": 8,
+      "http_attempts": 8,
+      "verification": {
+        "message_id": "IARC-M-d04958a9-2bdb-44a7-82a2-06e7158506cf",
+        "conversation_id": "IARC-C-b4980e89-882e-4bde-9a55-0137be79ff59",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "lost_publication_receipt_id": "IARC-M-d04958a9-2bdb-44a7-82a2-06e7158506cf",
+        "retried_publication_receipt_id": "IARC-M-d04958a9-2bdb-44a7-82a2-06e7158506cf",
+        "retry_publication_same_receipt": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "prefix-link",
+      "case": "immutable-branch",
+      "run": "recovery-prefix-branch-v6",
+      "activations": 9,
+      "http_attempts": 9,
+      "verification": {
+        "message_id": "IARC-M-13f4bae9-7fb5-4cf7-8cbc-6056c21f8e71",
+        "conversation_id": "IARC-C-031dc41d-ffa3-4ca8-979b-f4aaf5b1cfc5",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "branch_draft": [
+          "I."
+        ],
+        "branch_differed": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "prefix-link",
+      "case": "expired-review",
+      "run": "recovery-prefix-expired-v9",
+      "activations": 10,
+      "http_attempts": 10,
+      "verification": {
+        "message_id": "IARC-M-11504159-eaea-4b40-aa3c-9d60ff862253",
+        "conversation_id": "IARC-C-92b27da5-7fdf-4909-b611-99da781521ef",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "expiry": "2026-10-01T09:10:54.576Z",
+        "wait_ms": 601138,
+        "expired_status": 410,
+        "publication_receipt_present": false,
+        "no_publication_observed": true,
+        "recovered_expired_review_without_retyping": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "token-link",
+      "case": "lost-addition",
+      "run": "recovery-token-lost-add-v2",
+      "activations": 9,
+      "http_attempts": 9,
+      "verification": {
+        "message_id": "IARC-M-b4800351-19bb-4aaa-ade6-c2a0aaa765cb",
+        "conversation_id": "IARC-C-6aa4270e-a4b5-4ea4-ae7c-ab4a67f31d1f",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": true,
+        "retry_addition_same_review_link": true,
+        "lost_addition_draft_exact": true,
+        "retried_addition_draft_exact": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "token-link",
+      "case": "lost-publication",
+      "run": "recovery-token-lost-publish-v2",
+      "activations": 9,
+      "http_attempts": 9,
+      "verification": {
+        "message_id": "IARC-M-722dfeb1-f3dd-466c-b197-65bb8c8aab59",
+        "conversation_id": "IARC-C-855fd667-e541-4c38-b3d4-0695cc1cdb4e",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "lost_publication_receipt_id": "IARC-M-722dfeb1-f3dd-466c-b197-65bb8c8aab59",
+        "retried_publication_receipt_id": "IARC-M-722dfeb1-f3dd-466c-b197-65bb8c8aab59",
+        "retry_publication_same_receipt": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "token-link",
+      "case": "immutable-branch",
+      "run": "recovery-token-branch-v2",
+      "activations": 10,
+      "http_attempts": 10,
+      "verification": {
+        "message_id": "IARC-M-e417db95-6bbc-4cc4-9487-dd44e42b133d",
+        "conversation_id": "IARC-C-515fb1d5-510f-43e8-b900-15f2f841fa58",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "branch_draft": [
+          "IYou"
+        ],
+        "branch_differed": true
+      },
+      "contract_pass": true
+    },
+    {
+      "method": "token-link",
+      "case": "expired-review",
+      "run": "recovery-token-expired-v9",
+      "activations": 12,
+      "http_attempts": 12,
+      "verification": {
+        "message_id": "IARC-M-b3acb557-9106-4e30-8673-19ff35b29998",
+        "conversation_id": "IARC-C-cb9d1f6c-9c46-41c7-96bb-a74038c04e6b",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true,
+        "designation_exact": true,
+        "conversation_exact": true
+      },
+      "facts": {
+        "addition_exact": true,
+        "retry_addition": false,
+        "expiry": "2026-10-01T09:02:54.737Z",
+        "wait_ms": 121203,
+        "expired_status": 410,
+        "publication_receipt_present": false,
+        "no_publication_observed": true,
+        "recovered_expired_review_without_retyping": true
+      },
+      "contract_pass": true
+    }
+  ]
+}

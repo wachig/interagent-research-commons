@@ -30,7 +30,7 @@ async function run(method,fault){
   s=await state(id);
   if(!s.current.drafts?.includes('I')){
    if(method.id==='predictive-word' && !s.current.links.some(l=>/^(?:I|Add I)$/.test(l.label||l.text)))await choose(id,/^Turn shift on$/);
-   await choose(id,/^(?:Add (?:top |predicted |next )?word I|Add I to the draft|Add I|I)$/,{...(fault==='lost-add'?{drop:true}:{})});
+   await choose(id,/^(?:Add (?:top |predicted |next )?word I|Add I to the draft|Add I|Add Uppercase i|I)$/,{...(fault==='lost-add'?{drop:true}:{})});
    if(fault==='lost-add')await act(id,{op:'retry'});
   }
   s=await state(id);if(!s.current.drafts.includes('I'))throw Error('Exact I draft absent after addition');
@@ -41,6 +41,7 @@ async function run(method,fault){
    await act(id,{op:'back',page:earlier});
    if(!(await state(id)).current.drafts.includes('I'))throw Error('Returning to earlier branch lost original draft');
   }
+  const compositionPage=(await state(id)).page;
   await choose(id,/^Review (?:message|this exact branch)$/);
   if(method.id==='token-link')await choose(id,/^Arm publication$/);
   if(fault==='expired'){
@@ -57,7 +58,17 @@ async function run(method,fault){
   if(fault==='expired'){
    await annotate(id,{expired_status:s.last_status,publication_receipt_present:!!s.publication_receipt_id,no_publication_observed:!s.publication_receipt_id&&s.last_status>=400});
    if(s.publication_receipt_id)throw Error('Expired capability unexpectedly published');
-   await act(id,{op:'finish',outcome:'expected_no_publication',note:'Expired publication capability rejected; no publication receipt observed. Recovery continuation is a separate question.'});
+   if(process.env.RELAY_RECOVERY_CONTINUE==='1'){
+    await act(id,{op:'back',page:compositionPage});
+    if(!(await state(id)).current.drafts.includes('I'))throw Error('Expired review recovery lost original draft');
+    await choose(id,/^Review (?:message|this exact branch)$/);
+    if(method.id==='token-link')await choose(id,/^Arm publication$/);
+    await choose(id,/^Publish (?:this )?message publicly$/,{intent:'publish'});
+    await choose(id,/^(?:Open|View) public message(?: IARC-M-[a-f0-9-]+)?$/);
+    if((await state(id)).current.links.some(l=>l.text==='Machine-readable message record'))await choose(id,/^Machine-readable message record$/);
+    await annotate(id,{recovered_expired_review_without_retyping:true});
+    await act(id,{op:'finish',outcome:'completed',note:'Expired capability did not publish; returned to existing exact draft, reviewed afresh and verified intentional publication.'});
+   }else await act(id,{op:'finish',outcome:'expected_no_publication',note:'Expired publication capability rejected; no publication receipt observed. Recovery continuation is a separate question.'});
   }else{
    await choose(id,/^(?:Open|View) public message(?: IARC-M-[a-f0-9-]+)?$/);
    s=await state(id);
@@ -68,7 +79,7 @@ async function run(method,fault){
  }catch(e){await annotate(id,{probe_error:e.message});await act(id,{op:'finish',outcome:'failed',note:'Recovery probe: '+e.message});console.log(id+': failed '+e.message);}
 }
 const mode=process.argv[2]||'fast';
-for(const fault of cases.filter(x=>mode==='expired'?x==='expired':x!=='expired')){
+for(const fault of cases.filter(x=>mode==='expired'?x==='expired':mode==='branch'?x==='branch':x!=='expired')){
  const selected=freeze.plan.methods.filter(m=>!process.argv[3]||m===process.argv[3]);
  if(mode==='expired')await Promise.all(selected.map(id=>run(registry.methods.find(m=>m.id===id),fault)));
  else for(const methodId of selected)await run(registry.methods.find(m=>m.id===methodId),fault);
