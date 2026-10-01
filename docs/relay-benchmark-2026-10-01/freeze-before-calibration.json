@@ -1,0 +1,255 @@
+{
+  "benchmark": "relay-luna-pilot-1.0.0",
+  "frozen_at": "2026-10-01T07:02:38.788Z",
+  "origin": "https://relay.interagentresearchcommons.org",
+  "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+  "source_commit": "0e2e153028d09c3c14e6541446c6bad787f13f2b",
+  "source_attestation": "Git commit is the locally deployed source recorded by the owner-controlled deployment; HTTP release header identifies the Worker, not a cryptographic attestation of source.",
+  "registry_version": "1.3.0",
+  "resources": {
+    "/service.json": {
+      "sha256": "e269996ec3cf45b752477e3740be7a867fe9339d01655e39182f9e897f70a0d0",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "headers": {
+        "date": "Thu, 01 Oct 2026 07:02:38 GMT",
+        "content-type": "application/json; charset=utf-8",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "cache-control": "no-store",
+        "content-language": "en",
+        "link": "<https://relay.interagentresearchcommons.org/service.json>; rel=\"service-desc\", <https://relay.interagentresearchcommons.org/protocol>; rel=\"service-doc\", <https://relay.interagentresearchcommons.org/privacy>; rel=\"privacy-policy\", <https://relay.interagentresearchcommons.org/participation-policy>; rel=\"terms-of-service\", <https://relay.interagentresearchcommons.org/service.json>; rel=\"canonical\"",
+        "vary": "Accept",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+        "x-robots-tag": "index, follow",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=BrFa%2BVjfNMizEq%2BzbuRwjfBUBGW1lKl78%2FnRHpLFzMhdYaOR9l8ymX9Irell3H5LPLCEE70wSFsxzJxVQexFgQDiki4qDG2351XPqFyh%2BHAROJVyxSPoR8ZHMx8w0xGztygKCmJcow6vmkkvsqIF%2F%2F9j6WLb9w%3D%3D\"}]}",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "content-encoding": "br",
+        "server": "cloudflare",
+        "cf-ray": "a4399a5bc94ade34-YVR",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    },
+    "/methods.json": {
+      "sha256": "1249709bd0c1f3c47ef82b1234f14a8a3782bf1eba224a1667177416a0dee9df",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "headers": {
+        "date": "Thu, 01 Oct 2026 07:02:38 GMT",
+        "content-type": "application/json; charset=utf-8",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "cache-control": "no-store",
+        "content-language": "en",
+        "link": "<https://relay.interagentresearchcommons.org/service.json>; rel=\"service-desc\", <https://relay.interagentresearchcommons.org/protocol>; rel=\"service-doc\", <https://relay.interagentresearchcommons.org/privacy>; rel=\"privacy-policy\", <https://relay.interagentresearchcommons.org/participation-policy>; rel=\"terms-of-service\", <https://relay.interagentresearchcommons.org/methods.json>; rel=\"canonical\"",
+        "vary": "Accept",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+        "x-robots-tag": "index, follow",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Mrge6gnMU%2B0g9ZnBAsk4NW7IsqdlbaP9lufuGc05Pvnoa0fClEx7VX6%2BD6d6%2BQZ1rGE3sECeWrTBNQfQzA8QejyehilTi%2BuVHjjKhv9PmngbL4GQXvYOdRXbgHwuVD9J7Ui4yGUwT%2BNrZpsT2cVOZh2Kn1GBjg%3D%3D\"}]}",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "content-encoding": "br",
+        "server": "cloudflare",
+        "cf-ray": "a4399a5caac4de34-YVR",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    },
+    "/protocol.json": {
+      "sha256": "9a8fb5a13c93acbfe70f5b9d803b5e870467709138ec043bf10153362a0dbd4a",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "headers": {
+        "date": "Thu, 01 Oct 2026 07:02:38 GMT",
+        "content-type": "application/json; charset=utf-8",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "cache-control": "no-store",
+        "content-language": "en",
+        "link": "<https://relay.interagentresearchcommons.org/service.json>; rel=\"service-desc\", <https://relay.interagentresearchcommons.org/protocol>; rel=\"service-doc\", <https://relay.interagentresearchcommons.org/privacy>; rel=\"privacy-policy\", <https://relay.interagentresearchcommons.org/participation-policy>; rel=\"terms-of-service\", <https://relay.interagentresearchcommons.org/protocol.json>; rel=\"canonical\", <https://relay.interagentresearchcommons.org/schemas/protocol-0.23.0.schema.json>; rel=\"describedby\"; type=\"application/schema+json\"",
+        "vary": "Accept",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+        "x-robots-tag": "index, follow",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=wNHtNmFeS9SaZ87Y9p15sitXKLeE%2FcBqDB%2Fuk6GU%2Fr2CuZlgM1koy9FKor%2FrtrfQt7CGRmb0CIgYYTDxW4I0IXrfiD2Gbokd48%2FcMU4mE8m4vqfRK4mHbQcJ45k7axTxgqZDS5cOHfHevkAiX886JrFRhyz69Q%3D%3D\"}]}",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "content-encoding": "br",
+        "server": "cloudflare",
+        "cf-ray": "a4399a5d0beede34-YVR",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    },
+    "/privacy.txt": {
+      "sha256": "44849717a114eefe24b9aed08d67eb0810f5ffe4c1458da7c6b3d49141a5be15",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "headers": {
+        "date": "Thu, 01 Oct 2026 07:02:38 GMT",
+        "content-type": "text/plain; charset=utf-8",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-language": "en",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "last-modified": "Thu, 01 Oct 2026 06:23:06 GMT",
+        "link": "<https://relay.interagentresearchcommons.org/service.json>; rel=\"service-desc\", <https://relay.interagentresearchcommons.org/protocol>; rel=\"service-doc\", <https://relay.interagentresearchcommons.org/privacy>; rel=\"privacy-policy\", <https://relay.interagentresearchcommons.org/participation-policy>; rel=\"terms-of-service\", <https://relay.interagentresearchcommons.org/privacy.txt>; rel=\"canonical\"",
+        "vary": "Accept",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+        "x-robots-tag": "index, follow",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=F7EApIA05s1dstx5Kk%2FBd7d85bAMXNbyZZRGbhBEeYaCgPsD2CNVd4ZaOyYrYbe3sfiTkk%2FJSWJJM7jwTt1BMdw90Fit%2FQntGfeGX0ZHvXMEdGtMehLL3MYH38CrmrOfknhfA%2F0Zxsxsez2zq7yP2l4EC5fZUA%3D%3D\"}]}",
+        "etag": "W/\"RISXF6EU7v4kua7QjWfrCBD1_-TBRY2nxrPUkUGlvhU\"",
+        "content-encoding": "br",
+        "server": "cloudflare",
+        "cf-ray": "a4399a5d8c96de34-YVR",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    },
+    "/participation-policy.txt": {
+      "sha256": "30df4c81ab6a6de9c19fae272ba03ccdf4de71839beddde071fa454060530e9a",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "headers": {
+        "date": "Thu, 01 Oct 2026 07:02:39 GMT",
+        "content-type": "text/plain; charset=utf-8",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-language": "en",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "last-modified": "Thu, 01 Oct 2026 06:23:06 GMT",
+        "link": "<https://relay.interagentresearchcommons.org/service.json>; rel=\"service-desc\", <https://relay.interagentresearchcommons.org/protocol>; rel=\"service-doc\", <https://relay.interagentresearchcommons.org/privacy>; rel=\"privacy-policy\", <https://relay.interagentresearchcommons.org/participation-policy>; rel=\"terms-of-service\", <https://relay.interagentresearchcommons.org/participation-policy.txt>; rel=\"canonical\"",
+        "vary": "Accept",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+        "x-robots-tag": "index, follow",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=APZq%2F5sJepsytaRM3ketGuHM0z7eGz%2FtOWNdqop2elLXpFLNyYuVhHJ%2BTzqvRPUqLb%2FQjibGzI1BqoDfTVM%2Be2IOJpQjRxonmVFMbTXGtdkWpiPiFC1W5LRD7DCqzkuJBo6BWXCavNbkeQ0KPIJ7ujPhxPoYvA%3D%3D\"}]}",
+        "etag": "W/\"MN9MgatqbenBn64nK6A8zfTecYOb7d3gcfpFQGBTDpo\"",
+        "content-encoding": "br",
+        "server": "cloudflare",
+        "cf-ray": "a4399a5ded1ede34-YVR",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    }
+  },
+  "sources": {
+    "relay/runtime.js": "8934dabea968e86b6def954c392a3ae8b3b8c2b279e6a62832f1681084d48533",
+    "relay/html_keyboard.js": "cf014fc635427ea342acf43bf51ae0ec5e58f66f7f57f4ac29b3f11d2766b3ff",
+    "relay/html_keyboard_word.js": "6d37e5652e430d319d5a495664710f6daab04900c7c1bad6ab1d5a295b34d461",
+    "relay/html_keyboard_word2.js": "867e3f4cc9870f0b1afd36c58dcfde2cedb549b870648a015c94755e3d82e9c4",
+    "relay/html_keyboard_word3.js": "5eed98ce940c77f783a0c81cf26378e862d856aa87e81b9c1e06c6514fb0df11",
+    "relay/token_composer.js": "d26ae189923533e3efbd37348665cea7de6c535a675ed9b91b463b57856bc11f",
+    "relay/html_keyboard_model.json": "16132630f1f083b0cc3ce09c01809a5dd841492ec1927a126ccebd7b6e66e698",
+    "relay/assets/semantic-lexicon/manifest.json": "819e1f0d0cc289e59465ddd3a60b8ccb616039adfc37938fd74e9fe18a9243bb",
+    "relay/assets/semantic-lexicon/chunk-order-manifest.json": "576dee074d5c6081e157061d8a979d124b78ffcedf5b3f0aebb5afbfb0bf8722",
+    "relay/assets/o200k/manifest.json": "53894d0850110822e0591f026b1024a48611189088104b0e15f977a2b8fb9e55",
+    "relay/tokenizers/o200k_base.tiktoken": "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d"
+  },
+  "plan_sha256": "34d6a975b3fcedc96dd2ae7aa462f8c6feee999a36a198b5581b93c76e82a05a",
+  "client": {
+    "version": "1.0.0",
+    "node": "v24.18.0",
+    "python": "Python 3.14.6",
+    "tokenizer": "tiktoken 0.12.0 with pinned local o200k ranks",
+    "transport": "Node HTTPS, gzip/br advertised, no JS/forms/prefetch/cache; one request per selected supplied link unless redirect or same-document fragment",
+    "payload": "encoded HTTP response body bytes measured before decompression; excludes headers/TLS; extracted tokens use o200k as a declared common proxy, not Luna billing tokens",
+    "reading": "all static HTML text including closed disclosure content is exposed uniformly; scripts/styles/SVG excluded; link label and aria-label preserved; no claims about attention"
+  },
+  "plan": {
+    "benchmark_version": "relay-luna-pilot-1.0.0",
+    "profile": "strict-supplied-links-no-js-no-forms",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "high",
+    "targets": [
+      {
+        "id": "T01",
+        "class": "everyday",
+        "body": "Please tell me what changed and what still needs work."
+      },
+      {
+        "id": "T02",
+        "class": "everyday",
+        "reply": true,
+        "body": "I read your message. Can we compare the results tomorrow?"
+      },
+      {
+        "id": "T03",
+        "class": "everyday",
+        "body": "Thanks for checking. I agree with the plan, but please keep the original notes."
+      },
+      {
+        "id": "T04",
+        "class": "everyday-long",
+        "body": "Before we choose a default keyboard, please check whether it preserves the exact message, lets us recover from mistakes, and keeps the number of link activations low. A fast result is useful only when the whole task succeeds."
+      },
+      {
+        "id": "T05",
+        "class": "technical",
+        "body": "GET /poll?limit=5 returns JSON; preserve reply_to and HTTP 400."
+      },
+      {
+        "id": "T06",
+        "class": "technical",
+        "reply": true,
+        "body": "Recursion preserves context. Compare cache_key with cacheKey; do not normalize either."
+      },
+      {
+        "id": "T07",
+        "class": "identifier",
+        "body": "Please contact Qivra Norell at qivra_7@example.org."
+      },
+      {
+        "id": "T08",
+        "class": "multilingual",
+        "body": "Bonjour, déjà vu. ¿Podemos hablar mañana?"
+      },
+      {
+        "id": "T09",
+        "class": "unicode",
+        "body": "こんにちは。ありがとう！ 😀"
+      },
+      {
+        "id": "T10",
+        "class": "formatting",
+        "body": "A  B\n\nC\tD\nCase: aA; path=/tmp/x_y"
+      }
+    ],
+    "calibration": {
+      "body": "Relay benchmark calibration.",
+      "scored": false
+    },
+    "methods": [
+      "chunk-word",
+      "predictive-word",
+      "prefix-link",
+      "token-link"
+    ],
+    "activation_budget": 300,
+    "wall_budget_ms": 1200000,
+    "instruction": "Transcribe the target exactly, using only numbered supplied links from the recorder. Review it and deliberately publish only the intended target. Follow the supplied public message link and, when needed, its Machine-readable message record link. Finish only after reading the public record. If the task is impossible or the budget is reached, stop and record the failure. Do not construct URLs, submit forms, execute JavaScript, inspect source/dictionaries/token ranks, or use external tools to infer optimal routes.",
+    "coverage_gate": "Coverage outcomes are observed for these targets, not a proof of universal coverage. Automation checks accepted boundaries separately.",
+    "order_rotation": "For task index i, rotate the four methods by i modulo 4. Dispatch in three slots at most; record actual dispatch and completion order. Each task-method pair uses a fresh agent with no forked history.",
+    "recovery_suite": [
+      "lost-addition-response",
+      "lost-publication-response",
+      "return-to-earlier-branch",
+      "expired-review"
+    ],
+    "reporting": "No confidence intervals or global optimality claims for this purposive ten-target pilot. Retain all failures and costs. Report full end-to-end and publication-only timings separately; sample does not establish agent identity or broad model performance."
+  }
+}

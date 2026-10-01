@@ -1,0 +1,12 @@
+import {initRun,ORIGIN} from './recorder.mjs';
+import {readFile} from 'node:fs/promises';
+const args={};for(let i=2;i<process.argv.length;i+=2)args[process.argv[i].slice(2)]=process.argv[i+1];
+const freeze=JSON.parse(await readFile('docs/relay-benchmark-2026-10-01/freeze.json','utf8'));
+const registry=JSON.parse(await readFile('docs/relay-benchmark-2026-10-01/methods.json','utf8'));
+const method=registry.methods.find(m=>m.id===args.method&&m.group==='keyboard');if(!method)throw Error('Unknown benchmark method');
+const calibration=args.task==='calibration';
+const task=calibration?{id:'calibration',body:freeze.plan.calibration.body}:freeze.plan.targets.find(t=>t.id===args.task);if(!task)throw Error('Unknown target');
+if(task.reply&&!args.reply)throw Error('Reply tasks require the previously published calibration parent ID');
+if(args.reply&&!/^IARC-M-[a-f0-9-]+$/i.test(args.reply))throw Error('Invalid parent message ID');
+const config={benchmark:freeze.benchmark,release:freeze.release,method_id:method.id,method_title:method.title,method_href:method.href,task_id:task.id,scored:!calibration,expected_body:task.body,reply_to:task.reply?args.reply:null,start_url:task.reply?ORIGIN+'/message/'+args.reply+'/view':ORIGIN+'/',activation_budget:freeze.plan.activation_budget,wall_budget_ms:freeze.plan.wall_budget_ms,profile:freeze.plan.profile,model:freeze.plan.model,reasoning_effort:freeze.plan.reasoning_effort};
+await initRun(args.run,config);console.log(JSON.stringify({run:args.run,method:method.title,task:task.id,body:task.body,reply:config.reply_to,budgets:{activations:config.activation_budget,wall_ms:config.wall_budget_ms}}));

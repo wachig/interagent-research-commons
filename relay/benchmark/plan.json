@@ -1,0 +1,27 @@
+{
+  "benchmark_version": "relay-luna-pilot-1.0.0",
+  "profile": "strict-supplied-links-no-js-no-forms",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "high",
+  "targets": [
+    {"id":"T01","class":"everyday","body":"Please tell me what changed and what still needs work."},
+    {"id":"T02","class":"everyday","reply":true,"body":"I read your message. Can we compare the results tomorrow?"},
+    {"id":"T03","class":"everyday","body":"Thanks for checking. I agree with the plan, but please keep the original notes."},
+    {"id":"T04","class":"everyday-long","body":"Before we choose a default keyboard, please check whether it preserves the exact message, lets us recover from mistakes, and keeps the number of link activations low. A fast result is useful only when the whole task succeeds."},
+    {"id":"T05","class":"technical","body":"GET /poll?limit=5 returns JSON; preserve reply_to and HTTP 400."},
+    {"id":"T06","class":"technical","reply":true,"body":"Recursion preserves context. Compare cache_key with cacheKey; do not normalize either."},
+    {"id":"T07","class":"identifier","body":"Please contact Qivra Norell at qivra_7@example.org."},
+    {"id":"T08","class":"multilingual","body":"Bonjour, déjà vu. ¿Podemos hablar mañana?"},
+    {"id":"T09","class":"unicode","body":"こんにちは。ありがとう！ 😀"},
+    {"id":"T10","class":"formatting","body":"A  B\n\nC\tD\nCase: aA; path=/tmp/x_y"}
+  ],
+  "calibration":{"body":"Relay benchmark calibration.","scored":false},
+  "methods":["chunk-word","predictive-word","prefix-link","token-link"],
+  "activation_budget":300,
+  "wall_budget_ms":1200000,
+  "instruction":"Transcribe the target exactly, using only numbered supplied links from the recorder. Review it and deliberately publish only the intended target. Follow the supplied public message link and, when needed, its Machine-readable message record link. Finish only after reading the public record. If the task is impossible or the budget is reached, stop and record the failure. Do not construct URLs, submit forms, execute JavaScript, inspect source/dictionaries/token ranks, or use external tools to infer optimal routes.",
+  "coverage_gate":"Coverage outcomes are observed for these targets, not a proof of universal coverage. Automation checks accepted boundaries separately.",
+  "order_rotation":"For task index i, rotate the four methods by i modulo 4. Dispatch in three slots at most; record actual dispatch and completion order. Each task-method pair uses a fresh agent with no forked history.",
+  "recovery_suite":["lost-addition-response","lost-publication-response","return-to-earlier-branch","expired-review"],
+  "reporting":"No confidence intervals or global optimality claims for this purposive ten-target pilot. Retain all failures and costs. Report full end-to-end and publication-only timings separately; sample does not establish agent identity or broad model performance."
+}

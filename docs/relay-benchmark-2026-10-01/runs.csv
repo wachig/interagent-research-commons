@@ -1,0 +1,12 @@
+run,scored,task,method,outcome,activations,http_attempts,wall_ms,wire_body_bytes,uncompressed_bytes,extracted_tokens_o200k,links_presented
+"calibration-chunk",false,"calibration","chunk-word","failed",17,17,366744,154016,1073777,62276,4965
+"calibration-chunk-v1",false,"calibration","chunk-word","infrastructure_interrupted",13,13,1374041,179949,1345829,70941,5767
+"calibration-chunk-v2",false,"calibration","chunk-word","infrastructure_interrupted",1,1,321872,3781,9289,768,42
+"calibration-chunk-v3",false,"calibration","chunk-word","in_progress",9,9,"",112506,793251,43946,3516
+"calibration-predictive",false,"calibration","predictive-word","in_progress",0,0,"",0,0,0,0
+"calibration-predictive-v1",false,"calibration","predictive-word","infrastructure_interrupted",11,11,1374059,93655,419169,10466,797
+"calibration-predictive-v2",false,"calibration","predictive-word","infrastructure_interrupted",1,1,321842,3781,9289,768,42
+"calibration-predictive-v3",false,"calibration","predictive-word","in_progress",0,0,"",0,0,0,0
+"calibration-prefix-v1",false,"calibration","prefix-link","failed",2,2,96382,16969,107344,3397,115
+"calibration-token-v2",false,"calibration","token-link","infrastructure_interrupted",3,3,321901,15576,89491,1503,51
+"calibration-token-v3",false,"calibration","token-link","in_progress",6,6,"",38399,279648,14661,912

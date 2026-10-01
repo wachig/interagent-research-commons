@@ -1,0 +1,21 @@
+// Export only measurement facts. Never export bearer URLs, raw responses, or broker keys.
+import {readdir,readFile,writeFile,mkdir} from 'node:fs/promises';
+import path from 'node:path';
+import {ROOT,sha} from './recorder.mjs';
+const output=path.resolve('docs/relay-benchmark-2026-10-01');await mkdir(output,{recursive:true});
+const runs=[];
+const sum=(xs,key)=>xs.reduce((n,x)=>n+(Number(x[key])||0),0);
+for(const name of (await readdir(ROOT)).sort()){
+  let state;try{state=JSON.parse(await readFile(path.join(ROOT,name,'state.json'),'utf8'));}catch{continue;}
+  let events=[];try{events=(await readFile(path.join(ROOT,name,'events.jsonl'),'utf8')).trim().split('\n').filter(Boolean).map(JSON.parse);}catch{}
+  const http=events.filter(e=>e.kind==='http'),extractions=events.filter(e=>e.kind==='extraction'),activations=events.filter(e=>e.kind==='activation');
+  const kinds=new Map();for(const e of activations)kinds.set(e.operation,(kinds.get(e.operation)||0)+1);
+  const publication=activations.find(e=>e.explicit_publication_intent);
+  const row={run:name,scored:Boolean(state.config.scored),task:state.config.task_id,method:state.config.method_id,profile:state.config.profile,model:state.config.model,reasoning_effort:state.config.reasoning_effort,release:state.config.release,target_sha256:sha(state.config.expected_body||''),target_utf8_bytes:Buffer.byteLength(state.config.expected_body||''),reply_to:state.config.reply_to||null,created_at:state.created_at,outcome:state.outcome||'in_progress',finished:state.finished,wall_ms:state.finished_ms?state.finished_ms-state.started_ms:null,time_to_first_publish_activation_ms:publication?Date.parse(publication.at)-state.started_ms:null,activations:state.activations,http_attempts:state.http_requests,http_responses:http.length,network_errors:events.filter(e=>e.kind==='error').length,redirects:events.filter(e=>e.kind==='redirect').length,fragments:events.filter(e=>e.kind==='fragment').length,activation_kinds:Object.fromEntries(kinds),wire_body_bytes:sum(http,'wire_body_bytes'),uncompressed_bytes:sum(http,'uncompressed_bytes'),http_ms:sum(http,'http_ms'),extraction_ms:sum(extractions,'extraction_ms'),extracted_tokens_o200k:sum(extractions,'tokens_o200k'),links_presented:sum(extractions,'links_presented'),inspection_scope:'links presented by extraction; attention/links inspected are not observable',verification:state.verification||null,note:state.note||null,transitions:events.map(e=>({seq:e.seq,at:e.at,kind:e.kind,...(e.kind==='activation'?{operation:e.operation,link_label:e.link_label,intent:e.explicit_publication_intent,url_sha256:sha(e.url),gap_ms:e.gap_since_last_response_ms}:{}),...(e.kind==='http'?{status:e.status,http_ms:e.http_ms,wire_body_bytes:e.wire_body_bytes,uncompressed_bytes:e.uncompressed_bytes}:{}),...(e.kind==='extraction'?{page:e.page,tokens_o200k:e.tokens_o200k,links_presented:e.links_presented}:{}),...(e.kind==='error'?{error_category:e.message?.split(' | ')[0]||'unknown'}:{})}))};
+  runs.push(row);
+}
+const report={benchmark:'relay-luna-pilot-1.0.0',generated_at:new Date().toISOString(),limitations:['Purposive targets: no population confidence intervals or universal winner.','Server-request time excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.','Wire bytes count encoded response bodies only, not headers/TLS.','o200k extracted tokens are a declared proxy, not Luna usage/billing tokens.','All raw traces are private; URL hashes in this export cannot be followed.','Calibration and infrastructure interruptions are separate from scored keyboard outcomes.'],runs};
+await writeFile(path.join(output,'runs.json'),JSON.stringify(report,null,2)+'\n');
+const fields=['run','scored','task','method','outcome','activations','http_attempts','wall_ms','wire_body_bytes','uncompressed_bytes','extracted_tokens_o200k','links_presented'];
+await writeFile(path.join(output,'runs.csv'),fields.join(',')+'\n'+runs.map(r=>fields.map(f=>JSON.stringify(r[f]??'')).join(',')).join('\n')+'\n');
+console.log(JSON.stringify({runs:runs.length,completed:runs.filter(r=>r.outcome==='completed').length,scored:runs.filter(r=>r.scored).length,output}));

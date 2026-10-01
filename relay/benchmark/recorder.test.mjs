@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import http from 'node:http';
+import {gzipSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+const root=await mkdtemp('/private/tmp/relay-recorder-contract-');process.env.RELAY_BENCH_RUNS=root;
+const {initRun,act,extract}=await import('./recorder.mjs');
+const body='A  B\n\nC\tD café 😀';let publishes=0,adds=0;
+const messageId='IARC-M-11111111-1111-1111-1111-111111111111';
+const server=http.createServer((req,res)=>{
+  res.setHeader('X-Relay-Release','fixture-v1');
+  if(req.url==='/redirect'){res.writeHead(302,{Location:'/root'});res.end();return;}
+  if(req.url==='/record'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({message_id:messageId,visibility:'public',body,body_digest:createHash('sha256').update(body).digest('base64url'),reply_to:null}));return;}
+  if(req.url==='/add'){adds++;}
+  if(req.url==='/publish/cap'){publishes++;}
+  const html='<!doctype html><html><head><title>Fixture</title><style>invisible css</style></head><body><h1>Test</h1>'+ (req.url==='/publish/cap'?`<p>Message ID: <code>${messageId}</code></p>`:'')+'<pre class="draft">'+body+'</pre><a href="/add" aria-label="Add colon">:</a><a href="#anchor">Jump</a><a href="/publish/cap">Publish publicly</a><a href="https://example.com/">External</a><a href="/record">Machine record</a><a href="/review/exact">Review</a><script>invisible script</script></body></html>';
+  const compressed=gzipSync(html);res.setHeader('Content-Type','text/html');res.setHeader('Content-Encoding','gzip');res.end(compressed);
+});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
+try{
+  const p=await extract('<title>X</title><base href="/b/"><pre class="draft">a  b\n\nc</pre><a href="x?one=1&amp;two=2" aria-label="Exact x">x</a><svg><title>ignored</title></svg>');
+  assert.equal(p.title,'X');assert.equal(p.base,'/b/');assert.equal(p.drafts[0],'a  b\n\nc');assert.equal(p.links[0].href,'x?one=1&two=2');assert.equal(p.links[0].label,'Exact x');assert.ok(p.extracted_tokens_o200k>0);
+  await initRun('contract',{start_url:base+'/redirect',release:'fixture-v1',expected_body:body});
+  let page=await act('contract',{op:'start'},{local:true});assert.equal(page.page,1);assert.equal(page.drafts[0],body);
+  const before=JSON.parse(await readFile(root+'/contract/state.json'));assert.equal(before.http_requests,2);assert.equal(before.activations,1);
+  await assert.rejects(act('contract',{op:'follow',page:0,link:1},{local:true}),/Stale/);
+  await assert.rejects(act('contract',{op:'follow',page:1,link:3},{local:true}),/explicit/);assert.equal(publishes,0);
+  await assert.rejects(act('contract',{op:'follow',page:1,link:3,intent:'publish'},{local:true}),/no exact/);assert.equal(publishes,0);
+  await assert.rejects(act('contract',{op:'follow',page:1,link:4},{local:true}),/External/);
+  page=await act('contract',{op:'follow',page:1,link:2},{local:true});assert.equal(page.page,1);
+  let s=JSON.parse(await readFile(root+'/contract/state.json'));assert.equal(s.http_requests,2);assert.equal(s.activations,2);
+  await act('contract',{op:'follow',page:1,link:1,drop:true},{local:true});assert.equal(adds,1);
+  page=await act('contract',{op:'retry'},{local:true});assert.equal(adds,2);assert.equal(page.page,2);
+  page=await act('contract',{op:'follow',page:2,link:6},{local:true});
+  page=await act('contract',{op:'follow',page:3,link:3,intent:'publish'},{local:true});assert.equal(publishes,1);
+  page=await act('contract',{op:'follow',page:4,link:5},{local:true});
+  const done=await act('contract',{op:'finish',outcome:'completed'},{local:true});assert.equal(done.outcome,'completed');
+  const events=(await readFile(root+'/contract/events.jsonl','utf8')).trim().split('\n').map(JSON.parse);
+  assert.equal(events.filter(e=>e.kind==='fragment').length,1);assert.equal(events.filter(e=>e.kind==='http').length,7);
+  assert.ok(events.some(e=>e.kind==='http'&&e.wire_body_bytes<e.uncompressed_bytes));assert.ok(events.some(e=>e.kind==='injected-response-loss'));
+  await initRun('changed',{start_url:base+'/root',release:'wrong'});await assert.rejects(act('changed',{op:'start'},{local:true}),/Release changed/);
+  await initRun('mismatch',{start_url:base+'/record',expected_body:body});await act('mismatch',{op:'start'},{local:true});await assert.rejects(act('mismatch',{op:'finish',outcome:'completed'},{local:true}),/publication receipt/);
+  console.log('Recorder contract passed: exact text, supplied links, stale selections, fragments, redirects, compressed bytes, dropped responses, publication intent, receipt checks, and release freeze.');
+}finally{await new Promise(r=>server.close(r));await rm(root,{recursive:true});}
