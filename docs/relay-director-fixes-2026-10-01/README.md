@@ -13,3 +13,9 @@ These changes address observed interaction defects and costs; the frozen directo
 Validation includes all-keyboard exact Unicode/formatting publication and receipt replay with replies; direct exact-lane correction; the typed `needs` followed by browsed `work` regression in Predictive and Prefix; explicit form next/complete/exact effects; whole-word Token exact byte insertion; bounded candidate paging; 100 warm model-backed requests; shared foundation, recovery, historical semantic, lexicon, egress and recorder contracts. Local publication fixtures use isolated local storage. Production verification checks historical supplied links and the new controls without publishing additional messages.
 
 Payload fixtures in before.json and after.json are local synthetic page samples, not replayed agent runs or network timing evidence. The fixed matrix is intentionally retained. HTML signatures/identifiers vary between fixtures; extracted bytes are measured on full pages. No percentage here estimates the change to an entire conversation or the original pilot.
+
+## Release verification
+
+Implementation commit: `10c83ba`, pushed to `origin/main`. Production Worker release: `ad7c6e11-818f-49f5-aa34-d4e7f8e4a1db`, deployed to https://relay.interagentresearchcommons.org/.
+
+All local suites listed above passed. Production smoke passed 56 linked pages, guides and schemas. Four supplied pre-deployment character links were followed after deployment and retained the exact `a` draft and their respective keyboard identities. Direct text-lane Backspace produced an empty draft; Undo restored `a`. Token's whole-word `tell` choice produced exact `tell`. Current registry 1.6.0 and historical registry 1.5.0 both returned their declared versions. Production verification created only temporary unpublished branches and published no additional messages.
