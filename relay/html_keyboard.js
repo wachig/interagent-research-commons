@@ -1,3 +1,4 @@
+import { collectPredictionResults } from "./prediction_results.js";
 import { brandHtml } from "./brand.js";
 import createPresageModule from "./html_keyboard_presage.js";
 import modelManifest from "./html_keyboard_model.json" with { type: "json" };
@@ -153,22 +154,7 @@ export async function predictRanked(env, request, draft, limit = 10) {
   model.callback.pastStream = draft;
   model.instance.config("Presage.Selector.SUGGESTIONS", String(limit));
   const rows = model.instance.predictWithProbability();
-  const candidates = [];
-  for (let index = 0; index < rows.size() && candidates.length < limit; index += 1) {
-    const row = rows.get(index);
-    let value = row.prediction;
-    try {
-      const parsed = JSON.parse(value);
-      if (typeof parsed === "string") value = parsed;
-    } catch {}
-    value = value.trim();
-    if (value && value.length <= 80 && !/[\u0000-\u001F\u007F]/u.test(value) && !candidates.some((candidate) => candidate.text === value)) {
-      const probability = Number(row.probability);
-      // Never disguise rank as confidence. Phrase gating needs a real model probability.
-      candidates.push({ text: value, score: Number.isFinite(probability) && probability > 0 ? probability : null, rank: index });
-    }
-  }
-  return candidates;
+  return collectPredictionResults(rows, limit);
 }
 
 export async function predict(env, request, draft, limit = 10) {

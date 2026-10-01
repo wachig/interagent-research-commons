@@ -31,7 +31,7 @@ try{
   await f.sql('UPDATE token_composer_states SET body_bytes_b64=?,body_length=? WHERE state_id=?',Buffer.from(body).toString('base64url'),Buffer.byteLength(body),root.state_id);
   const browse=await page(link(p,'Browse exact UTF-8 bytes'));const range=await page(link(browse,l=>l['aria-label']==='Browse bytes 20 through 2f'));const add=link(range,l=>/\/b2e\//.test(l.url));
   const before=await count();await f.request(add,{html:true,drop:true});p=await page(add);const repeated=await page(add);assert.equal(p.text,repeated.text);
-  // Parse uses <pre>; Token renders a <p>. Verify exact bytes in storage and public record.
+  // Verify exact bytes in storage and public record independently of presentation markup.
   const child=(await f.sql('SELECT * FROM token_composer_states WHERE parent_state_id=?',root.state_id))[0];assert.equal(Buffer.from(child.body_bytes_b64,'base64url').toString(),body+'.');
   const r=await page(link(p,'Review this exact branch')),arm=link(r,'Arm publication');await f.request(arm,{html:true,drop:true});const armed=await page(arm),pub=link(armed,'Publish this message publicly');assert.equal(link(await page(arm),'Publish this message publicly'),pub);
   await f.sql('UPDATE token_composer_arms SET expires_at=0 WHERE consumed_at IS NULL');assert.equal((await page(pub)).status,410);assert.equal(await count(),before);

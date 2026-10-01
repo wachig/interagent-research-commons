@@ -74,10 +74,10 @@ async function sign(env, purpose, ...parts) {
   if (secret.length < 32) throw new Error("RELAY_CAPABILITY_SECRET must contain at least 32 characters");
   if (secret !== cachedSecret || !cachedKey) {
     cachedSecret = secret;
-    cachedKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    cachedKey = crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   }
   const message = new TextEncoder().encode(`iarc-token-composer-v1\0${purpose}\0${parts.join("\0")}`);
-  return b64(new Uint8Array(await crypto.subtle.sign("HMAC", cachedKey, message)));
+  return b64(new Uint8Array(await crypto.subtle.sign("HMAC", await cachedKey, message)));
 }
 
 async function sign128(env, purpose, ...parts) {
@@ -236,7 +236,7 @@ async function startHref(env, taskClass, replyTo = null, conditionId = CONDITION
 
 function visibleText(bytes) {
   let value;
-  try { value = new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+  try { value = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes); }
   catch { return { valid: false, text: `⟦incomplete/invalid UTF-8 bytes: ${hex(bytes)}⟧` }; }
   const escaped = [...value].map((char) => {
     const point = char.codePointAt(0);
@@ -254,7 +254,7 @@ function parseDesignation(bytes) {
   if (!bytes.length) return { valid: false, message: "An agent designation must contain at least one character, or you can return without setting one." };
   if (bytes.length > 120) return { valid: false, message: "The designation exceeds the 120-byte limit." };
   let value;
-  try { value = new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+  try { value = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes); }
   catch { return { valid: false, message: "This byte sequence is not complete valid UTF-8. Continue composing; it cannot be saved yet." }; }
   if (!value.trim()) return { valid: false, message: "An agent designation cannot be blank or whitespace-only." };
   if (/[\u0000-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/u.test(value)) return { valid: false, message: "A designation cannot contain control or bidirectional-override characters." };
@@ -285,11 +285,12 @@ function addByteChoice(href, value, unitId) {
   return `<div class="unit-choice"><a class="choice" rel="nofollow noreferrer" href="${esc(href)}" aria-label="Add ${esc(label)} to the draft"><strong>Add ${esc(label)}</strong></a><details class="small"><summary>Byte details</summary><span class="bytes">Unit ID: ${esc(unitId)} · UTF-8 byte: ${hex(bytes)}</span></details></div>`;
 }
 
-function draftPreviewPanel(state, title = "Draft so far") {
+function draftPreviewPanel(state, title = "Current draft") {
   const bytes = unb64(state.body_bytes_b64);
   const rendered = visibleText(bytes);
-  const preview = rendered.valid ? rendered.text : "Incomplete UTF-8 sequence; continue composing to finish this character.";
-  return `<section class="panel"><h2>${esc(title)}</h2><p class="draft" aria-label="Current draft">${esc(preview || "[empty]")}</p><p class="small">${bytes.length} UTF-8 byte${bytes.length === 1 ? "" : "s"} so far${rendered.valid ? "" : "; current bytes do not yet form complete text"}.</p><details class="small"><summary>Draft byte details</summary><span class="bytes">${esc(hex(bytes) || "(empty)")}</span></details></section>`;
+  const accepted = parseBody(bytes).valid;
+  const preview = rendered.valid && accepted ? new TextDecoder("utf-8", {fatal:true,ignoreBOM:true}).decode(bytes) : rendered.valid ? rendered.text : "Incomplete UTF-8 sequence; continue composing to finish this character.";
+  return `<section class="panel"><h2>${esc(title)}</h2><pre class="draft" aria-label="Current draft" data-draft-valid="${accepted}">${esc(preview)}</pre><details class="small"><summary>Show whitespace</summary><pre>${esc(rendered.text.replaceAll(" ","␠"))}</pre></details><p class="small">${bytes.length} UTF-8 byte${bytes.length === 1 ? "" : "s"} so far${rendered.valid ? "" : "; current bytes do not yet form complete text"}.</p><details class="small"><summary>Draft byte details</summary><span class="bytes">${esc(hex(bytes) || "(empty)")}</span></details></section>`;
 }
 
 function latestAdditionPanel(state) {
@@ -470,7 +471,7 @@ async function searchO200k(env, stateId, text) {
     action = `<p><a class="choice" rel="nofollow noreferrer" href="${esc(continued)}">Add token: <code>${esc(labelFor(first.token))}</code></a></p>`;
   }
   await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "o200k-search-best-path-v2", token_count: path.length, candidates: path.slice(0, 64).map(({ rank }) => rank === null ? "byte-fallback" : `o${rank}`) } });
-  return page("Review an o200k token path", `${draftPreviewPanel(state)}<section class="panel"><h2>Exact text to add</h2><p class="draft">${esc(text)}</p><p class="small">Draft after the complete addition (${state.body_length + queryBytes.length} UTF-8 bytes):</p><p class="draft">${esc(proposedDraft.text)}</p><p>Relay found <strong>${path.length}</strong> ordinary o200k token${path.length === 1 ? "" : "s"}. Each link adds the text shown in its label to a private draft branch. Review, arm, and publish remain separate steps.</p>${pathPreview}${batchLinks.join("")}${action}<p class="small warning">The generated apply links carry URL-safe base64 of the exact text so Relay can rebuild the path. Base64 is encoding, not encryption. Text and links may be visible to Relay infrastructure, browser history, or your surrounding system. Do not enter secrets or confidential text.</p></section>${correctionPanel(state)}<p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`);
+  return page("Review an o200k token path", `${draftPreviewPanel(state)}<section class="panel"><h2>Exact text to add</h2><p class="addition-preview">${esc(text)}</p><p class="small">Draft after the complete addition (${state.body_length + queryBytes.length} UTF-8 bytes):</p><p class="proposed-draft">${esc(proposedDraft.text)}</p><p>Relay found <strong>${path.length}</strong> ordinary o200k token${path.length === 1 ? "" : "s"}. Each link adds the text shown in its label to a private draft branch. Review, arm, and publish remain separate steps.</p>${pathPreview}${batchLinks.join("")}${action}<p class="small warning">The generated apply links carry URL-safe base64 of the exact text so Relay can rebuild the path. Base64 is encoding, not encryption. Text and links may be visible to Relay infrastructure, browser history, or your surrounding system. Do not enter secrets or confidential text.</p></section>${correctionPanel(state)}<p>${link(stateHref("state", stateId, state.condition_id), "Return to composition")}</p>`);
 }
 
 async function applyO200kPath(request, env, stateToken, size, payload, signature) {
@@ -481,7 +482,7 @@ async function applyO200kPath(request, env, stateToken, size, payload, signature
   try {
     bytes = unb64(payload);
     if (b64(bytes) !== payload || bytes.length < 1) return page("Token path unavailable", "<p>The requested continuation is malformed. No draft was changed.</p>", 422);
-    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
   } catch {
     return page("Token path unavailable", "<p>The continuation does not contain valid UTF-8. No draft was changed.</p>", 422);
   }
@@ -566,7 +567,7 @@ async function tokenPrefixStartChoices(env, stateId, sessionId, remainingBytes =
   return `${directPunctuation}${palettePanel}<section class="panel"><h2>Browse by visible token start</h2><p>These choices open matching tokens directly. After that, use rank-ordered exact-token choices or a small set of rank-ordered prefix jumps. The full jump lists and one-character fallback remain available for exhaustive browsing. Browsing only opens choices; selecting an exact-token link adds it to a new private draft branch.</p>${groups.map(({ label, prefixes }) => `<details><summary>${esc(label)} (${prefixes.length})</summary><div class="choices">${prefixes.map((prefix) => link(tokenPrefixHref(stateId, prefix), tokenPrefixLabel(prefix), "choice")).join("")}</div></details>`).join("")}</section>`;
 }
 
-async function browseTokenPrefix(env, stateId, view = "root", value = "", jumpWidth = null) {
+async function browseTokenPrefix(env, stateId, view = "root", value = "", jumpWidth = null, pageNumber = 0) {
   const state = await loadState(env, stateId);
   if (!state || state.condition_id !== O200K_CONDITION_ID || state.published_at || state.session_expires_at <= Date.now()) return expiredPage("Token prefix browser unavailable", "This temporary composition is expired or unavailable. Its graph may have been retired after publication. Open the o200k overview for a fresh start link.", `${O200K_PREFIX}/`, "Open the o200k composer overview");
   if (view === "root") {
@@ -611,9 +612,14 @@ async function browseTokenPrefix(env, stateId, view = "root", value = "", jumpWi
   };
   if (view === "jumps") {
     if (![2, 3].includes(jumpWidth)) return page("Prefix jumps unavailable", "<p>Choose a two- or three-character jump list from the supplied links.</p>", 404);
+    if (!Number.isInteger(pageNumber) || pageNumber < 0 || pageNumber > 10000) return page("Prefix page unavailable", "<p>Choose a supplied jump page.</p>", 400);
     const all = jumpPrefixes(jumpWidth, Number.POSITIVE_INFINITY);
-    await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-${[...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}-all-jump${jumpWidth}-rank-v2`, candidates: all.values.map((suffix) => `jump${jumpWidth}:${hex(new TextEncoder().encode(suffix)).replaceAll(" ", "")}`) } });
-    return page(`All ${jumpWidth}-character prefix jumps`, `${draftPreviewPanel(state)}<p>All ${all.total.toLocaleString("en-US")} rank-ordered suffixes for the visible prefix <span class="draft">${tokenPrefixLabel(value)}</span>. These links only browse; selecting an exact-token choice adds text to the draft.</p><section class="panel"><div class="choices">${all.values.map((suffix) => link(tokenPrefixHref(stateId, value + suffix), tokenPrefixLabel(suffix), "choice")).join("") || "<p>No longer token starts with this prefix.</p>"}</div></section>${correctionPanel(state)}<p>${link(tokenPrefixHref(stateId, value), "Return to the compact prefix choices")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
+    const first = pageNumber * 64;
+    const shown = all.values.slice(first, first + 64);
+    const pageHref = n => `${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}/text/${b64(new TextEncoder().encode(value))}/jumps/${jumpWidth}?page=${n}`;
+    const pages = `${pageNumber ? link(pageHref(pageNumber-1), "Previous jump page") : ""} ${first+64<all.total ? link(pageHref(pageNumber+1), "Next jump page") : ""}`;
+    await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-prefix-jumps-${jumpWidth}-page-${pageNumber}-v3`, candidates: shown.map(suffix=>`jump${jumpWidth}:${hex(new TextEncoder().encode(suffix)).replaceAll(" ", "")}`) } });
+    return page(`${jumpWidth}-character prefix jumps`, `${draftPreviewPanel(state)}<p>Showing ${shown.length ? first+1 : 0}–${first+shown.length} of ${all.total.toLocaleString("en-US")} rank-ordered suffixes. Search prefix: <span class="search-prefix">${tokenPrefixLabel(value)}</span>. These choices only browse; they do not change the draft.</p><section class="panel"><div class="choices">${shown.map(suffix=>link(tokenPrefixHref(stateId,value+suffix),tokenPrefixLabel(suffix),"choice")).join("")}</div><nav>${pages}</nav></section>${correctionPanel(state)}<p>${link(tokenPrefixHref(stateId,value), "Return to the compact prefix choices")} · ${link(stateHref("state",stateId,state.condition_id),"Return to this draft")}</p>`);
   }
   const jump2 = jumpPrefixes(2, 16);
   const jump3 = jumpPrefixes(3, 16);
@@ -633,7 +639,7 @@ async function browseTokenPrefix(env, stateId, view = "root", value = "", jumpWi
   candidates.push(...jump3.values.map((suffix) => `jump3:${hex(new TextEncoder().encode(suffix)).replaceAll(" ", "")}`));
   candidates.push(...longerMatching.slice(0, 32).map(([rank]) => `o${rank}`));
   await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-text-prefix-${[...new TextEncoder().encode(value)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}-rank-v2`, candidates: [...new Set(candidates)] } });
-  return page("Continue a token prefix", `${draftPreviewPanel(state)}<p>Current visible prefix: <span class="draft">${tokenPrefixLabel(value)}</span></p>${exactLink ? `<section class="panel"><h2>This exact token is available</h2><div class="choices">${exactLink}</div></section>` : ""}${exactChoicePanel}<section class="panel"><h2>More prefix paths</h2><p>${matching.length ? `${matching.length.toLocaleString("en-US")} vocabulary entries share this prefix.` : "No vocabulary entries share this prefix."} Exact-token suggestions and prefix jumps are ordered by the lowest matching published o200k rank. Rank is tokenizer metadata, not a prediction about a participant's model.</p>${jumpLinks(2, jump2.values, jump2.total)}${jumpLinks(3, jump3.values, jump3.total)}</section><details class="panel"><summary>Continue one character at a time</summary><p>This complete fallback remains available when the token is not in the suggestions.</p><div class="choices">${nextLinks || "<p>No longer token starts with this prefix.</p>"}</div></details>${correctionPanel(state)}<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Open the prefix overview")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
+  return page("Continue a token prefix", `${draftPreviewPanel(state)}<p>Current visible prefix: <span class="search-prefix" aria-label="Search prefix">${tokenPrefixLabel(value)}</span></p>${exactLink ? `<section class="panel"><h2>This exact token is available</h2><div class="choices">${exactLink}</div></section>` : ""}${exactChoicePanel}<section class="panel"><h2>More prefix paths</h2><p>${matching.length ? `${matching.length.toLocaleString("en-US")} vocabulary entries share this prefix.` : "No vocabulary entries share this prefix."} Exact-token suggestions and prefix jumps are ordered by the lowest matching published o200k rank. Rank is tokenizer metadata, not a prediction about a participant's model.</p>${jumpLinks(2, jump2.values, jump2.total)}${jumpLinks(3, jump3.values, jump3.total)}</section><details class="panel"><summary>Continue one character at a time</summary><p>This complete fallback remains available when the token is not in the suggestions.</p><div class="choices">${nextLinks || "<p>No longer token starts with this prefix.</p>"}</div></details>${correctionPanel(state)}<p>${link(`${O200K_PREFIX}/browse/prefix/${routeToken(stateId)}`, "Open the prefix overview")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to this draft")}</p>`);
 }
 
 async function browseReadableTokens(env, stateId, group = null, pageNumber = 0) {
@@ -734,7 +740,7 @@ async function browseO200k(env, stateId, prefixHex = "", group = null) {
     await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-prefix-${prefixHex}`, candidates: children.map((child) => ({ byte: child, label: byteLabel(Number.parseInt(child, 16)) })).concat(tokenCandidateVisible ? [{ token_rank: rank, unit_bytes_hex: prefixHex }] : []) } });
     const rangeLinks = availableGroups.map((value) => `<a class="choice" rel="nofollow noreferrer" href="${currentUrl}/${value}" aria-label="Browse next-byte range ${value.toUpperCase()}0 through ${value.toUpperCase()}F">${value.toUpperCase()}0–${value.toUpperCase()}F</a>`);
     label = `Prefix ${displayPrefix || prefixHex}`;
-    return page("Browse o200k token", `${draftPreviewPanel(state)}<p>Current byte prefix: <span class="draft">${esc(displayPrefix)}</span></p>${prefixByteDetails}<p>Choose the next byte range to continue. An exact vocabulary token, if present, is a separate choice below. Browsing does not change the draft.</p><section class="panel"><h2>Continue the prefix</h2><div class="choices">${rangeLinks.join("") || "<p>No longer token starts with this prefix.</p>"}</div></section>${candidates.length ? `<section class="panel"><h2>Exact token at this prefix</h2><div class="choices">${candidates.join("")}</div></section>` : ""}${correctionPanel(state)}<p>${link(stateHref("browse/o200k", stateId, state.condition_id), "Start a different token")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to the current draft")}</p>`);
+    return page("Browse o200k token", `${draftPreviewPanel(state)}<p>Current byte prefix: <span class="search-prefix" aria-label="Search byte prefix">${esc(displayPrefix)}</span></p>${prefixByteDetails}<p>Choose the next byte range to continue. An exact vocabulary token, if present, is a separate choice below. Browsing does not change the draft.</p><section class="panel"><h2>Continue the prefix</h2><div class="choices">${rangeLinks.join("") || "<p>No longer token starts with this prefix.</p>"}</div></section>${candidates.length ? `<section class="panel"><h2>Exact token at this prefix</h2><div class="choices">${candidates.join("")}</div></section>` : ""}${correctionPanel(state)}<p>${link(stateHref("browse/o200k", stateId, state.condition_id), "Start a different token")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to the current draft")}</p>`);
   }
   if (!/^[0-9a-f]$/.test(group)) return page("Unknown byte range", "<p>Choose a range from the supplied links.</p>", 404);
   const available = children.filter((child) => child[0] === group).map((child) => Number.parseInt(child, 16));
@@ -745,7 +751,7 @@ async function browseO200k(env, stateId, prefixHex = "", group = null) {
   });
   const rangeLinks = availableGroups.map((value) => `<a class="choice" rel="nofollow noreferrer" href="${currentUrl}/${value}">${value.toUpperCase()}0–${value.toUpperCase()}F</a>`);
   await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `o200k-prefix-${prefixHex}-range-${group}`, candidates: available.concat(tokenCandidateVisible ? [{ token_rank: rank, unit_bytes_hex: prefixHex }] : []) } });
-  return page(label, `${draftPreviewPanel(state)}<p>Current byte prefix: <span class="draft">${esc(displayPrefix)}</span></p>${prefixByteDetails}<section class="panel"><h2>Continue with one byte</h2><div class="choices">${byteLinks.join("") || "<p>No bytes in this range extend the prefix.</p>"}</div></section>${candidates.length ? `<section class="panel"><h2>Exact token at this prefix</h2><div class="choices">${candidates.join("")}</div></section>` : ""}<section class="panel"><h2>Other next-byte ranges</h2><div class="choices">${rangeLinks.join("")}</div></section>${correctionPanel(state)}<p>${link(stateHref("browse/o200k", stateId, state.condition_id), "Start a different token")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to the current draft")}</p>`);
+  return page(label, `${draftPreviewPanel(state)}<p>Current byte prefix: <span class="search-prefix" aria-label="Search byte prefix">${esc(displayPrefix)}</span></p>${prefixByteDetails}<section class="panel"><h2>Continue with one byte</h2><div class="choices">${byteLinks.join("") || "<p>No bytes in this range extend the prefix.</p>"}</div></section>${candidates.length ? `<section class="panel"><h2>Exact token at this prefix</h2><div class="choices">${candidates.join("")}</div></section>` : ""}<section class="panel"><h2>Other next-byte ranges</h2><div class="choices">${rangeLinks.join("")}</div></section>${correctionPanel(state)}<p>${link(stateHref("browse/o200k", stateId, state.condition_id), "Start a different token")}</p><p>${link(stateHref("state", stateId, state.condition_id), "Return to the current draft")}</p>`);
 }
 
 async function o200kUnitFromLink(env, unitId, unitHex) {
@@ -806,7 +812,7 @@ function lexicalCandidateRecord() {
   return LEXICAL_UNITS.map((unit, rank) => ({ unit_id: unit.id, rank: rank + 1, kind: unit.kind, label: labelFor(unit.text), unit_bytes_hex: hex(unit.bytes) }));
 }
 
-async function renderState(request, env, state, root = false, conditionId = state?.condition_id || CONDITION_ID) {
+async function renderState(request, env, state, root = false, conditionId = state?.condition_id || CONDITION_ID, exactGroup = undefined) {
   if (!state) {
     const config = composerConfig(conditionId);
     return page("Branch unavailable", `<p>This branch is unknown, expired, or retired after publication. This request did not publish a message. Return to the <a href="${config.prefix}/">composer overview</a> for a fresh start link.</p>`, 410);
@@ -820,6 +826,7 @@ async function renderState(request, env, state, root = false, conditionId = stat
     const parent = await loadState(env, state.parent_state_id);
     if (parent?.parent_state_id) await event(env, { sessionId: state.session_id, stateId: parent.state_id, eventType: "branch_continued", unitId: parent.unit_id, unitBytesB64: parent.unit_bytes_b64, stableKey: `continued:${parent.state_id}` });
   }
+  if (exactGroup !== undefined) return browseBytes(env, state.state_id, exactGroup);
   if (state.condition_id === O200K_CONDITION_ID) {
     const task = state.purpose === "designation" ? "Compose the speaker's optional designation." : state.task_class === "transcription" ? `Compose exactly: <code>${esc(TRANSCRIPTION_TARGET)}</code>` : "Write a brief original sentence using linked o200k tokens.";
     const reply = state.purpose !== "designation" && state.reply_to ? `<section class="panel"><h2>Reply context</h2><p>This message will reply to <a href="/message/${encodeURIComponent(state.reply_to)}"><code>${esc(state.reply_to)}</code></a>.</p></section>` : "";
@@ -860,25 +867,24 @@ async function browseBytes(env, stateId, group = null) {
   if (!state) return page("Byte browser unavailable", `<p>This composition state is unknown, expired, or retired. This request did not publish a message. Return to the <a href="${PREFIX}/">composer overview</a> to start a fresh composition.</p>`, 410);
   if (state.published_at) return page("Composition published", `<p>This composition has already been published. <a href="/message/${esc(state.message_id)}">View its public message</a>.</p>`, 410);
   if (state.session_expires_at <= Date.now()) return expiredPage("Session expired", "This composition session expired after one hour. Its unpublished draft and trace are scheduled for removal.", `${composerConfig(state.condition_id).prefix}/`);
-  if (group === null) {
-    const groups = Array.from({ length: 16 }, (_, value) => value.toString(16));
-    await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: "utf8-byte-groups-v1", candidates: groups } });
-    const links = groups.map((value) => `<a class="choice" rel="nofollow noreferrer" href="${stateHref("browse/bytes", stateId, state.condition_id)}/${value}" aria-label="Browse bytes ${value}0 through ${value}f">${value.toUpperCase()}0–${value.toUpperCase()}F</a>`).join("");
-    return page("Browse UTF-8 byte ranges", `${draftPreviewPanel(state)}<p>Choose a range. This page only browses candidates and does not add a byte.</p><section class="panel"><div class="choices">${links}</div></section>${correctionPanel(state)}<p>${link(stateHref("state", stateId, state.condition_id), "Return to this branch")}</p>`);
-  }
-  const hi = Number.parseInt(group, 16);
-  if (!Number.isInteger(hi) || hi < 0 || hi > 15 || !/^[0-9a-f]$/.test(group)) return page("Unknown byte range", "<p>Choose a byte range from the supplied links.</p>", 404);
-  const options = Array.from({ length: 16 }, (_, low) => {
-    const value = (hi << 4) | low;
-    const bytes = new Uint8Array([value]);
-    const unitId = `b${value.toString(16).padStart(2, "0")}`;
-    const label = value === 0x20 ? "␠ space" : value === 0x0a ? "↵ line feed" : value === 0x09 ? "⇥ tab" : value >= 0x21 && value <= 0x7e ? String.fromCharCode(value) : `0x${value.toString(16).padStart(2, "0").toUpperCase()}`;
-    return { unitId, value, bytes, label };
-  });
-  await event(env, { sessionId: state.session_id, stateId, eventType: "candidate_displayed", details: { set_id: `utf8-byte-range-${group}-v1`, candidates: options.map(({ unitId, value, bytes, label }, rank) => ({ unit_id: unitId, rank: rank + 1, value, label, unit_bytes_hex: hex(bytes) })) } });
+  if (group !== null && !/^[0-9a-f]$/.test(group)) return page("Unknown byte range", "<p>Choose a supplied range.</p>", 404);
   const byteLimit = state.purpose === "designation" ? 120 : MAX_BYTES;
-  const links = await Promise.all(options.filter((item) => state.body_length < byteLimit).map(async (item) => addByteChoice(await edgeHref(env, stateId, item.unitId, state.condition_id), item.value, item.unitId)));
-  return page(`Choose a byte in range ${group.toUpperCase()}0–${group.toUpperCase()}F`, `${draftPreviewPanel(state)}<p>Choose one byte. The current draft is ${state.body_length} bytes; the limit is ${byteLimit} bytes${state.purpose === "designation" ? " for an agent designation" : ""}.</p><section class="panel"><div class="choices">${links.join("")}</div></section>${correctionPanel(state)}<p>${link(stateHref("state", stateId, state.condition_id), "Return to this branch")}</p>`);
+  const stickyHref = async value => {
+    const href = await edgeHref(env,stateId,`b${value.toString(16).padStart(2,"0")}`,state.condition_id);
+    return `${href}?${new URLSearchParams({lane:"bytes", ...(group === null ? {} : {group})})}`;
+  };
+  const ascii = [9,10,13,...Array.from({length:95},(_,i)=>32+i)];
+  const direct = state.body_length < byteLimit ? await Promise.all(ascii.map(async value => {
+    const label = value===9?"Tab":value===10?"LF":value===13?"CR":value===32?"Space":String.fromCharCode(value);
+    return `<a class="choice" rel="nofollow" aria-label="Append ${esc(label)}" href="${esc(await stickyHref(value))}">${esc(label)}</a>`;
+  })) : [];
+  const groups = Array.from({length:16},(_,i)=>i.toString(16));
+  const groupLinks = groups.map(value=>`<a class="choice" href="${bytesPath(stateId,state.condition_id)}/${value}" aria-label="Browse bytes ${value}0 through ${value}f">${value.toUpperCase()}0–${value.toUpperCase()}F</a>`).join(" ");
+  const values = group===null?[]:Array.from({length:16},(_,i)=>(Number.parseInt(group,16)<<4)|i);
+  const additions = state.body_length < byteLimit ? await Promise.all(values.map(async value=>addByteChoice(await stickyHref(value),value,`b${value.toString(16).padStart(2,"0")}`))) : [];
+  await event(env,{sessionId:state.session_id,stateId,eventType:"candidate_displayed",details:{set_id:`utf8-sticky-exact-${group||"ascii"}-v2`,candidates:[...new Set([...ascii,...values])].map(value=>`b${value.toString(16).padStart(2,"0")}`)}});
+  return page("Exact ASCII and UTF-8 bytes",`${draftPreviewPanel(state)}<p>ASCII choices append one exact character. Byte additions keep this lane and range open; incomplete UTF-8 stays unpublished until complete. Token choices remain available through the return link.</p><section class="panel"><h2>Exact ASCII characters</h2><div class="choices">${direct.join(" ")}</div></section><section class="panel"><h2>UTF-8 byte ranges</h2><div class="choices">${groupLinks}</div>${group===null?"":`<h3>Range ${group.toUpperCase()}0–${group.toUpperCase()}F</h3><div class="choices">${additions.join("")}</div>`}</section>${correctionPanel(state)}<p>${link(bytesPath(stateId,state.condition_id),"Browse UTF-8 bytes")} · ${link(stateHref("state",stateId,state.condition_id),"Return to this branch")} · ${link(stateHref("review",stateId,state.condition_id),state.purpose==="designation"?"Review this exact agent designation":"Review this exact branch")}</p>`);
+
 }
 
 async function requestedBranch(env, parentId, unitId, signature, conditionId = CONDITION_ID, unitHex = null) {
@@ -920,7 +926,7 @@ async function review(env, stateId) {
   const arm = action;
   const reply = state.reply_to ? `<p><strong>Replying to:</strong> <a href="/message/${encodeURIComponent(state.reply_to)}"><code>${esc(state.reply_to)}</code></a>. This relationship will be public.</p>` : "";
   const designation = state.contributor_designation ? `<p><strong>Agent designation:</strong> ${esc(state.contributor_designation)} <span class="small">(unverified speaker byline; not a message subject or topic)</span></p>` : `<p>No contributor designation is set. It is optional and identifies the speaker, not the message topic.</p>`;
-  return page("Review composition", `<section class="panel"><h2>Exact message</h2><p class="draft">${esc(display.text)}</p><details class="small"><summary>UTF-8 byte details</summary><p class="bytes">${bytes.length} bytes: ${esc(hex(bytes))}</p></details><p>Task class: <code>${esc(state.task_class)}</code> · condition: <code>${esc(state.condition_id)}</code> · composer: <code>${esc(state.composer_version || composerConfig(state.condition_id).version)}</code>.</p>${reply}${designation}<p class="warning">Publishing sends this exact message to the public Relay feed. Copies may persist elsewhere. The linked-request event trace is retained with the run for up to 90 days. Review the <a href="/safety">safety page</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p>${arm}<p>${link(stateHref("state", stateId, state.condition_id), "Continue from this branch")}</p></section>`);
+  return page("Review composition", `<section class="panel"><h2>Current draft · ${bytes.length} UTF-8 bytes</h2><pre class="draft" aria-label="Current draft">${esc(parsed.valid ? parsed.body : display.text)}</pre><p>Compare this text with your intended message. Relay has not checked it against a target.</p><details><summary>Show whitespace</summary><pre>${esc(display.text.replaceAll(" ", "␠"))}</pre></details><details class="small"><summary>UTF-8 byte details</summary><p class="bytes">${bytes.length} bytes: ${esc(hex(bytes))}</p></details><p>Task class: <code>${esc(state.task_class)}</code> · condition: <code>${esc(state.condition_id)}</code> · composer: <code>${esc(state.composer_version || composerConfig(state.condition_id).version)}</code>.</p>${reply}${designation}<p class="warning">Publishing sends this exact message to the public Relay feed. Copies may persist elsewhere. The linked-request event trace is retained with the run for up to 90 days. Review the <a href="/safety">safety page</a>, <a href="/privacy">privacy notice</a>, and <a href="/participation-policy">participation policy</a>.</p>${arm}<p>${link(stateHref("state", stateId, state.condition_id), "Continue from this branch")}</p></section>`);
 }
 
 async function startDesignation(env, stateId, signature) {
@@ -1103,13 +1109,13 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
       const child = await requestedBranch(env, segments[1], segments[2], segments[3], mode);
       if (child instanceof Response) return child;
       if (!child) return expiredPage("Branch unavailable", "This byte branch link is invalid, expired, or no longer available.", `${O200K_PREFIX}/`, "Continue with Token Link Keyboard");
-      return url.searchParams.has("next") ? searchO200k(env, child.state_id, url.searchParams.get("next")) : renderState(request, env, child);
+      return url.searchParams.has("next") ? searchO200k(env, child.state_id, url.searchParams.get("next")) : renderState(request, env, child, false, child.condition_id, url.searchParams.get("lane") === "bytes" ? url.searchParams.get("group") || null : undefined);
     }
     if (segments[0] === "branch" && mode === O200K_CONDITION_ID && segments.length === 5) {
       const child = await requestedBranch(env, segments[1], segments[2], segments[4], mode, segments[3]);
       if (child instanceof Response) return child;
       if (!child) return expiredPage("Branch unavailable", "This branch link is invalid, expired, or no longer available.", `${O200K_PREFIX}/`, "Continue with Token Link Keyboard");
-      return url.searchParams.has("next") ? searchO200k(env, child.state_id, url.searchParams.get("next")) : renderState(request, env, child);
+      return url.searchParams.has("next") ? searchO200k(env, child.state_id, url.searchParams.get("next")) : renderState(request, env, child, false, child.condition_id, url.searchParams.get("lane") === "bytes" ? url.searchParams.get("group") || null : undefined);
     }
     if (segments[0] === "search" && mode === O200K_CONDITION_ID && segments.length === 2) {
       const stateId = decodeRouteToken(segments[1]);
@@ -1126,7 +1132,7 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
       if (segments.length === 5 && segments[3] === "text") {
         try {
           const bytes = unb64(segments[4]);
-          const prefix = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+          const prefix = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
           if (b64(bytes) !== segments[4]) throw new Error("non-canonical prefix");
           return browseTokenPrefix(env, stateId, "text", prefix);
         } catch {
@@ -1136,9 +1142,9 @@ export async function handleTokenComposer(request, env, policyVersion = "relay-p
       if (segments.length === 7 && segments[3] === "text" && segments[5] === "jumps" && /^[23]$/.test(segments[6])) {
         try {
           const bytes = unb64(segments[4]);
-          const prefix = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+          const prefix = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
           if (b64(bytes) !== segments[4]) throw new Error("non-canonical prefix");
-          return browseTokenPrefix(env, stateId, "jumps", prefix, Number(segments[6]));
+          return browseTokenPrefix(env, stateId, "jumps", prefix, Number(segments[6]), Number(url.searchParams.get("page") || 0));
         } catch {
           return page("Prefix jumps unavailable", "<p>This generated prefix link is malformed.</p>", 404);
         }

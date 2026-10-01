@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "baseline_source_commit": "61e4d3e",
+  "scope": "Local synthetic engineering measurements, not a repeated consenting-agent comparison or Cloudflare CPU/memory trace. Signed URL sizes vary slightly per fresh session. HTTP elapsed arrays are diagnostic only.",
+  "before": {
+    "scope": "local Wrangler; HTTP elapsed time is not Worker CPU or agent speed",
+    "measurements": [
+      {
+        "name": "chunk-empty",
+        "http_ms": [
+          29.591707999999926,
+          20.15816700000005,
+          10.631458000000066,
+          9.86829200000011,
+          10.956041000000141
+        ],
+        "html_bytes": 94508,
+        "links": 462,
+        "extracted_utf8_bytes": 16463,
+        "extracted_tokens_proxy": 4098
+      },
+      {
+        "name": "chunk-co",
+        "http_ms": [
+          98.23137500000007,
+          50.0412080000001,
+          47.930417000000034,
+          49.24524999999994,
+          49.14137500000015
+        ],
+        "html_bytes": 137054,
+        "links": 733,
+        "extracted_utf8_bytes": 23198,
+        "extracted_tokens_proxy": 5785
+      },
+      {
+        "name": "chunk-con",
+        "http_ms": [
+          52.17054199999984,
+          59.35329199999978,
+          58.5269159999998,
+          59.37045799999987,
+          56.15216600000031
+        ],
+        "html_bytes": 1029365,
+        "links": 2342,
+        "extracted_utf8_bytes": 86926,
+        "extracted_tokens_proxy": 21720
+      },
+      {
+        "name": "chunk-typed-a",
+        "http_ms": [
+          37.75108300000011,
+          9.647958000000017,
+          8.915958000000046,
+          8.153874999999971,
+          8.44787499999984
+        ],
+        "html_bytes": 85832,
+        "links": 448,
+        "extracted_utf8_bytes": 16035,
+        "extracted_tokens_proxy": 3991
+      },
+      {
+        "name": "predictive-empty",
+        "http_ms": [
+          14.64562500000011,
+          10.431708000000071,
+          11.768749999999727,
+          10.38104199999998,
+          10.401916999999685
+        ],
+        "html_bytes": 41360,
+        "links": 75,
+        "extracted_utf8_bytes": 3067,
+        "extracted_tokens_proxy": 765
+      },
+      {
+        "name": "predictive-typed-a",
+        "http_ms": [
+          10.564416000000165,
+          6.617165999999997,
+          7.32300000000032,
+          8.811709000000064,
+          7.290542000000187
+        ],
+        "html_bytes": 41536,
+        "links": 77,
+        "extracted_utf8_bytes": 3159,
+        "extracted_tokens_proxy": 788
+      },
+      {
+        "name": "token-overview",
+        "http_ms": [
+          4.150708000000122,
+          2.9794999999999163,
+          2.8505419999996775,
+          2.7763749999999163,
+          2.5897079999999733
+        ],
+        "html_bytes": 8058,
+        "links": 9,
+        "extracted_utf8_bytes": 3657,
+        "extracted_tokens_proxy": 911
+      },
+      {
+        "name": "token-start",
+        "http_ms": [
+          13.65212500000007,
+          9.009999999999764,
+          8.368417000000136,
+          8.82591599999978,
+          8.018417000000227
+        ],
+        "html_bytes": 70646,
+        "links": 239,
+        "extracted_utf8_bytes": 9468,
+        "extracted_tokens_proxy": 2291
+      },
+      {
+        "name": "token-byte-overview",
+        "http_ms": [
+          7.280874999999924,
+          5.847834000000148,
+          5.763292000000092,
+          6.137165999999979,
+          5.309292000000369
+        ],
+        "html_bytes": 9058,
+        "links": 21,
+        "extracted_utf8_bytes": 1945,
+        "extracted_tokens_proxy": 477
+      }
+    ]
+  },
+  "after": {
+    "scope": "local Wrangler; HTTP elapsed time is not Worker CPU or agent speed",
+    "measurements": [
+      {
+        "name": "chunk-empty",
+        "http_ms": [
+          19.869583000000034,
+          9.608874999999898,
+          8.870040999999901,
+          10.034291999999823,
+          8.818291999999929
+        ],
+        "html_bytes": 91918,
+        "links": 464,
+        "extracted_utf8_bytes": 13884,
+        "extracted_tokens_proxy": 3456
+      },
+      {
+        "name": "chunk-co",
+        "http_ms": [
+          70.30591699999991,
+          50.39775000000009,
+          48.98524999999995,
+          49.4548749999999,
+          48.62583400000017
+        ],
+        "html_bytes": 134643,
+        "links": 736,
+        "extracted_utf8_bytes": 20675,
+        "extracted_tokens_proxy": 5157
+      },
+      {
+        "name": "chunk-con",
+        "http_ms": [
+          25.535499999999956,
+          25.302875000000085,
+          24.723459000000048,
+          24.17862500000001,
+          23.8103329999999
+        ],
+        "html_bytes": 117518,
+        "links": 524,
+        "extracted_utf8_bytes": 15386,
+        "extracted_tokens_proxy": 3839
+      },
+      {
+        "name": "chunk-typed-a",
+        "http_ms": [
+          31.37845900000002,
+          9.184124999999767,
+          9.030167000000347,
+          8.457250000000386,
+          9.136207999999897
+        ],
+        "html_bytes": 83753,
+        "links": 450,
+        "extracted_utf8_bytes": 13456,
+        "extracted_tokens_proxy": 3349
+      },
+      {
+        "name": "predictive-empty",
+        "http_ms": [
+          13.36108299999978,
+          10.618167000000085,
+          10.860125000000153,
+          10.572584000000006,
+          9.7512499999998
+        ],
+        "html_bytes": 57823,
+        "links": 112,
+        "extracted_utf8_bytes": 4345,
+        "extracted_tokens_proxy": 1084
+      },
+      {
+        "name": "predictive-typed-a",
+        "http_ms": [
+          10.359874999999647,
+          8.5564159999999,
+          8.443957999999839,
+          9.175874999999905,
+          8.242541999999958
+        ],
+        "html_bytes": 49704,
+        "links": 96,
+        "extracted_utf8_bytes": 3900,
+        "extracted_tokens_proxy": 973
+      },
+      {
+        "name": "token-overview",
+        "http_ms": [
+          4.3136249999997744,
+          2.733459000000039,
+          2.6900000000000546,
+          2.652958000000126,
+          2.609917000000223
+        ],
+        "html_bytes": 8067,
+        "links": 9,
+        "extracted_utf8_bytes": 3657,
+        "extracted_tokens_proxy": 911
+      },
+      {
+        "name": "token-start",
+        "http_ms": [
+          13.095957999999882,
+          9.387083000000075,
+          9.211583999999675,
+          8.0422080000003,
+          8.019791000000168
+        ],
+        "html_bytes": 70522,
+        "links": 239,
+        "extracted_utf8_bytes": 9482,
+        "extracted_tokens_proxy": 2294
+      },
+      {
+        "name": "token-byte-overview",
+        "http_ms": [
+          8.343249999999898,
+          7.316667000000052,
+          7.422167000000172,
+          7.002749999999651,
+          4.892291999999998
+        ],
+        "html_bytes": 40828,
+        "links": 120,
+        "extracted_utf8_bytes": 4176,
+        "extracted_tokens_proxy": 1035
+      }
+    ]
+  },
+  "token_ascii_contract": {
+    "target": "abc  \t\nZ",
+    "characters": 8,
+    "activation_count_after_entering_exact_lane": 8,
+    "historical_byte_browser_path_per_byte": 3
+  }
+}

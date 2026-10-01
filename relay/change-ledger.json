@@ -520,7 +520,7 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.26.0",
-      "operation": "current; fuller filtered lexicon and explicit word completion",
+      "operation": "superseded; historical artifact preserved",
       "effective_at": null,
       "source_recorded_at": "2026-10-01T03:31:31.081176+00:00",
       "responsible_role": "Relay protocol maintainer",
@@ -528,7 +528,19 @@
       "supersedes": "0.24.0",
       "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source.",
       "effective_time": null,
-      "source_commit_subject": "Build filtered full-word-form Relay lexicon and default next-word insertion"
+      "source_commit_subject": "Build filtered full-word-form Relay lexicon and default next-word insertion",
+      "superseded_by": "0.27.0"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.27.0",
+      "operation": "current; bounded candidate rendering and persistent exact lanes",
+      "effective_at": null,
+      "source_recorded_at": null,
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.27.0.schema.json",
+      "supersedes": "0.26.0",
+      "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source."
     }
   ]
 }

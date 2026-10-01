@@ -135,7 +135,7 @@ function suppliedHref(html, predicate) {
   for (const match of html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/gi)) {
     const anchor = match[0];
     const href = anchor.match(/\bhref="([^"]+)"/i)?.[1];
-    if (href && predicate(anchor.toLowerCase())) return href;
+    if (href && predicate(anchor.toLowerCase())) return href.replaceAll("&amp;", "&").replaceAll("&quot;", '"').replaceAll("&#39;", "'");
   }
   assert.fail("No server-supplied link matched the requested choice");
 }
@@ -316,7 +316,7 @@ try {
   assert.ok(o200kStateId, "o200k browser link contains its branch capability");
   const decodeHtml = (value) => value.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'");
   const draftFrom = (html) => {
-    const match = html.match(/<p class="draft" aria-label="Current draft">([\s\S]*?)<\/p>/);
+    const match = html.match(/<(?:p|pre) class="draft" aria-label="Current draft"[^>]*>([\s\S]*?)<\/(?:p|pre)>/);
     assert.ok(match, "composer response keeps a readable current draft");
     return decodeHtml(match[1]);
   };
@@ -394,7 +394,7 @@ try {
   const directPeriod = o200kStateHtml.match(/<a class="choice" rel="nofollow noreferrer" href="([^\"]+)" aria-label="Add \. to the draft"/i)?.[1];
   assert.ok(directPeriod, "draft exposes a one-link exact period choice that only creates a private branch");
   const directPeriodHtml = await (await fetch(new URL(directPeriod, base))).text();
-  assert.match(directPeriodHtml, /<p class="draft" aria-label="Current draft">\.<\/p>/, "direct punctuation link appends the exact period token");
+  assert.equal(draftFrom(directPeriodHtml), ".", "direct punctuation link appends the exact period token");
   const o200kSpacePageHtml = await (await fetch(new URL(o200kBrowse, base))).text();
   assert.match(o200kSpacePageHtml, /<code>␠the<\/code>/, "readable token page exposes a whole common word with visible leading space");
   assert.doesNotMatch(o200kSpacePageHtml, /<a class="choice"[^>]*><code>␠<\/code>/, "whitespace-only tokens are omitted from readable choices");
@@ -404,7 +404,7 @@ try {
   const o200kChildResponse = await fetch(new URL(o200kUseToken, base));
   const o200kChildHtml = await o200kChildResponse.text();
   assert.equal(o200kChildResponse.status, 200, `following an exact readable o200k token link creates its branch: ${o200kChildHtml}`);
-  assert.match(o200kChildHtml, /<p class="draft" aria-label="Current draft"> the<\/p>/, "the selected token appears in the private draft with its exact leading space");
+  assert.equal(draftFrom(o200kChildHtml), " the", "the selected token appears in the private draft with its exact leading space");
   assert.match(o200kStateHtml, /name="q"/, "o200k branch offers an accessible plain GET search box");
   assert.match(o200kStateHtml, /carried in GET URLs/, "search page discloses that typed text may be visible in URLs");
   const searchText = "One usability limit remains: the full long-tail vocabulary is paged across many pages.";
@@ -427,16 +427,16 @@ try {
   assert.ok(tokenClicks + 5 < 80, `including start, search, review, arm and publish, this run needs ${tokenClicks + 5} total page traversals`);
   console.log(`o200k search path: ${reportedTokenCount} token links, ${tokenClicks + 5} total traversals including start, search, review, arm, and publish.`);
   assert.match(searchHtml, /href="\/compose\/token\/o200k\/review\//, "completed exact token path offers review");
-  assert.match(searchHtml, /<p class="draft" aria-label="Current draft">One usability limit remains: the full long-tail vocabulary is paged across many pages\.<\/p>/, "search path composes the requested exact sentence");
+  assert.equal(draftFrom(searchHtml), "One usability limit remains: the full long-tail vocabulary is paged across many pages.", "search path composes the requested exact sentence");
   assert.equal((await fetch(`${base}/compose/token/o200k/search/${o200kStateId}?q=test&unexpected=1`)).status, 400, "search accepts only the documented query field");
   const o200kBytePage = await (await fetch(`${base}/compose/token/o200k/browse/bytes/${o200kStateId}/4`)).text();
   const o200kByteChoice = [...o200kBytePage.matchAll(/<a class="choice"[^>]+href="([^\"]+)"[^>]*aria-label="Add “O” to the draft"/g)]
     .map((match) => match[1])[0];
   assert.ok(o200kByteChoice, "o200k byte fallback supplies a server-generated uppercase O link");
-  const o200kByteResponse = await fetch(new URL(o200kByteChoice, base));
+  const o200kByteResponse = await fetch(new URL(decodeHtml(o200kByteChoice), base));
   const o200kByteHtml = await o200kByteResponse.text();
   assert.equal(o200kByteResponse.status, 200, `following an o200k byte link creates its branch: ${o200kByteHtml}`);
-  assert.match(o200kByteHtml, /<p class="draft" aria-label="Current draft">O<\/p>/, "the selected o200k fallback byte appears exactly in the private draft");
+  assert.equal(draftFrom(o200kByteHtml), "O", "the selected o200k fallback byte appears exactly in the private draft");
   const o200kByteBrowse = `/compose/token/o200k/browse/o200k/${o200kStateId}`;
   assert.equal((await fetch(`${base}${o200kByteBrowse}`)).status, 200, "exact byte-prefix browsing remains available as fallback");
   let o200kTokenChoices = "";
@@ -464,7 +464,7 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.26.0");
+  assert.equal(protocol.schema_version, "0.27.0");
   assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/" && operation.purpose.includes("Compatibility entry")), "the current protocol documents the deterministic chunk keyboard");
   const chunkKeyboard2Operation = protocol.operations.find((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard-2/");
   assert.ok(chunkKeyboard2Operation?.purpose.includes("Compatibility entry"), "the current protocol documents the separately routed variant");
@@ -480,7 +480,7 @@ try {
   assert.ok(batchOperation?.purpose.includes("deterministic and idempotent"), "protocol describes deterministic batch retries");
   assert.ok(batchOperation?.errors.some((error) => error.includes("BYTE_LIMIT_EXCEEDED")) && batchOperation?.errors.some((error) => error.includes("Retry-After")), "protocol documents distinct batch limits and retry guidance");
   assert.match(protocol.composer_conditions[0].candidate_browsing, /fixed 32-token starter palette/);
-  assert.match(protocol.composer_conditions[0].candidate_browsing, /exhaustive jump lists are available one link deeper/);
+  assert.match(protocol.composer_conditions[0].candidate_browsing, /bounded pages of up to 64 suffixes/);
   assert.match(protocol.composer_conditions[0].search_transport, /GET query and signed URL-safe base64 payload carry exact text/);
   assert.ok(protocol.operations.some((operation) => operation.path === "/compose/token/experimental/arm/{state_id}"));
   assert.deepEqual(protocol.methods.fixed_signals, ["help-requested", "persistence-uncertain", "scope-uncertain", "peer-contact-requested"]);
@@ -501,9 +501,9 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.4.0");
+  assert.equal(registry.registry_version, "1.5.0");
   assert.equal(registry.methods.length, 6);
-  assert.deepEqual((await getJson(`${base}/methods/1.4.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/1.5.0.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
   for (const method of registry.methods) {
@@ -514,7 +514,7 @@ try {
     assert.ok(protocol.operations.some((op) => op.path === method.href.split("#")[0] && op.purpose.includes(method.title)), `${method.id} technical description derives from the registry`);
   }
 
-  assert.equal(service.identity.protocol_revision, "0.26.0");
+  assert.equal(service.identity.protocol_revision, "0.27.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
@@ -527,7 +527,7 @@ try {
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
   assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.26.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.27.0.schema.json");
   assert.deepEqual(service.operations.participate.keyboards.map((entry) => entry.href), [
     "/predictive-keyboard/html/chunk-keyboard-3/", "/predictive-keyboard/html/word-links/",
     "/predictive-keyboard/html/prefix-keyboard/", "/compose/token/o200k/",
@@ -619,7 +619,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["protocol", "0.22.0"], ["protocol", "0.26.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.3.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["protocol", "0.22.0"], ["protocol", "0.27.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.3.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -627,7 +627,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.26.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.27.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
@@ -1406,12 +1406,12 @@ try {
   assert.equal(bottlePathActivations, 4, "bo → tt → le → Bottle remains four ordinary link activations on the retained keyboard");
   let relayPage = chunkEntry3;
   for (const label of ["Set START to re", "Add INSIDE la"]) relayPage = await chunk3Fetch(relayPage, constraintHref(relayPage, label));
-  assert.match(relayPage, /Showing 20 of 242 matches—narrow further/u);
+  assert.match(relayPage, /Showing 1–20 of 242 matches\. Narrow with INSIDE\/END or follow candidate pages\./u);
   assert.match(relayPage, /<span class="matrix-row-label" aria-label="END pairs beginning y">y<\/span>/u);
   assert.doesNotMatch(relayPage, /matrix-jump/u);
   assert.match(relayPage, /END · final two letters/u);
   relayPage = await chunk3Fetch(relayPage, constraintHref(relayPage, "Set END to ay"));
-  assert.doesNotMatch(relayPage, /Showing 20 of/u);
+  assert.doesNotMatch(relayPage, /Showing 1–20 of/u);
   const relayAdded = await chunk3Fetch(relayPage, constraintHref(relayPage, "Add Relay"));
   assert.match(relayAdded, /<pre class="draft">Relay<\/pre>/u);
   const prefixFilterUrl = (html, values) => {

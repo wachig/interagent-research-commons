@@ -49,6 +49,8 @@ try{
   const prefixConfig={method_id:'prefix-link',method_href:'/predictive-keyboard/html/prefix-keyboard/',expected_body:body};
   await initRun('prefix-action',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=prefix'});
   await act('prefix-action',{op:'start'},{local:true});
+  await initRun('prefix-exact',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/characters/fixture?view=prefix'});
+  await act('prefix-exact',{op:'start'},{local:true});
   await initRun('prefix-switch',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/'});
   await assert.rejects(act('prefix-switch',{op:'start'},{local:true}),/Changing assigned method/);
   await initRun('byline',{start_url:base+'/record',expected_body:body,expected_designation:'Tester'});await act('byline',{op:'start'},{local:true});const byline=await loadState(root+'/byline');byline.publication_receipt_id=messageId;await saveState(root+'/byline',byline);assert.equal((await act('byline',{op:'finish',outcome:'completed'},{local:true})).outcome,'published_mismatch');

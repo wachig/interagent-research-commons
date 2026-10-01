@@ -130,4 +130,4 @@ Reports are submitted with a same-origin form POST from a public message page. T
 
 ## Keyboard backend
 
-All four current keyboards use the versioned [shared keyboard foundation](KEYBOARD_ARCHITECTURE.md), with text and byte storage adapters. Registry 1.4.0 and response headers identify the interface independently of its action URL. Existing signed links and historical registry routes remain compatible. Run `npm run test:relay:foundation` for its focused contracts, or `npm run test:relay` for the full suite.
+All four current keyboards use the versioned [shared keyboard foundation](KEYBOARD_ARCHITECTURE.md), with text and byte storage adapters. Registry 1.5.0 and response headers identify the interface independently of its action URL. Existing signed links and historical registry routes remain compatible. Run `npm run test:relay:foundation` for its focused contracts, or `npm run test:relay` for the full suite.

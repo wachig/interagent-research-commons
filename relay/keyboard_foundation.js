@@ -1,5 +1,5 @@
 // Shared lifecycle contracts. Renderers and wire signatures remain interface adapters.
-export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.0.0";
+export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.1.0";
 export const MAX_BODY_BYTES = 1200;
 const SESSION_TTL_MS = 30 * 60 * 1000;
 export const MAX_SESSIONS = 32;
@@ -66,7 +66,7 @@ export async function saveTextChild(env, parent, action, savedArgument, childId,
   const now = Date.now();
   // Existing deployed schemas intentionally constrain operation to root/key/pick/clear.
   // Store manual text as a pick with its {text, join} payload to remain schema-compatible.
-  const storedAction = action === "typed" ? "pick" : action;
+  const storedAction = action === "typed" ? "pick" : action === "exact" ? "key" : action;
   await env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_states (state_id, session_id, parent_state_id, operation, value, removed_text, added_text, snapshot, depth, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ? AND expires_at > ?) AND EXISTS (SELECT 1 FROM html_keyboard_states WHERE state_id = ? AND session_id = ?) AND (SELECT COUNT(*) FROM html_keyboard_states WHERE session_id = ?) < ?")
     .bind(childId, parent.session_id, parent.state_id, storedAction, savedArgument, removed, added, snapshot, depth, now, parent.session_id, now, parent.state_id, parent.session_id, parent.session_id, MAX_STATES_PER_SESSION).run();
   const childExists = await env.RELAY_DB.prepare("SELECT state_id FROM html_keyboard_states WHERE state_id = ? AND session_id = ?").bind(childId, parent.session_id).first();
@@ -108,14 +108,14 @@ export async function reviewTextDraft(env, request, stateId, keyboardView, { PRE
       const editParams = new URLSearchParams({ cap: wordPublishCap });
       if (keyboardView !== "words") editParams.set("view", keyboardView);
       const editHref = `${PREFIX}/discard/${word(state.state_id)}?${editParams}`;
-      return page("Review draft", `<h1>Review draft</h1><p><strong>Exact message · ${bytes} UTF-8 byte${bytes === 1 ? "" : "s"}</strong></p><pre class="draft">${escapeHtml(draft)}</pre>${reply}<p>This private draft expires at <time datetime="${expiry}">${expiry}</time>. Following the next link publishes it publicly. A crawler or prefetching client that follows it can publish; continue only when publication is intended and permitted.</p><p><a rel="nofollow" class="primary" href="${escapeHtml(publishHref)}">Publish this message publicly</a></p><p><a rel="nofollow" href="${escapeHtml(editHref)}">Edit message and discard this private draft</a></p>`);
+      return page("Review draft", `<h1>Review draft</h1><p>Compare the current draft with your intended message; Relay has not checked a target.</p><p><strong>Current draft · ${bytes} UTF-8 byte${bytes === 1 ? "" : "s"}</strong></p><pre class="draft">${escapeHtml(draft)}</pre><details><summary>Show whitespace</summary><pre>${escapeHtml(draft.replaceAll(" ","␠").replaceAll("\t","⇥").replaceAll("\r","␍").replaceAll("\n","↵\n"))}</pre></details>${reply}<p>This private draft expires at <time datetime="${expiry}">${expiry}</time>. Following the next link publishes it publicly. A crawler or prefetching client that follows it can publish; continue only when publication is intended and permitted.</p><p><a rel="nofollow" class="primary" href="${escapeHtml(publishHref)}">Publish this message publicly</a></p><p><a rel="nofollow" href="${escapeHtml(editHref)}">Edit message and discard this private draft</a></p>`);
 }
 
 export function parseByteBody(bytes) {
   if (!bytes.length) return { valid: false, message: "The draft is empty." };
   if (bytes.length > MAX_BODY_BYTES) return { valid: false, message: `The draft exceeds Relay's ${MAX_BODY_BYTES}-byte limit.` };
   let body;
-  try { body = new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+  try { body = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes); }
   catch { return { valid: false, message: "The current byte sequence is not complete valid UTF-8. Continue composing; it cannot be armed yet." }; }
   if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(body)) return { valid: false, message: "The draft contains a control character that Relay does not accept." };
   if (new TextEncoder().encode(body).length !== bytes.length) return { valid: false, message: "The byte sequence did not round-trip exactly; publication is disabled." };
