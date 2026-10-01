@@ -24,6 +24,7 @@ const DICTIONARY_CACHE = new Map();
 let LEXICON_MANIFEST_PROMISE;
 let LEXICON_START_PAIRS_PROMISE;
 let LEXICON_INSIDE_PAIRS_PROMISE;
+let LEXICON_END_PAIRS_PROMISE;
 const COMMONS_WORDS = ["agent", "agents", "commons", "IARC", "interagent", "Relay", "research", "researcher", "researching", "really", "reason", "recursive", "recursion", "reply", "message", "participation", "policy", "accessibility", "token", "tokenizer", "predictive", "prediction", "composer"];
 const CANONICAL_CASE = new Map([["iarc", "IARC"], ["arc", "ARC"], ["openai", "OpenAI"], ["cloudflare", "Cloudflare"], ["github", "GitHub"], ["presage", "Presage"], ["hunspell", "Hunspell"], ["wrangler", "Wrangler"]]);
 const MIN_PHRASE_TOKEN_SHARE = 0.12;
@@ -193,6 +194,23 @@ async function lexiconInsidePairs(env, request) {
     });
   }
   return LEXICON_INSIDE_PAIRS_PROMISE;
+}
+
+async function lexiconEndPairs(env, request) {
+  if (!LEXICON_END_PAIRS_PROMISE) {
+    LEXICON_END_PAIRS_PROMISE = (async () => {
+      const manifest = await lexiconManifest(env, request);
+      const result = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/end-pairs.json", request.url)));
+      if (!result.ok) throw new Error("The END pair index is unavailable.");
+      const index = await result.json();
+      if (index.format !== "iarc-end-pairs-1" || index.lexicon_version !== manifest.lexicon_version || index.lexicon_word_count !== manifest.word_count || !Array.isArray(index.pairs) || index.pairs.some((item) => !item || !/^\p{L}{2}$/u.test(item.value) || !Number.isSafeInteger(item.count) || item.count < 1) || new Set(index.pairs.map((item) => item.value)).size !== index.pairs.length) throw new Error("The END pair index is invalid.");
+      return index.pairs;
+    })().catch((error) => {
+      LEXICON_END_PAIRS_PROMISE = undefined;
+      throw error;
+    });
+  }
+  return LEXICON_END_PAIRS_PROMISE;
 }
 
 async function lexiconStartPairs(env, request) {
@@ -541,14 +559,16 @@ async function renderKeyboard(request, env, state, url) {
   const prefix = (modeParams.get("prefix") || "").normalize("NFC").toLocaleLowerCase("en-US");
   const selectedPairFor = (role) => {
     const selections = PREFIX_FILTER_LETTERS.map((letter) => ({ letter, value: (modeParams.get(`${role}_${letter}`) || "").normalize("NFC").toLocaleLowerCase("en-US") })).filter(({ value }) => value);
-    if (selections.length > 1 || selections.some(({ letter, value }) => !(role === "inside" ? /^\p{L}{2}$/u.test(value) : APPROVED_PREFIXES.has(value)) || !value.startsWith(letter))) throw new Error(`Choose at most one approved ${role.toUpperCase()} pair from its matching letter row.`);
+    if (selections.length > 1 || selections.some(({ letter, value }) => !(role === "start" ? APPROVED_PREFIXES.has(value) : /^\p{L}{2}$/u.test(value)) || !value.startsWith(letter))) throw new Error(`Choose at most one approved ${role.toUpperCase()} pair from its matching letter row.`);
     return selections[0]?.value || "";
   };
   const startPair = selectedPairFor("start");
   const insidePair = selectedPairFor("inside");
   const endPair = selectedPairFor("end");
   const insidePairIndex = view === "prefix" ? await lexiconInsidePairs(env, request) : [];
+  const endPairIndex = view === "prefix" ? await lexiconEndPairs(env, request) : [];
   if (view === "prefix" && insidePair && !insidePairIndex.some(({ value }) => value === insidePair)) throw new Error("Choose an INSIDE pair that occurs in the pinned spelling lexicon.");
+  if (view === "prefix" && endPair && !endPairIndex.some(({ value }) => value === endPair)) throw new Error("Choose an END pair that occurs at the end of a word in the pinned spelling lexicon.");
   const offset = Number(modeParams.get("offset") || 0);
   if (modeParams.has("shift") && !new Set(["0", "1"]).has(modeParams.get("shift"))) throw new Error("Keyboard layout link is invalid.");
   if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks"]).has(view)) throw new Error("Keyboard layout link is invalid.");
@@ -609,31 +629,41 @@ async function renderKeyboard(request, env, state, url) {
       for (let index = 2; index + 1 < chars.length; index += 1) pairs.push(`${chars[index]}${chars[index + 1]}`);
       return pairs;
     };
-    const startAndEndMatches = base.filter((value) => !endPair || value.toLocaleLowerCase("en-US").endsWith(endPair));
     const insideCounts = new Map();
     if (startPair) {
-      for (const value of startAndEndMatches) {
+      for (const value of base) {
         for (const pair of new Set(bodyPairs(value))) insideCounts.set(pair, (insideCounts.get(pair) || 0) + 1);
+      }
+    }
+    const startAndInsideMatches = base.filter((value) => !insidePair || bodyPairs(value).includes(insidePair));
+    const endCounts = new Map();
+    if (startPair) {
+      for (const value of startAndInsideMatches) {
+        const chars = wordsFor(value);
+        const pair = chars.slice(-2).join("");
+        if (/^\p{L}{2}$/u.test(pair)) endCounts.set(pair, (endCounts.get(pair) || 0) + 1);
       }
     }
     const letterDropdowns = (role, selectedPair) => PREFIX_FILTER_LETTERS.map((letter) => {
       const choices = role === "inside"
         ? (startPair ? insideCounts.keys() : insidePairIndex.map(({ value }) => value))
-        : (PREFIX_VOCABULARY.prefixes[letter] || []);
+        : role === "end"
+          ? (startPair ? endCounts.keys() : endPairIndex.map(({ value }) => value))
+          : (PREFIX_VOCABULARY.prefixes[letter] || []);
       const pairs = [...choices].filter((pair) => pair.startsWith(letter)).sort();
-      const selectedUnavailable = role === "inside" && selectedPair?.startsWith(letter) && !pairs.includes(selectedPair);
+      const selectedUnavailable = (role === "inside" || role === "end") && selectedPair?.startsWith(letter) && !pairs.includes(selectedPair);
       const selectedOption = selectedUnavailable ? `<option value="${selectedPair}" selected disabled>${selectedPair} · no matches</option>` : "";
-      const options = [`<option value="">${role === "inside" ? "INSIDE" : "2-letter"}</option>`, selectedOption, ...pairs.map((choice) => `<option value="${choice}"${choice === selectedPair ? " selected" : ""}>${choice}${role === "inside" && startPair ? ` · ${insideCounts.get(choice)}` : ""}</option>`)].join("");
+      const options = [`<option value="">${role === "inside" ? "INSIDE" : role === "end" ? "END" : "2-letter"}</option>`, selectedOption, ...pairs.map((choice) => `<option value="${choice}"${choice === selectedPair ? " selected" : ""}>${choice}${role === "inside" && startPair ? ` · ${insideCounts.get(choice)}` : role === "end" && startPair ? ` · ${endCounts.get(choice)}` : ""}</option>`)].join("");
       return `<label class="prefix-letter-choice"><span>${letter}</span><select name="${role}_${letter}" aria-label="${role.toUpperCase()} pair beginning with ${letter}">${options}</select></label>`;
     }).join("");
     const roleColumn = (role, selectedPair) => `<fieldset class="prefix-role-column"><legend>${role}</legend><div class="prefix-letter-grid">${letterDropdowns(role, selectedPair)}</div></fieldset>`;
     const filterForm = `<form method="get" action="${PREFIX}/state/${word(state.state_id)}" class="prefix-filter-form"><input type="hidden" name="view" value="prefix"><input type="hidden" name="layout" value="${layout}"><div class="prefix-filter-columns">${roleColumn("start", startPair)}${roleColumn("inside", insidePair)}${roleColumn("end", endPair)}</div><button type="submit">Find matching words</button></form>`;
     const filterRule = startPair
-      ? `INSIDE now lists only pairs with matches for START ${startPair}${endPair ? ` and END ${endPair}` : ""}; counts show how many words each pair matches.`
-      : `INSIDE lists every pair found in the pinned lexicon (${insidePairIndex.length} pairs), including pairs missing from the START list.`;
+      ? `INSIDE lists pairs with matches for START ${startPair}; END lists pairs with matches for START${insidePair ? ` and INSIDE ${insidePair}` : ""}. Counts show matching words. `
+      : `INSIDE lists all ${insidePairIndex.length} lexicon-attested pairs and END lists all ${endPairIndex.length} valid word endings. `;
     prefixBrowser = `<section id="prefix-choices"><h2>Choose word parts</h2><p class="hint">Choose one two-letter pair in each section: START, optional INSIDE, and optional END. ${filterRule} These choices filter candidate words and do not add text to the draft.</p>${filterForm}</section>`;
     if (startPair) {
-      const candidates = startAndEndMatches.filter((value) => (!insidePair || bodyPairs(value).includes(insidePair)) && wordsFor(value).length >= 2);
+      const candidates = startAndInsideMatches.filter((value) => (!endPair || value.toLocaleLowerCase("en-US").endsWith(endPair)) && wordsFor(value).length >= 2);
       const category = (value) => /^[\p{Lu}\p{M}\p{N}]+$/u.test(value) ? 2 : /^[\p{Lu}]/u.test(value) ? 1 : 0;
       const byWord = new Map();
       for (const value of candidates) {
