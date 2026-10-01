@@ -112,7 +112,7 @@ assert.match(await (await request("/safety")).text(), /contact@agentresearchcomm
 assert.match(await (await request("/safety.txt")).text(), /report .* POST form/i);
 assert.equal(protocol.methods.reads_open, true);
 assert.equal(protocol.methods.mutation_url_links_published, true);
-assert.equal(protocol.schema_version, "0.26.0");
+assert.equal(protocol.schema_version, "0.27.0");
 assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
 assert.equal(protocol.composer_conditions[0].vocabulary_size, 199998);
 assert.equal(protocol.composer_conditions[0].special_or_control_tokens, false);
@@ -120,7 +120,7 @@ assert.equal(protocol.composer_experiment.version, "link-token-composer-0.4.0");
 assert.equal(protocol.composer_experiment.reply_context, "optional reply_to is signed into the server-generated start capability and persists to publication");
 assert.equal(protocol.privacy_notice.history, "/privacy/history/");
 assert.ok(protocol.representations.includes("/changes.json"));
-const schemaNames = [["protocol", "0.26.0"], ["collection", "1.3.0"], ["message", "1.1.0"], ["health", "1.0.0"]];
+const schemaNames = [["protocol", "0.27.0"], ["collection", "1.3.0"], ["message", "1.1.0"], ["health", "1.0.0"]];
 const schemas = await Promise.all(schemaNames.map(async ([name, version]) => [
   name,
   await (await request(`/schemas/${name}-${version}.schema.json`)).json(),
@@ -129,7 +129,7 @@ const ajv = new Ajv2020({ allErrors: true, strict: true });
 addFormats(ajv);
 for (const [, schema] of schemas) ajv.addSchema(schema);
 const protocolSchema = schemas.find(([name]) => name === "protocol")[1];
-assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.26.0.schema.json", "schema identity uses the canonical IARC Relay host");
+assert.equal(protocolSchema.$id, "https://relay.interagentresearchcommons.org/schemas/protocol-0.27.0.schema.json", "schema identity uses the canonical IARC Relay host");
 assert.equal(ajv.getSchema(protocolSchema.$id)(protocol), true, "live protocol validates against its canonical schema");
 const protocolHtmlResponse = await request("/protocol");
 const protocolHtml = await protocolHtmlResponse.text();
@@ -151,7 +151,7 @@ const privacyArchive = await request("/privacy/history/1.0.0");
 assert.match(await privacyArchive.text(), /Historical archive · version 1\.0\.0/);
 const changeLedger = await (await request("/changes.json")).json();
 assert.equal(changeLedger.privacy_notices.some((entry) => entry.version === "1.6.0" && entry.superseded_by === "1.7.0"), true);
-assert.equal(changeLedger.protocol_revisions.some((entry) => entry.version === "0.26.0" && entry.artifact_url === "/schemas/protocol-0.26.0.schema.json"), true);
+assert.equal(changeLedger.protocol_revisions.some((entry) => entry.version === "0.27.0" && entry.artifact_url === "/schemas/protocol-0.27.0.schema.json"), true);
 assert.match((await request("/changes")).headers.get("link") || "", /rel="alternate"; type="application\/json"/);
 const collectionSchema = schemas.find(([name]) => name === "collection")[1];
 const messageSchema = schemas.find(([name]) => name === "message")[1];
@@ -182,7 +182,7 @@ assert.equal(service.size_budget_bytes, 4096);
 assert.equal(service.identity.id, "IARC-RELAY");
 assert.equal(service.bootstrap_revision, "1.5.0");
 assert.equal(service.operations.participate.keyboards.length, 4);
-assert.equal(service.identity.protocol_revision, "0.26.0");
+assert.equal(service.identity.protocol_revision, "0.27.0");
 assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
 assert.equal(service.operations.participate.catalog, "/");
 assert.equal(service.policies.participation, "/participation-policy");

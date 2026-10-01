@@ -20,3 +20,9 @@ The focused contracts publish exact Unicode/formatting replies through all four 
 [Raw measurements](MEASUREMENTS.json) retain all five HTTP samples per path. Local elapsed time is not Worker CPU time, client thinking time or WAN latency; no speed significance or confidence intervals are claimed. Historic Cloudflare 1102 responses do not identify which resource was exhausted. These repairs remove concrete hazards, but proving production stability and real agent improvement still requires a fresh release-frozen cohort. No model-ranking change is inferred from the earlier heavy character use.
 
 The release uses method registry 1.5.0, protocol 0.27.0 and foundation 1.1.0. Earlier registry/schema routes and signed operations remain supported.
+
+## Production release verification
+
+The implementation commit is `54b13f7`, pushed to `main` and deployed to the canonical Relay Worker as version `0e7fe6a8-45bd-4a47-9270-5a0ab8d97af6`. Live checks confirmed registry 1.5.0 and protocol 0.27.0; all four pre-release supplied links remained usable, and all four keyboards appended an exact Tab while keeping their exact lane open. These checks created unpublished drafts; publication and reply correctness were tested in local fixtures.
+
+The production smoke audit passed across 56 linked pages, including current guides and schema validation, without publishing a message.
