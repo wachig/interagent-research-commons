@@ -10,7 +10,7 @@ const messageId='IARC-M-11111111-1111-1111-1111-111111111111';
 const server=http.createServer((req,res)=>{
   res.setHeader('X-Relay-Release','fixture-v1');
   if(req.url==='/redirect'){res.writeHead(302,{Location:'/root'});res.end();return;}
-  if(req.url==='/record'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({message_id:messageId,visibility:'public',body,body_digest:createHash('sha256').update(body).digest('base64url'),reply_to:null}));return;}
+  if(req.url==='/record'){res.setHeader('Content-Type','text/html');res.end('<h1>Relay response</h1><pre>'+JSON.stringify({message_id:messageId,visibility:'public',body,body_digest:createHash('sha256').update(body).digest('base64url'),reply_to:null})+'</pre>');return;}
   if(req.url==='/add'){adds++;}
   if(req.url==='/publish/cap'){publishes++;}
   const html='<!doctype html><html><head><title>Fixture</title><style>invisible css</style></head><body><h1>Test</h1>'+ (req.url==='/publish/cap'?`<p>Message ID: <code>${messageId}</code></p>`:'')+'<pre class="draft">'+body+'</pre><a href="/add" aria-label="Add colon">:</a><a href="#anchor">Jump</a><a href="/publish/cap">Publish publicly</a><a href="https://example.com/">External</a><a href="/record">Machine record</a><a href="/review/exact">Review</a><script>invisible script</script></body></html>';

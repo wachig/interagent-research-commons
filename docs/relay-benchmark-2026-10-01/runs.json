@@ -1,6 +1,6 @@
 {
   "benchmark": "relay-luna-pilot-1.0.0",
-  "generated_at": "2026-10-01T07:50:11.216Z",
+  "generated_at": "2026-10-01T08:05:08.500Z",
   "limitations": [
     "Purposive targets: no population confidence intervals or universal winner.",
     "Server-request time excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
@@ -47,6 +47,7 @@
       "links_presented": 4965,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Relay connection timed out during composition; exact draft remained incomplete",
       "transitions": [
         {
@@ -606,6 +607,7 @@
       "links_presented": 5767,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Tester stopped by account quota before publication; review expired during interruption.",
       "transitions": [
         {
@@ -1080,6 +1082,7 @@
       "links_presented": 42,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Shared extractor stalled; calibration terminated before publication. Raw request costs retained.",
       "transitions": [
         {
@@ -1139,29 +1142,37 @@
       "target_utf8_bytes": 28,
       "reply_to": null,
       "created_at": "2026-10-01T07:48:11.505Z",
-      "outcome": "in_progress",
-      "finished": false,
-      "wall_ms": null,
-      "time_to_first_publish_activation_ms": null,
-      "activations": 9,
-      "http_attempts": 9,
-      "http_responses": 9,
+      "outcome": "failed",
+      "finished": true,
+      "wall_ms": 474783,
+      "time_to_first_publish_activation_ms": 214500,
+      "activations": 23,
+      "http_attempts": 23,
+      "http_responses": 23,
       "network_errors": 0,
       "redirects": 0,
       "fragments": 0,
       "activation_kinds": {
         "initial-navigation": 1,
-        "link": 8
+        "link": 22
       },
-      "wire_body_bytes": 112506,
-      "uncompressed_bytes": 793251,
-      "http_ms": 2503.955584000003,
-      "extraction_ms": 2287.4881250000035,
-      "extracted_tokens_o200k": 43946,
-      "links_presented": 3516,
+      "wire_body_bytes": 279865,
+      "uncompressed_bytes": 1988370,
+      "http_ms": 7757.9033759999365,
+      "extraction_ms": 5723.1702499999665,
+      "extracted_tokens_o200k": 107060,
+      "links_presented": 8594,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
-      "note": null,
+      "post_close_verification": {
+        "message_id": "IARC-M-71c915b8-1bf1-428f-9fb1-32cc3aeabfa6",
+        "body_exact": true,
+        "reply_exact": true,
+        "digest_exact": true,
+        "body_sha256": "ab2d91ee89d23233cedcb9ed3ec4c32377faeac7a6ac94207094d78c0d9b46e2",
+        "reason": "Receipt parser infrastructure correction using already recorded response; original failed closure retained."
+      },
+      "note": "Recorder rejected completion despite following public message and its per-message machine record (page 23 HTTP 200).",
       "transitions": [
         {
           "seq": 1,
@@ -1450,6 +1461,484 @@
           "page": 9,
           "tokens_o200k": 5165,
           "links_presented": 407
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-01T07:50:13.560Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-01T07:50:13.561Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set END to rk",
+          "intent": false,
+          "url_sha256": "1e2b4ac7079036d0e5048b4e64f25945731a09b394bbedbe4fd00541b937b797",
+          "gap_ms": 6018
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-01T07:50:13.837Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 274.9840839999961,
+          "wire_body_bytes": 10009,
+          "uncompressed_bytes": 50907
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-01T07:50:14.090Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 2219,
+          "links_presented": 146
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-01T07:50:19.601Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-01T07:50:19.601Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add benchmark",
+          "intent": false,
+          "url_sha256": "91998bc2963d570cfa4990ebaf29600bc956f574fa9a86cc08ae695f9cdf2720",
+          "gap_ms": 5511
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-01T07:50:20.014Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 411.6457909999881,
+          "wire_body_bytes": 12719,
+          "uncompressed_bytes": 85966
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-01T07:50:20.260Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 5492,
+          "links_presented": 447
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-01T07:50:29.708Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-01T07:50:29.709Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to ca",
+          "intent": false,
+          "url_sha256": "c095bd0fac13bbf3f6c4191d3f3a2bc044035550b05a9eb4249c0bca12a5619e",
+          "gap_ms": 9449
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-01T07:50:30.000Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 290.80574999999953,
+          "wire_body_bytes": 14036,
+          "uncompressed_bytes": 121718
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-01T07:50:30.279Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 7912,
+          "links_presented": 661
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-01T07:50:37.424Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-01T07:50:37.426Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to cal",
+          "intent": false,
+          "url_sha256": "9f0c2a3fee55071d742cacd27b69399cc629dbd6be685a9c3e4bd17ba9b8c5bf",
+          "gap_ms": 7148
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-01T07:50:37.699Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 272.40533300000243,
+          "wire_body_bytes": 27084,
+          "uncompressed_bytes": 224620
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-01T07:50:37.951Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 8242,
+          "links_presented": 670
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-01T07:50:44.724Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-01T07:50:44.726Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add calibration",
+          "intent": false,
+          "url_sha256": "88851d6178af273aa3c4516814950d3e21ef1c0071d2a7139f658e696a5981ca",
+          "gap_ms": 6775
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-01T07:50:45.257Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 529.6133749999863,
+          "wire_body_bytes": 12683,
+          "uncompressed_bytes": 86034
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-01T07:50:45.508Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 5493,
+          "links_presented": 447
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-01T07:50:56.646Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-01T07:50:56.647Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to ca",
+          "intent": false,
+          "url_sha256": "d34edf45327356589292a9b78a60ad018e37a7609e5824cffe6f3b80b50fc058",
+          "gap_ms": 11139
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-01T07:50:57.136Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 488.03912499998114,
+          "wire_body_bytes": 14064,
+          "uncompressed_bytes": 121694
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-01T07:50:57.358Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 7913,
+          "links_presented": 661
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-01T07:51:03.650Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-01T07:51:03.651Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to cal",
+          "intent": false,
+          "url_sha256": "f6634163f5ebb6a451d67a4935a134dcdbaeed6d74285393d97c973707b982f3",
+          "gap_ms": 6293
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-01T07:51:03.972Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 319.71199999999953,
+          "wire_body_bytes": 27095,
+          "uncompressed_bytes": 224763
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-01T07:51:04.215Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 8243,
+          "links_presented": 670
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-01T07:51:12.269Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-01T07:51:12.270Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add calibration",
+          "intent": false,
+          "url_sha256": "257ab27f733eaf095b7e5d47bc7f458c394fe4293d10275caa95c771cdbf6c7f",
+          "gap_ms": 8055
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-01T07:51:12.702Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 429.8398750000051,
+          "wire_body_bytes": 12727,
+          "uncompressed_bytes": 86456
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-01T07:51:12.947Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 5494,
+          "links_presented": 447
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-01T07:51:19.456Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-01T07:51:19.457Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Undo last addition",
+          "intent": false,
+          "url_sha256": "f3ba094ebd189a418cbd6ea94bc3783afd81481f477f3b1cee030fc4313c50a2",
+          "gap_ms": 6510
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-01T07:51:19.720Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 262.2101660000044,
+          "wire_body_bytes": 12683,
+          "uncompressed_bytes": 86034
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-01T07:51:19.955Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 5493,
+          "links_presented": 447
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-01T07:51:28.266Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-01T07:51:28.267Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": ".",
+          "intent": false,
+          "url_sha256": "7dded893b66b2e76090fbfec3e5ade86e99e83e56933d8a9eaa2ea8c2785e697",
+          "gap_ms": 8312
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-01T07:51:28.672Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 405.1007919999829,
+          "wire_body_bytes": 12795,
+          "uncompressed_bytes": 86013
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-01T07:51:28.896Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 5494,
+          "links_presented": 447
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-01T07:51:37.065Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-01T07:51:37.066Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Review message",
+          "intent": false,
+          "url_sha256": "51f288d658694d3a94b3b94f113d1e0582904b7906b66339cc9f054e05ab51ba",
+          "gap_ms": 8170
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-01T07:51:37.664Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 596.3844589999935,
+          "wire_body_bytes": 2093,
+          "uncompressed_bytes": 4805
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-01T07:51:37.915Z",
+          "kind": "exact-review-witness"
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-01T07:51:37.915Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 89,
+          "links_presented": 2
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-01T07:51:46.004Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-01T07:51:46.005Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Publish this message publicly",
+          "intent": true,
+          "url_sha256": "e4f2789a428a2925df530c5902c279ecca11d464bd8aa8d37659744b5c526cca",
+          "gap_ms": 8090
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-01T07:51:46.324Z",
+          "kind": "http",
+          "status": 201,
+          "http_ms": 317.9936250000028,
+          "wire_body_bytes": 4503,
+          "uncompressed_bytes": 4503
+        },
+        {
+          "seq": 85,
+          "at": "2026-10-01T07:51:46.580Z",
+          "kind": "extraction",
+          "page": 21,
+          "tokens_o200k": 138,
+          "links_presented": 11
+        },
+        {
+          "seq": 86,
+          "at": "2026-10-01T07:51:53.681Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 87,
+          "at": "2026-10-01T07:51:53.682Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Open public message",
+          "intent": false,
+          "url_sha256": "e4f18b1cbf22ed86cdd9c6d70ea3d8dc0c04f3ce0dbd85891473f94b5a8d7b6f",
+          "gap_ms": 7102
+        },
+        {
+          "seq": 88,
+          "at": "2026-10-01T07:51:54.099Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 416.1748329999973,
+          "wire_body_bytes": 2227,
+          "uncompressed_bytes": 4798
+        },
+        {
+          "seq": 89,
+          "at": "2026-10-01T07:51:54.344Z",
+          "kind": "extraction",
+          "page": 22,
+          "tokens_o200k": 171,
+          "links_presented": 13
+        },
+        {
+          "seq": 90,
+          "at": "2026-10-01T07:52:00.409Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 91,
+          "at": "2026-10-01T07:52:00.410Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Machine-readable message record",
+          "intent": false,
+          "url_sha256": "646dfa6afb4b68bbd889f18f36461f29c2a0429b9677d9670e898b5239757c38",
+          "gap_ms": 6066
+        },
+        {
+          "seq": 92,
+          "at": "2026-10-01T07:52:00.650Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 239.03858399999444,
+          "wire_body_bytes": 2641,
+          "uncompressed_bytes": 6808
+        },
+        {
+          "seq": 93,
+          "at": "2026-10-01T07:52:00.902Z",
+          "kind": "extraction",
+          "page": 23,
+          "tokens_o200k": 721,
+          "links_presented": 9
+        },
+        {
+          "seq": 94,
+          "at": "2026-10-01T07:52:07.818Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 95,
+          "at": "2026-10-01T07:54:37.121Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 96,
+          "at": "2026-10-01T07:54:43.591Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 97,
+          "at": "2026-10-01T07:56:06.287Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 98,
+          "at": "2026-10-01T07:56:06.288Z",
+          "kind": "finish"
         }
       ]
     },
@@ -1485,6 +1974,7 @@
       "links_presented": 0,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": null,
       "transitions": []
     },
@@ -1523,6 +2013,7 @@
       "links_presented": 797,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Tester stopped by account quota before publication.",
       "transitions": [
         {
@@ -1923,6 +2414,7 @@
       "links_presented": 42,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Shared extractor stalled; calibration terminated before publication. Raw request costs retained.",
       "transitions": [
         {
@@ -1982,27 +2474,1378 @@
       "target_utf8_bytes": 28,
       "reply_to": null,
       "created_at": "2026-10-01T07:48:11.529Z",
-      "outcome": "in_progress",
-      "finished": false,
-      "wall_ms": null,
-      "time_to_first_publish_activation_ms": null,
-      "activations": 0,
-      "http_attempts": 0,
-      "http_responses": 0,
+      "outcome": "completed",
+      "finished": true,
+      "wall_ms": 599930,
+      "time_to_first_publish_activation_ms": 438869,
+      "activations": 41,
+      "http_attempts": 41,
+      "http_responses": 41,
       "network_errors": 0,
       "redirects": 0,
       "fragments": 0,
-      "activation_kinds": {},
-      "wire_body_bytes": 0,
-      "uncompressed_bytes": 0,
-      "http_ms": 0,
-      "extraction_ms": 0,
-      "extracted_tokens_o200k": 0,
-      "links_presented": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 39,
+        "history-navigation": 1
+      },
+      "wire_body_bytes": 296006,
+      "uncompressed_bytes": 1322149,
+      "http_ms": 17905.338750000083,
+      "extraction_ms": 10187.415629000083,
+      "extracted_tokens_o200k": 33901,
+      "links_presented": 2497,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
-      "verification": null,
+      "verification": {
+        "message_id": "IARC-M-7477cf91-85e9-4c8b-87ca-c61aa614f1f9",
+        "conversation_id": "IARC-C-932049bc-6c6e-4b22-ac94-31abc8239a64",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "ab2d91ee89d23233cedcb9ed3ec4c32377faeac7a6ac94207094d78c0d9b46e2",
+        "recorded_digest": "qy2R7onSMjPO3LntPsTDI3f66semrJQgcJTXjA2bRuI",
+        "digest_exact": true
+      },
+      "post_close_verification": null,
       "note": null,
-      "transitions": []
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-01T07:50:29.886Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-01T07:50:29.886Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-01T07:50:30.081Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 194.67070799999055,
+          "wire_body_bytes": 3781,
+          "uncompressed_bytes": 9289
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-01T07:50:30.347Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 768,
+          "links_presented": 42
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-01T07:50:36.939Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-01T07:50:36.939Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Predictive Word Keyboard",
+          "intent": false,
+          "url_sha256": "d3d4f155015104d7ba72f7cc8e1c704db4844bae97cd44b7608d98517a5eeaea",
+          "gap_ms": 6592
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-01T07:50:37.237Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 296.96795900000143,
+          "wire_body_bytes": 9156,
+          "uncompressed_bytes": 41227
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-01T07:50:37.486Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 957,
+          "links_presented": 74
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-01T07:50:48.956Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-01T07:50:48.956Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Turn shift on",
+          "intent": false,
+          "url_sha256": "8fac73d54cb679e4e5893e4435109a8761fdbcd2530503d55d7eef29b5868644",
+          "gap_ms": 11470
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-01T07:50:49.185Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 228.66737499999,
+          "wire_body_bytes": 9198,
+          "uncompressed_bytes": 42020
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-01T07:50:49.421Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 1061,
+          "links_presented": 74
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-01T07:50:56.552Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-01T07:50:56.552Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add Uppercase r",
+          "intent": false,
+          "url_sha256": "46172cbeb20c760285f70d5a1c2104764ff821597b5c656d39b62c752ec10bba",
+          "gap_ms": 7131
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-01T07:50:56.846Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 293.1413750000065,
+          "wire_body_bytes": 9239,
+          "uncompressed_bytes": 42341
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-01T07:50:57.084Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 971,
+          "links_presented": 77
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-01T07:51:03.638Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-01T07:51:03.638Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add e",
+          "intent": false,
+          "url_sha256": "6f470a7e4163120367440a582101666e19e1f6e629f9e22d8054d5ea5ab41d0e",
+          "gap_ms": 6554
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-01T07:51:03.976Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 335.00258299999405,
+          "wire_body_bytes": 9218,
+          "uncompressed_bytes": 41411
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-01T07:51:04.207Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 974,
+          "links_presented": 77
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-01T07:51:12.783Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-01T07:51:12.784Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add l",
+          "intent": false,
+          "url_sha256": "7d0d0640613dc30b2fa2dca5cbc9aa9dd7b74f94352e1d109a81992580535122",
+          "gap_ms": 8577
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-01T07:51:13.157Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 371.81937500002095,
+          "wire_body_bytes": 9245,
+          "uncompressed_bytes": 41984
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-01T07:51:13.387Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 1004,
+          "links_presented": 77
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-01T07:51:20.253Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-01T07:51:20.253Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add a",
+          "intent": false,
+          "url_sha256": "3669bf533949d4880c6fce4ea3b17e10e48b8002a56feb3c8848493c4863e321",
+          "gap_ms": 6866
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-01T07:51:20.625Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 370.4545830000134,
+          "wire_body_bytes": 8552,
+          "uncompressed_bytes": 40380
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-01T07:51:20.889Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 952,
+          "links_presented": 77
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-01T07:51:28.664Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-01T07:51:28.665Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add y",
+          "intent": false,
+          "url_sha256": "68aa985026e1a89c0857f1067b74b0c383987614bdab85015c456570dfac1c4f",
+          "gap_ms": 7776
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-01T07:51:29.103Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 437.84312500001397,
+          "wire_body_bytes": 7483,
+          "uncompressed_bytes": 35211
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-01T07:51:29.331Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 869,
+          "links_presented": 67
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-01T07:51:34.970Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-01T07:51:34.971Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add Space",
+          "intent": false,
+          "url_sha256": "563fdd48235ecb6758b29053f7743d2b8ad8a76d9b348080c6e3608f482e1f2d",
+          "gap_ms": 5640
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-01T07:51:35.402Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 430.1597920000204,
+          "wire_body_bytes": 9232,
+          "uncompressed_bytes": 41984
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-01T07:51:35.636Z",
+          "kind": "extraction",
+          "page": 9,
+          "tokens_o200k": 960,
+          "links_presented": 78
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-01T07:51:43.445Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-01T07:51:43.445Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add b",
+          "intent": false,
+          "url_sha256": "9dd5f17fb86baa0992d3f4232dcb5630b40ba1aa2cc7bf7e1412cef98a6a4f8c",
+          "gap_ms": 7809
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-01T07:51:44.056Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 610.1672499999986,
+          "wire_body_bytes": 9208,
+          "uncompressed_bytes": 42137
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-01T07:51:44.293Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 967,
+          "links_presented": 77
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-01T07:51:51.308Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-01T07:51:51.308Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add e",
+          "intent": false,
+          "url_sha256": "892dfa19291d74ad0d95457a161e90cd80d934eeb404f58f62f5d87f2e1289aa",
+          "gap_ms": 7015
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-01T07:51:51.852Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 543.3076669999864,
+          "wire_body_bytes": 9225,
+          "uncompressed_bytes": 42399
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-01T07:51:52.105Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 983,
+          "links_presented": 77
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-01T07:51:58.272Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-01T07:51:58.272Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add n",
+          "intent": false,
+          "url_sha256": "f1a7e10243b6360a77a7f5388d8ec683b08b715841816a78821bfe3451b47caf",
+          "gap_ms": 6167
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-01T07:51:58.831Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 557.8240410000144,
+          "wire_body_bytes": 8758,
+          "uncompressed_bytes": 41319
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-01T07:51:59.076Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 966,
+          "links_presented": 77
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-01T07:52:05.873Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-01T07:52:05.874Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add c",
+          "intent": false,
+          "url_sha256": "0aa1aee9e19e032bf8cf9a62f35836346185fea61e4991b6a7d442e101fbe0a8",
+          "gap_ms": 6798
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-01T07:52:06.411Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 535.9669170000125,
+          "wire_body_bytes": 7470,
+          "uncompressed_bytes": 34766
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-01T07:52:06.659Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 870,
+          "links_presented": 67
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-01T07:52:14.362Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-01T07:52:14.363Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add h",
+          "intent": false,
+          "url_sha256": "3dc151d2a4d2ec201f01be264780d556cb70ef936e1f87fac0dbe6b465def8a1",
+          "gap_ms": 7704
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-01T07:52:14.923Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 558.8386670000036,
+          "wire_body_bytes": 7490,
+          "uncompressed_bytes": 34873
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-01T07:52:15.168Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 869,
+          "links_presented": 67
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-01T07:52:22.009Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-01T07:52:22.009Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add m",
+          "intent": false,
+          "url_sha256": "8f06607da3d9c0065ff1e57032d2d5e97b23a94f59493f7819fb5f951e4e165c",
+          "gap_ms": 6841
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-01T07:52:22.612Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 601.70074999996,
+          "wire_body_bytes": 7232,
+          "uncompressed_bytes": 34049
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-01T07:52:22.835Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-01T07:52:28.585Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-01T07:52:28.586Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add a",
+          "intent": false,
+          "url_sha256": "d938e9b34a23b79d39e03d7140212ad59f2c584529d3b0aac976c689d9603441",
+          "gap_ms": 5751
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-01T07:52:29.198Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 610.8751660000416,
+          "wire_body_bytes": 7253,
+          "uncompressed_bytes": 33813
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-01T07:52:29.452Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-01T07:52:36.473Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-01T07:52:36.473Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add k",
+          "intent": false,
+          "url_sha256": "e6e491a91d533141ebd231d68c816c61618a061e68dbdbde38ecf91f0da065d4",
+          "gap_ms": 7021
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-01T07:52:37.087Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 613.228375000006,
+          "wire_body_bytes": 7226,
+          "uncompressed_bytes": 34008
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-01T07:52:37.337Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-01T07:52:45.721Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-01T07:52:45.721Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Undo last addition",
+          "intent": false,
+          "url_sha256": "60ea6b525686dc38f08c7675b04c7e298e5f41ac1c903c612ecfc0010091be1e",
+          "gap_ms": 8384
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-01T07:52:46.071Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 348.5230000000447,
+          "wire_body_bytes": 7253,
+          "uncompressed_bytes": 33813
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-01T07:52:46.343Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-01T07:52:55.038Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-01T07:52:55.039Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add r",
+          "intent": false,
+          "url_sha256": "1c66011b8903bd0c0db83caa838bf9b91102d21098ce09d6d7daf632cc45aa36",
+          "gap_ms": 8696
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-01T07:52:55.669Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 629.2016660000081,
+          "wire_body_bytes": 7231,
+          "uncompressed_bytes": 34100
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-01T07:52:55.930Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-01T07:53:01.894Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-01T07:53:01.895Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add k",
+          "intent": false,
+          "url_sha256": "bc9b5e9ad7fe22570046a2c03d5d8963b6780f974e8fb86a69331ef056f2364d",
+          "gap_ms": 5965
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-01T07:53:02.538Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 642.1396250000107,
+          "wire_body_bytes": 7256,
+          "uncompressed_bytes": 33706
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-01T07:53:02.771Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 862,
+          "links_presented": 65
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-01T07:53:08.530Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-01T07:53:08.531Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add Space",
+          "intent": false,
+          "url_sha256": "21efe31db2ce92b94dcdc6022451d66b632e0a21a4f350c45c08c46d3ca47fd1",
+          "gap_ms": 5760
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-01T07:53:08.996Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 463.84083299996564,
+          "wire_body_bytes": 9239,
+          "uncompressed_bytes": 42672
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-01T07:53:09.246Z",
+          "kind": "extraction",
+          "page": 21,
+          "tokens_o200k": 961,
+          "links_presented": 78
+        },
+        {
+          "seq": 85,
+          "at": "2026-10-01T07:53:15.739Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 86,
+          "at": "2026-10-01T07:53:15.739Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add c",
+          "intent": false,
+          "url_sha256": "9826426768158084ff05536eea2c9ec3f05a46f3f6918fa20675c6f3371591bb",
+          "gap_ms": 6493
+        },
+        {
+          "seq": 87,
+          "at": "2026-10-01T07:53:16.022Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 280.94891700003063,
+          "wire_body_bytes": 9258,
+          "uncompressed_bytes": 41732
+        },
+        {
+          "seq": 88,
+          "at": "2026-10-01T07:53:16.293Z",
+          "kind": "extraction",
+          "page": 22,
+          "tokens_o200k": 967,
+          "links_presented": 77
+        },
+        {
+          "seq": 89,
+          "at": "2026-10-01T07:53:23.004Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 90,
+          "at": "2026-10-01T07:53:23.005Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add a",
+          "intent": false,
+          "url_sha256": "b70a73d15f8c26a571801ba3a7fe1788daebc52197f5ed49b2614ec6834d4e8f",
+          "gap_ms": 6712
+        },
+        {
+          "seq": 91,
+          "at": "2026-10-01T07:53:23.319Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 312.74754200002644,
+          "wire_body_bytes": 9227,
+          "uncompressed_bytes": 41791
+        },
+        {
+          "seq": 92,
+          "at": "2026-10-01T07:53:23.579Z",
+          "kind": "extraction",
+          "page": 23,
+          "tokens_o200k": 985,
+          "links_presented": 77
+        },
+        {
+          "seq": 93,
+          "at": "2026-10-01T07:53:30.102Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 94,
+          "at": "2026-10-01T07:53:30.103Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add l",
+          "intent": false,
+          "url_sha256": "a6950b46b3d7dc2ac9389fcef658eb60268b65e29790848fe811e410644536d0",
+          "gap_ms": 6524
+        },
+        {
+          "seq": 95,
+          "at": "2026-10-01T07:53:30.451Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 347.6852910000016,
+          "wire_body_bytes": 9048,
+          "uncompressed_bytes": 41554
+        },
+        {
+          "seq": 96,
+          "at": "2026-10-01T07:53:30.705Z",
+          "kind": "extraction",
+          "page": 24,
+          "tokens_o200k": 991,
+          "links_presented": 77
+        },
+        {
+          "seq": 97,
+          "at": "2026-10-01T07:53:38.972Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 98,
+          "at": "2026-10-01T07:53:38.972Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add i",
+          "intent": false,
+          "url_sha256": "2cf39063aedb7b87ce1e4c77162bccb680444e56627efe6e7b723e6ecc0a42ef",
+          "gap_ms": 8267
+        },
+        {
+          "seq": 99,
+          "at": "2026-10-01T07:53:39.355Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 381.92445900000166,
+          "wire_body_bytes": 7762,
+          "uncompressed_bytes": 36909
+        },
+        {
+          "seq": 100,
+          "at": "2026-10-01T07:53:39.607Z",
+          "kind": "extraction",
+          "page": 25,
+          "tokens_o200k": 902,
+          "links_presented": 70
+        },
+        {
+          "seq": 101,
+          "at": "2026-10-01T07:53:46.578Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 102,
+          "at": "2026-10-01T07:53:46.578Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add b",
+          "intent": false,
+          "url_sha256": "e14ee9c7dc3996335550743967e77e05976e0ffecfc78596794a2f8c4f642ee3",
+          "gap_ms": 6971
+        },
+        {
+          "seq": 103,
+          "at": "2026-10-01T07:53:46.952Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 372.3530000000028,
+          "wire_body_bytes": 7385,
+          "uncompressed_bytes": 34215
+        },
+        {
+          "seq": 104,
+          "at": "2026-10-01T07:53:47.216Z",
+          "kind": "extraction",
+          "page": 26,
+          "tokens_o200k": 864,
+          "links_presented": 66
+        },
+        {
+          "seq": 105,
+          "at": "2026-10-01T07:53:56.385Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 106,
+          "at": "2026-10-01T07:53:56.385Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add r",
+          "intent": false,
+          "url_sha256": "01ac3fcde37d41e439482e41db53efa30c32393143fb12fcbe2a01ef1e3e4165",
+          "gap_ms": 9169
+        },
+        {
+          "seq": 107,
+          "at": "2026-10-01T07:53:56.809Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 422.9840410000179,
+          "wire_body_bytes": 7237,
+          "uncompressed_bytes": 34471
+        },
+        {
+          "seq": 108,
+          "at": "2026-10-01T07:53:57.075Z",
+          "kind": "extraction",
+          "page": 27,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 109,
+          "at": "2026-10-01T07:54:05.704Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 110,
+          "at": "2026-10-01T07:54:05.704Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add a",
+          "intent": false,
+          "url_sha256": "9a50d3ea666907becd7b1ea0be089c9a8051779c40a25f4103b7b0ec51745502",
+          "gap_ms": 8629
+        },
+        {
+          "seq": 111,
+          "at": "2026-10-01T07:54:06.170Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 464.2265839999891,
+          "wire_body_bytes": 7245,
+          "uncompressed_bytes": 34315
+        },
+        {
+          "seq": 112,
+          "at": "2026-10-01T07:54:06.405Z",
+          "kind": "extraction",
+          "page": 28,
+          "tokens_o200k": 864,
+          "links_presented": 65
+        },
+        {
+          "seq": 113,
+          "at": "2026-10-01T07:54:15.306Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 114,
+          "at": "2026-10-01T07:54:15.307Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add t",
+          "intent": false,
+          "url_sha256": "49c4c67b18e8115e5cb7c7e578d34757c940fb8107dcbceef1da816c8f2a5d0d",
+          "gap_ms": 8902
+        },
+        {
+          "seq": 115,
+          "at": "2026-10-01T07:54:15.817Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 508.80629199999385,
+          "wire_body_bytes": 7236,
+          "uncompressed_bytes": 34203
+        },
+        {
+          "seq": 116,
+          "at": "2026-10-01T07:54:16.066Z",
+          "kind": "extraction",
+          "page": 29,
+          "tokens_o200k": 864,
+          "links_presented": 65
+        },
+        {
+          "seq": 117,
+          "at": "2026-10-01T07:54:23.428Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 118,
+          "at": "2026-10-01T07:54:23.428Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add i",
+          "intent": false,
+          "url_sha256": "88579d1d150831bf0b4e4a9e2accaf4cdc4677781b91cff64a56c3a697310de0",
+          "gap_ms": 7362
+        },
+        {
+          "seq": 119,
+          "at": "2026-10-01T07:54:23.971Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 541.849499999953,
+          "wire_body_bytes": 7217,
+          "uncompressed_bytes": 34094
+        },
+        {
+          "seq": 120,
+          "at": "2026-10-01T07:54:24.220Z",
+          "kind": "extraction",
+          "page": 30,
+          "tokens_o200k": 864,
+          "links_presented": 65
+        },
+        {
+          "seq": 121,
+          "at": "2026-10-01T07:54:36.008Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 122,
+          "at": "2026-10-01T07:54:36.009Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add b",
+          "intent": false,
+          "url_sha256": "6c15c02d4277f1e541a4200e0329ba8c2b23e6c524c25867492209230a31d618",
+          "gap_ms": 11789
+        },
+        {
+          "seq": 123,
+          "at": "2026-10-01T07:54:36.548Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 538.3137090000091,
+          "wire_body_bytes": 7240,
+          "uncompressed_bytes": 34107
+        },
+        {
+          "seq": 124,
+          "at": "2026-10-01T07:54:36.897Z",
+          "kind": "extraction",
+          "page": 31,
+          "tokens_o200k": 865,
+          "links_presented": 65
+        },
+        {
+          "seq": 125,
+          "at": "2026-10-01T07:54:48.454Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 126,
+          "at": "2026-10-01T07:54:48.454Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Undo last addition",
+          "intent": false,
+          "url_sha256": "46c464eb719d039be0a5e0c933fb638f79cdecd9aa616df830cabe477cc65e16",
+          "gap_ms": 11557
+        },
+        {
+          "seq": 127,
+          "at": "2026-10-01T07:54:48.771Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 315.9896249999874,
+          "wire_body_bytes": 7217,
+          "uncompressed_bytes": 34094
+        },
+        {
+          "seq": 128,
+          "at": "2026-10-01T07:54:48.992Z",
+          "kind": "extraction",
+          "page": 32,
+          "tokens_o200k": 864,
+          "links_presented": 65
+        },
+        {
+          "seq": 129,
+          "at": "2026-10-01T07:54:55.078Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 130,
+          "at": "2026-10-01T07:54:55.079Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add o",
+          "intent": false,
+          "url_sha256": "54a513d8e49e1e2bb92f0d9b63ce6ac2b720a4a98d33c00de2fe42545a7e77dd",
+          "gap_ms": 6087
+        },
+        {
+          "seq": 131,
+          "at": "2026-10-01T07:54:55.626Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 546.310999999987,
+          "wire_body_bytes": 7257,
+          "uncompressed_bytes": 34559
+        },
+        {
+          "seq": 132,
+          "at": "2026-10-01T07:54:55.863Z",
+          "kind": "extraction",
+          "page": 33,
+          "tokens_o200k": 864,
+          "links_presented": 65
+        },
+        {
+          "seq": 133,
+          "at": "2026-10-01T07:55:02.114Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 134,
+          "at": "2026-10-01T07:55:02.114Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add n",
+          "intent": false,
+          "url_sha256": "1e06e462635f5d71972255d6ec0f59f32dd6041cfdfa59f8226beee283cdbd29",
+          "gap_ms": 6251
+        },
+        {
+          "seq": 135,
+          "at": "2026-10-01T07:55:02.725Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 609.0090830000117,
+          "wire_body_bytes": 7229,
+          "uncompressed_bytes": 34438
+        },
+        {
+          "seq": 136,
+          "at": "2026-10-01T07:55:02.978Z",
+          "kind": "extraction",
+          "page": 34,
+          "tokens_o200k": 863,
+          "links_presented": 65
+        },
+        {
+          "seq": 137,
+          "at": "2026-10-01T07:55:09.068Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 138,
+          "at": "2026-10-01T07:55:09.069Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add .",
+          "intent": false,
+          "url_sha256": "ec7771a8aa8d02f37eff6d256a4183830f53140fb4b17c62963a1487c386b709",
+          "gap_ms": 6091
+        },
+        {
+          "seq": 139,
+          "at": "2026-10-01T07:55:09.664Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 593.9262500000186,
+          "wire_body_bytes": 9174,
+          "uncompressed_bytes": 41658
+        },
+        {
+          "seq": 140,
+          "at": "2026-10-01T07:55:09.917Z",
+          "kind": "extraction",
+          "page": 35,
+          "tokens_o200k": 959,
+          "links_presented": 77
+        },
+        {
+          "seq": 141,
+          "at": "2026-10-01T07:55:17.507Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 142,
+          "at": "2026-10-01T07:55:17.507Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Review message",
+          "intent": false,
+          "url_sha256": "b2d8e2672352aa288cfb8d3ca04038264fbdf22407de581fb38db978c255eb70",
+          "gap_ms": 7590
+        },
+        {
+          "seq": 143,
+          "at": "2026-10-01T07:55:18.270Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 761.7259169999743,
+          "wire_body_bytes": 2082,
+          "uncompressed_bytes": 4792
+        },
+        {
+          "seq": 144,
+          "at": "2026-10-01T07:55:18.505Z",
+          "kind": "exact-review-witness"
+        },
+        {
+          "seq": 145,
+          "at": "2026-10-01T07:55:18.505Z",
+          "kind": "extraction",
+          "page": 36,
+          "tokens_o200k": 89,
+          "links_presented": 2
+        },
+        {
+          "seq": 146,
+          "at": "2026-10-01T07:55:30.398Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 147,
+          "at": "2026-10-01T07:55:30.398Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Publish this message publicly",
+          "intent": true,
+          "url_sha256": "175bdefce86e01f50d6f76f86bac6905c4b62bb20d3ce58af39a4ce61db324a3",
+          "gap_ms": 11893
+        },
+        {
+          "seq": 148,
+          "at": "2026-10-01T07:55:30.705Z",
+          "kind": "http",
+          "status": 201,
+          "http_ms": 306.03549999999814,
+          "wire_body_bytes": 4503,
+          "uncompressed_bytes": 4503
+        },
+        {
+          "seq": 149,
+          "at": "2026-10-01T07:55:30.959Z",
+          "kind": "extraction",
+          "page": 37,
+          "tokens_o200k": 138,
+          "links_presented": 11
+        },
+        {
+          "seq": 150,
+          "at": "2026-10-01T07:55:37.757Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 151,
+          "at": "2026-10-01T07:55:37.757Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Open public message",
+          "intent": false,
+          "url_sha256": "0518e9a22a1186cddc3e4b33e0997896495ba6a29aaad96888d8ae4d510408ea",
+          "gap_ms": 6798
+        },
+        {
+          "seq": 152,
+          "at": "2026-10-01T07:55:37.965Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 207.16883400001097,
+          "wire_body_bytes": 2229,
+          "uncompressed_bytes": 4798
+        },
+        {
+          "seq": 153,
+          "at": "2026-10-01T07:55:38.194Z",
+          "kind": "extraction",
+          "page": 38,
+          "tokens_o200k": 171,
+          "links_presented": 13
+        },
+        {
+          "seq": 154,
+          "at": "2026-10-01T07:55:44.829Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 155,
+          "at": "2026-10-01T07:55:44.829Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Machine-readable message record",
+          "intent": false,
+          "url_sha256": "2c30dfe3d60453ad65b00b2c3f320ca4b4f3b5afe5e04fccf693ddad51793245",
+          "gap_ms": 6635
+        },
+        {
+          "seq": 156,
+          "at": "2026-10-01T07:55:45.042Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 212.30691699997988,
+          "wire_body_bytes": 2643,
+          "uncompressed_bytes": 6808
+        },
+        {
+          "seq": 157,
+          "at": "2026-10-01T07:55:45.311Z",
+          "kind": "extraction",
+          "page": 39,
+          "tokens_o200k": 722,
+          "links_presented": 9
+        },
+        {
+          "seq": 158,
+          "at": "2026-10-01T07:55:53.005Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 159,
+          "at": "2026-10-01T07:56:09.903Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 160,
+          "at": "2026-10-01T07:56:09.903Z",
+          "kind": "activation",
+          "operation": "history-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "0518e9a22a1186cddc3e4b33e0997896495ba6a29aaad96888d8ae4d510408ea",
+          "gap_ms": 24592
+        },
+        {
+          "seq": 161,
+          "at": "2026-10-01T07:56:10.109Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 204.1549160000286,
+          "wire_body_bytes": 2229,
+          "uncompressed_bytes": 4798
+        },
+        {
+          "seq": 162,
+          "at": "2026-10-01T07:56:10.347Z",
+          "kind": "extraction",
+          "page": 40,
+          "tokens_o200k": 171,
+          "links_presented": 13
+        },
+        {
+          "seq": 163,
+          "at": "2026-10-01T07:56:21.060Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 164,
+          "at": "2026-10-01T07:56:21.060Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Machine-readable message record",
+          "intent": false,
+          "url_sha256": "2c30dfe3d60453ad65b00b2c3f320ca4b4f3b5afe5e04fccf693ddad51793245",
+          "gap_ms": 10713
+        },
+        {
+          "seq": 165,
+          "at": "2026-10-01T07:56:21.363Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 302.53054099995643,
+          "wire_body_bytes": 2643,
+          "uncompressed_bytes": 6808
+        },
+        {
+          "seq": 166,
+          "at": "2026-10-01T07:56:21.604Z",
+          "kind": "extraction",
+          "page": 41,
+          "tokens_o200k": 722,
+          "links_presented": 9
+        },
+        {
+          "seq": 167,
+          "at": "2026-10-01T07:56:30.176Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 168,
+          "at": "2026-10-01T07:58:11.218Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 169,
+          "at": "2026-10-01T07:58:11.459Z",
+          "kind": "finish"
+        }
+      ]
     },
     {
       "run": "calibration-prefix-v1",
@@ -2039,6 +3882,7 @@
       "links_presented": 115,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Prefix Link Keyboard requires pair selection and Find matching words form controls; forms are disallowed by calibration instructions, so the exact target cannot be composed.",
       "transitions": [
         {
@@ -2152,6 +3996,7 @@
       "links_presented": 51,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
       "verification": null,
+      "post_close_verification": null,
       "note": "Shared extractor stalled; calibration terminated before publication. Raw request costs retained.",
       "transitions": [
         {
@@ -2273,28 +4118,38 @@
       "target_utf8_bytes": 28,
       "reply_to": null,
       "created_at": "2026-10-01T07:48:11.478Z",
-      "outcome": "in_progress",
-      "finished": false,
-      "wall_ms": null,
-      "time_to_first_publish_activation_ms": null,
-      "activations": 6,
-      "http_attempts": 6,
-      "http_responses": 6,
+      "outcome": "completed",
+      "finished": true,
+      "wall_ms": 901128,
+      "time_to_first_publish_activation_ms": 636115,
+      "activations": 35,
+      "http_attempts": 35,
+      "http_responses": 35,
       "network_errors": 0,
       "redirects": 0,
       "fragments": 0,
       "activation_kinds": {
         "initial-navigation": 1,
-        "link": 5
+        "link": 32,
+        "history-navigation": 2
       },
-      "wire_body_bytes": 38399,
-      "uncompressed_bytes": 279648,
-      "http_ms": 2699.759958999988,
-      "extraction_ms": 1468.6371659999713,
-      "extracted_tokens_o200k": 14661,
-      "links_presented": 912,
+      "wire_body_bytes": 211807,
+      "uncompressed_bytes": 1569008,
+      "http_ms": 17217.31170899998,
+      "extraction_ms": 8276.790124999912,
+      "extracted_tokens_o200k": 82477,
+      "links_presented": 4952,
       "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
-      "verification": null,
+      "verification": {
+        "message_id": "IARC-M-8fa02429-2dc5-48e9-966a-377143cebdaa",
+        "conversation_id": "IARC-C-e1458c0c-ae51-4e54-99f8-87227eed0358",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "ab2d91ee89d23233cedcb9ed3ec4c32377faeac7a6ac94207094d78c0d9b46e2",
+        "recorded_digest": "qy2R7onSMjPO3LntPsTDI3f66semrJQgcJTXjA2bRuI",
+        "digest_exact": true
+      },
+      "post_close_verification": null,
       "note": null,
       "transitions": [
         {
@@ -2488,6 +4343,2424 @@
           "page": 6,
           "tokens_o200k": 3608,
           "links_presented": 240
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-01T07:50:15.582Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-01T07:50:15.582Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "␠t",
+          "intent": false,
+          "url_sha256": "967fd2e809c0e8b33f5bcd38511ddec42d7967f97305a6510ef4ad9f1ef2a0f6",
+          "gap_ms": 8185
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-01T07:50:15.935Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 351.57787500001723,
+          "wire_body_bytes": 6506,
+          "uncompressed_bytes": 50523
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-01T07:50:16.180Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 2536,
+          "links_presented": 155
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-01T07:50:22.724Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-01T07:50:22.725Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add ␠test to the draft",
+          "intent": false,
+          "url_sha256": "0d96edc1449b1a053317622d52ed8ee47a93f867efc41e61256be6fffc91670c",
+          "gap_ms": 6545
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-01T07:50:24.009Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 1282.7204579999961,
+          "wire_body_bytes": 8213,
+          "uncompressed_bytes": 71543
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-01T07:50:24.255Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 3621,
+          "links_presented": 240
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-01T07:50:51.344Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-01T07:50:51.350Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add . to the draft",
+          "intent": false,
+          "url_sha256": "05490f3c7719869b00f659a52f53ca01724fc7a9a7ebbdf674403f6e31dd6cd9",
+          "gap_ms": 27095
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-01T07:50:52.203Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 852.3962089999986,
+          "wire_body_bytes": 8197,
+          "uncompressed_bytes": 71526
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-01T07:50:52.432Z",
+          "kind": "extraction",
+          "page": 9,
+          "tokens_o200k": 3612,
+          "links_presented": 240
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-01T07:51:08.158Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-01T07:51:08.159Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Review this exact branch",
+          "intent": false,
+          "url_sha256": "382561fedc72eba57c45d4625036ab5c213a7c696d4e936fbe9ad5c730053c34",
+          "gap_ms": 15727
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-01T07:51:08.510Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 351.01941600002465,
+          "wire_body_bytes": 2741,
+          "uncompressed_bytes": 6151
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-01T07:51:08.728Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 387,
+          "links_presented": 9
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-01T07:51:25.860Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-01T07:51:25.860Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Arm publication",
+          "intent": false,
+          "url_sha256": "e681a8b8d5c4df78d1ba3b858d4bfd279e4ac518e48d0c010b516d232b64f24a",
+          "gap_ms": 17132
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-01T07:51:26.238Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 376.41574999998556,
+          "wire_body_bytes": 2677,
+          "uncompressed_bytes": 5817
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-01T07:51:26.490Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 319,
+          "links_presented": 6
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-01T07:51:43.340Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-01T07:52:27.738Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-01T07:52:50.270Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-01T07:52:50.271Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Return to review",
+          "intent": false,
+          "url_sha256": "382561fedc72eba57c45d4625036ab5c213a7c696d4e936fbe9ad5c730053c34",
+          "gap_ms": 83781
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-01T07:52:50.597Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 324.9627919999766,
+          "wire_body_bytes": 2741,
+          "uncompressed_bytes": 6151
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-01T07:52:50.844Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 387,
+          "links_presented": 9
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-01T07:53:03.241Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-01T07:53:03.241Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Continue from this branch",
+          "intent": false,
+          "url_sha256": "9137784c0d9e238e29d508f02f027335fd80ae6b828670890f7bccd9bcd0a6a2",
+          "gap_ms": 12397
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-01T07:53:03.783Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 539.7685410000267,
+          "wire_body_bytes": 8197,
+          "uncompressed_bytes": 71526
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-01T07:53:04.030Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 3612,
+          "links_presented": 240
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-01T07:53:29.368Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-01T07:53:29.368Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Remove last addition",
+          "intent": false,
+          "url_sha256": "38ea421de498c6c0d7f5d4aa004519741d71b71635a7e8014e4066c23e82241c",
+          "gap_ms": 25338
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-01T07:53:29.863Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 493.50541599997086,
+          "wire_body_bytes": 8213,
+          "uncompressed_bytes": 71543
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-01T07:53:30.120Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 3621,
+          "links_presented": 240
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-01T07:53:39.308Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-01T07:53:39.309Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Remove last addition",
+          "intent": false,
+          "url_sha256": "506e917091e4739fe1efc5d5fe1ffceecb9483d0866bfe7b7016d8f7de0783db",
+          "gap_ms": 9189
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-01T07:53:39.745Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 436.23837500001537,
+          "wire_body_bytes": 8229,
+          "uncompressed_bytes": 72186
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-01T07:53:39.994Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 3608,
+          "links_presented": 240
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-01T07:53:59.314Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-01T07:53:59.315Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Remove last addition",
+          "intent": false,
+          "url_sha256": "6dae3a2a4e967f905d73d62b83196b886b96457ece3cdebc2dec89d9ecf5d5d6",
+          "gap_ms": 19321
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-01T07:53:59.700Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 383.21387500001583,
+          "wire_body_bytes": 8009,
+          "uncompressed_bytes": 70091
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-01T07:53:59.940Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 3516,
+          "links_presented": 239
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-01T07:54:20.251Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-01T07:54:20.252Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add Relay to the draft",
+          "intent": false,
+          "url_sha256": "71cfa46e68eb09919888ab28c851d10e2ee252de016ac5c8b46cf86e297cade6",
+          "gap_ms": 20312
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-01T07:54:20.713Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 460.12304099998437,
+          "wire_body_bytes": 8229,
+          "uncompressed_bytes": 72186
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-01T07:54:20.959Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 3608,
+          "links_presented": 240
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-01T07:54:31.209Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-01T07:54:31.210Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "␠a",
+          "intent": false,
+          "url_sha256": "f27ddbfb78fa000f8da5192b4f3657f093cb5e34f7c2b5d57eb64adec131565f",
+          "gap_ms": 10251
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-01T07:54:31.784Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 573.2779999999912,
+          "wire_body_bytes": 6162,
+          "uncompressed_bytes": 41705
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-01T07:54:32.006Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 2264,
+          "links_presented": 116
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-01T07:54:48.798Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-01T07:54:48.798Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Return to this draft",
+          "intent": false,
+          "url_sha256": "506e917091e4739fe1efc5d5fe1ffceecb9483d0866bfe7b7016d8f7de0783db",
+          "gap_ms": 16792
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-01T07:54:49.206Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 407.1479169999948,
+          "wire_body_bytes": 8229,
+          "uncompressed_bytes": 72186
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-01T07:54:49.443Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 3608,
+          "links_presented": 240
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-01T07:54:57.279Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-01T07:54:57.279Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "␠b",
+          "intent": false,
+          "url_sha256": "a942c29ab0ef0a1623b4f956efefb49e5ff611891d466af486cac1b41fd3923e",
+          "gap_ms": 7836
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-01T07:54:57.782Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 499.9975829999894,
+          "wire_body_bytes": 6481,
+          "uncompressed_bytes": 48105
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-01T07:54:58.027Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 2481,
+          "links_presented": 144
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-01T07:55:07.139Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-01T07:55:07.140Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add ␠be to the draft",
+          "intent": false,
+          "url_sha256": "2046dbb60650900f765b729711c25e37029407537625caff21bb231d89b3a69c",
+          "gap_ms": 9113
+        },
+        {
+          "seq": 85,
+          "at": "2026-10-01T07:55:07.967Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 825.4534170000115,
+          "wire_body_bytes": 8212,
+          "uncompressed_bytes": 71786
+        },
+        {
+          "seq": 86,
+          "at": "2026-10-01T07:55:08.209Z",
+          "kind": "extraction",
+          "page": 21,
+          "tokens_o200k": 3612,
+          "links_presented": 240
+        },
+        {
+          "seq": 87,
+          "at": "2026-10-01T07:55:17.856Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 88,
+          "at": "2026-10-01T07:55:17.857Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Remove last addition",
+          "intent": false,
+          "url_sha256": "506e917091e4739fe1efc5d5fe1ffceecb9483d0866bfe7b7016d8f7de0783db",
+          "gap_ms": 9648
+        },
+        {
+          "seq": 89,
+          "at": "2026-10-01T07:55:18.334Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 477.25445899995975,
+          "wire_body_bytes": 8229,
+          "uncompressed_bytes": 72186
+        },
+        {
+          "seq": 90,
+          "at": "2026-10-01T07:55:18.560Z",
+          "kind": "extraction",
+          "page": 22,
+          "tokens_o200k": 3608,
+          "links_presented": 240
+        },
+        {
+          "seq": 91,
+          "at": "2026-10-01T07:55:30.918Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 92,
+          "at": "2026-10-01T07:55:30.919Z",
+          "kind": "activation",
+          "operation": "history-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "a942c29ab0ef0a1623b4f956efefb49e5ff611891d466af486cac1b41fd3923e",
+          "gap_ms": 12359
+        },
+        {
+          "seq": 93,
+          "at": "2026-10-01T07:55:31.248Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 327.5571249999921,
+          "wire_body_bytes": 6481,
+          "uncompressed_bytes": 48105
+        },
+        {
+          "seq": 94,
+          "at": "2026-10-01T07:55:31.494Z",
+          "kind": "extraction",
+          "page": 23,
+          "tokens_o200k": 2481,
+          "links_presented": 144
+        },
+        {
+          "seq": 95,
+          "at": "2026-10-01T07:55:39.220Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 96,
+          "at": "2026-10-01T07:55:39.221Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "en",
+          "intent": false,
+          "url_sha256": "1066d155fffb6dc3125a8eab7b70d9c84c7054e8c1c308f71044cee037f8abba",
+          "gap_ms": 7727
+        },
+        {
+          "seq": 97,
+          "at": "2026-10-01T07:55:39.566Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 344.15154099999927,
+          "wire_body_bytes": 6148,
+          "uncompressed_bytes": 36395
+        },
+        {
+          "seq": 98,
+          "at": "2026-10-01T07:55:39.819Z",
+          "kind": "extraction",
+          "page": 24,
+          "tokens_o200k": 2480,
+          "links_presented": 86
+        },
+        {
+          "seq": 99,
+          "at": "2026-10-01T07:55:49.406Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 100,
+          "at": "2026-10-01T07:55:49.406Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add ␠benchmark to the draft",
+          "intent": false,
+          "url_sha256": "13a11edeb7fcd7b92c5588cfb70754b33ff9bebac980e7b5b253241c60ee85b2",
+          "gap_ms": 9587
+        },
+        {
+          "seq": 101,
+          "at": "2026-10-01T07:55:50.055Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 647.3081249999814,
+          "wire_body_bytes": 8217,
+          "uncompressed_bytes": 71137
+        },
+        {
+          "seq": 102,
+          "at": "2026-10-01T07:55:50.308Z",
+          "kind": "extraction",
+          "page": 25,
+          "tokens_o200k": 3647,
+          "links_presented": 240
+        },
+        {
+          "seq": 103,
+          "at": "2026-10-01T07:56:06.919Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 104,
+          "at": "2026-10-01T07:56:06.919Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "␠c",
+          "intent": false,
+          "url_sha256": "e3a61554f3969202728c224d511ceed997b06d48aad3500a17924bc4846cf7cc",
+          "gap_ms": 16611
+        },
+        {
+          "seq": 105,
+          "at": "2026-10-01T07:56:07.441Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 520.6983340000152,
+          "wire_body_bytes": 6271,
+          "uncompressed_bytes": 44228
+        },
+        {
+          "seq": 106,
+          "at": "2026-10-01T07:56:07.688Z",
+          "kind": "extraction",
+          "page": 26,
+          "tokens_o200k": 2437,
+          "links_presented": 129
+        },
+        {
+          "seq": 107,
+          "at": "2026-10-01T07:56:21.805Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 108,
+          "at": "2026-10-01T07:56:21.806Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "al",
+          "intent": false,
+          "url_sha256": "3c5436d97b6954e374d9b1f679af926f1445696266ee11aa1ee041531b6b9578",
+          "gap_ms": 14118
+        },
+        {
+          "seq": 109,
+          "at": "2026-10-01T07:56:22.193Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 385.69637499999953,
+          "wire_body_bytes": 6123,
+          "uncompressed_bytes": 35673
+        },
+        {
+          "seq": 110,
+          "at": "2026-10-01T07:56:22.441Z",
+          "kind": "extraction",
+          "page": 27,
+          "tokens_o200k": 2519,
+          "links_presented": 84
+        },
+        {
+          "seq": 111,
+          "at": "2026-10-01T07:56:42.641Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 112,
+          "at": "2026-10-01T07:56:42.641Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add ␠calibration to the draft",
+          "intent": false,
+          "url_sha256": "71e3e0fa86c5ab3ba927d0b7c54cddea61f4b41675c72831cf1784e1b3f93364",
+          "gap_ms": 20200
+        },
+        {
+          "seq": 113,
+          "at": "2026-10-01T07:56:43.250Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 607.5777080000262,
+          "wire_body_bytes": 8275,
+          "uncompressed_bytes": 71877
+        },
+        {
+          "seq": 114,
+          "at": "2026-10-01T07:56:43.514Z",
+          "kind": "extraction",
+          "page": 28,
+          "tokens_o200k": 3680,
+          "links_presented": 240
+        },
+        {
+          "seq": 115,
+          "at": "2026-10-01T07:56:54.209Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 116,
+          "at": "2026-10-01T07:56:54.210Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add . to the draft",
+          "intent": false,
+          "url_sha256": "5545956b0d224227eb04f13d769748f227401c6dfc31695097ea457f0cae682c",
+          "gap_ms": 10696
+        },
+        {
+          "seq": 117,
+          "at": "2026-10-01T07:56:54.785Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 575.202500000014,
+          "wire_body_bytes": 8276,
+          "uncompressed_bytes": 72097
+        },
+        {
+          "seq": 118,
+          "at": "2026-10-01T07:56:55.030Z",
+          "kind": "extraction",
+          "page": 29,
+          "tokens_o200k": 3653,
+          "links_presented": 240
+        },
+        {
+          "seq": 119,
+          "at": "2026-10-01T07:57:09.515Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 120,
+          "at": "2026-10-01T07:57:17.742Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 121,
+          "at": "2026-10-01T07:57:43.137Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 122,
+          "at": "2026-10-01T07:57:56.451Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 123,
+          "at": "2026-10-01T07:58:02.375Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 124,
+          "at": "2026-10-01T07:58:10.465Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 125,
+          "at": "2026-10-01T07:58:22.242Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 126,
+          "at": "2026-10-01T07:58:22.243Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Review this exact branch",
+          "intent": false,
+          "url_sha256": "d215d30b8395f38baec4db2f28b8fab6bb35a22037b4ab311aa0a9afa8c0e3ab",
+          "gap_ms": 87213
+        },
+        {
+          "seq": 127,
+          "at": "2026-10-01T07:58:22.612Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 367.1933330000029,
+          "wire_body_bytes": 2773,
+          "uncompressed_bytes": 6223
+        },
+        {
+          "seq": 128,
+          "at": "2026-10-01T07:58:22.894Z",
+          "kind": "exact-review-witness"
+        },
+        {
+          "seq": 129,
+          "at": "2026-10-01T07:58:22.894Z",
+          "kind": "extraction",
+          "page": 30,
+          "tokens_o200k": 428,
+          "links_presented": 9
+        },
+        {
+          "seq": 130,
+          "at": "2026-10-01T07:58:37.319Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 131,
+          "at": "2026-10-01T07:58:37.319Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Arm publication",
+          "intent": false,
+          "url_sha256": "35f11132a02abc8598f03f633efa69af89d488e2c7d19a0fb0296f28fce00a8f",
+          "gap_ms": 14425
+        },
+        {
+          "seq": 132,
+          "at": "2026-10-01T07:58:37.750Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 429.6839170000021,
+          "wire_body_bytes": 2677,
+          "uncompressed_bytes": 5812
+        },
+        {
+          "seq": 133,
+          "at": "2026-10-01T07:58:37.981Z",
+          "kind": "extraction",
+          "page": 31,
+          "tokens_o200k": 319,
+          "links_presented": 6
+        },
+        {
+          "seq": 134,
+          "at": "2026-10-01T07:58:47.593Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 135,
+          "at": "2026-10-01T07:58:47.594Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Publish this message publicly",
+          "intent": true,
+          "url_sha256": "a014addc52116aeb1fb5a159f3d4936c123f043398b77b58cbc42cd67a5a6dd3",
+          "gap_ms": 9613
+        },
+        {
+          "seq": 136,
+          "at": "2026-10-01T07:58:48.236Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 641.2403340000019,
+          "wire_body_bytes": 2391,
+          "uncompressed_bytes": 5260
+        },
+        {
+          "seq": 137,
+          "at": "2026-10-01T07:58:48.470Z",
+          "kind": "extraction",
+          "page": 32,
+          "tokens_o200k": 276,
+          "links_presented": 6
+        },
+        {
+          "seq": 138,
+          "at": "2026-10-01T07:58:55.431Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 139,
+          "at": "2026-10-01T07:58:55.432Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "View public message IARC-M-8fa02429-2dc5-48e9-966a-377143cebdaa",
+          "intent": false,
+          "url_sha256": "eb540dd74795b40accf3a35c016cdb98034887546d31bd424c0e20d5c9c54d66",
+          "gap_ms": 6962
+        },
+        {
+          "seq": 140,
+          "at": "2026-10-01T07:58:55.918Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 484.71645899999567,
+          "wire_body_bytes": 2689,
+          "uncompressed_bytes": 6994
+        },
+        {
+          "seq": 141,
+          "at": "2026-10-01T07:58:56.159Z",
+          "kind": "extraction",
+          "page": 33,
+          "tokens_o200k": 748,
+          "links_presented": 9
+        },
+        {
+          "seq": 142,
+          "at": "2026-10-01T07:59:06.344Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 143,
+          "at": "2026-10-01T07:59:06.344Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Machine entry",
+          "intent": false,
+          "url_sha256": "6b8fd01abf87c1538144c4adb036544a0f4c209dd6eafde509c1107c7e44ba4c",
+          "gap_ms": 10185
+        },
+        {
+          "seq": 144,
+          "at": "2026-10-01T07:59:06.674Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 328.7633329999953,
+          "wire_body_bytes": 1133,
+          "uncompressed_bytes": 3354
+        },
+        {
+          "seq": 145,
+          "at": "2026-10-01T07:59:06.676Z",
+          "kind": "extraction",
+          "page": 34,
+          "tokens_o200k": null,
+          "links_presented": 0
+        },
+        {
+          "seq": 146,
+          "at": "2026-10-01T07:59:25.901Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 147,
+          "at": "2026-10-01T07:59:52.240Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 148,
+          "at": "2026-10-01T08:00:14.624Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 149,
+          "at": "2026-10-01T08:00:23.690Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 150,
+          "at": "2026-10-01T08:00:31.981Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 151,
+          "at": "2026-10-01T08:00:58.961Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 152,
+          "at": "2026-10-01T08:01:10.765Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 153,
+          "at": "2026-10-01T08:01:18.994Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 154,
+          "at": "2026-10-01T08:01:43.817Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 155,
+          "at": "2026-10-01T08:01:57.212Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 156,
+          "at": "2026-10-01T08:03:01.212Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 157,
+          "at": "2026-10-01T08:03:01.212Z",
+          "kind": "activation",
+          "operation": "history-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "eb540dd74795b40accf3a35c016cdb98034887546d31bd424c0e20d5c9c54d66",
+          "gap_ms": 234536
+        },
+        {
+          "seq": 158,
+          "at": "2026-10-01T08:03:01.436Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 222.68954200000735,
+          "wire_body_bytes": 2689,
+          "uncompressed_bytes": 6994
+        },
+        {
+          "seq": 159,
+          "at": "2026-10-01T08:03:01.675Z",
+          "kind": "extraction",
+          "page": 35,
+          "tokens_o200k": 748,
+          "links_presented": 9
+        },
+        {
+          "seq": 160,
+          "at": "2026-10-01T08:03:12.607Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 161,
+          "at": "2026-10-01T08:03:12.607Z",
+          "kind": "finish"
+        }
+      ]
+    },
+    {
+      "run": "recovery-chunk-lost-add",
+      "scored": false,
+      "task": "recovery-lost-addition-response",
+      "method": "chunk-word",
+      "profile": "deterministic-engineering-recovery",
+      "model": null,
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "target_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+      "target_utf8_bytes": 1,
+      "reply_to": null,
+      "created_at": "2026-10-01T08:01:31.606Z",
+      "outcome": "completed",
+      "finished": true,
+      "wall_ms": 201691,
+      "time_to_first_publish_activation_ms": 106190,
+      "activations": 8,
+      "http_attempts": 8,
+      "http_responses": 8,
+      "network_errors": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 6,
+        "retry": 1
+      },
+      "wire_body_bytes": 54190,
+      "uncompressed_bytes": 295783,
+      "http_ms": 3683.091124,
+      "extraction_ms": 1706.28475,
+      "extracted_tokens_o200k": 13054,
+      "links_presented": 986,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": {
+        "message_id": "IARC-M-bb8f3ca4-1f3e-40f8-ae06-60d733e8d234",
+        "conversation_id": "IARC-C-8093396b-c1ec-4851-8d9f-091442ce4656",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "a83dd0ccbffe39d071cc317ddf6e97f5c6b1c87af91919271f9fa140b0508c6c",
+        "recorded_digest": "qD3QzL_-OdBxzDF9326X9caxyHr5GRknH5-hQLBQjGw",
+        "digest_exact": true
+      },
+      "post_close_verification": null,
+      "note": "Separate deterministic engineering recovery probe.",
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-01T08:01:31.607Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-01T08:01:31.608Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-01T08:01:31.862Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 251.811625,
+          "wire_body_bytes": 3781,
+          "uncompressed_bytes": 9289
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-01T08:01:32.117Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 768,
+          "links_presented": 42
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-01T08:01:32.118Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-01T08:01:32.118Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Chunk Word Keyboard",
+          "intent": false,
+          "url_sha256": "4c21869385792918df1e55e73750991fbf6f4bf0d5618d11408038e7ad9c7e2e",
+          "gap_ms": 1
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-01T08:01:32.417Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 297.72775,
+          "wire_body_bytes": 13561,
+          "uncompressed_bytes": 93767
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-01T08:01:32.671Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 5669,
+          "links_presented": 462
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-01T08:01:55.614Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-01T08:01:55.616Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add top word I",
+          "intent": false,
+          "url_sha256": "e5a4a032f0cace29beeff3781f4eab61ff18c315e75e5b21a33e380c83c21f8c",
+          "gap_ms": 22945
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-01T08:01:56.094Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 475.647625,
+          "wire_body_bytes": 12728,
+          "uncompressed_bytes": 85966
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-01T08:01:56.094Z",
+          "kind": "injected-response-loss"
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-01T08:01:56.098Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-01T08:01:56.100Z",
+          "kind": "activation",
+          "operation": "retry",
+          "link_label": "Add top word I",
+          "intent": false,
+          "url_sha256": "e5a4a032f0cace29beeff3781f4eab61ff18c315e75e5b21a33e380c83c21f8c",
+          "gap_ms": 23429
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-01T08:01:56.530Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 429.025791,
+          "wire_body_bytes": 12728,
+          "uncompressed_bytes": 85966
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-01T08:01:56.783Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 5491,
+          "links_presented": 447
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-01T08:02:59.996Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-01T08:02:59.999Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Review message",
+          "intent": false,
+          "url_sha256": "564aa14f2088d343f333a454ee485c6454f838d10e4db77255aa8889496d7439",
+          "gap_ms": 63216
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-01T08:03:00.713Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 711.413625,
+          "wire_body_bytes": 2070,
+          "uncompressed_bytes": 4767
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-01T08:03:00.958Z",
+          "kind": "exact-review-witness"
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-01T08:03:00.959Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 87,
+          "links_presented": 2
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-01T08:03:17.796Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-01T08:03:17.797Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Publish this message publicly",
+          "intent": true,
+          "url_sha256": "01a76ec1c1988c02f6b61b8f65096a80da4b8628301471b550f5577f798e7026",
+          "gap_ms": 16838
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-01T08:03:18.504Z",
+          "kind": "http",
+          "status": 201,
+          "http_ms": 706.291958,
+          "wire_body_bytes": 4476,
+          "uncompressed_bytes": 4476
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-01T08:03:18.720Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 138,
+          "links_presented": 11
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-01T08:04:42.564Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-01T08:04:42.566Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Open public message",
+          "intent": false,
+          "url_sha256": "477ba1f2a549a989f910f6fa9cc38987b729bbe065fd513f72198e0798308a8b",
+          "gap_ms": 83846
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-01T08:04:42.982Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 414.0275,
+          "wire_body_bytes": 2209,
+          "uncompressed_bytes": 4771
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-01T08:04:43.226Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 171,
+          "links_presented": 13
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-01T08:04:52.621Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-01T08:04:52.623Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Machine-readable message record",
+          "intent": false,
+          "url_sha256": "1a620b67a685e7fa8b39304c7df1fd3897ac6cbbe8eb4ba2b34efad96ea2d1bf",
+          "gap_ms": 9397
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-01T08:04:53.022Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 397.14525000000003,
+          "wire_body_bytes": 2637,
+          "uncompressed_bytes": 6781
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-01T08:04:53.270Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 730,
+          "links_presented": 9
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-01T08:04:53.296Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-01T08:04:53.298Z",
+          "kind": "finish"
+        }
+      ]
+    },
+    {
+      "run": "t01-chunk",
+      "scored": true,
+      "task": "T01",
+      "method": "chunk-word",
+      "profile": "strict-supplied-links-no-js-no-forms",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "target_sha256": "96901b610c97352b93a5f0a94b0947113979f870ae0221c5c4e7b078dd0d128e",
+      "target_utf8_bytes": 54,
+      "reply_to": null,
+      "created_at": "2026-10-01T07:59:19.454Z",
+      "outcome": "completed",
+      "finished": true,
+      "wall_ms": 335188,
+      "time_to_first_publish_activation_ms": 311007,
+      "activations": 27,
+      "http_attempts": 27,
+      "http_responses": 27,
+      "network_errors": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "retry": 1,
+        "link": 25
+      },
+      "wire_body_bytes": 290732,
+      "uncompressed_bytes": 1992284,
+      "http_ms": 16971.615082000077,
+      "extraction_ms": 6951.850126000078,
+      "extracted_tokens_o200k": 123080,
+      "links_presented": 9916,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": {
+        "message_id": "IARC-M-c6a8d4ca-52a9-4042-a1c4-10322d6e331d",
+        "conversation_id": "IARC-C-f6958381-68fd-4bd9-8e05-10b6bdd5f9ae",
+        "body_exact": true,
+        "reply_exact": true,
+        "body_sha256": "96901b610c97352b93a5f0a94b0947113979f870ae0221c5c4e7b078dd0d128e",
+        "recorded_digest": "lpAbYQyXNSuTpfCpSwlHETl5-HCuAiHFxOeweN0NEo4",
+        "digest_exact": true
+      },
+      "post_close_verification": null,
+      "note": null,
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-01T08:00:00.192Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-01T08:00:00.192Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-01T08:00:00.438Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 244.58216700000048,
+          "wire_body_bytes": 3781,
+          "uncompressed_bytes": 9289
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-01T08:00:00.691Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 768,
+          "links_presented": 42
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-01T08:00:15.560Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-01T08:00:15.560Z",
+          "kind": "activation",
+          "operation": "retry",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": 14869
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-01T08:00:15.916Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 354.6237909999909,
+          "wire_body_bytes": 3781,
+          "uncompressed_bytes": 9289
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-01T08:00:16.163Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 768,
+          "links_presented": 42
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-01T08:00:24.808Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-01T08:00:36.260Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-01T08:00:36.260Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Chunk Word Keyboard",
+          "intent": false,
+          "url_sha256": "4c21869385792918df1e55e73750991fbf6f4bf0d5618d11408038e7ad9c7e2e",
+          "gap_ms": 20097
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-01T08:00:36.749Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 488.1111249999958,
+          "wire_body_bytes": 13579,
+          "uncompressed_bytes": 93777
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-01T08:00:36.984Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 5669,
+          "links_presented": 462
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-01T08:00:57.317Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-01T08:00:57.319Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add top word Please",
+          "intent": false,
+          "url_sha256": "b57ae47f93d416e37d7d8e773117e2de415bd185c2d63fed8f5824a6733d37ea",
+          "gap_ms": 20335
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-01T08:00:57.789Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 469.1515000000072,
+          "wire_body_bytes": 12713,
+          "uncompressed_bytes": 86275
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-01T08:00:58.054Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 5491,
+          "links_presented": 447
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-01T08:01:12.289Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-01T08:01:12.290Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to te",
+          "intent": false,
+          "url_sha256": "4fd212b4a367d7ac3530642db2914bcd2c3ac746d2c5d93f31ae5d06de5a86f5",
+          "gap_ms": 14236
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-01T08:01:12.831Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 538.7390840000007,
+          "wire_body_bytes": 13465,
+          "uncompressed_bytes": 107742
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-01T08:01:13.089Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 6589,
+          "links_presented": 541
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-01T08:01:21.022Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-01T08:01:21.024Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add tell",
+          "intent": false,
+          "url_sha256": "6645012651e4e86faf8c338ffe0d6507e29cbe5206ada82d52b5b47e77e440ab",
+          "gap_ms": 7935
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-01T08:01:21.491Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 465.73166700001457,
+          "wire_body_bytes": 12701,
+          "uncompressed_bytes": 86410
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-01T08:01:21.742Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 5492,
+          "links_presented": 447
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-01T08:01:32.987Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-01T08:01:32.988Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add top word me",
+          "intent": false,
+          "url_sha256": "fe21eef27ec3bc5e0df12375443f709831a616fc39bdc31d2b18828fde961def",
+          "gap_ms": 11247
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-01T08:01:33.396Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 406.9334169999929,
+          "wire_body_bytes": 12742,
+          "uncompressed_bytes": 86500
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-01T08:01:33.644Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 5493,
+          "links_presented": 447
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-01T08:01:44.327Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-01T08:01:44.328Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add top word what",
+          "intent": false,
+          "url_sha256": "87ffab16a38c8736ee7c8897dad61e6722da30b8bc6ed8432c1c8af9a4ccbd68",
+          "gap_ms": 10684
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-01T08:01:45.008Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 679.5573330000043,
+          "wire_body_bytes": 12747,
+          "uncompressed_bytes": 87096
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-01T08:01:45.272Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 5494,
+          "links_presented": 447
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-01T08:01:56.146Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-01T08:01:56.147Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to ch",
+          "intent": false,
+          "url_sha256": "d32879567fe3a6bfd62aa6b538f0ac859d6cee8d976f3e73f7bc8e7e664f8577",
+          "gap_ms": 10875
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-01T08:01:56.755Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 607.1809579999826,
+          "wire_body_bytes": 13997,
+          "uncompressed_bytes": 122319
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-01T08:01:56.979Z",
+          "kind": "extraction",
+          "page": 9,
+          "tokens_o200k": 7845,
+          "links_presented": 655
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-01T08:02:06.446Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-01T08:02:06.448Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add changed",
+          "intent": false,
+          "url_sha256": "a02960d92c08775c44454b9247664d53179a8ba3169f3036febfe8c7efed33dd",
+          "gap_ms": 9469
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-01T08:02:07.075Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 626.1801669999841,
+          "wire_body_bytes": 12705,
+          "uncompressed_bytes": 86739
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-01T08:02:07.403Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 5495,
+          "links_presented": 447
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-01T08:02:15.906Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-01T08:02:15.907Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add top word and",
+          "intent": false,
+          "url_sha256": "b3e533458f30cb744e47ea077a7c8d9984eaf72f84b63d21bf05311e8a34d5fb",
+          "gap_ms": 8504
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-01T08:02:16.439Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 530.4107910000021,
+          "wire_body_bytes": 12725,
+          "uncompressed_bytes": 85895
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-01T08:02:16.693Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 5496,
+          "links_presented": 447
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-01T08:02:25.601Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-01T08:02:25.602Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to wh",
+          "intent": false,
+          "url_sha256": "d95f0f50b70369a01156505dcb28107cc1883009ebd3e47030c3ac16d013df7b",
+          "gap_ms": 8909
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-01T08:02:26.142Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 537.5858749999898,
+          "wire_body_bytes": 12694,
+          "uncompressed_bytes": 93767
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-01T08:02:26.407Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 5348,
+          "links_presented": 429
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-01T08:02:33.799Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-01T08:02:33.804Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add what",
+          "intent": false,
+          "url_sha256": "72d34bbad5c2813b95cd258ef75172915c6ec5869c7c74472003e1ef590bf4f9",
+          "gap_ms": 7397
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-01T08:02:34.421Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 615.5846670000465,
+          "wire_body_bytes": 12787,
+          "uncompressed_bytes": 86596
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-01T08:02:34.681Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 5497,
+          "links_presented": 447
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-01T08:02:42.231Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-01T08:02:42.232Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to st",
+          "intent": false,
+          "url_sha256": "b6f843a3a230ab0858ad5f1b8982940431afdc1bc52c3739110fe62fd0b65d1f",
+          "gap_ms": 7551
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-01T08:02:42.862Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 628.4046250000247,
+          "wire_body_bytes": 13737,
+          "uncompressed_bytes": 117020
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-01T08:02:43.123Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 7433,
+          "links_presented": 618
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-01T08:02:51.419Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-01T08:02:51.423Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add still",
+          "intent": false,
+          "url_sha256": "8af6cc3e4aa038134f6fa17618d6607bc137accdbce50141171c7669d8a99fbc",
+          "gap_ms": 8300
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-01T08:02:52.082Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 658.4844589999993,
+          "wire_body_bytes": 12784,
+          "uncompressed_bytes": 86618
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-01T08:02:52.338Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 5498,
+          "links_presented": 447
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-01T08:02:59.464Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-01T08:02:59.465Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to ne",
+          "intent": false,
+          "url_sha256": "8e4d02671d7b4095edd6140b118d8fa010d619f53902a8b25eb4dd94bed72163",
+          "gap_ms": 7127
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-01T08:03:00.102Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 635.8796250000014,
+          "wire_body_bytes": 13223,
+          "uncompressed_bytes": 103197
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-01T08:03:00.333Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 6102,
+          "links_presented": 498
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-01T08:03:07.271Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-01T08:03:07.273Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add needs",
+          "intent": false,
+          "url_sha256": "eef2df0318e6b8acdf2d3476ac18595ae26902054531d700c508db44437b9e5e",
+          "gap_ms": 6940
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-01T08:03:07.804Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 529.8954590000212,
+          "wire_body_bytes": 12740,
+          "uncompressed_bytes": 86592
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-01T08:03:08.043Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 5499,
+          "links_presented": 447
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-01T08:03:15.178Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-01T08:03:15.180Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to ne",
+          "intent": false,
+          "url_sha256": "55129fd0f802e636516c65a48310a23d74d19c2ef21058e0a6f493e4303f1834",
+          "gap_ms": 7137
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-01T08:03:15.723Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 541.4169579999871,
+          "wire_body_bytes": 13218,
+          "uncompressed_bytes": 103158
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-01T08:03:15.979Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 6103,
+          "links_presented": 498
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-01T08:03:24.124Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-01T08:03:24.125Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set END to ic",
+          "intent": false,
+          "url_sha256": "63361d38b144a0974a3f18aec10cb4b6b107d032d775a1c50377c38906a283cf",
+          "gap_ms": 8146
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-01T08:03:25.359Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 1233.1066659999778,
+          "wire_body_bytes": 11962,
+          "uncompressed_bytes": 75232
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-01T08:03:25.627Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 3600,
+          "links_presented": 268
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-01T08:03:39.509Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-01T08:03:39.511Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Restart search",
+          "intent": false,
+          "url_sha256": "773e4835b5b54a5a5572009b8463ce4e3557d1996153346a16e3a07d18dd690a",
+          "gap_ms": 13884
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-01T08:03:40.320Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 808.073040999996,
+          "wire_body_bytes": 12740,
+          "uncompressed_bytes": 86592
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-01T08:03:40.586Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 5499,
+          "links_presented": 447
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-01T08:03:46.567Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-01T08:03:46.568Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Set START to wo",
+          "intent": false,
+          "url_sha256": "fc22bad4a3c0d2a15cdd30169ff61d2ba8b43647c9a70dd5b6cd30f5f485612e",
+          "gap_ms": 5982
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-01T08:03:47.624Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 1054.8384579999838,
+          "wire_body_bytes": 12858,
+          "uncompressed_bytes": 98597
+        },
+        {
+          "seq": 85,
+          "at": "2026-10-01T08:03:47.886Z",
+          "kind": "extraction",
+          "page": 21,
+          "tokens_o200k": 5743,
+          "links_presented": 464
+        },
+        {
+          "seq": 86,
+          "at": "2026-10-01T08:03:57.497Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 87,
+          "at": "2026-10-01T08:03:57.499Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Add work",
+          "intent": false,
+          "url_sha256": "b80cef904c68a497121149e099608b6f3da3e942939aa1ce7445a2d26e99ba63",
+          "gap_ms": 9613
+        },
+        {
+          "seq": 88,
+          "at": "2026-10-01T08:03:58.163Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 663.0835829999996,
+          "wire_body_bytes": 12771,
+          "uncompressed_bytes": 86670
+        },
+        {
+          "seq": 89,
+          "at": "2026-10-01T08:03:58.423Z",
+          "kind": "extraction",
+          "page": 22,
+          "tokens_o200k": 5500,
+          "links_presented": 447
+        },
+        {
+          "seq": 90,
+          "at": "2026-10-01T08:04:04.951Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 91,
+          "at": "2026-10-01T08:04:04.953Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": ".",
+          "intent": false,
+          "url_sha256": "3a647e5d96f6eed81d21ab07a874aadb5e3ef17b384fe704ea6c7a483043dce5",
+          "gap_ms": 6530
+        },
+        {
+          "seq": 92,
+          "at": "2026-10-01T08:04:05.966Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 1011.3842500000028,
+          "wire_body_bytes": 12746,
+          "uncompressed_bytes": 85900
+        },
+        {
+          "seq": 93,
+          "at": "2026-10-01T08:04:06.225Z",
+          "kind": "extraction",
+          "page": 23,
+          "tokens_o200k": 5501,
+          "links_presented": 447
+        },
+        {
+          "seq": 94,
+          "at": "2026-10-01T08:04:15.203Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 95,
+          "at": "2026-10-01T08:04:15.204Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Review message",
+          "intent": false,
+          "url_sha256": "a510a1c3d48b30e9752a91915e66649aa6382369756c3690859ba257af8e0e74",
+          "gap_ms": 8979
+        },
+        {
+          "seq": 96,
+          "at": "2026-10-01T08:04:16.564Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 1358.8580410000286,
+          "wire_body_bytes": 2106,
+          "uncompressed_bytes": 4827
+        },
+        {
+          "seq": 97,
+          "at": "2026-10-01T08:04:16.825Z",
+          "kind": "exact-review-witness"
+        },
+        {
+          "seq": 98,
+          "at": "2026-10-01T08:04:16.825Z",
+          "kind": "extraction",
+          "page": 24,
+          "tokens_o200k": 96,
+          "links_presented": 2
+        },
+        {
+          "seq": 99,
+          "at": "2026-10-01T08:04:30.460Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 100,
+          "at": "2026-10-01T08:04:30.461Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Publish this message publicly",
+          "intent": true,
+          "url_sha256": "f7b58cd1a494a73e3e7d4b1eefbd8a97888fac1395fed9c9a229856f6bec5e81",
+          "gap_ms": 13636
+        },
+        {
+          "seq": 101,
+          "at": "2026-10-01T08:04:30.979Z",
+          "kind": "http",
+          "status": 201,
+          "http_ms": 516.8015420000302,
+          "wire_body_bytes": 4529,
+          "uncompressed_bytes": 4529
+        },
+        {
+          "seq": 102,
+          "at": "2026-10-01T08:04:31.284Z",
+          "kind": "extraction",
+          "page": 25,
+          "tokens_o200k": 146,
+          "links_presented": 11
+        },
+        {
+          "seq": 103,
+          "at": "2026-10-01T08:04:39.461Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 104,
+          "at": "2026-10-01T08:04:39.462Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Open public message",
+          "intent": false,
+          "url_sha256": "2737ce6d9bd28c9c9c8370cd3d08dba210745cdcc48064e05f75e1559ba338e2",
+          "gap_ms": 8178
+        },
+        {
+          "seq": 105,
+          "at": "2026-10-01T08:04:39.926Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 464.0429170000134,
+          "wire_body_bytes": 2242,
+          "uncompressed_bytes": 4824
+        },
+        {
+          "seq": 106,
+          "at": "2026-10-01T08:04:40.174Z",
+          "kind": "extraction",
+          "page": 26,
+          "tokens_o200k": 179,
+          "links_presented": 13
+        },
+        {
+          "seq": 107,
+          "at": "2026-10-01T08:04:47.546Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 108,
+          "at": "2026-10-01T08:04:47.546Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Machine-readable message record",
+          "intent": false,
+          "url_sha256": "adbb5d916c6a14921076db5f6eaa7a08d8405fe6098666be22ad419e17164f44",
+          "gap_ms": 7372
+        },
+        {
+          "seq": 109,
+          "at": "2026-10-01T08:04:47.850Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 302.9729159999988,
+          "wire_body_bytes": 2659,
+          "uncompressed_bytes": 6834
+        },
+        {
+          "seq": 110,
+          "at": "2026-10-01T08:04:48.113Z",
+          "kind": "extraction",
+          "page": 27,
+          "tokens_o200k": 736,
+          "links_presented": 9
+        },
+        {
+          "seq": 111,
+          "at": "2026-10-01T08:04:54.641Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 112,
+          "at": "2026-10-01T08:04:54.642Z",
+          "kind": "finish"
+        }
+      ]
+    },
+    {
+      "run": "t01-predictive",
+      "scored": true,
+      "task": "T01",
+      "method": "predictive-word",
+      "profile": "strict-supplied-links-no-js-no-forms",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "high",
+      "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
+      "target_sha256": "96901b610c97352b93a5f0a94b0947113979f870ae0221c5c4e7b078dd0d128e",
+      "target_utf8_bytes": 54,
+      "reply_to": null,
+      "created_at": "2026-10-01T07:59:19.480Z",
+      "outcome": "in_progress",
+      "finished": false,
+      "wall_ms": null,
+      "time_to_first_publish_activation_ms": null,
+      "activations": 3,
+      "http_attempts": 3,
+      "http_responses": 3,
+      "network_errors": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 2
+      },
+      "wire_body_bytes": 22169,
+      "uncompressed_bytes": 92453,
+      "http_ms": 1554.9072090000263,
+      "extraction_ms": 749.0226249999832,
+      "extracted_tokens_o200k": 2788,
+      "links_presented": 190,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": null,
+      "post_close_verification": null,
+      "note": null,
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-01T08:04:31.749Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-01T08:04:31.749Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "link_label": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-01T08:04:32.412Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 661.7056670000311,
+          "wire_body_bytes": 3781,
+          "uncompressed_bytes": 9289
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-01T08:04:32.664Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 768,
+          "links_presented": 42
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-01T08:04:40.011Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-01T08:04:40.012Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Predictive Word Keyboard",
+          "intent": false,
+          "url_sha256": "d3d4f155015104d7ba72f7cc8e1c704db4844bae97cd44b7608d98517a5eeaea",
+          "gap_ms": 7348
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-01T08:04:40.537Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 522.9082920000073,
+          "wire_body_bytes": 9165,
+          "uncompressed_bytes": 41159
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-01T08:04:40.785Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 957,
+          "links_presented": 74
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-01T08:05:05.024Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-01T08:05:05.024Z",
+          "kind": "activation",
+          "operation": "link",
+          "link_label": "Turn shift on",
+          "intent": false,
+          "url_sha256": "272e34430649d87abbb2378e29e74edf350b21b6cf34c5f00a79f479f01f1ac0",
+          "gap_ms": 24239
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-01T08:05:05.396Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 370.2932499999879,
+          "wire_body_bytes": 9223,
+          "uncompressed_bytes": 42005
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-01T08:05:05.648Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 1063,
+          "links_presented": 74
         }
       ]
     }

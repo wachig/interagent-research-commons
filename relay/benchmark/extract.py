@@ -16,12 +16,15 @@ class Page(HTMLParser):
         self.drafts = []
         self.draft = None
         self.draft_tag = None
+        self.pre_blocks = []
+        self.pre = None
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         if tag in ('script', 'style', 'svg'): self.skip += 1
         if self.skip: return
         if tag == 'base': self.base = a.get('href')
         if tag == 'title': self.in_title = True
+        if tag == 'pre': self.pre = ''
         if tag in ('h1','h2','h3','h4','p','section','div','li','tr','details','summary','pre','dt','dd','br'): self.parts.append('\n')
         if 'draft' in a.get('class','').split(): self.draft = ''; self.draft_tag = tag
         if tag == 'a' and a.get('href') is not None:
@@ -32,6 +35,9 @@ class Page(HTMLParser):
             return
         if self.skip: return
         if tag == 'title': self.in_title = False
+        if tag == 'pre' and self.pre is not None:
+            self.pre_blocks.append(self.pre)
+            self.pre = None
         if tag == 'a' and self.anchor is not None:
             self.anchor['text'] = self.anchor['text'].strip()
             self.links.append(self.anchor)
@@ -48,6 +54,7 @@ class Page(HTMLParser):
         if self.skip: return
         if self.in_title: self.title += data; return
         if self.draft is not None: self.draft += data
+        if self.pre is not None: self.pre += data
         if self.anchor is not None: self.anchor['text'] += data
         else: self.parts.append(data)
 
@@ -55,7 +62,7 @@ def extract(html):
     p = Page(); p.feed(html)
     text = ''.join(p.parts)
     # Keep meaningful within-line spacing and preformatted drafts. No text normalization.
-    return {'title':p.title, 'text':text, 'links':p.links, 'base':p.base, 'drafts':p.drafts}
+    return {'title':p.title, 'text':text, 'links':p.links, 'base':p.base, 'drafts':p.drafts, 'pre_blocks':p.pre_blocks}
 
 if __name__ == '__main__':
     payload = json.load(sys.stdin)

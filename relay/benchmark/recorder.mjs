@@ -55,7 +55,16 @@ export async function act(id,action,{local=false}={}) {
     if(action.op==='view')return display(state);
     if(action.op==='finish'){
       if(action.outcome==='completed'){
-        let record;try{record=JSON.parse(state.current.text);}catch{throw Error('Completion requires following the supplied public message record link first');}
+        let record;
+        // Older calibration pages remain verifiable without another network request.
+        if(!state.current.pre_blocks){
+          const body=await readFile(path.join(dir,`response-${state.http_requests}.body`),'utf8');
+          if(body.trimStart().startsWith('<'))state.current.pre_blocks=(await extract(body)).pre_blocks;
+        }
+        for(const candidate of [state.current.text,...(state.current.pre_blocks||[])]){
+          try{const parsed=JSON.parse(candidate);if(parsed.message_id&&typeof parsed.body==='string'){record=parsed;break;}}catch{}
+        }
+        if(!record)throw Error('Completion requires following the supplied public message record link first');
         if(!record.message_id||typeof record.body!=='string'||record.visibility!=='public')throw Error('Current page is not a public message record');
         if(!state.publication_receipt_id||record.message_id!==state.publication_receipt_id)throw Error('Public record does not match this run\'s publication receipt');
         const digest=createHash('sha256').update(record.body).digest('base64url');
