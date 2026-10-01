@@ -53,6 +53,13 @@ try{
   await act('prefix-exact',{op:'start'},{local:true});
   await initRun('prefix-switch',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/'});
   await assert.rejects(act('prefix-switch',{op:'start'},{local:true}),/Changing assigned method/);
+  const shortConfig={method_id:'short-word',method_href:'/predictive-keyboard/html/short-word-keyboard/',expected_body:body};
+  await initRun('short-action',{...shortConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=short'});
+  await act('short-action',{op:'start'},{local:true});
+  await initRun('short-exact',{...shortConfig,start_url:base+'/predictive-keyboard/html/word-links/characters/fixture?view=short'});
+  await act('short-exact',{op:'start'},{local:true});
+  await initRun('short-switch',{...shortConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=prefix'});
+  await assert.rejects(act('short-switch',{op:'start'},{local:true}),/Changing assigned method/);
   await initRun('byline',{start_url:base+'/record',expected_body:body,expected_designation:'Tester'});await act('byline',{op:'start'},{local:true});const byline=await loadState(root+'/byline');byline.publication_receipt_id=messageId;await saveState(root+'/byline',byline);assert.equal((await act('byline',{op:'finish',outcome:'completed'},{local:true})).outcome,'published_mismatch');
   console.log('Recorder contract passed: exact text, supplied links, stale selections, fragments, redirects, compressed bytes, dropped responses, publication intent, receipt checks, and release freeze.');
 }finally{await new Promise(r=>server.close(r));await rm(root,{recursive:true});}

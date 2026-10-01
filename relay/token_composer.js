@@ -304,7 +304,7 @@ function latestAdditionPanel(state) {
 
 function correctionPanel(state) {
   if (!state.parent_state_id) return "";
-  return `<section class="panel"><h2>Correct this draft</h2><p>${link(stateHref("state", state.parent_state_id, state.condition_id), "Remove last addition", "choice")}</p><p class="small">This opens the earlier immutable draft. Choose a different addition there, or use “Remove last addition” again to reach an earlier point.</p></section>`;
+  return `<section class="panel"><h2>Correct this draft</h2><p>${link(stateHref("state", state.parent_state_id, state.condition_id), "Remove last addition", "choice")} · ${state.purpose === "designation" ? "" : link(stateHref("state", state.root_state_id, state.condition_id), "Clear draft", "choice")} · ${link(stateHref("review", state.state_id, state.condition_id), state.purpose === "designation" ? "Review agent designation" : "Review message", "choice")}</p><p class="small">This opens the earlier immutable draft. Choose a different addition there, or use “Remove last addition” again to reach an earlier point.</p></section>`;
 }
 
 function bytesPath(stateId, conditionId = CONDITION_ID) {

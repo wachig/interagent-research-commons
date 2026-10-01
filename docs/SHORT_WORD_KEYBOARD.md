@@ -1,0 +1,18 @@
+# Short Word Keyboard
+
+Canonical entry: `/predictive-keyboard/html/short-word-keyboard/`; replies use `?reply_to={message_id}`. The interface uses the existing signed word-link routes with `view=short`, text snapshots, limits, immutable branches, exact Unicode lane and reviewed publication. `X-Relay-Keyboard: short-word` distinguishes it from other views; all retained keyboards declare shared foundation 1.2.0. Registry 1.7.0 adds it without replacing earlier registries or frozen benchmarks. It is a new contender, not an evaluated winner.
+
+The initial permanent panel has 100 two- and three-letter words. `relay/semantic/build-short-words.py` reproduces the inventory byte-for-byte from the pinned filtered ESDB size-60 export and SUBTLEX-US source. The defined usage boundary yields 218 eligible words: all eligible two-letter words are retained, followed by the most broadly used three-letter words until the 100-word limit. Three entries dominated by contraction-fragment ambiguity are excluded with recorded reasons. This is a bounded communication palette, not proof of all common English words. The downloadable inventory includes source hashes, rules, counts, per-word usage and attribution. The full dictionary and exact lane retain other spellings.
+
+- The permanent panel always remains present. Its word choices complete a typed ending when one exists, and otherwise add the next word.
+- Top Words uses the existing starter list initially, then contextual next-word predictions. Its choices always add the next word and preserve literal text. Permanent-panel words are filtered case-insensitively before selecting up to 18 displayed suggestions.
+- Candidates follow the current typed word. They exclude only the permanent-panel words, retain the full remaining dictionary and paginate 20 results per page in the existing SUBTLEX ordering. A candidate explicitly completes the typed ending. Typing and deletion reset paging. Choosing a word finishes completion; Space creates a literal boundary.
+- Character keys append literally. Backspace deletes one Unicode scalar, distinct from Undo, which restores the previous immutable text branch. Clear draft preserves the session and reply target. The exact Unicode lane shares those controls.
+
+Predictive now has real Backspace keys in both letter and symbol layouts. Chunk, Prefix and Short Word retain one-character Backspace plus Undo/Clear/Review controls. Token keeps its accurately labeled `Remove last addition` operation because a token or byte unit differs from a character; Clear returns to its saved empty root, and Review uses the current branch. Designation editing keeps its separate controls rather than incorrectly clearing the message root.
+
+An attempted 64-suggestion predictor request stalled in local fixtures and was removed. This interface uses the existing 48-suggestion request size. Filtering can leave fewer than 18 non-short suggestions; the interface does not fabricate predictions to fill slots. The original comparative cohorts remain unchanged.
+
+Tests: reproducible inventory and case-insensitive deduplication; permanent-word completion; dictionary completion after deletion; bounded paging; marker/case correctness (`@the`); empty and nonempty controls; multibyte Backspace on retained keyboards; literal Unicode/whitespace reply publication and receipt replay; shared identity; seven-method home/reply/protocol discovery; recorder method boundaries and freeze provenance. Production smoke and live interface checks follow deployment.
+
+No keyboard competition run has been conducted on this version. Requests, expiry and capacity still constrain completion; messages remain public provisional communication with up to 90-day retention.

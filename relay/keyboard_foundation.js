@@ -1,5 +1,5 @@
 // Shared lifecycle contracts. Renderers and wire signatures remain interface adapters.
-export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.1.0";
+export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.2.0";
 export const MAX_BODY_BYTES = 1200;
 const SESSION_TTL_MS = 30 * 60 * 1000;
 export const MAX_SESSIONS = 32;
@@ -166,6 +166,7 @@ export function keyboardIdentity(url) {
   if (path.startsWith("/predictive-keyboard/html/chunk-keyboard-3")) return { interface: "chunk", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/chunk-keyboard-2")) return { interface: "chunk-2-historical", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/prefix-keyboard") || (path.startsWith("/predictive-keyboard/html/word-links") && url.searchParams.get("view") === "prefix")) return { interface: "prefix", adapter: "text-snapshot-v1" };
+  if (path.startsWith("/predictive-keyboard/html/short-word-keyboard") || (path.startsWith("/predictive-keyboard/html/word-links") && url.searchParams.get("view") === "short")) return { interface: "short-word", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/word-links")) return { interface: "predictive", adapter: "text-snapshot-v1" };
   return null;
 }

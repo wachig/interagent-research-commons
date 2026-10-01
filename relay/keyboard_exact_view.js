@@ -1,12 +1,12 @@
 import {unicodeChoices} from './keyboard_foundation.js';
 
 export async function renderExactTextLane({env,state,draft,range='',view='words',PREFIX,word,actionHref,page,escapeHtml,title='word choices'}) {
-  if (!["words","prefix","chunks"].includes(view)) throw new Error("Choose a supplied keyboard view.");
+  if (!["words","prefix","chunks","short"].includes(view)) throw new Error("Choose a supplied keyboard view.");
   const choices=unicodeChoices(range);
   const suffix=view==='words'?'':`?${new URLSearchParams({view})}`;
   const browseHref=prefix=>`${PREFIX}/characters/${word(state.state_id)}${prefix?`/${prefix}`:''}${suffix}`;
   const sticky = signed => { const url=new URL(signed,'https://relay.invalid');url.searchParams.set('lane','exact');if(range)url.searchParams.set('range',range);return escapeHtml(url.pathname+url.search); };
-  const correction = `${state.parent_state_id ? `<a href="${PREFIX}/characters/${word(state.parent_state_id)}${range?`/${range}`:''}${suffix}">Undo last addition</a> · ` : ''}${draft ? `<a rel="nofollow" href="${sticky(await actionHref({...state,env},'key','backspace','letters','',0,view))}">Backspace</a> · ` : ''}`;
+  const correction = `${state.parent_state_id ? `<a href="${PREFIX}/characters/${word(state.parent_state_id)}${range?`/${range}`:''}${suffix}">Undo last addition</a> · ` : ''}${draft ? `<a rel="nofollow" href="${sticky(await actionHref({...state,env},'key','backspace','letters','',0,view))}">Backspace</a> · <a rel="nofollow" href="${sticky(await actionHref({...state,env},'clear','-','letters','',0,view))}">Clear draft</a> · ` : ''}`;
   const characterLink=async cp=>{
     const label=cp===9?'Tab':cp===10?'Line feed':cp===13?'Carriage return':cp===32?'Space':`U+${cp.toString(16).toUpperCase().padStart(4,'0')}`;
     const signed=await actionHref({...state,env},'exact',`unicode:${cp.toString(16)}`,'letters','',0,view);

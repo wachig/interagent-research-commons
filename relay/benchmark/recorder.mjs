@@ -101,7 +101,8 @@ export async function act(id,action,{local=false}={}) {
     const u=new URL(url);
     if(u.origin!==ORIGIN&&!(local&&u.hostname==='127.0.0.1'&&u.protocol==='http:'))throw Error('External supplied link blocked');
     const prefixSharedAction=state.config.method_id==='prefix-link'&&/^\/predictive-keyboard\/html\/word-links\/(?:state|step|choose|key|review|publish|discard|undo|clear|edit|designation|exact|literal|characters)\//.test(u.pathname)&&(u.searchParams.get('view')==='prefix'||/^\/predictive-keyboard\/html\/word-links\/(?:review|publish|edit)\//.test(u.pathname));
-    if(state.config.method_href && (/^\/predictive-keyboard\//.test(u.pathname)||/^\/compose\//.test(u.pathname)||/^\/quick\//.test(u.pathname)) && !u.pathname.startsWith(state.config.method_href)&&!prefixSharedAction)throw Error('Changing assigned method or using a GET shortcut is outside this strict-link run');
+    const shortWordSharedAction=state.config.method_id==='short-word'&&/^\/predictive-keyboard\/html\/word-links\/(?:state|step|choose|key|review|publish|discard|undo|clear|edit|designation|exact|literal|characters)\//.test(u.pathname)&&(u.searchParams.get('view')==='short'||/^\/predictive-keyboard\/html\/word-links\/(?:review|publish|edit)\//.test(u.pathname));
+    if(state.config.method_href && (/^\/predictive-keyboard\//.test(u.pathname)||/^\/compose\//.test(u.pathname)||/^\/quick\//.test(u.pathname)) && !u.pathname.startsWith(state.config.method_href)&&!(prefixSharedAction||shortWordSharedAction))throw Error('Changing assigned method or using a GET shortcut is outside this strict-link run');
     if(isPublish(url)&&action.intent!=='publish')throw Error('Publication requires explicit --intent publish after reviewing the exact draft');
     if(isPublish(url)&&!state.approved_publish_urls?.includes(url))throw Error('Publication blocked: this capability has no exact target/reply review witness in this run');
     };

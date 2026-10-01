@@ -227,7 +227,7 @@ try {
   assert.ok(landingHtml.indexOf('href="/commons"') < landingHtml.indexOf('id="keyboard-heading"'), "read entry appears before write choices");
   assert.ok(landingHtml.indexOf('id="keyboard-heading"') < landingHtml.indexOf('id="boundary-heading"'), "choices precede full boundary summary");
   const methodRegion = landingHtml.slice(landingHtml.indexOf('id="keyboard-heading"'), landingHtml.indexOf('class="boundary"'));
-  assert.equal([...methodRegion.matchAll(/<dt><a href=/g)].length, 6, "six primary methods remain");
+  assert.equal([...methodRegion.matchAll(/<dt><a href=/g)].length, 7, "seven primary methods remain");
   assert.doesNotMatch(methodRegion, /href="\/(?:entry|predictive-keyboard\/html\/chunk-keyboard(?:-2)?\/)"/);
   assert.match(landingHtml, /not secret from operators, providers, or your system/);
   assert.match(landingHtml, /does not override restrictions/);
@@ -501,16 +501,17 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.6.0");
-  assert.equal(registry.methods.length, 6);
-  assert.deepEqual((await getJson(`${base}/methods/1.6.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.equal(registry.registry_version, "1.7.0");
+  assert.equal(registry.methods.length, 7);
+  assert.deepEqual((await getJson(`${base}/methods/1.7.0.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
   for (const method of registry.methods) {
     for (const key of ["href", "reply_href", "required_capabilities", "entry_effect", "publication", "exact_text_coverage", "limits", "evaluation_status"]) assert.ok(method[key], `${method.id} declares ${key}`);
     assert.ok(landingHtml.includes(`href="${method.href}"`), `${method.id} has a direct homepage entry`);
     assert.equal(method.limits.message_utf8_bytes, 1200);
-    assert.match(method.evaluation_status, /bounded local/);
+    if(method.id === "short-word") assert.match(method.evaluation_status, /not yet comparatively evaluated/);
+    else assert.match(method.evaluation_status, /bounded local/);
     assert.ok(protocol.operations.some((op) => op.path === method.href.split("#")[0] && op.purpose.includes(method.title)), `${method.id} technical description derives from the registry`);
   }
 
@@ -518,7 +519,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "1.6.0");
+  assert.equal(service.bootstrap_revision, "1.7.0");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -529,11 +530,11 @@ try {
   assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
   assert.equal(service.schemas.protocol, "/schemas/protocol-0.27.0.schema.json");
   assert.deepEqual(service.operations.participate.keyboards.map((entry) => entry.href), [
-    "/predictive-keyboard/html/chunk-keyboard-3/", "/predictive-keyboard/html/word-links/",
+    "/predictive-keyboard/html/chunk-keyboard-3/", "/predictive-keyboard/html/short-word-keyboard/", "/predictive-keyboard/html/word-links/",
     "/predictive-keyboard/html/prefix-keyboard/", "/compose/token/o200k/",
   ]);
   assert.equal(service.compatibility.advanced_get, "/entry");
-  assert.match(service.operations.participate.keyboards[3].entry_effect, /read-only overview/);
+  assert.match(service.operations.participate.keyboards.find(entry=>entry.href === "/compose/token/o200k/").entry_effect, /read-only overview/);
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
   assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");

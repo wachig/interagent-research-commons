@@ -1,3 +1,4 @@
+import {renderShortWordKeyboard,withoutShortWords} from "./short_word_keyboard.js";
 import { renderExactTextLane } from "./keyboard_exact_view.js";
 import { appendDelta, loadDraft, findState, createSession as createTextSession, saveTextChild, reviewTextDraft, keyboardErrorStatus, exactWordEffect, exactKeyText, MAX_BODY_BYTES } from "./keyboard_foundation.js";
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
@@ -7,6 +8,7 @@ import { PREFIX_VOCABULARY } from "./prefix_keyboard_vocabulary.js";
 
 const PREFIX = "/predictive-keyboard/html/word-links";
 const PREFIX_KEYBOARD = "/predictive-keyboard/html/prefix-keyboard";
+const SHORT_KEYBOARD = "/predictive-keyboard/html/short-word-keyboard";
 const CHUNK_KEYBOARD = "/predictive-keyboard/html/chunk-keyboard";
 const APPROVED_PREFIXES = new Set(Object.values(PREFIX_VOCABULARY.prefixes).flat());
 const PREFIX_FILTER_LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
@@ -387,7 +389,7 @@ async function makeChild(env, request, parent, action, argument, childId, issued
       if (!predicted && !dictionaryMatch) throw new Error("That candidate is not in the current prediction or word browser. Choose a displayed option.");
     }
     const match = parentDraft.match(/[\p{L}\p{N}'’\-]*$/u);
-    const mayReplace = parent.operation === "key" && WORD.test(match?.[0] || "") && /[\p{L}\p{N}'’\-]/u.test(keyArgument(parent.value) || "");
+    const mayReplace = parent.operation === "key" && WORD.test(match?.[0] || "") && (/[\p{L}\p{N}'’\-]/u.test(keyArgument(parent.value) || "") || choice.effect === "complete" && parent.value === "backspace");
     if (mayReplace && !choice.effect) removed = match?.[0] || "";
     const insertion = choice.effect ? exactWordEffect(parentDraft, mayReplace ? match?.[0] || "" : "", choice.text, choice.effect) : null;
     if (insertion) removed = insertion.removed;
@@ -507,14 +509,15 @@ async function renderKeyboard(request, env, state, url) {
   if (view === "prefix" && endPair && !endPairIndex.some(({ value }) => value === endPair)) throw new Error("Choose an END pair that occurs at the end of a word in the filtered spelling lexicon.");
   const offset = Number(modeParams.get("offset") || 0);
   if (modeParams.has("shift") && !new Set(["0", "1"]).has(modeParams.get("shift"))) throw new Error("Keyboard layout link is invalid.");
-  if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks"]).has(view)) throw new Error("Keyboard layout link is invalid.");
+  if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks", "short"]).has(view)) throw new Error("Keyboard layout link is invalid.");
   if ([...prefix].length > 20 || /[^\p{L}\p{N}'’\-]/u.test(prefix) || !Number.isSafeInteger(offset) || offset < 0 || offset % 20 !== 0) throw new Error("Word browser prefix or page is invalid.");
   if (view === "prefix" && prefix && !APPROVED_PREFIXES.has(prefix)) throw new Error("Choose a two-letter prefix from the supplied list.");
 
   if (view === "chunks") return await renderChunkKeyboard(request, env, state, draft, url, modeParams);
   const context = predictionContext(draft, state);
-  const predictions = usableWords(await predictRanked(env, request, context, 48));
-  const phrases = view !== "prefix" && (!draft || /\s$/u.test(draft) || state.operation === "pick" || state.operation === "typed")
+  const ranked = view === "short" && !draft ? PREFIX_KEYBOARD_INITIAL_WORDS.map(text=>({text})) : usableWords(await predictRanked(env, request, context, 48));
+  const predictions = view === "short" ? withoutShortWords(ranked) : ranked;
+  const phrases = view === "words" && (!draft || /\s$/u.test(draft) || state.operation === "pick" || state.operation === "typed")
     ? await predictPhrases(env, request, draft, state, predictions)
     : [];
   const directWords = predictions.slice(0, 12);
@@ -538,11 +541,11 @@ async function renderKeyboard(request, env, state, url) {
   const key = async (value, label = value, extraClass = "") => {
     if (value === "backspace" && !draft) return `<span class="key ${extraClass} disabled" aria-disabled="true" aria-label="Backspace unavailable for an empty draft">${escapeHtml(label)}</span>`;
     const accessibleLabel = value === "backspace" ? "Backspace" : `Add ${label}`;
-    return `<a class="key ${extraClass}" rel="nofollow" href="${escapeHtml(`${await makeLink("key", value, view === "prefix", "")}#keyboard`)}" aria-label="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
+    return `<a class="key ${extraClass}" rel="nofollow" href="${escapeHtml(`${await makeLink("key", value, (view === "prefix" || view === "short"), "")}#keyboard`)}" aria-label="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
   };
   const mode = (label, nextLayout, nextShifted = false, extraClass = "", accessible = label) => `<a class="key ${extraClass}" href="${escapeHtml(stateHref(state.state_id, nextLayout, nextShifted, prefix, offset, view))}" aria-label="${escapeHtml(accessible)}">${escapeHtml(label)}</a>`;
-  const letters = `<div class="keyrow">${(await Promise.all("qwertyuiop".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow indented">${(await Promise.all("asdfghjkl".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow third">${mode("⇧", "letters", !shifted, "wide", shifted ? "Turn shift off" : "Turn shift on")} ${(await Promise.all("zxcvbnm".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")} <span class="key wide spacer" aria-hidden="true"></span></div><div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("question", "?", "wide")}</div>`;
-  const symbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "("].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([" )", "_", "!", "?", "'", ":", ";", '"', "/"].map((value) => key(value.trim())))).join("")} <span class="key spacer" aria-hidden="true"></span></div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
+  const letters = `<div class="keyrow">${(await Promise.all("qwertyuiop".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow indented">${(await Promise.all("asdfghjkl".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow third">${mode("⇧", "letters", !shifted, "wide", shifted ? "Turn shift off" : "Turn shift on")} ${(await Promise.all("zxcvbnm".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")} ${await key("backspace", "⌫", "wide")}</div><div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("question", "?", "wide")}</div>`;
+  const symbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "("].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([" )", "_", "!", "?", "'", ":", ";", '"', "/"].map((value) => key(value.trim())))).join("")} ${await key("backspace", "⌫")}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
   const prefixInputKeys = `<div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("backspace", "⌫", "prefix-backspace")}</div>`;
   const prefixSymbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "(", "/"].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([")", "_", "!", "?", "'", ":", ";", '"'].map((value) => key(value)))).join("")}${await key("backspace", "⌫", "prefix-backspace")}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
   const reviewHref = draft ? `${PREFIX}/review/${word(state.state_id)}${view !== "words" ? `?view=${encodeURIComponent(view)}` : ""}` : "";
@@ -550,6 +553,7 @@ async function renderKeyboard(request, env, state, url) {
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted, "", 0, view) : "";
   const clearHref = draft ? await makeLink("clear", "-") : "";
   const controls = `${undoHref ? `<a href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
+  if(view === "short") return renderShortWordKeyboard({env,request,state,draft,layout,shifted,offset,predictions,keyboard:layout === "symbols" ? symbols : letters,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,dictionaryWords});
   const moreSection = moreWords.length
     ? `<label for="more-words">More words</label><div class="more-row"><select id="more-words" name="more" aria-label="More words">${moreOptions}</select><button type="submit" name="action" value="more">Add selected word</button></div>`
     : `<p>No additional model suggestions are available for this context.</p>`;
@@ -702,11 +706,11 @@ async function renderKeyboard(request, env, state, url) {
 }
 
 export function isWordKeyboardPath(pathname) {
-  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`) || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/`;
+  return pathname === SHORT_KEYBOARD || pathname === `${SHORT_KEYBOARD}/` || pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`) || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/`;
 }
 
 export function isWordKeyboardStartPath(pathname) {
-  return pathname === PREFIX || pathname === `${PREFIX}/` || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/` || pathname.includes(`${PREFIX}/start/`);
+  return pathname === SHORT_KEYBOARD || pathname === `${SHORT_KEYBOARD}/` || pathname === PREFIX || pathname === `${PREFIX}/` || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/` || pathname.includes(`${PREFIX}/start/`);
 }
 
 export function isWordKeyboardMutationPath(pathname) {
@@ -726,13 +730,13 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     if (path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`) {
       return new Response(null, { status: 308, headers: { ...NO_STORE, Location: `/predictive-keyboard/html/chunk-keyboard-3/${url.search}` } });
     }
-    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`) {
+    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/` || path === SHORT_KEYBOARD || path === `${SHORT_KEYBOARD}/`) {
       const isPrefixEntry = path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`;
       const params = queryParams(url, new Set(["reply_to"]));
       const replyTo = params.get("reply_to") || "";
       if (replyTo && !validReplyTarget(replyTo)) throw new Error("Reply target is not a valid IARC message ID.");
       const state = await createSession(env, randomToken(), replyTo || null);
-      const viewQuery = isPrefixEntry ? "?view=prefix" : "";
+      const viewQuery = isPrefixEntry ? "?view=prefix" : path.startsWith(SHORT_KEYBOARD) ? "?view=short" : "";
       return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}${viewQuery}`, url.origin));
     }
     const startMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/start\/(\d{13})\/([^/]+)\/([^/]+)$/u);

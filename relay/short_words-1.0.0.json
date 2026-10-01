@@ -1,0 +1,518 @@
+{
+  "version": "1.0.0",
+  "scope": "Bounded English communication palette, not an exhaustive inventory of all common English words.",
+  "source": "Pinned filtered ESDB size 60 intersected with SUBTLEX-US lowercase contextual diversity >=500; all eligible two-letter words, then usage-ranked three-letter words up to 100. Display alphabetically by length.",
+  "eligible_count": 218,
+  "source_sha256": "c5f86f065fc5d057fbf366433b8c5ca550aa7c24e128362dea4394f2b29c86e4",
+  "esdb_export_sha256": "816eeca9cf2756062e41b554835a69b314669d2554b5c28e15a8bb734dedd8fa",
+  "excluded": {
+    "don": "Subtitle counts confound this noun with the fragment of don\u2019t.",
+    "re": "Subtitle counts confound this specialized word with contraction fragments.",
+    "em": "Subtitle counts confound this typography term with contracted them."
+  },
+  "attribution": "SUBTLEX-US: Marc Brysbaert and Boris New. Freely available at https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus; terms in relay/semantic/SUBTLEX_US_ATTRIBUTION.md. ESDB licenses retained in the existing lexicon source artifacts.",
+  "words": [
+    "am",
+    "an",
+    "as",
+    "at",
+    "be",
+    "by",
+    "do",
+    "eh",
+    "go",
+    "ha",
+    "he",
+    "hi",
+    "if",
+    "in",
+    "is",
+    "it",
+    "la",
+    "ma",
+    "me",
+    "my",
+    "no",
+    "of",
+    "oh",
+    "on",
+    "or",
+    "so",
+    "to",
+    "uh",
+    "um",
+    "up",
+    "us",
+    "we",
+    "ya",
+    "ago",
+    "all",
+    "and",
+    "any",
+    "are",
+    "ask",
+    "bad",
+    "big",
+    "bit",
+    "boy",
+    "but",
+    "can",
+    "car",
+    "day",
+    "did",
+    "end",
+    "far",
+    "few",
+    "for",
+    "get",
+    "got",
+    "guy",
+    "had",
+    "has",
+    "her",
+    "him",
+    "his",
+    "hit",
+    "how",
+    "huh",
+    "job",
+    "let",
+    "lot",
+    "man",
+    "may",
+    "men",
+    "new",
+    "not",
+    "now",
+    "off",
+    "old",
+    "one",
+    "our",
+    "out",
+    "own",
+    "put",
+    "run",
+    "saw",
+    "say",
+    "see",
+    "set",
+    "she",
+    "sit",
+    "son",
+    "the",
+    "too",
+    "try",
+    "two",
+    "use",
+    "was",
+    "way",
+    "who",
+    "why",
+    "won",
+    "yes",
+    "yet",
+    "you"
+  ],
+  "usage": {
+    "ago": {
+      "Cdlow": 5847,
+      "FREQlow": 14580
+    },
+    "all": {
+      "Cdlow": 8261,
+      "FREQlow": 193220
+    },
+    "am": {
+      "Cdlow": 7914,
+      "FREQlow": 52421
+    },
+    "an": {
+      "Cdlow": 8271,
+      "FREQlow": 90046
+    },
+    "and": {
+      "Cdlow": 8374,
+      "FREQlow": 515365
+    },
+    "any": {
+      "Cdlow": 7974,
+      "FREQlow": 49853
+    },
+    "are": {
+      "Cdlow": 8358,
+      "FREQlow": 225936
+    },
+    "as": {
+      "Cdlow": 8201,
+      "FREQlow": 99083
+    },
+    "ask": {
+      "Cdlow": 6832,
+      "FREQlow": 22282
+    },
+    "at": {
+      "Cdlow": 8335,
+      "FREQlow": 153482
+    },
+    "bad": {
+      "Cdlow": 7122,
+      "FREQlow": 26037
+    },
+    "be": {
+      "Cdlow": 8361,
+      "FREQlow": 285000
+    },
+    "big": {
+      "Cdlow": 7076,
+      "FREQlow": 29451
+    },
+    "bit": {
+      "Cdlow": 5059,
+      "FREQlow": 11793
+    },
+    "boy": {
+      "Cdlow": 5690,
+      "FREQlow": 22615
+    },
+    "but": {
+      "Cdlow": 8308,
+      "FREQlow": 121176
+    },
+    "by": {
+      "Cdlow": 8153,
+      "FREQlow": 61693
+    },
+    "can": {
+      "Cdlow": 8349,
+      "FREQlow": 234662
+    },
+    "car": {
+      "Cdlow": 5106,
+      "FREQlow": 23946
+    },
+    "day": {
+      "Cdlow": 7687,
+      "FREQlow": 38926
+    },
+    "did": {
+      "Cdlow": 8272,
+      "FREQlow": 88757
+    },
+    "do": {
+      "Cdlow": 8340,
+      "FREQlow": 262536
+    },
+    "eh": {
+      "Cdlow": 1051,
+      "FREQlow": 1917
+    },
+    "end": {
+      "Cdlow": 5552,
+      "FREQlow": 12881
+    },
+    "far": {
+      "Cdlow": 5099,
+      "FREQlow": 10762
+    },
+    "few": {
+      "Cdlow": 6005,
+      "FREQlow": 15262
+    },
+    "for": {
+      "Cdlow": 8370,
+      "FREQlow": 332686
+    },
+    "get": {
+      "Cdlow": 8320,
+      "FREQlow": 190325
+    },
+    "go": {
+      "Cdlow": 8329,
+      "FREQlow": 161541
+    },
+    "got": {
+      "Cdlow": 8243,
+      "FREQlow": 160730
+    },
+    "guy": {
+      "Cdlow": 6561,
+      "FREQlow": 37462
+    },
+    "ha": {
+      "Cdlow": 644,
+      "FREQlow": 3503
+    },
+    "had": {
+      "Cdlow": 8215,
+      "FREQlow": 84157
+    },
+    "has": {
+      "Cdlow": 8035,
+      "FREQlow": 55273
+    },
+    "he": {
+      "Cdlow": 8310,
+      "FREQlow": 220702
+    },
+    "her": {
+      "Cdlow": 8066,
+      "FREQlow": 139358
+    },
+    "hi": {
+      "Cdlow": 1877,
+      "FREQlow": 2809
+    },
+    "him": {
+      "Cdlow": 8252,
+      "FREQlow": 176660
+    },
+    "his": {
+      "Cdlow": 8167,
+      "FREQlow": 98326
+    },
+    "hit": {
+      "Cdlow": 4887,
+      "FREQlow": 12275
+    },
+    "how": {
+      "Cdlow": 8223,
+      "FREQlow": 67228
+    },
+    "huh": {
+      "Cdlow": 5120,
+      "FREQlow": 16575
+    },
+    "if": {
+      "Cdlow": 8288,
+      "FREQlow": 113074
+    },
+    "in": {
+      "Cdlow": 8369,
+      "FREQlow": 473880
+    },
+    "is": {
+      "Cdlow": 8364,
+      "FREQlow": 420989
+    },
+    "it": {
+      "Cdlow": 8370,
+      "FREQlow": 685089
+    },
+    "job": {
+      "Cdlow": 5957,
+      "FREQlow": 20853
+    },
+    "la": {
+      "Cdlow": 512,
+      "FREQlow": 1782
+    },
+    "let": {
+      "Cdlow": 8112,
+      "FREQlow": 56197
+    },
+    "lot": {
+      "Cdlow": 7165,
+      "FREQlow": 28738
+    },
+    "ma": {
+      "Cdlow": 1970,
+      "FREQlow": 5136
+    },
+    "man": {
+      "Cdlow": 7956,
+      "FREQlow": 84739
+    },
+    "may": {
+      "Cdlow": 6175,
+      "FREQlow": 19530
+    },
+    "me": {
+      "Cdlow": 8351,
+      "FREQlow": 462146
+    },
+    "men": {
+      "Cdlow": 4804,
+      "FREQlow": 17450
+    },
+    "my": {
+      "Cdlow": 8340,
+      "FREQlow": 291721
+    },
+    "new": {
+      "Cdlow": 6911,
+      "FREQlow": 25522
+    },
+    "no": {
+      "Cdlow": 8310,
+      "FREQlow": 119570
+    },
+    "not": {
+      "Cdlow": 8344,
+      "FREQlow": 238427
+    },
+    "now": {
+      "Cdlow": 8303,
+      "FREQlow": 103585
+    },
+    "of": {
+      "Cdlow": 8372,
+      "FREQlow": 573021
+    },
+    "off": {
+      "Cdlow": 8047,
+      "FREQlow": 59292
+    },
+    "oh": {
+      "Cdlow": 1914,
+      "FREQlow": 4492
+    },
+    "old": {
+      "Cdlow": 6804,
+      "FREQlow": 29004
+    },
+    "on": {
+      "Cdlow": 8371,
+      "FREQlow": 345091
+    },
+    "one": {
+      "Cdlow": 8336,
+      "FREQlow": 136096
+    },
+    "or": {
+      "Cdlow": 8191,
+      "FREQlow": 75030
+    },
+    "our": {
+      "Cdlow": 8043,
+      "FREQlow": 63788
+    },
+    "out": {
+      "Cdlow": 8339,
+      "FREQlow": 193517
+    },
+    "own": {
+      "Cdlow": 6932,
+      "FREQlow": 23356
+    },
+    "put": {
+      "Cdlow": 7630,
+      "FREQlow": 33394
+    },
+    "run": {
+      "Cdlow": 5811,
+      "FREQlow": 14980
+    },
+    "saw": {
+      "Cdlow": 6394,
+      "FREQlow": 20230
+    },
+    "say": {
+      "Cdlow": 8211,
+      "FREQlow": 76545
+    },
+    "see": {
+      "Cdlow": 8314,
+      "FREQlow": 112999
+    },
+    "set": {
+      "Cdlow": 5007,
+      "FREQlow": 10786
+    },
+    "she": {
+      "Cdlow": 7914,
+      "FREQlow": 107516
+    },
+    "sit": {
+      "Cdlow": 4797,
+      "FREQlow": 10730
+    },
+    "so": {
+      "Cdlow": 8325,
+      "FREQlow": 128430
+    },
+    "son": {
+      "Cdlow": 4838,
+      "FREQlow": 18329
+    },
+    "the": {
+      "Cdlow": 8388,
+      "FREQlow": 1339811
+    },
+    "to": {
+      "Cdlow": 8380,
+      "FREQlow": 1138435
+    },
+    "too": {
+      "Cdlow": 8169,
+      "FREQlow": 65983
+    },
+    "try": {
+      "Cdlow": 6708,
+      "FREQlow": 19980
+    },
+    "two": {
+      "Cdlow": 7839,
+      "FREQlow": 45366
+    },
+    "uh": {
+      "Cdlow": 3313,
+      "FREQlow": 20489
+    },
+    "um": {
+      "Cdlow": 1934,
+      "FREQlow": 5165
+    },
+    "up": {
+      "Cdlow": 8342,
+      "FREQlow": 184579
+    },
+    "us": {
+      "Cdlow": 8191,
+      "FREQlow": 85282
+    },
+    "use": {
+      "Cdlow": 6273,
+      "FREQlow": 16114
+    },
+    "was": {
+      "Cdlow": 8340,
+      "FREQlow": 282414
+    },
+    "way": {
+      "Cdlow": 8206,
+      "FREQlow": 71259
+    },
+    "we": {
+      "Cdlow": 8341,
+      "FREQlow": 267654
+    },
+    "who": {
+      "Cdlow": 8207,
+      "FREQlow": 71019
+    },
+    "why": {
+      "Cdlow": 7905,
+      "FREQlow": 42108
+    },
+    "won": {
+      "Cdlow": 7496,
+      "FREQlow": 36931
+    },
+    "ya": {
+      "Cdlow": 2090,
+      "FREQlow": 7345
+    },
+    "yes": {
+      "Cdlow": 5111,
+      "FREQlow": 14124
+    },
+    "yet": {
+      "Cdlow": 6302,
+      "FREQlow": 16504
+    },
+    "you": {
+      "Cdlow": 8376,
+      "FREQlow": 1595028
+    }
+  }
+}
