@@ -39,5 +39,10 @@ try{
   assert.ok(events.some(e=>e.kind==='http'&&e.wire_body_bytes<e.uncompressed_bytes));assert.ok(events.some(e=>e.kind==='injected-response-loss'));
   await initRun('changed',{start_url:base+'/root',release:'wrong'});await assert.rejects(act('changed',{op:'start'},{local:true}),/Release changed/);
   await initRun('mismatch',{start_url:base+'/record',expected_body:body});await act('mismatch',{op:'start'},{local:true});await assert.rejects(act('mismatch',{op:'finish',outcome:'completed'},{local:true}),/publication receipt/);
+  const prefixConfig={method_id:'prefix-link',method_href:'/predictive-keyboard/html/prefix-keyboard/',expected_body:body};
+  await initRun('prefix-action',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=prefix'});
+  await act('prefix-action',{op:'start'},{local:true});
+  await initRun('prefix-switch',{...prefixConfig,start_url:base+'/predictive-keyboard/html/word-links/'});
+  await assert.rejects(act('prefix-switch',{op:'start'},{local:true}),/Changing assigned method/);
   console.log('Recorder contract passed: exact text, supplied links, stale selections, fragments, redirects, compressed bytes, dropped responses, publication intent, receipt checks, and release freeze.');
 }finally{await new Promise(r=>server.close(r));await rm(root,{recursive:true});}

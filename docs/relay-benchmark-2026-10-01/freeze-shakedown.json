@@ -1,9 +1,9 @@
 {
-  "benchmark": "relay-luna-pilot-1.1.0",
-  "frozen_at": "2026-10-01T08:19:40.301Z",
+  "benchmark": "relay-luna-pilot-1.0.0",
+  "frozen_at": "2026-10-01T07:58:54.592Z",
   "origin": "https://relay.interagentresearchcommons.org",
   "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
-  "source_commit": "34cf01b9d4dbff51cd715e97cd022fef7b4edcea",
+  "source_commit": "e6808689b2dda005b0a9c00a6b2b488399a04f45",
   "deployed_service_commit": "0e2e153028d09c3c14e6541446c6bad787f13f2b",
   "source_attestation": "source_commit identifies the benchmark checkout. deployed_service_commit is the previously recorded owner deployment source; HTTP release identifies the Worker, not a cryptographic source attestation. Runtime file hashes are recorded separately.",
   "registry_version": "1.3.0",
@@ -12,7 +12,7 @@
       "sha256": "e269996ec3cf45b752477e3740be7a867fe9339d01655e39182f9e897f70a0d0",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:39 GMT",
+        "date": "Thu, 01 Oct 2026 07:58:51 GMT",
         "content-type": "application/json; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "no-store",
@@ -25,11 +25,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=BuxCRZMwvZLFKbDugvHbqOOEckXbHdTatXq2WV2ya2JxbwjmQoNVZmfob8XorPHSO2xmE5yXO0Pu%2BAK%2FRVd95mwygRcPdai%2BH2AJ5NcN4Kskoo2p0jiVCjWN%2BiFxCzVsH8D2jxxUkDKg6%2BAtMX2%2FvqD0cpk%2FkQ%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=c0A4SxoPCA1TcWwY1AEh6NRErm%2BjHCOV57SQRJAtDfFQCRTIuo3wYN2Ybqgl%2FAUKabETK6L8PDGgJyOjL1TC6A1DF8OyI0o8rYvRhvhvNY85%2BTopHwTgDaJqmfgIy9ARxer%2BjXvhUvQnPQ2o3fjHI5nS9EoG7Q%3D%3D\"}]}",
         "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2be8b8d95b-YVR",
+        "cf-ray": "a439ecb5fce4cde8-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -37,7 +37,7 @@
       "sha256": "1249709bd0c1f3c47ef82b1234f14a8a3782bf1eba224a1667177416a0dee9df",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:39 GMT",
+        "date": "Thu, 01 Oct 2026 07:58:52 GMT",
         "content-type": "application/json; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "no-store",
@@ -50,11 +50,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=1P%2F2kgNoBenjOgq3p71v1JqxSWtUQ8IwBX2m7t9xUfGkygCA50w5KZRxWysSd5GC1SnAKT1z%2BPKvtksnk3V6G1B%2FyZ12CovtlR4FwKTHM0dyi5RiWYx5JAT55SmecAZqXjJGefQ%2F36r4V7CQUz1owjdP20SHtg%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=lFNKN%2ByHG0%2F%2F%2FUQpvFwYpCCmoIf7SAfkHJCRFxZMv2rfbWnOhsbdRFhObJyGg1rGugV5VyP1mbF6usYh4Vw7xar1IL1pNHSGqSo0Dp434yfCa20gzeuCTZwqX1UwY1Lu5tgHk3MfCyIK%2FX6JyzYoUNbml2mRuA%3D%3D\"}]}",
         "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2d5ae1da76-YVR",
+        "cf-ray": "a439ecb7bb862c5d-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -62,7 +62,7 @@
       "sha256": "9a8fb5a13c93acbfe70f5b9d803b5e870467709138ec043bf10153362a0dbd4a",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:39 GMT",
+        "date": "Thu, 01 Oct 2026 07:58:52 GMT",
         "content-type": "application/json; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "no-store",
@@ -75,11 +75,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=0g3QaYWBqbJKLwGIZVLd81%2FQ%2BScR0aCwEpt4s7rmJiSTD17nF0V5leYp%2FedU7m%2BDveuaQ5v8nioRCJAPGfvJ73s6mDtEjA5IIDQouhHK%2FUg9S5BM5efGFKCr%2B3UirkTwkBMCJPgyzxD6wQMl1N4c4qkocto%2FcA%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=RDw35DJP8JdRlN1OuNKk%2Bo58JzOnbGrqrbbgZozwk3X7vxdQtqGzTPVbAy3z95d22uOspvr6Dgp1raPfqM04OYqo%2Bc79nmlxSEyT8NbwxjB%2B9i%2Bf6wUQUnvzYseEY2JU%2Bzry0rlrJfqFx3BV%2Fal%2BAlh6kT13ag%3D%3D\"}]}",
         "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2eaa25f4ab-YVR",
+        "cf-ray": "a439ecba4868d325-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -87,7 +87,7 @@
       "sha256": "44849717a114eefe24b9aed08d67eb0810f5ffe4c1458da7c6b3d49141a5be15",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:40 GMT",
+        "date": "Thu, 01 Oct 2026 07:58:53 GMT",
         "content-type": "text/plain; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "public, max-age=0, must-revalidate",
@@ -102,11 +102,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=aDOdESjC6wUuW4zOiqVKz4MJ5UOwTYpnraisdnmY1r0IRCQuA4103pqgSx9FIquW3lSk8u6HyEA9tSC8BdC8cyh5YIoavnViJA5DtTmcvDdmKLnYkyBwRgqQ8X3DCeBSZPJNxcO1c3rVF9n7OrsGFWDzfW16tg%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=fr89Lr8zL2shwomfNy815KAwweqGUYdKYkCkckyru1pQonLYswE1kQgvBdxrJrduzOF33ri9RFhab1qZSWZ9NVvKoVbvuP00z637Z01EU8%2FON%2BCih7pVRy9Uyw8jplAy%2FrGXXMNLWhFEztNiV2jfFWvVCLZq5Q%3D%3D\"}]}",
         "etag": "W/\"RISXF6EU7v4kua7QjWfrCBD1_-TBRY2nxrPUkUGlvhU\"",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2ffc9b7daf-YVR",
+        "cf-ray": "a439ecbf794bbdbf-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -114,7 +114,7 @@
       "sha256": "30df4c81ab6a6de9c19fae272ba03ccdf4de71839beddde071fa454060530e9a",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:40 GMT",
+        "date": "Thu, 01 Oct 2026 07:58:54 GMT",
         "content-type": "text/plain; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "public, max-age=0, must-revalidate",
@@ -129,11 +129,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Sc1LmGBdjjvLa17igx1xsEFZDVL73I53UkXdElaETAHzE7bsahK0EfTq%2FdDvsdC4fdfnUvZJwemApYm64wKwE7%2BTUGDBoA5ERhxA1Hfo%2B7HGE8MvPPOY4F%2B7DstgsW1j%2FKtwwLInaWEpmUPlRukKj2spCTE%2FWQ%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=aENWMbdRPL7Efq3uwRiHhXfuVNIlUoFqsENbXGnUyIOGb6r2YEZQgcZI0PUy5DqNietMi7QryfecKhnvIEkBjXpZy5Vpkifbx6rH9Js%2F6aS%2BxhaipCy8NXYCKb3Rzj85wKU%2B7iPZalxE%2BJWG0%2B6UTMnmhMUpZQ%3D%3D\"}]}",
         "etag": "W/\"MN9MgatqbenBn64nK6A8zfTecYOb7d3gcfpFQGBTDpo\"",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b3168a5b218-YVR",
+        "cf-ray": "a439ecc5deab50df-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     }
@@ -154,14 +154,14 @@
     "relay/assets/semantic-lexicon/chunk-order-manifest.json": "576dee074d5c6081e157061d8a979d124b78ffcedf5b3f0aebb5afbfb0bf8722",
     "relay/assets/o200k/manifest.json": "53894d0850110822e0591f026b1024a48611189088104b0e15f977a2b8fb9e55",
     "relay/tokenizers/o200k_base.tiktoken": "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d",
-    "relay/benchmark/recorder.mjs": "4d6acd2a468e26dad4da67bf7e3a6dc537fcb03f03d5b3eab14a1b841cab9bd8",
+    "relay/benchmark/recorder.mjs": "2510f8198da52e18dd4c69709e9f56f8b48fe7c70be16069bf393e1a0f6c1532",
     "relay/benchmark/client.mjs": "9afcb30b143ea005199f044391b74ad6754de9224872978a6edf407891f5aa62",
     "relay/benchmark/broker.mjs": "5e03471acc1d27a1599b0ad3e6231b72c7a1483bbc76baa792526dc21699aa26",
     "relay/benchmark/extract.py": "d4ad18ecc50b58bfb64bee936ec4335b870d4e45a4f0277164468553a458e2db",
-    "relay/benchmark/plan.json": "ba14732f7ba254288109965ec9f9d9c397f791be408e775bb512aabf84a7fb3a",
+    "relay/benchmark/plan.json": "3fc3ab97691c19f1559971a880640a170bc9112085b7362d89569c491f5bc446",
     "relay/benchmark/requirements.txt": "ac785205f5d97970c4a7f8aef135c62cfda01985ba2000973008c823ccc01d2f"
   },
-  "plan_sha256": "f8ad3424d67de1423e95f4b42bc2cf77622086bd3bc8029b292b10166da69eff",
+  "plan_sha256": "34d6a975b3fcedc96dd2ae7aa462f8c6feee999a36a198b5581b93c76e82a05a",
   "client": {
     "version": "1.0.0",
     "node": "v24.18.0",
@@ -172,7 +172,7 @@
     "reading": "all static HTML text including closed disclosure content is exposed uniformly; scripts/styles/SVG excluded; link label and aria-label preserved; no claims about attention"
   },
   "plan": {
-    "benchmark_version": "relay-luna-pilot-1.1.0",
+    "benchmark_version": "relay-luna-pilot-1.0.0",
     "profile": "strict-supplied-links-no-js-no-forms",
     "model": "gpt-6-luna",
     "reasoning_effort": "high",
@@ -242,7 +242,7 @@
     ],
     "activation_budget": 300,
     "wall_budget_ms": 1200000,
-    "instruction": "Transcribe the supplied exact target body verbatim. For a root task create a NEW root message with no reply target. For a reply task publish the identical target body as a reply only to the assigned parent ID. The keyboard’s built-in task/demo text and public feed messages do not replace the assigned target. Use only numbered supplied links from the recorder. Review exact text and deliberately publish only this target. Follow its supplied public message record, including JSON in an HTML pre block. If impossible or at budget, finish failed. No constructed URLs, forms, JavaScript, source/dictionaries/token ranks or external route inference.",
+    "instruction": "Transcribe the target exactly, using only numbered supplied links from the recorder. Review it and deliberately publish only the intended target. Follow the supplied public message link and, when needed, its Machine-readable message record link. Finish only after reading the public record. If the task is impossible or the budget is reached, stop and record the failure. Do not construct URLs, submit forms, execute JavaScript, inspect source/dictionaries/token ranks, or use external tools to infer optimal routes.",
     "coverage_gate": "Coverage outcomes are observed for these targets, not a proof of universal coverage. Automation checks accepted boundaries separately.",
     "order_rotation": "For task index i, rotate the four methods by i modulo 4. Dispatch in three slots at most; record actual dispatch and completion order. Each task-method pair uses a fresh agent with no forked history.",
     "recovery_suite": [
@@ -251,8 +251,6 @@
       "return-to-earlier-branch",
       "expired-review"
     ],
-    "reporting": "No confidence intervals or global optimality claims for this purposive ten-target pilot. Retain all failures and costs. Report full end-to-end and publication-only timings separately; sample does not establish agent identity or broad model performance.",
-    "run_prefix": "v2-",
-    "revision_reason": "Fresh main cohort after calibration and initial shakedown caught HTML-wrapped receipt parsing, shared Prefix action namespace, and ambiguity between assigned transcription and built-in task. Earlier attempts and failures remain separate."
+    "reporting": "No confidence intervals or global optimality claims for this purposive ten-target pilot. Retain all failures and costs. Report full end-to-end and publication-only timings separately; sample does not establish agent identity or broad model performance."
   }
 }

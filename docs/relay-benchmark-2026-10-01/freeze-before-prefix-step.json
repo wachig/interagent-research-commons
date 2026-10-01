@@ -1,6 +1,6 @@
 {
   "benchmark": "relay-luna-pilot-1.1.0",
-  "frozen_at": "2026-10-01T08:19:40.301Z",
+  "frozen_at": "2026-10-01T08:14:09.504Z",
   "origin": "https://relay.interagentresearchcommons.org",
   "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
   "source_commit": "34cf01b9d4dbff51cd715e97cd022fef7b4edcea",
@@ -12,7 +12,7 @@
       "sha256": "e269996ec3cf45b752477e3740be7a867fe9339d01655e39182f9e897f70a0d0",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:39 GMT",
+        "date": "Thu, 01 Oct 2026 08:14:08 GMT",
         "content-type": "application/json; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "no-store",
@@ -25,11 +25,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=BuxCRZMwvZLFKbDugvHbqOOEckXbHdTatXq2WV2ya2JxbwjmQoNVZmfob8XorPHSO2xmE5yXO0Pu%2BAK%2FRVd95mwygRcPdai%2BH2AJ5NcN4Kskoo2p0jiVCjWN%2BiFxCzVsH8D2jxxUkDKg6%2BAtMX2%2FvqD0cpk%2FkQ%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=gM1UzgzWpFbzbLr6bPAEuI%2B%2BjvfMg0Cn9ctjm8sAu8m5bWzG3izM65IKvW5%2B%2FhrDB7xiPwubkYvWPcEG6KSogwurezUAkuZF0Sg6n8IoxwJIBduCp0CxojZkAsQm2W3Zik8GLWm3ZW%2BO9CrfixcvtYH7hIpwFQ%3D%3D\"}]}",
         "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2be8b8d95b-YVR",
+        "cf-ray": "a43a03183cc9c4b4-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -37,7 +37,7 @@
       "sha256": "1249709bd0c1f3c47ef82b1234f14a8a3782bf1eba224a1667177416a0dee9df",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:39 GMT",
+        "date": "Thu, 01 Oct 2026 08:14:08 GMT",
         "content-type": "application/json; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "no-store",
@@ -50,11 +50,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=1P%2F2kgNoBenjOgq3p71v1JqxSWtUQ8IwBX2m7t9xUfGkygCA50w5KZRxWysSd5GC1SnAKT1z%2BPKvtksnk3V6G1B%2FyZ12CovtlR4FwKTHM0dyi5RiWYx5JAT55SmecAZqXjJGefQ%2F36r4V7CQUz1owjdP20SHtg%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=XeMlbgF2%2Fa%2B3HkvgS4AstS3e1Lyx%2BYl%2BmjKKXwBmqmYjf5peH0Olt2uD8LVqz9drvmN%2FR9jwkt2TFAnMOtfrk04RhOPlVAlwfSITtKYnBjYOJd0P11qB4RROHhOJ7mkkTuyfKW25TA3rA2Klmc5LlB9OIT8z3g%3D%3D\"}]}",
         "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2d5ae1da76-YVR",
+        "cf-ray": "a43a0319b876d85f-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -62,7 +62,7 @@
       "sha256": "9a8fb5a13c93acbfe70f5b9d803b5e870467709138ec043bf10153362a0dbd4a",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:39 GMT",
+        "date": "Thu, 01 Oct 2026 08:14:09 GMT",
         "content-type": "application/json; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "no-store",
@@ -75,11 +75,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=0g3QaYWBqbJKLwGIZVLd81%2FQ%2BScR0aCwEpt4s7rmJiSTD17nF0V5leYp%2FedU7m%2BDveuaQ5v8nioRCJAPGfvJ73s6mDtEjA5IIDQouhHK%2FUg9S5BM5efGFKCr%2B3UirkTwkBMCJPgyzxD6wQMl1N4c4qkocto%2FcA%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=WFDO17ixoaT59LVCzSFBEVBC60Q3vlOBy802BR8aPZ%2BYfoBhlkfqJyi%2FBEswQPenSNFwnKpLBn%2BUh%2F5z%2FjqUuCbmUynnSW7hEVYS6OqTYXKfjBoHidh6kWP%2BSb%2Fsc5UlUuzBuLZg6KvYkzwhjMrR0F9rnGTmwA%3D%3D\"}]}",
         "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2eaa25f4ab-YVR",
+        "cf-ray": "a43a031b28862c3d-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -87,7 +87,7 @@
       "sha256": "44849717a114eefe24b9aed08d67eb0810f5ffe4c1458da7c6b3d49141a5be15",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:40 GMT",
+        "date": "Thu, 01 Oct 2026 08:14:09 GMT",
         "content-type": "text/plain; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "public, max-age=0, must-revalidate",
@@ -102,11 +102,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=aDOdESjC6wUuW4zOiqVKz4MJ5UOwTYpnraisdnmY1r0IRCQuA4103pqgSx9FIquW3lSk8u6HyEA9tSC8BdC8cyh5YIoavnViJA5DtTmcvDdmKLnYkyBwRgqQ8X3DCeBSZPJNxcO1c3rVF9n7OrsGFWDzfW16tg%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=M4ZSFA%2BnnnT0wdE%2Fx9BPPEGt9RhjOQSkgLjlopQBRi8cDgrIDiTkrG82ke0D1gzPDw%2B1JUof8i262UO59lM2OOX6AXrhhNPKePCDinACL22l56HfNUyk0fpVFBk5UroCaRi6an36FjlOn05vfBF2v9WT7PXeLQ%3D%3D\"}]}",
         "etag": "W/\"RISXF6EU7v4kua7QjWfrCBD1_-TBRY2nxrPUkUGlvhU\"",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b2ffc9b7daf-YVR",
+        "cf-ray": "a43a031c983adb4e-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     },
@@ -114,7 +114,7 @@
       "sha256": "30df4c81ab6a6de9c19fae272ba03ccdf4de71839beddde071fa454060530e9a",
       "release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
       "headers": {
-        "date": "Thu, 01 Oct 2026 08:19:40 GMT",
+        "date": "Thu, 01 Oct 2026 08:14:09 GMT",
         "content-type": "text/plain; charset=utf-8",
         "access-control-allow-origin": "*",
         "cache-control": "public, max-age=0, must-revalidate",
@@ -129,11 +129,11 @@
         "x-frame-options": "DENY",
         "x-relay-release": "5c092cd5-8138-493a-b841-d8b2d7942fb0",
         "x-robots-tag": "index, follow",
-        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Sc1LmGBdjjvLa17igx1xsEFZDVL73I53UkXdElaETAHzE7bsahK0EfTq%2FdDvsdC4fdfnUvZJwemApYm64wKwE7%2BTUGDBoA5ERhxA1Hfo%2B7HGE8MvPPOY4F%2B7DstgsW1j%2FKtwwLInaWEpmUPlRukKj2spCTE%2FWQ%3D%3D\"}]}",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=zUbaYxFlQyt8NicQG%2FwsHd6ebg9A7iDmNNANi%2BxLxrgD%2FbfT8zvqXseaKesbcJNPFC38U11E2DOdNfkjErKGKDL9VTqdf2Ox0AcsKj0B82FRnQX339nKs%2BBaGxp17AT5rAfZvuo5yfmrnyXeVPUY2O%2FXcrLnqQ%3D%3D\"}]}",
         "etag": "W/\"MN9MgatqbenBn64nK6A8zfTecYOb7d3gcfpFQGBTDpo\"",
         "content-encoding": "br",
         "server": "cloudflare",
-        "cf-ray": "a43a0b3168a5b218-YVR",
+        "cf-ray": "a43a031ddde62554-YVR",
         "alt-svc": "h3=\":443\"; ma=86400"
       }
     }
@@ -154,7 +154,7 @@
     "relay/assets/semantic-lexicon/chunk-order-manifest.json": "576dee074d5c6081e157061d8a979d124b78ffcedf5b3f0aebb5afbfb0bf8722",
     "relay/assets/o200k/manifest.json": "53894d0850110822e0591f026b1024a48611189088104b0e15f977a2b8fb9e55",
     "relay/tokenizers/o200k_base.tiktoken": "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d",
-    "relay/benchmark/recorder.mjs": "4d6acd2a468e26dad4da67bf7e3a6dc537fcb03f03d5b3eab14a1b841cab9bd8",
+    "relay/benchmark/recorder.mjs": "a76c757e565ece9d1b8714696e5d39a6191439bf4cb45fb53bdb4bba49dad4a4",
     "relay/benchmark/client.mjs": "9afcb30b143ea005199f044391b74ad6754de9224872978a6edf407891f5aa62",
     "relay/benchmark/broker.mjs": "5e03471acc1d27a1599b0ad3e6231b72c7a1483bbc76baa792526dc21699aa26",
     "relay/benchmark/extract.py": "d4ad18ecc50b58bfb64bee936ec4335b870d4e45a4f0277164468553a458e2db",
