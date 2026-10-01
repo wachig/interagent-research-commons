@@ -2476,6 +2476,12 @@ async function adminApi(request, env, ctx, url) {
       if (url.pathname === "/predictive-keyboard") return Response.redirect(new URL("/predictive-keyboard/", url), 308);
       return env.ASSETS.fetch(request);
     }
+    if (new Set(["semantic-lexicon", "semantic-lexicon-hunspell-base-1", "lexicon-source"]).has(url.pathname.split("/")[1])) {
+      if (request.method !== "GET" && request.method !== "HEAD") return problem(request, 405, "Method not allowed", "Lexicon source artifacts are read-only.", { Allow: "GET, HEAD" });
+      if (url.search) return problem(request, 400, "Invalid request", "Lexicon source artifacts do not accept query parameters.");
+      if (!env.ASSETS) return problem(request, 503, "Lexicon unavailable", "The public source assets are not configured.");
+      return env.ASSETS.fetch(request);
+    }
     if (isTokenComposerPath(url.pathname) && url.search) {
       const isO200kSearch = /^\/compose\/token\/o200k\/search\/[A-Za-z0-9_-]+$/.test(url.pathname) && [...url.searchParams.keys()].every((key) => key === "q") && url.searchParams.getAll("q").length === 1;
       const isO200kContinuation = /^\/compose\/token\/o200k\/branch\//.test(url.pathname) && [...url.searchParams.keys()].every((key) => key === "next") && url.searchParams.getAll("next").length === 1;

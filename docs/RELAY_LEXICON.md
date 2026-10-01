@@ -13,3 +13,5 @@ Current Chunk word selection defaults to adding a next word without replacing ty
 The old index is preserved under `/semantic-lexicon-hunspell-base-1/` for historical semantic-backend sessions. Those contracts remain historical. The current search lexicon and contextual prediction model are separate components. No dictionary claims all possible valid English strings; arbitrary accepted text remains representable through the exact-character lane, subject to the disclosed byte/state/rate/expiry limits.
 
 Run `npm run test:relay:lexicon`, `npm run test:relay:chunk-exact`, `npm test`, and `npm run evaluate:relay`. The 324-trial comparison writes evaluation 1.2.0 while preserving prior releases. Tests publish only in disposable localhost fixtures; live smoke verification is read-only.
+
+Public source routing is verified separately by `npm run test:relay:lexicon-source`: current/historical manifests, an accented index filename, policy, additions, export metadata, Copyright and archive are byte-exact, accept read-only HEAD, and reject POST and query ambiguity. The routing repair leaves composition behavior and the released evaluation 1.2.0 bytes unchanged.
