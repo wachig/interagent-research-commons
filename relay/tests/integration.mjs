@@ -1367,14 +1367,14 @@ try {
   const chunk3MotherPage = await chunk3Fetch(chunk3MotPage, chunk3HeHref);
   assert.match(chunk3MotherPage.match(/<div class="chunks candidates" aria-label="Matching candidate words">([\s\S]*?)<\/div>/u)?.[1] || "", /aria-label="Add Mother">Mother<\/a>/u, "mother matches mot plus inside he when the pair overlaps the ending by one letter");
   const insideHeadingAt3 = chunk3ToPage.indexOf("<h2>INSIDE</h2>");
-  const endHeadingAfterInside3 = chunk3ToPage.indexOf("<h2>END</h2>", insideHeadingAt3);
+  const endHeadingAfterInside3 = chunk3ToPage.indexOf("<h2>END · final two letters</h2>", insideHeadingAt3);
   const insideRegion3 = insideHeadingAt3 >= 0 && endHeadingAfterInside3 > insideHeadingAt3 ? chunk3ToPage.slice(insideHeadingAt3, endHeadingAfterInside3) : "";
   const insideChoices3 = [...insideRegion3.matchAll(/<a href="([^"]*inside=[^"]*)"[^>]*>([a-z]{2})<\/a>/gu)];
   assert.ok(insideChoices3.length, "INSIDE offers compatible pairs on the persistent page");
   const chunk3InsidePage = await chunk3Fetch(chunk3ToPage, insideChoices3[0][1]);
   assert.match(chunk3InsidePage, /class="inside-value selected">[a-z]{2}<\/strong>/u, "the selected INSIDE value is marked in the summary");
   assert.match(chunk3InsidePage, /class="is-inside" aria-current="true"[^>]*aria-label="Remove INSIDE [a-z]{2}">[a-z]{2}<\/a>/u, "the selected INSIDE pair remains highlighted in its compact grid and can be removed");
-  const endHeadingAt3 = chunk3InsidePage.indexOf("<h2>END</h2>");
+  const endHeadingAt3 = chunk3InsidePage.indexOf("<h2>END · final two letters</h2>");
   const endRegion3 = endHeadingAt3 >= 0 ? chunk3InsidePage.slice(endHeadingAt3) : "";
   const endChoices3 = [...endRegion3.matchAll(/<a href="([^"]*end=[^"]*)"[^>]*>([a-z]{2})<\/a>/gu)];
   assert.ok(endChoices3.length, "END offers compatible pairs after INSIDE selection");
@@ -1403,6 +1403,16 @@ try {
   bottlePathActivations += 1;
   assert.match(bottleAdded, /<pre class="draft">Bottle<\/pre>/u);
   assert.equal(bottlePathActivations, 4, "bo → tt → le → Bottle remains four ordinary link activations on the retained keyboard");
+  let relayPage = chunkEntry3;
+  for (const label of ["Set START to re", "Add INSIDE la"]) relayPage = await chunk3Fetch(relayPage, constraintHref(relayPage, label));
+  assert.match(relayPage, /Showing 20 of 242 matches—narrow further/u);
+  assert.match(relayPage, /<span class="matrix-row-label" aria-label="END pairs beginning y">y<\/span>/u);
+  assert.doesNotMatch(relayPage, /matrix-jump/u);
+  assert.match(relayPage, /END · final two letters/u);
+  relayPage = await chunk3Fetch(relayPage, constraintHref(relayPage, "Set END to ay"));
+  assert.doesNotMatch(relayPage, /Showing 20 of/u);
+  const relayAdded = await chunk3Fetch(relayPage, constraintHref(relayPage, "Add Relay"));
+  assert.match(relayAdded, /<pre class="draft">Relay<\/pre>/u);
   const prefixFilterUrl = (html, values) => {
     const form = html.match(/<form[^>]* method="get" action="([^"]+)" class="prefix-filter-form">([\s\S]*?)<\/form>/u);
     assert.ok(form, "pair filtering is a discoverable native GET form");
