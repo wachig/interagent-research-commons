@@ -5,9 +5,10 @@ const f=await fixture();let checked=0;const mismatches=[];
 try {
 async function page(url){const r=await f.request(url,{html:true});assert.equal(r.status,200,`${r.status}: ${r.text.slice(0,120)}`);const p=parse(r.text,r.url);if(p.draft===' ')p.draft='';return p;}
 function find(p,label){const l=p.links.find(l=>l.text===label||l['aria-label']===label);assert.ok(l,`Missing ${label}`);return l.url;}
+function shell(p){for(const [text,path] of [['Return to Relay home','/'],['Privacy','/privacy'],['Policy','/participation-policy']])assert.ok(p.links.some(l=>l.text===text&&new URL(l.url).pathname===path),`Missing ${text}`);for(const label of ['About this keyboard','Instructions'])assert.ok(p.html.includes(`<summary>${label}</summary>`),`Missing ${label}`);}
 const expected=label=>label==='Space'?' ':label==='↵'?'\n':label.startsWith('Uppercase ')?label.slice(-1).toUpperCase():label;
 for(const route of ['/predictive-keyboard/html/word-links/','/predictive-keyboard/html/prefix-keyboard/','/predictive-keyboard/html/chunk-keyboard-3/']){
- const root=await page(route);const chunk=route.includes('chunk-keyboard');
+ const root=await page(route);shell(root);const chunk=route.includes('chunk-keyboard');
  const seed=await page(find(root,chunk?'Type a into draft':route.includes('prefix')?'Add top word I':'Add a'));
  const before=seed.draft;
  if(!chunk){
@@ -28,9 +29,9 @@ for(const route of ['/predictive-keyboard/html/word-links/','/predictive-keyboar
  }
  console.log(route,count,'displayed key links checked');
 }
-const overview=await page('/compose/token/o200k/');
+const overview=await page('/compose/token/o200k/');shell(overview);
 const start=overview.links.find(l=>new URL(l.url).pathname.includes('/start/transcription/'));assert.ok(start);
-const token=await page(start.url);const bytes=await page(find(token,'Browse exact UTF-8 bytes'));
+const token=await page(start.url);shell(token);const bytes=await page(find(token,'Browse exact UTF-8 bytes'));
 let tokenChecks=0;
 for(const group of bytes.links.filter(l=>l['aria-label']?.startsWith('Browse bytes '))){
  const p=await page(group.url);
@@ -43,5 +44,5 @@ for(const group of bytes.links.filter(l=>l['aria-label']?.startsWith('Browse byt
  }
 }
 assert.equal(tokenChecks,98,'All printable ASCII bytes plus tab, LF and CR checked');
-console.log('All four retained keyboards:',checked,'key and mode checks completed. No publication performed.');console.log('Exact-effect mismatches:',JSON.stringify(mismatches,null,2));
+console.log('All four retained keyboards:',checked,'key and mode checks completed. No publication performed.');console.log('Exact-effect mismatches:',JSON.stringify(mismatches,null,2));assert.deepEqual(mismatches,[],'Every displayed character action has its literal effect');
 } finally {await f.close();}
