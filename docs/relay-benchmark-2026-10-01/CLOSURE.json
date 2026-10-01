@@ -2,12 +2,12 @@
   "owner_report": "Mac mini force restart, suspected low disk space",
   "raw_trace_directory_missing": true,
   "live_testers": false,
-  "last_chunk_task": "T10 tester ended on usage limit before a client request; not attempted",
+  "last_chunk_task": "T10 completed after restart using original recorder fingerprint and Worker release; timing conditions disclosed separately.",
   "planned": 40,
-  "attempted": 39,
-  "terminal_composition_outcomes": 38,
+  "attempted": 40,
+  "terminal_composition_outcomes": 39,
   "interrupted_attempts": 1,
-  "not_attempted": 1,
+  "not_attempted": 0,
   "final_costs_incomplete": [
     "v2-t09-token",
     "v2-t10-token"

@@ -1,3 +1,3 @@
-# Pilot closed after interruption
+# Pilot closed with interruption limits
 
-The actionable report is [RESULTS.md](RESULTS.md). Thirty-nine of forty planned slots were attempted, including one quota-interrupted attempt. One slot was never started. No testers are active. This is a preserved diagnostic baseline, not a completed forty-attempt comparison or a proven winner. Temporary raw traces were lost after a forced restart; exports and selected session closure evidence survived. See CLOSURE.json for exact limits. The original goal has not been marked achieved.
+See [RESULTS.md](RESULTS.md). All forty original slots were attempted; eight exact publications verified. One Token formatting attempt remains quota-interrupted with incomplete final costs. Chunk’s last original slot completed after restart on the original recorder fingerprint and Worker release. No testers remain after closure. Temporary historical traces were lost; exports, closure evidence, and the durable final trace are retained. This is a diagnostic comparison, not a complete-data or universal-winner claim.

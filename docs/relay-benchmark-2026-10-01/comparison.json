@@ -1,38 +1,40 @@
 {
+  "attempted_all_planned_slots": true,
+  "all_attempts_closed": true,
   "interruption": {
     "owner_report": "Mac mini force restart, suspected low disk space",
     "raw_trace_directory_missing": true,
     "live_testers": false,
-    "last_chunk_task": "T10 tester ended on usage limit before a client request; not attempted",
+    "last_chunk_task": "T10 completed after restart using original recorder fingerprint and Worker release; timing conditions disclosed separately.",
     "planned": 40,
-    "attempted": 39,
-    "terminal_composition_outcomes": 38,
+    "attempted": 40,
+    "terminal_composition_outcomes": 39,
     "interrupted_attempts": 1,
-    "not_attempted": 1,
+    "not_attempted": 0,
     "final_costs_incomplete": [
       "v2-t09-token",
       "v2-t10-token"
     ]
   },
-  "not_attempted": 1,
-  "generated_at": "2026-10-01T15:43:06.876Z",
-  "closed": 39,
+  "not_attempted": 0,
+  "generated_at": "2026-10-01T15:57:04.927Z",
+  "closed": 40,
   "planned": 40,
   "complete": false,
   "methods": [
     {
       "method": "chunk-word",
-      "attempts": 9,
-      "closed": 9,
-      "exact_completed": 4,
+      "attempts": 10,
+      "closed": 10,
+      "exact_completed": 5,
       "failed": 5,
       "interrupted": 0,
       "costs_complete": true,
-      "completion_fraction_closed": 0.4444444444444444,
-      "median_completed_activations": 36,
-      "median_completed_entry_to_finish_ms": 353957.5,
-      "spent_activations_all_attempts": 287,
-      "spent_http_all_attempts": 287
+      "completion_fraction_closed": 0.5,
+      "median_completed_activations": 38,
+      "median_completed_entry_to_finish_ms": 373527,
+      "spent_activations_all_attempts": 351,
+      "spent_http_all_attempts": 351
     },
     {
       "method": "predictive-word",
@@ -1050,7 +1052,7 @@
     "HTTP transport time includes subprocess setup and transfer but excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
     "Wire bytes count encoded response bodies only, not headers/TLS.",
     "o200k extracted tokens are a declared proxy, not Luna usage/billing tokens.",
-    "All raw traces are private; URL hashes in this export cannot be followed.",
+    "Historical raw temporary traces were lost after restart; durable new traces stay private. Export URL hashes cannot be followed.",
     "Calibration and infrastructure interruptions are separate from scored keyboard outcomes."
   ]
 }

@@ -10,7 +10,7 @@ Install the pinned tokenizer in the ignored private dependency directory:
 python3 -m pip install --target relay/benchmark/.private-deps -r relay/benchmark/requirements.txt
 RELAY_BENCH_TOKENIZER_PATH="$PWD/relay/benchmark/.private-deps" node relay/benchmark/recorder.test.mjs
 node relay/benchmark/freeze.mjs
-node relay/benchmark/broker.mjs
+RELAY_BENCH_TOKENIZER_PATH="$PWD/relay/benchmark/.private-deps" node relay/benchmark/broker.mjs
 ```
 
 The broker listens on loopback with a private random key. Raw events, capabilities, responses, and broker credentials remain in a mode-0700 directory at `relay/benchmark/.private-runs`. Do not stage or publish those files. `report.mjs` exports only bounded measurement facts and one-way URL hashes. Session bearer URLs must never appear in the public report.

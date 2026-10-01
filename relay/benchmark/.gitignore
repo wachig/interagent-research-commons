@@ -1,3 +1,7 @@
 __pycache__/
 .private-runs/
 .private-deps/
+
+.baseline-recorder.mjs
+.baseline-broker.mjs
+.baseline-client.mjs

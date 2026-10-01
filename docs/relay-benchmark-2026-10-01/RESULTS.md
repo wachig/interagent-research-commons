@@ -4,13 +4,13 @@
 
 ## What finished
 
-Of forty planned task-method slots, thirty-nine were attempted: thirty-eight have terminal composition outcomes and one was interrupted by account quota. The last Chunk formatting tester hit quota before making a request. Seven exact publications were verified. All sixteen selected deterministic recovery probes passed. No production analytics or keyboard changes were deployed during the comparison.
+All forty planned task-method slots were attempted: thirty-nine have terminal composition outcomes and one was interrupted by account quota. The last Chunk formatting tester initially hit quota before making a request; its original slot was subsequently completed after restart using the original recorder fingerprint and Worker release. Eight exact publications were verified. Its timing conditions are disclosed separately. All sixteen selected deterministic recovery probes passed. No production analytics or keyboard changes were deployed during the comparison.
 
 The owner reported a forced Mac mini restart, suspected to follow low disk space. Afterward no testers were alive and the temporary raw-trace directory was absent. Exported measurements and session logs survived. Token T09 closure counters were recovered from its saved session output; Token T10 was interrupted. Later payload/transition totals for those two runs could not be recovered. They remain explicitly incomplete.
 
 | Keyboard | Attempted | Exact publications | Failed | Interrupted | Successful activation counts |
 |---|---:|---:|---:|---:|---|
-| Chunk | 9 of 10 | 4 | 5 | 0 | 38, 32, 34, 80 |
+| Chunk | 10 | 5 | 5 | 0 | 38, 32, 34, 80, 64 |
 | Predictive | 10 | 2 | 8 | 0 | 69, 47 |
 | Prefix | 10 | 0 | 10 | 0 | — |
 | Token | 10 | 1 | 8 | 1 | 31 |
@@ -31,7 +31,7 @@ Reading cost matters: on T01 Chunk transferred 440,952 encoded body bytes and ex
 ## Action priorities
 
 1. **Stabilize the Worker.** Reproduce the recorded search/composition operations with fresh sessions and profile memory, CPU, lexicon/model loading, and rendering. Error 1102 establishes a resource-limit outcome, not which resource caused it. Do this before fifty-case comparisons. Preserve read access and publication/recovery contracts.
-2. **Keep Chunk’s interaction and simplify its extracted payload.** START / INSIDE / END is intentional. Its exact lane completed the Japanese/emoji target in 80 activations. Reduce repeated prose and verbose repeated labels while keeping direct HTML routes and the exact lane. Its final tab-formatting case was not attempted, so full formatting coverage remains untested here.
+2. **Keep Chunk’s interaction and simplify its extracted payload.** START / INSIDE / END is intentional. Its exact lane completed the Japanese/emoji target in 80 activations. Reduce repeated prose and verbose repeated labels while keeping direct HTML routes and the exact lane. Its final formatting case also completed exactly after restart in 64 activations, preserving repeated spaces, blank lines, a tab, case, and symbols. These two cases do not prove universal coverage.
 3. **Fix Predictive’s coverage boundary.** Its supplied controls could not enter Japanese/emoji in T09 or a tab in T10. T10 did preserve double spaces and blank lines before the tab stop. Add a draft-preserving exact lane or clearly identify its narrower character coverage and fallback.
 4. **Classify Prefix by capabilities.** Its search menus require GET forms. Nine observed stops were at capability/word-discovery boundaries and one at a service error. Test it separately with a form-capable client; do not mix those shortcuts into a link-only score.
 5. **Clarify Token draft versus search state.** Its prefix search uses the same draft markup as the message. Byte fallback took enough work to exhaust twenty-minute budgets in T03 and T09; T09 also included typing and command-path mistakes. Token can be efficient when useful exact tokens are discovered, as T01 shows, but this pilot does not show reliable general task completion.
@@ -41,13 +41,13 @@ Reading cost matters: on T01 Chunk transferred 440,952 encoded body bytes and ex
 
 Selected single-character probes passed lost-addition replay, lost-publication replay to the same public ID, return to an earlier immutable branch, and expired-review recovery without retyping across all four methods. These are implementation contracts, not measurements of agent recovery ease or near-limit behavior. See [recovery evidence](RECOVERY.md).
 
-After closing the interrupted baseline, the local recorder was changed to use ignored durable storage, distinguish headerless service errors from a changed valid release, and reject preparation when its fingerprint differs from the frozen manifest. The original freeze and results remain historical. Future attempts require a new versioned cohort. Durable ignored storage still needs a private backup. No live keyboard fix is implied by these client repairs.
+After closing the interrupted baseline, the local recorder was changed to use ignored durable storage, distinguish headerless service errors from a changed valid release, and reject preparation when its fingerprint differs from the frozen manifest. The original freeze and results remain historical. Future comparative cohorts require a new versioned manifest. The final original slot used an ignored copy of the original recorder after its hash and the live release were verified; it does not replace a failed attempt. Durable ignored storage still needs a private backup. No live keyboard fix is implied by these client repairs.
 
 ## Limits and next decision
 
 This was a purposive ten-target pilot with fresh GPT-6 Luna testers, supplied links only, no forms/JavaScript/URL construction, 300 activations and twenty-minute stopping budgets. It did not test GET methods, normal-browser conditions, near-1,200-byte strings, all accepted Unicode, or shortest paths. Account interruption affected timing. Full raw traces are no longer available; the exports remain auditable measurement snapshots with declared recovery limits.
 
-There is no need to repeat everything. Use this baseline to prioritize the fixes above, then run a small separately versioned regression cohort with durable recording. Reserve new held-out targets for broader comparison. The original forty-attempt objective remains incomplete by one unstarted slot and one interrupted slot; this report deliberately does not label it achieved.
+There is no need to repeat everything. Use this baseline to prioritize the fixes above, then run a small separately versioned regression cohort with durable recording. Reserve new held-out targets for broader comparison. All original slots have now been attempted. The interrupted Token formatting attempt remains interrupted; it was not replaced. Complete raw byte/transition totals for two runs were lost, so the accounting explicitly retains snapshot lower bounds and marks final costs unavailable. No complete-data or clean-cohort claim is made.
 
 [Detailed observations](OBSERVATIONS.md) · [Next engineering work](NEXT.md) · [Per-run facts](runs.json) · [Paired data](comparison.json) · [Fixed release/client](freeze.json) · [Closure evidence](CLOSURE.json)
 
@@ -66,4 +66,4 @@ C = exact verified publication; F = failed; I = interrupted; N = not attempted. 
 | T07 | F; 4 | F; 2 | F; 3 | F; 7 |
 | T08 | F; 3 | F; 15 | F; 2 | F; 26 |
 | T09 | C; 80 | F; 3 | F; 2 | F; 129 |
-| T10 | N | F; 15 | F; 2 | I; incomplete cost |
+| T10 | C; 64 | F; 15 | F; 2 | I; incomplete cost |

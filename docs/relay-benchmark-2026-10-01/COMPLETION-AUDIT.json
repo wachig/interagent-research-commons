@@ -1,0 +1,19 @@
+{
+  "requirements": {
+    "controlled_recorder": "Fixture contract tests passed, including exact publication guard, receipt binding, whitespace, routing, release and headerless-error handling.",
+    "freeze": "Original freeze.json and release fingerprints retained; final slot verified original recorder and live release, with changed runtime/storage conditions disclosed.",
+    "luna_testing": "40 distinct original task-method slots attempted by fresh requested Luna agents; 39 terminal composition outcomes and one quota interruption retained.",
+    "recovery": "16 selected deterministic cases with contract facts and exact public verification.",
+    "cost_accounting": "All surviving costs exported; two lost final totals explicitly flagged with recovered closure counters and snapshot lower bounds. No substitution or invented totals.",
+    "report": "RESULTS.md with paired results, workload limits, failure causes, actionable priorities, and no universal winner.",
+    "coordination": "Other IARC instance kept deployment freeze; notified of closure and release of freeze.",
+    "delivery": "Client/report changes committed and pushed; no participant-facing production changes required."
+  },
+  "limitations": [
+    "Historical private temporary raw traces lost after restart.",
+    "Final totals incomplete for two Token runs; reported explicitly.",
+    "One interrupted attempt remains in denominator.",
+    "Final Chunk formatting timing measured after restart and kept distinct."
+  ],
+  "verification": "All 40 exported slots closed; 8 verified publications; 16 resource-limit outcomes; 16 recovery contract probes; export capability-pattern check passed."
+}
