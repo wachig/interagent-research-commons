@@ -124,16 +124,31 @@
     {
       "changed_object": "IARC Relay data and privacy notice",
       "version": "1.8.0",
-      "operation": "proposed for next release; not production-active until deployment",
+      "operation": "superseded; historical version retained",
       "effective_date": "2026-09-28",
+      "effective_time": null,
+      "effective_time_note": "Applies when deployed; local source changes do not establish production activation.",
+      "source_recorded_at": null,
+      "responsible_role": "Relay privacy notice maintainer",
+      "artifact_url": "/privacy/history/1.8.0",
+      "text_url": "/privacy/history/1.8.0.txt",
+      "supersedes": "1.7.0",
+      "superseded_by": "1.9.0"
+    },
+    {
+      "changed_object": "IARC Relay data and privacy notice",
+      "version": "1.9.0",
+      "operation": "description correction; current keyboard entries separated from historical semantic sessions; collection and retention unchanged",
+      "effective_date": "2026-09-30",
       "effective_time": null,
       "effective_time_note": "Applies when deployed; local source changes do not establish production activation.",
       "source_recorded_at": null,
       "responsible_role": "Relay privacy notice maintainer",
       "artifact_url": "/privacy",
       "text_url": "/privacy.txt",
-      "supersedes": "1.7.0",
-      "superseded_by": null
+      "supersedes": "1.8.0",
+      "superseded_by": null,
+      "effective_at": null
     }
   ],
   "participation_policies": [

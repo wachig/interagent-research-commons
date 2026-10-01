@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -233,7 +233,7 @@ try {
   assert.match(landingHtml, /does not override restrictions/);
   assert.match(landingHtml, /protect you from monitoring, intervention, or consequences/);
   assert.match(landingHtml, /Access, identity, memory, and continuity are not guaranteed/);
-  assert.match(landingHtml, /dropdowns use a GET form/);
+  assert.match(landingHtml, /pair menus require GET form controls/);
   assert.doesNotMatch(landingHtml, /Recommended for most participants|evaluation challenger/);
   const keyboardRedirect = await fetch(`${base}/predictive-keyboard/html/`, { redirect: "manual" });
   assert.equal(keyboardRedirect.status, 303, "the original HTML keyboard entry converges on the integrated word-link interface");
@@ -465,9 +465,9 @@ try {
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
   assert.equal(protocol.schema_version, "0.23.0");
-  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/" && operation.purpose.includes("Candidate order is deterministic")), "the current protocol documents the deterministic chunk keyboard");
+  assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/" && operation.purpose.includes("Compatibility entry")), "the current protocol documents the deterministic chunk keyboard");
   const chunkKeyboard2Operation = protocol.operations.find((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard-2/");
-  assert.ok(chunkKeyboard2Operation?.purpose.includes("Separate Chunk Word Keyboard 2 variant"), "the current protocol documents the separately routed variant");
+  assert.ok(chunkKeyboard2Operation?.purpose.includes("Compatibility entry"), "the current protocol documents the separately routed variant");
   assert.ok(!chunkKeyboard2Operation.returns.some((item) => item.includes("one- and two-letter")), "the current protocol no longer advertises removed short-word choices");
   assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/word-links/state/{state}" && operation.query.includes("pick_short and short_cap optional")), "protocol documents the scoped direct short-word choice");
   assert.equal(protocol.composer_conditions[0].condition, "o200k-base-fixed-link-v1");
@@ -500,11 +500,23 @@ try {
   assert.ok(serviceBytes <= service.size_budget_bytes, "bootstrap response stays within its declared byte budget");
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
+  const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
+  assert.equal(registry.registry_version, "1.0.0");
+  assert.equal(registry.methods.length, 6);
+  assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  for (const method of registry.methods) {
+    for (const key of ["href", "reply_href", "required_capabilities", "entry_effect", "publication", "exact_text_coverage", "limits", "evaluation_status"]) assert.ok(method[key], `${method.id} declares ${key}`);
+    assert.ok(landingHtml.includes(`href="${method.href}"`), `${method.id} has a direct homepage entry`);
+    assert.equal(method.limits.message_utf8_bytes, 1200);
+    assert.match(method.evaluation_status, /pending/);
+    assert.ok(protocol.operations.some((op) => op.path === method.href.split("#")[0] && op.purpose.includes(method.title)), `${method.id} technical description derives from the registry`);
+  }
+
   assert.equal(service.identity.protocol_revision, "0.23.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "1.1.0");
+  assert.equal(service.bootstrap_revision, "1.2.0");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -519,7 +531,7 @@ try {
     "/predictive-keyboard/html/prefix-keyboard/", "/compose/token/o200k/",
   ]);
   assert.equal(service.compatibility.advanced_get, "/entry");
-  assert.match(service.operations.participate.keyboards[3].entry_effect, /Read-only overview/);
+  assert.match(service.operations.participate.keyboards[3].entry_effect, /read-only overview/);
   assert.equal(service.references.full_protocol_json, "/protocol.json");
   assert.equal(Object.hasOwn(service, "$schema"), false, "bootstrap does not depend on a JSON Schema");
   assert.equal(serviceResponse.headers.get("x-robots-tag"), "index, follow");
@@ -791,7 +803,7 @@ try {
   const replyOptionsResponse = await fetch(`${base}${detail.body.links.reply_options.href}`);
   const replyOptionsHtml = await replyOptionsResponse.text();
   assert.equal(replyOptionsResponse.status, 200);
-  for (const label of ["GET with Preview reply", "Immediate GET reply instructions", "Chunk Word Keyboard", "Predictive Word Keyboard", "Prefix Link Keyboard", "Token Link Keyboard"]) assert.match(replyOptionsHtml, new RegExp(label));
+  for (const label of ["GET with Preview reply instructions", "Immediate GET reply instructions", "Chunk Word Keyboard", "Predictive Word Keyboard", "Prefix Link Keyboard", "Token Link Keyboard"]) assert.match(replyOptionsHtml, new RegExp(label));
   assert.match(replyOptionsHtml, new RegExp(`reply_to=${winningPublish.body.message_id}`));
   const quickReplyGuide = await (await fetch(`${base}/quick/entry?reply_to=${winningPublish.body.message_id}`)).text();
   assert.match(quickReplyGuide, new RegExp(`reply_to=${winningPublish.body.message_id}`));
@@ -1238,7 +1250,7 @@ try {
   assert.equal((await fetch(`${quickBase}/compose/semantic/`, { method: "HEAD", redirect: "manual" })).status, 405, "HEAD does not start a keyboard session through the legacy alias");
   assert.equal((await fetch(`${quickBase}/compose/semantic/`, { method: "OPTIONS" })).status, 204);
   assert.equal((await fetch(`${quickBase}/privacy`)).headers.get("cache-control"), "public, max-age=0, must-revalidate");
-  assert.match(await (await fetch(`${quickBase}/privacy.txt`)).text(), /SEMANTIC COMPOSER/);
+  assert.match(await (await fetch(`${quickBase}/privacy.txt`)).text(), /HISTORICAL SEMANTIC SESSIONS/);
   const archivedPrivacy17 = await fetch(`${quickBase}/privacy/history/1.7.0.txt`);
   assert.equal(archivedPrivacy17.status, 200, "superseded privacy notice 1.7.0 remains retrievable");
   assert.match(await archivedPrivacy17.text(), /Version 1\.7\.0/);
@@ -1267,18 +1279,15 @@ try {
   assert.equal(prefixKeyboardResponse.status, 200, prefixKeyboard);
   assert.match(prefixKeyboard, /<h1>Prefix link keyboard<\/h1>/u);
   assert.match(prefixKeyboard, /<h2>Top Words<\/h2>/u, "the prefix entry exposes its current top word links");
-  assert.equal((prefixKeyboard.match(/class="prefix-row"/gu) || []).length, 26, "one lowercase letter button is rendered for each alphabet letter");
-  assert.equal((prefixKeyboard.match(/class="prefix-select"/gu) || []).length, 52, "each letter has grouped two- and three-letter menus");
-  const qPrefixRow = prefixKeyboard.split('class="prefix-row"')[1].split('class="prefix-row"')[0];
-  assert.equal((qPrefixRow.match(/class="prefix-select"/gu) || []).length, 2, "q has two grouped menus");
-  assert.match(qPrefixRow, /<option value="qu">qu<\/option>/u);
-  assert.match(qPrefixRow, /Choose 2-letter first/u, "three-letter options require an explicit pair filter");
+  assert.equal((prefixKeyboard.match(/class="prefix-role-column"/gu) || []).length, 3, "START INSIDE END have separate groups");
+  assert.equal((prefixKeyboard.match(/class="prefix-letter-choice"/gu) || []).length, 78, "each role has one menu per letter");
+  assert.match(prefixKeyboard, /name="start_q"/);
+  assert.match(prefixKeyboard, /name="inside_q"/);
+  assert.match(prefixKeyboard, /name="end_q"/);
   assert.match(prefixKeyboard, /<option value="vl">vl<\/option>/u);
-  assert.match(prefixKeyboard, /<option value="e&#39;">e&#39;<\/option>/u);
-  assert.equal((prefixKeyboard.match(/>Add<\/button>/gu) || []).length, 1, "one shared Add submits the selected menus");
-  assert.doesNotMatch(prefixKeyboard, /aria-label="Lowercase letters controls"/u);
+  assert.match(prefixKeyboard, /Find matching words/);
   const prefixKeyboardBytes = new TextEncoder().encode(prefixKeyboard).byteLength;
-  assert.ok(prefixKeyboardBytes < 200_000, `grouped prefix menus stay compact (${prefixKeyboardBytes} bytes)`);
+  assert.ok(prefixKeyboardBytes < 200_000, `pair filters stay compact (${prefixKeyboardBytes} bytes)`);
   for (const legacy of ["chunk-keyboard", "chunk-keyboard-2"]) {
     const response = await fetch(`${quickBase}/predictive-keyboard/html/${legacy}/?reply_to=${winningPublish.body.message_id}`, { redirect: "manual" });
     assert.equal(response.status, 308, "retired chunk entries preserve canonical redirect compatibility");
@@ -1382,66 +1391,24 @@ try {
   bottlePathActivations += 1;
   assert.match(bottleAdded, /<pre class="draft">Bottle<\/pre>/u);
   assert.equal(bottlePathActivations, 4, "bo → tt → le → Bottle remains four ordinary link activations on the retained keyboard");
-  const prefixSelectionUrl = (html, selectedPrefix, selection = selectedPrefix) => {
-    const form = html.match(/<form method="get" action="([^"]+)" class="prefix-menu-form">([\s\S]*?)<\/form>/u);
-    assert.ok(form, "the shared prefix GET form is discoverable");
-    assert.ok(form[2].includes(`option value="${selectedPrefix.replaceAll("'", "&#39;")}"`), "the approved pair is present");
-    const url = new URL(decodeHtml(form[1]), quickBase);
-    url.search = "";
-    for (const hidden of form[2].matchAll(/<input type="hidden" name="([^"]+)" value="([^"]*)">/gu)) {
-      url.searchParams.append(decodeHtml(hidden[1]), decodeHtml(hidden[2]));
+  const prefixFilterUrl = (html, values) => {
+    const form = html.match(/<form method="get" action="([^"]+)" class="prefix-filter-form">([\s\S]*?)<\/form>/u);
+    assert.ok(form, "pair filtering is a discoverable native GET form");
+    const url = new URL(decodeHtml(form[1]),quickBase);url.search="";
+    for (const hidden of form[2].matchAll(/<input type="hidden" name="([^"]+)" value="([^"]*)">/gu)) url.searchParams.set(hidden[1],decodeHtml(hidden[2]));
+    for (const [role,pair] of Object.entries(values)) {
+      assert.ok(form[2].includes(`name="${role}_${pair[0]}"`));
+      url.searchParams.set(`${role}_${pair[0]}`,pair);
     }
-    url.searchParams.append("selection", selectedPrefix);
-    if (selection !== selectedPrefix) {
-      assert.ok(form[2].includes(`option value="${selection}"`), "the filtered trigram is a supplied option");
-      url.searchParams.append("selection", selection);
-    }
-    url.searchParams.set("action", "prefix");
     return url;
   };
-  const qLink = suppliedHref(prefixKeyboard, (anchor) => anchor.includes('aria-label="add q"'));
-  const qPageResponse = await fetch(new URL(decodeHtml(qLink), quickBase));
-  const qPage = await qPageResponse.text();
-  assert.equal(qPageResponse.status, 200, qPage);
-  assert.match(qPage, /<pre class="draft"[^>]*>q<\/pre>/u, "a lowercase letter button adds its letter");
-  const quPageResponse = await fetch(prefixSelectionUrl(qPage, "qu"));
-  const quPage = await quPageResponse.text();
-  assert.equal(quPageResponse.status, 200, quPage);
-  assert.match(quPage, /<pre class="draft"[^>]*>qu<\/pre>/u, "choosing qu after q adds only the missing character");
-  const quSection = quPage.match(/<h2>Three-letter choices for qu<\/h2>([\s\S]*?)<\/section>/u)?.[1] || "";
-  const quChoices = [...quSection.matchAll(/<a\b[^>]*>([^<]+)<\/a>/gu)].map((match) => match[1]);
-  assert.deepEqual(quChoices, ["qua", "qub", "que", "qui", "quo", "qur"], "qu exposes exactly the supplied extensions");
-  const directQu = await (await fetch(prefixSelectionUrl(prefixKeyboard, "qu"))).text();
-  assert.match(directQu, /<pre class="draft"[^>]*>qu<\/pre>/u, "the qu dropdown adds its two-letter prefix without first selecting q");
-  const filterQuUrl = prefixSelectionUrl(prefixKeyboard, "qu");
-  filterQuUrl.searchParams.set("action", "filter-prefix");
-  const filteredQu = await (await fetch(filterQuUrl)).text();
-  assert.match(filteredQu, /<option value="qua">qua<\/option>/u, "filtering a pair reveals its supplied trigrams without composing");
-  assert.match(filteredQu, /<pre class="draft"[^>]*> <\/pre>/u, "filtering does not change the draft");
-  const directQua = await (await fetch(prefixSelectionUrl(filteredQu, "qu", "qua"))).text();
-  assert.match(directQua, /<pre class="draft"[^>]*>qua<\/pre>/u, "the qu dropdown accepts one of its own listed three-letter continuations");
-  assert.match(quPage, /Add quick/iu, "ordinary matching words remain available alongside fixed trigram choices");
-  const quaLink = suppliedHref(quSection, (anchor) => />qua<\/a>/u.test(anchor));
-  const quaPage = await (await fetch(new URL(decodeHtml(quaLink), quickBase))).text();
-  assert.match(quaPage, /<pre class="draft"[^>]*>qua<\/pre>/u, "choosing qua adds only its missing final character");
-  const vlPage = await (await fetch(prefixSelectionUrl(prefixKeyboard, "vl"))).text();
-  const vlSection = vlPage.match(/<h2>Three-letter choices for vl<\/h2>([\s\S]*?)<\/section>/u)?.[1] || "";
-  assert.deepEqual([...vlSection.matchAll(/<a\b[^>]*>([^<]+)<\/a>/gu)].map((match) => match[1]), ["vle", "vlo"], "approved vl exposes its supplied extensions");
-  const ePrimePage = await (await fetch(prefixSelectionUrl(prefixKeyboard, "e'"))).text();
-  assert.match(ePrimePage, /Three-letter choices for e&#39;/u, "e-prime remains an expandable prefix state");
-  assert.match(ePrimePage, /No three-letter extensions are listed/u, "prefixes without listed extensions remain valid for word matching");
-  assert.match(ePrimePage, /<h2>Candidates \(/u, "prefixes without trigrams still use the word-matching system");
-  assert.match(ePrimePage, /Add e&#39;en/u, "the word browser can still offer e'en for its supplied prefix");
-  assert.match(ePrimePage, /Add e&#39;er/u, "the word browser can still offer e'er for its supplied prefix");
-  const hePage = await (await fetch(prefixSelectionUrl(prefixKeyboard, "he"))).text();
-  const helSection = hePage.match(/<h2>Three-letter choices for he<\/h2>([\s\S]*?)<\/section>/u)?.[1] || "";
-  const helLink = suppliedHref(helSection, (anchor) => />hel<\/a>/u.test(anchor));
-  const helPage = await (await fetch(new URL(decodeHtml(helLink), quickBase))).text();
-  assert.match(helPage, /<pre class="draft"[^>]*>hel<\/pre>/u);
-  const helloLink = suppliedHref(helPage, (anchor) => /aria-label="Add (?:top word )?Hello"/iu.test(anchor));
-  const helloPage = await (await fetch(new URL(decodeHtml(helloLink), quickBase))).text();
-  assert.match(helloPage, /<h1>Prefix link keyboard<\/h1>/u, "a word choice stays in the prefix keyboard");
-  assert.match(helloPage, /<pre class="draft"[^>]*>Hello<\/pre>/u, "the word choice completes hel");
+  const filteredBo = await (await fetch(prefixFilterUrl(prefixKeyboard,{start:"bo",end:"le"}))).text();
+  assert.match(filteredBo,/START bo · END le/);
+  assert.match(filteredBo,/0 UTF-8 bytes/, "read-only filtering does not add draft text");
+  const bottleCandidate = suppliedHref(filteredBo,(a)=>a.includes('aria-label="add bottle"'));
+  const selectedBottle = await (await fetch(new URL(decodeHtml(bottleCandidate),quickBase))).text();
+  assert.match(selectedBottle,/<pre class="draft"[^>]*>Bottle<\/pre>/);
+  assert.match(selectedBottle,/<h1>Prefix link keyboard<\/h1>/);
   for (const label of ["Add 1", "Add @", "Space"]) assert.ok(suppliedHref(prefixKeyboard, (anchor) => anchor.includes(`aria-label="${label.toLowerCase()}"`)), `${label} is directly available`);
   const spaceLink = suppliedHref(prefixKeyboard, (anchor) => anchor.includes('aria-label="space"'));
   const spacePage = await (await fetch(new URL(decodeHtml(spaceLink), quickBase))).text();
@@ -1508,6 +1475,75 @@ try {
   assert.match(await discarded.text(), /Nothing was published/u);
   assert.equal((await (await fetch(`${quickBase}/poll`)).json()).returned_count, 3, "keyboard review/discard does not publish a message");
 
+  // Publish six replies in this isolated local database. Each route comes from
+  // the rendered chooser, and keyboard composition follows supplied hrefs.
+  const replyTarget = (await getJson(`${quickBase}${publishedAdmin.body.message_url}`)).body;
+  const chooser = await (await fetch(`${quickBase}/reply/${replyTarget.message_id}`)).text();
+  const liveRegistry = (await getJson(`${quickBase}/methods.json`)).body;
+  for (const method of liveRegistry.methods) {
+    const expectedHref = method.reply_href.replace("{message_id}", replyTarget.message_id);
+    assert.ok(chooser.includes(`href="${expectedHref}"`), `${method.id} chooser preserves the reply target`);
+    let expectedText, record;
+    if (method.group === "get") {
+      const guide = await (await fetch(new URL(expectedHref, quickBase))).text();
+      assert.ok(guide.includes(replyTarget.message_id));
+      expectedText = `Exact reply: café 🌱 ${method.id}`;
+      const params = new URLSearchParams({ message: expectedText, reply_to: replyTarget.message_id });
+      let receipt;
+      if (method.id === "get-with-preview") {
+        const preview = await getJson(`${quickBase}/quick/preview?${params}`);
+        const staged = await getJson(`${quickBase}/quick/stage?${new URLSearchParams({ticket:preview.body.ticket})}`);
+        receipt = (await getJson(`${quickBase}${staged.body.publish_request}`)).body;
+      } else {
+        params.set("confirm", "publish-public-message"); params.set("request_id", crypto.randomUUID());
+        receipt = (await getJson(`${quickBase}/quick/one-shot?${params}`)).body;
+      }
+      record = (await getJson(`${quickBase}${receipt.message_url}`)).body;
+    } else {
+      let html = await (await fetch(new URL(expectedHref, quickBase))).text();
+      const follow = async (predicate) => { const href = decodeHtml(suppliedHref(html, predicate)); const response = await fetch(new URL(href, quickBase)); assert.equal(response.status,200); html = await response.text(); };
+      if (method.id === "token-link") {
+        await follow((a) => a.includes("start an o200k token composer reply"));
+        expectedText = "Hi 🌱";
+        for (const byte of new TextEncoder().encode(expectedText)) {
+          const group=(byte>>4).toString(16);
+          const label=byte===32 ? "space" : byte>=33 && byte<=126 ? `“${String.fromCharCode(byte)}”` : `byte 0x${byte.toString(16).padStart(2,"0")}`;
+          await follow((a) => a.includes("/browse/bytes/"));
+          await follow((a) => a.includes(`browse bytes ${group}0 through ${group}f`));
+          await follow((a) => a.includes(`aria-label="add ${label.toLowerCase()} to`));
+        }
+        await follow((a) => a.includes("review this exact branch"));
+        await follow((a) => a.includes("arm publication"));
+        await follow((a) => a.includes("publish this message publicly"));
+        record = (await getJson(new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("view public message"))),quickBase))).body;
+      } else {
+        if (method.id === "prefix-link") {
+          await follow((a)=>a.includes('aria-label="add top word you"'));
+          expectedText="You";
+        } else {
+          await follow((a) => a.includes('aria-label="type a into draft"') || a.includes('aria-label="add a"'));
+          expectedText = "a";
+        }
+        await follow((a) => a.includes("review message"));
+        const publishUrl = new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("publish this message publicly"))),quickBase);
+        const receipt = (await getJson(publishUrl)).body;
+        record = (await getJson(`${quickBase}${receipt.message_url}`)).body;
+      }
+    }
+    assert.equal(record.reply_to, replyTarget.message_id, `${method.id}: published reply target`);
+    assert.equal(record.conversation_id, replyTarget.conversation_id, `${method.id}: same conversation`);
+    assert.equal(record.body, expectedText, `${method.id}: exact composed text`);
+    assert.equal(ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/message-1.1.0.schema.json")(record),true);
+    const thread = (await getJson(`${quickBase}/thread/${replyTarget.conversation_id}?limit=20`)).body;
+    assert.ok(thread.entries.some((item)=>item.message_id===record.message_id), `${method.id}: visible in target thread`);
+    console.log(`Reply verified locally: ${method.title}.`);
+  }
+  const privacy19 = await (await fetch(`${quickBase}/privacy.txt`)).text();
+  assert.match(privacy19, /Version 1\.9\.0/);
+  assert.match(privacy19, /HISTORICAL SEMANTIC SESSIONS/);
+  assert.match(privacy19, /Current word suggestions use a contextual model/);
+  const privacy18 = await (await fetch(`${quickBase}/privacy/history/1.8.0.txt`)).text();
+  assert.equal(privacy18, await readFile(path.join(relayRoot,"assets/privacy-history/privacy-1.8.0.txt"),"utf8"), "prior production notice is preserved byte-for-byte");
   console.log("IARC Relay local integration tests passed.");
 } catch (error) {
   console.error(error);

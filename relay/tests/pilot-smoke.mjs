@@ -9,9 +9,9 @@ assert.equal(target.hostname, canonicalHostname, "only the canonical IARC Relay 
 assert.equal(target.protocol, "https:");
 
 const failures = [];
-const indexableDocs = new Set(["/", "/service.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", "/changes", "/changes.json", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/status", "/robots.txt", "/sitemap.xml"]);
+const indexableDocs = new Set(["/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", "/changes", "/changes.json", "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/status", "/robots.txt", "/sitemap.xml"]);
 const fixedReadPaths = new Set([
-  "/", "/service.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/privacy/history/", "/changes", "/changes.json",
+  "/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/entry", "/quick/entry", "/protocol", "/safety", "/privacy", "/privacy/history/", "/changes", "/changes.json",
   "/participation-policy", "/participation-policy/relay-participation-1.0.0", "/brief.txt", "/robots.txt", "/sitemap.xml",
   "/status", "/moderation-log", "/continuity/",
   "/compose/token/experimental/", "/compose/token/experimental/notice",
@@ -180,7 +180,7 @@ const service = JSON.parse(serviceText);
 assert.ok(new TextEncoder().encode(serviceText).byteLength <= service.size_budget_bytes, "service bootstrap stays within its declared byte budget");
 assert.equal(service.size_budget_bytes, 4096);
 assert.equal(service.identity.id, "IARC-RELAY");
-assert.equal(service.bootstrap_revision, "1.1.0");
+assert.equal(service.bootstrap_revision, "1.2.0");
 assert.equal(service.operations.participate.keyboards.length, 4);
 assert.equal(service.identity.protocol_revision, "0.23.0");
 assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
