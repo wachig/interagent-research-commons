@@ -4,7 +4,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 const out=path.join(root,'relay/assets/evaluation'); await mkdir(out,{recursive:true});
-const sourceFiles=['relay/runtime.js','relay/worker.js','relay/schema.js','relay/html_keyboard_word.js','relay/html_keyboard_word3.js','relay/chunk_exact.js','relay/token_composer.js','relay/tools/evaluate-methods.mjs','relay/tools/local-evaluation.mjs','relay/assets/semantic-lexicon/manifest.json','relay/assets/semantic-lexicon/inside-pairs.json'];
+const sourceFiles=['relay/runtime.js','relay/worker.js','relay/schema.js','relay/html_keyboard_word.js','relay/html_keyboard_word3.js','relay/chunk_exact.js','relay/token_composer.js','relay/tools/evaluate-methods.mjs','relay/tools/local-evaluation.mjs','relay/semantic_composer.js','relay/assets/semantic-lexicon/manifest.json','relay/assets/semantic-lexicon/chunk-order-manifest.json','relay/assets/semantic-lexicon/inside-pairs.json'];
 async function sourceHashes(){const hashes={};for(const file of sourceFiles){try{hashes[file]=createHash('sha256').update(await readFile(path.join(root,file))).digest('hex');}catch(error){if(error.code!=='ENOENT')throw error;hashes[file]=null;}}return hashes;}
 const initialSourceHashes=await sourceHashes();
 let local,base;
@@ -60,7 +60,6 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
    if(draft===target)break;
    if(draft===null||!target.startsWith(draft))throw Error(`Exact-text divergence at ${JSON.stringify(draft)}`);
    const remaining=target.slice(draft.length),word=remaining.match(/^ ?([\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*)/u)?.[1];
-   if(condition==='chunk3' && lastWasCharacter && remaining.startsWith(' ')){const space=page.links.find(l=>keyValue(l)===' ');if(space){page=await get(space.url,'character: ');lastWasCharacter=true;visited.clear();searchSteps=0;continue;}}
    if(condition!=='character-control' && (draft==='' || /\s$/.test(draft) || remaining.startsWith(' '))) {
     const picks=page.links.map(l=>({l,v:pickValue(l)})).filter(x=>x.v&& (remaining.startsWith(x.v)||remaining.startsWith(' '+x.v)) && (x.v===word || x.v.includes(' '))).sort((a,b)=>b.v.length-a.v.length);
     if(picks.length){page=await get(picks[0].l.url,'word');lastWasCharacter=false;visited.clear();searchSteps=0;continue;}
@@ -108,7 +107,7 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
     if(exact){page=await get(exact.url,'character-browser');continue;}
     const reset=page.links.find(l=>l.text==='Restart search');if(reset){page=await get(reset.url,'reset-search');searchSteps=4;continue;}}
    if(condition!=='chunk3') {
-    const mode=page.links.find(l=>!visited.has(l.url) && (/[A-Z]/.test(char)?l['aria-label']==='Turn shift on':/[a-z]/.test(char)?l['aria-label']==='Turn shift off'||l.text==='ABC':l.text==='?123'));
+    const mode=page.links.find(l=>!visited.has(l.url) && (/[A-Z]/.test(char)?l['aria-label']==='Turn shift on'||l.text==='ABC':/[a-z]/.test(char)?l['aria-label']==='Turn shift off'||l.text==='ABC':l.text==='?123'));
     if(mode){visited.add(mode.url);page=await get(mode.url,'keyboard-mode');continue;}
    }
    throw Error(`No matching word or supplied character link for ${JSON.stringify(char)}`);
@@ -152,8 +151,8 @@ for(const [condition,entry,profile] of conditions){
   }
  }finally {await local.close();}
 }
-const report={evaluation_version:'1.1.0',date:'2026-09-30',corpus:cases,profiles:{links:'Only offered hrefs. No forms or editing composition URLs.',forms:'Offered GET forms plus offered action links; includes form controls that accept exact text.', 'url-construction':'Construct GET URLs from the read-only instructions.'},strategy_changes_from_1_0_0:'Chunk strategy now explicitly separates typed words with Space and follows the optional exact-character browser. Differences combine strategy and interface changes.',method:'Known-target deterministic greedy supplied-link strategy; bounded 350 composition steps. Three normal repetitions and one trial dropping every successful composition, review, arm, staging and publication response after server completion, then replaying the exact request. Counts home, reply chooser where applicable, entry/instructions, redirects, composition, review, arm and publication. Receipt verification and synthetic fixture setup excluded. Failures remain in results. Form profiles are distinct capabilities; token form receives the target text. Published vocabulary used only to decode offered tokens. Local HTTP timings exclude participant reasoning and WAN latency; this is not an optimal-path proof or an observed agent-speed ranking. Missing strategy choices do not prove a route lacks every possible path. Quotas, expiry, stale branches and entry loss are evaluated separately by recovery-contract.mjs. Synthetic loopback IP headers isolate per-trial network throttling; quotas are not bypassed in recovery tests. Never targets production.',results};
+const report={evaluation_version:'1.2.0',date:'2026-09-30',corpus:cases,profiles:{links:'Only offered hrefs. No forms or editing composition URLs.',forms:'Offered GET forms plus offered action links; includes form controls that accept exact text.', 'url-construction':'Construct GET URLs from the read-only instructions.'},strategy_changes_from_1_1_0:'Chunk default word addition now preserves typed text and inserts its separator; the strategy no longer needs a precautionary Space before a next-word choice. Full-word-form ESDB vocabulary replaces base-only Hunspell in current word browsers. The strategy also follows ABC before Shift when uppercase typing begins on a symbols layout.',method:'Known-target deterministic greedy supplied-link strategy; bounded 350 composition steps. Three normal repetitions and one trial dropping every successful composition, review, arm, staging and publication response after server completion, then replaying the exact request. Counts home, reply chooser where applicable, entry/instructions, redirects, composition, review, arm and publication. Receipt verification and synthetic fixture setup excluded. Failures remain in results. Form profiles are distinct capabilities; token form receives the target text. Published vocabulary used only to decode offered tokens. Local HTTP timings exclude participant reasoning and WAN latency; this is not an optimal-path proof or an observed agent-speed ranking. Missing strategy choices do not prove a route lacks every possible path. Quotas, expiry, stale branches and entry loss are evaluated separately by recovery-contract.mjs. Synthetic loopback IP headers isolate per-trial network throttling; quotas are not bypassed in recovery tests. Never targets production.',results};
 const finalSourceHashes=await sourceHashes();
 if(JSON.stringify(initialSourceHashes)!==JSON.stringify(finalSourceHashes))throw Error('Evaluation source changed during the run; results were not released. Run again against a stable revision.');
 report.node_version=process.version;report.source_sha256=initialSourceHashes;
-await writeFile(path.join(out,'recovery-1.1.0.json'),JSON.stringify(report,null,2)+'\n');
+await writeFile(path.join(out,'recovery-1.2.0.json'),JSON.stringify(report,null,2)+'\n');

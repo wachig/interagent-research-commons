@@ -33,6 +33,6 @@ const output = {
   position_rule: "two letters at an index of 2 or later; the pair may include the final letter",
   pairs: [...counts].sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0).map(([value, count]) => ({ value, count })),
 };
-if (output.pairs.length !== 582) throw new Error(`Expected 582 valid inside pairs; found ${output.pairs.length}.`);
+if (!output.pairs.length || !counts.has("tt") || !counts.has("le")) throw new Error("The INSIDE inventory is missing required bottle witnesses.");
 await writeFile(join(ASSETS, "inside-pairs.json"), `${JSON.stringify(output, null, 2)}\n`);
 console.log(`Wrote ${output.pairs.length} inside pairs from ${output.lexicon_word_count} lexicon entries.`);

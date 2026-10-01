@@ -1,0 +1,367 @@
+{
+  "evaluation_version": "lexicon-1.0.0",
+  "method": "Pinned fully expanded ESDB exports at sizes 60 and 70, identical classification/exact-exclusion policies and Relay additions. Static case-insensitive required-spelling coverage; shard integrity; real ordinary-link bottle path; five local HTTP/render reads per supplied prefix link. Timings include server rendering and loopback transfer, exclude WAN and participant reasoning, and have no causal before/after latency claim.",
+  "selected_size": 70,
+  "reason": "Broader technical vocabulary while retaining frequency-first ordering; size 60 misses tokenizer/tokeniser families in this coverage set.",
+  "variants": [
+    {
+      "size": 60,
+      "word_forms": 93573,
+      "required_missing": [
+        "tokenizer",
+        "tokenizers",
+        "tokeniser",
+        "tokenisers"
+      ]
+    },
+    {
+      "size": 70,
+      "word_forms": 147545,
+      "required_missing": []
+    }
+  ],
+  "required_memberships": [
+    {
+      "word": "read",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "reply",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "context",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "preserve",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "preserves",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "preserved",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "preserving",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "recurse",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "recurses",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "recursed",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "recursing",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "recursion",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "clarify",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "clarifies",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "clarified",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "clarifying",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "word",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "words",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "help",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "helps",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "helped",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "helping",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "us",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "bottle",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "bottles",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "algorithm",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "algorithms",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "asynchronous",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "tokenizer",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "tokenizers",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "tokeniser",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "tokenisers",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "compiler",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "parser",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "executable",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "communication",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "communications",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "café",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "I",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "I'm",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "AI",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "API",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "IARC",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "GET",
+      "old": true,
+      "current": true
+    },
+    {
+      "word": "JSON",
+      "old": false,
+      "current": true
+    },
+    {
+      "word": "UTF-8",
+      "old": false,
+      "current": true
+    }
+  ],
+  "old": {
+    "lexicon_version": "fluenttyper-9d4826d5-en_US-hunspell-base-1",
+    "word_count": 48264,
+    "all_index_asset_bytes": 1761509,
+    "initial_capital_spellings": 10667,
+    "shard_bytes": 522571,
+    "prefix_candidates": {
+      "prefixes": 519,
+      "median_candidates": 5,
+      "maximum_candidates": 1687,
+      "bo": 423,
+      "re": 897
+    }
+  },
+  "current": {
+    "lexicon_version": "relay-esdb-1e5b7d3a-70-v1",
+    "word_count": 147537,
+    "all_index_asset_bytes": 5538377,
+    "initial_capital_spellings": 19,
+    "shard_bytes": 1780766,
+    "prefix_candidates": {
+      "prefixes": 353,
+      "median_candidates": 104,
+      "maximum_candidates": 5590,
+      "bo": 1205,
+      "re": 4951
+    }
+  },
+  "excluded_exact": {
+    "cd": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "cm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "dg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "dkl": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "dm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "emf": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "emfs": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "hg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "hl": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kb": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kbar": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kbars": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kc": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "km": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "lbw": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "lm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "lx": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "mg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "mips": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "ml": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "mm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "pj's": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "wysiwyg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications."
+  },
+  "lookup_samples": [
+    {
+      "prefix": "bo",
+      "local_http_ms": [
+        18,
+        18,
+        18,
+        18,
+        17
+      ],
+      "response_bytes": 126916
+    },
+    {
+      "prefix": "re",
+      "local_http_ms": [
+        45,
+        44,
+        47,
+        45,
+        45
+      ],
+      "response_bytes": 130191
+    },
+    {
+      "prefix": "con",
+      "local_http_ms": [
+        53,
+        52,
+        55,
+        52,
+        52
+      ],
+      "response_bytes": 999077
+    },
+    {
+      "prefix": "pre",
+      "local_http_ms": [
+        35,
+        34,
+        34,
+        34,
+        35
+      ],
+      "response_bytes": 668549
+    },
+    {
+      "prefix": "non",
+      "local_http_ms": [
+        23,
+        21,
+        22,
+        22,
+        21
+      ],
+      "response_bytes": 422541
+    }
+  ],
+  "limits": "No finite dictionary contains all possible valid spellings. Full inflections can increase candidate counts; SUBTLEX ordering and INSIDE/END filtering remain important. Exact character composition remains independent."
+}

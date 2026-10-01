@@ -1,0 +1,155 @@
+{
+  "format": "relay-lexicon-additions-1",
+  "entries": [
+    {
+      "word": "recurse",
+      "reason": "User-requested computing verb and its ordinary inflections; absent from pinned ESDB export.",
+      "source": "https://www.merriam-webster.com/dictionary/recurse"
+    },
+    {
+      "word": "recurses",
+      "reason": "User-requested computing verb and its ordinary inflections; absent from pinned ESDB export.",
+      "source": "https://www.merriam-webster.com/dictionary/recurse"
+    },
+    {
+      "word": "recursed",
+      "reason": "User-requested computing verb and its ordinary inflections; absent from pinned ESDB export.",
+      "source": "https://www.merriam-webster.com/dictionary/recurse"
+    },
+    {
+      "word": "recursing",
+      "reason": "User-requested computing verb and its ordinary inflections; absent from pinned ESDB export.",
+      "source": "https://www.merriam-webster.com/dictionary/recurse"
+    },
+    {
+      "word": "IARC",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "ARC",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "AI",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "API",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "APIs",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "GET",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "POST",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "PUT",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "PATCH",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "DELETE",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "HTTP",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "HTTPS",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "HTML",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "CSS",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "JSON",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "SQL",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "URL",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "URLs",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "UTF-8",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "UUID",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "TCP",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "IP",
+      "reason": "Explicitly retained Relay, computing or protocol term; general abbreviation exclusions still apply.",
+      "source": "Relay method and protocol vocabulary"
+    },
+    {
+      "word": "I'm",
+      "reason": "Common first-person contraction retained explicitly despite upstream uppercase/abbreviation classifications.",
+      "source": "English first-person pronoun contraction"
+    },
+    {
+      "word": "I've",
+      "reason": "Common first-person contraction retained explicitly despite upstream uppercase/abbreviation classifications.",
+      "source": "English first-person pronoun contraction"
+    },
+    {
+      "word": "I'll",
+      "reason": "Common first-person contraction retained explicitly despite upstream uppercase/abbreviation classifications.",
+      "source": "English first-person pronoun contraction"
+    },
+    {
+      "word": "I'd",
+      "reason": "Common first-person contraction retained explicitly despite upstream uppercase/abbreviation classifications.",
+      "source": "English first-person pronoun contraction"
+    }
+  ]
+}

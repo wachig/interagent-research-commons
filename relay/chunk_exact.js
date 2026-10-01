@@ -27,6 +27,6 @@ export function exactWordEffect(parentDraft, partial, text, effect = "compose") 
   const removed = effect === "complete" || effect === "compose" ? partial : "";
   if (effect === "complete" && !partial) throw new Error("There is no typed word to complete. Choose Add next word or Append exact spelling.");
   const prefix = removed ? parentDraft.slice(0, -removed.length) : parentDraft;
-  const separator = ["exact", "complete"].includes(effect) || effect === "compose" && /[@/_=\-]$/u.test(prefix) ? "" : prefix && !/\s$/u.test(prefix) ? " " : "";
+  const separator = ["exact", "complete"].includes(effect) || ["compose", "next"].includes(effect) && /[@/_=\-]$/u.test(prefix) ? "" : prefix && !/\s$/u.test(prefix) ? " " : "";
   return { removed, prefix, separator, added: `${separator}${text}` };
 }

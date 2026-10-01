@@ -1,11 +1,13 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const SOURCE = join(ROOT, "relay/semantic/lexicon-source.dic");
+const SOURCE = join(ROOT, "relay/semantic/esdb-70-words.txt");
+const exportMetadata = JSON.parse(await readFile(join(ROOT, "relay/semantic/esdb-export-manifest.json"), "utf8"));
+const selectedExport = exportMetadata.exports.find((entry) => entry.size === exportMetadata.policy.selected_size);
 const SUBTLEX_SOURCE = join(ROOT, "relay/semantic/subtlex-us.tsv.gz");
 const OUTPUT = join(ROOT, "relay/assets/semantic-lexicon");
 const MAX_SHARD_BYTES = 64 * 1024;
@@ -19,17 +21,16 @@ const hash = (text) => createHash("sha256").update(text).digest("hex");
 const sourceBytes = await readFile(SOURCE);
 const sourceText = new TextDecoder("utf-8", { fatal: true }).decode(sourceBytes);
 const lines = sourceText.split(/\r?\n/u);
-const declaredCount = Number(lines.shift());
-if (!Number.isInteger(declaredCount) || declaredCount < 30_000) throw new Error("Pinned source dictionary is missing its expected entry count.");
+if (hash(sourceBytes) !== selectedExport.sha256) throw new Error("The expanded ESDB export failed its integrity check.");
 
 const unique = new Map();
 for (const line of lines) {
-  const entry = line.trim().split("/")[0];
+  const entry = line.trim();
   const normalized = entry.normalize("NFC");
   if (!WORD.test(normalized) || encoder.encode(normalized).byteLength > 320 || [...normalized].length > 80) continue;
   const key = normalized.toLocaleLowerCase("en-US");
   const existing = unique.get(key);
-  if (!existing || codepointCompare(normalized, existing) < 0) unique.set(key, normalized);
+  if (!existing || normalized === key && existing !== key || (normalized === key) === (existing === key) && codepointCompare(normalized, existing) < 0) unique.set(key, normalized);
 }
 
 const words = [...unique.values()].sort(codepointCompare);
@@ -135,17 +136,24 @@ for (const [prefix, entries] of [...rootGroups].sort(([a], [b]) => codepointComp
 
 const manifest = {
   format: "iarc-semantic-lexicon-1",
-  lexicon_version: "fluenttyper-9d4826d5-en_US-hunspell-base-1",
+  lexicon_version: "relay-esdb-1e5b7d3a-70-v1",
   source: {
-    name: "FluentTyper Presage inputs en_US Hunspell dictionary",
-    pinned_commit: "9d4826d5e5ddc5aa702458dfe1e941599aadc094",
-    source_archive: "/predictive-keyboard/vendor/source/fluenttyper-presage-inputs-9d4826d5.tar.gz",
-    source_archive_sha256: "8a266bf01ec61daa61c2750196376a73f77e78e72c1a2c3f98efba18ab83fc67",
-    member: "resources_js/en_US/hunspell/en_US.dic",
+    name: "English Speller Database / SCOWL, filtered full word forms with Relay additions",
+    pinned_commit: exportMetadata.policy.pinned_commit,
+    source_archive: "/lexicon-source/esdb-1e5b7d3a.tar.gz",
+    source_archive_sha256: exportMetadata.policy.archive_sha256,
     extracted_dictionary_sha256: hash(sourceBytes),
-    license: "LGPL-2.1-or-later; dictionary identified as based on Kevin Atkinson's Pspell/Aspell English wordlist",
-    license_file: "/predictive-keyboard/vendor/licenses/LICENSE.aspell",
-    source_count: declaredCount,
+    license: "ESDB combined MIT-like license; retain upstream Copyright notices",
+    license_file: "/lexicon-source/ESDB-Copyright.txt",
+    source_count: selectedExport.upstream_filtered_forms,
+    scope: exportMetadata.policy.scope,
+    size: selectedExport.size,
+    policy_file: "/lexicon-source/relay-policy-1.json",
+    additions_file: "/lexicon-source/relay-additions-1.json",
+    export_manifest: "/lexicon-source/esdb-export-1.json",
+    export_arguments: selectedExport.export_arguments,
+    additions_sha256: exportMetadata.additions_sha256,
+    generation: "python3 relay/semantic/export-esdb.py; node relay/semantic/build-lexicon.mjs; node relay/semantic/build-inside-pairs.mjs; node relay/semantic/build-end-pairs.mjs",
   },
   word_count: words.length,
   shard_limit_bytes: MAX_SHARD_BYTES,
@@ -175,13 +183,14 @@ await writeFile(join(OUTPUT, "chunk-order-manifest.json"), `${JSON.stringify({
   attribution: "Marc Brysbaert and Boris New, SUBTLEX-US; see relay/semantic/SUBTLEX_US_ATTRIBUTION.md",
   source_url: "https://www.ugent.be/pp/experimentele-psychologie/en/research/documents/subtlexus",
   source_sha256: SUBTLEX_RAW_SHA256,
-  lexicon_version: "fluenttyper-9d4826d5-en_US-hunspell-base-1",
+  lexicon_version: "relay-esdb-1e5b7d3a-70-v1",
   lexicon_word_count: words.length,
   ranked_word_count: words.filter((word) => (subtlexByWord.get(word.normalize("NFC").toLocaleLowerCase("en-US"))?.diversity || 0) > 0).length,
-  unranked_policy: "All Hunspell entries remain included; words without a lowercase SUBTLEX-US score follow ranked entries in capitalization-aware alphabetical order.",
+  unranked_policy: "All selected ESDB word forms and Relay additions remain included; words without a lowercase SUBTLEX-US score follow ranked entries in capitalization-aware alphabetical order.",
   reuse_terms: "Credit SUBTLEX authors and make clear the dataset remains freely available; see relay/semantic/SUBTLEX_US_ATTRIBUTION.md.",
   ordering: "Cdlow descending, FREQlow descending, then lowercase/title-case/all-capital group and alphabetical order.",
   prefixes: chunkOrderFiles,
 }, null, 2)}\n`);
-await writeFile(join(OUTPUT, "README.txt"), `IARC semantic composer English lexicon\nVersion: ${manifest.lexicon_version}\nUnique usable entries: ${words.length}\nSource archive SHA-256: ${manifest.source.source_archive_sha256}\nExtracted en_US.dic SHA-256: ${manifest.source.extracted_dictionary_sha256}\nLicense: ${manifest.source.license}\nLicense notice: ${manifest.source.license_file}\nBuild command: node relay/semantic/build-lexicon.mjs\n\nThe base Hunspell spelling lexicon is not frequency-ranked and is not a prediction model. The separate Chunk Word Keyboard 2 candidate-order index is precomputed from SUBTLEX-US lowercase contextual-diversity and frequency counts. Its source, attribution, and reuse conditions are documented in relay/semantic/SUBTLEX_US_ATTRIBUTION.md.\nInflected forms not present in the pinned spelling dictionary may be absent.\n`);
+await writeFile(join(OUTPUT, "README.txt"), `Relay English lexicon\nVersion: ${manifest.lexicon_version}\nUnique usable forms: ${words.length}\nScope: ${manifest.source.scope}\nSource: ESDB commit ${manifest.source.pinned_commit}\nArchive SHA-256: ${manifest.source.source_archive_sha256}\nExpanded export SHA-256: ${hash(sourceBytes)}\nCopyright: ${manifest.source.license_file}\nBuild: ${manifest.source.generation}\n\nFull inflected forms are exported before indexing. The lexicon is deterministic vocabulary, not a prediction model. SUBTLEX-US orders Chunk candidates by contextual diversity/frequency; unranked entries remain available. See relay/semantic/SUBTLEX_US_ATTRIBUTION.md. Source classification filters, explicit exclusions and maintained additions are recorded in relay/semantic/lexicon-policy.json and lexicon-additions.json. Exact character composition does not depend on membership.\n`);
+for (const [source, target] of [["lexicon-policy.json", "relay-policy-1.json"], ["lexicon-additions.json", "relay-additions-1.json"], ["esdb-export-manifest.json", "esdb-export-1.json"]]) await copyFile(join(ROOT, "relay/semantic", source), join(ROOT, "relay/assets/lexicon-source", target));
 console.log(`Built ${words.length} words in ${shards.length} shards (${shardFiles.map((path) => relative(OUTPUT, path)).join(", ")}).`);

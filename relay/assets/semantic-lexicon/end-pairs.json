@@ -1,176 +1,132 @@
 {
   "format": "iarc-end-pairs-1",
-  "lexicon_version": "fluenttyper-9d4826d5-en_US-hunspell-base-1",
-  "lexicon_word_count": 48264,
+  "lexicon_version": "relay-esdb-1e5b7d3a-70-v1",
+  "lexicon_word_count": 147537,
   "position_rule": "the final two Unicode letters of the word",
   "pairs": [
     {
       "value": "aa",
-      "count": 7
-    },
-    {
-      "value": "ab",
-      "count": 39
-    },
-    {
-      "value": "ac",
-      "count": 54
-    },
-    {
-      "value": "ad",
-      "count": 209
-    },
-    {
-      "value": "ae",
-      "count": 51
-    },
-    {
-      "value": "af",
-      "count": 18
-    },
-    {
-      "value": "ag",
-      "count": 65
-    },
-    {
-      "value": "ah",
-      "count": 84
-    },
-    {
-      "value": "ai",
-      "count": 32
-    },
-    {
-      "value": "aj",
-      "count": 2
-    },
-    {
-      "value": "ak",
-      "count": 65
-    },
-    {
-      "value": "al",
-      "count": 1323
-    },
-    {
-      "value": "am",
-      "count": 171
-    },
-    {
-      "value": "an",
-      "count": 1165
-    },
-    {
-      "value": "ao",
-      "count": 13
-    },
-    {
-      "value": "ap",
-      "count": 80
-    },
-    {
-      "value": "aq",
-      "count": 4
-    },
-    {
-      "value": "ar",
-      "count": 348
-    },
-    {
-      "value": "as",
-      "count": 106
-    },
-    {
-      "value": "at",
-      "count": 219
-    },
-    {
-      "value": "au",
-      "count": 40
-    },
-    {
-      "value": "av",
-      "count": 6
-    },
-    {
-      "value": "aw",
-      "count": 63
-    },
-    {
-      "value": "ax",
-      "count": 34
-    },
-    {
-      "value": "ay",
-      "count": 234
-    },
-    {
-      "value": "az",
       "count": 5
     },
     {
-      "value": "ba",
-      "count": 41
+      "value": "ab",
+      "count": 42
     },
     {
-      "value": "bb",
-      "count": 6
-    },
-    {
-      "value": "bc",
-      "count": 6
-    },
-    {
-      "value": "be",
+      "value": "ac",
       "count": 63
     },
     {
-      "value": "bf",
-      "count": 1
+      "value": "ad",
+      "count": 299
     },
     {
-      "value": "bi",
-      "count": 24
+      "value": "ae",
+      "count": 174
     },
     {
-      "value": "bj",
+      "value": "af",
+      "count": 22
+    },
+    {
+      "value": "ag",
+      "count": 79
+    },
+    {
+      "value": "ah",
+      "count": 92
+    },
+    {
+      "value": "ai",
+      "count": 20
+    },
+    {
+      "value": "aj",
       "count": 3
     },
     {
-      "value": "bk",
-      "count": 1
+      "value": "ak",
+      "count": 76
     },
     {
-      "value": "bl",
-      "count": 3
+      "value": "al",
+      "count": 2400
     },
     {
-      "value": "bm",
+      "value": "am",
+      "count": 198
+    },
+    {
+      "value": "an",
+      "count": 955
+    },
+    {
+      "value": "ao",
+      "count": 5
+    },
+    {
+      "value": "ap",
+      "count": 118
+    },
+    {
+      "value": "ar",
+      "count": 543
+    },
+    {
+      "value": "as",
+      "count": 1396
+    },
+    {
+      "value": "at",
+      "count": 309
+    },
+    {
+      "value": "au",
+      "count": 33
+    },
+    {
+      "value": "av",
       "count": 4
     },
     {
-      "value": "bn",
-      "count": 1
+      "value": "aw",
+      "count": 98
     },
     {
-      "value": "bo",
-      "count": 31
+      "value": "ax",
+      "count": 45
     },
     {
-      "value": "bp",
-      "count": 1
+      "value": "ay",
+      "count": 266
     },
     {
-      "value": "bq",
-      "count": 1
+      "value": "az",
+      "count": 4
     },
     {
-      "value": "br",
+      "value": "ba",
+      "count": 40
+    },
+    {
+      "value": "bb",
       "count": 3
     },
     {
+      "value": "be",
+      "count": 85
+    },
+    {
+      "value": "bi",
+      "count": 14
+    },
+    {
+      "value": "bo",
+      "count": 29
+    },
+    {
       "value": "bs",
-      "count": 19
+      "count": 217
     },
     {
       "value": "bt",
@@ -178,51 +134,27 @@
     },
     {
       "value": "bu",
-      "count": 5
-    },
-    {
-      "value": "bw",
-      "count": 1
-    },
-    {
-      "value": "bx",
       "count": 2
     },
     {
       "value": "by",
-      "count": 60
+      "count": 67
     },
     {
-      "value": "ca",
-      "count": 71
-    },
-    {
-      "value": "cb",
+      "value": "bé",
       "count": 2
     },
     {
-      "value": "cc",
-      "count": 5
-    },
-    {
-      "value": "cd",
-      "count": 3
+      "value": "ca",
+      "count": 56
     },
     {
       "value": "ce",
-      "count": 669
-    },
-    {
-      "value": "cf",
-      "count": 1
-    },
-    {
-      "value": "cg",
-      "count": 3
+      "count": 967
     },
     {
       "value": "ch",
-      "count": 277
+      "count": 364
     },
     {
       "value": "ci",
@@ -230,83 +162,47 @@
     },
     {
       "value": "ck",
-      "count": 386
-    },
-    {
-      "value": "cl",
-      "count": 5
-    },
-    {
-      "value": "cm",
-      "count": 2
+      "count": 553
     },
     {
       "value": "co",
-      "count": 60
+      "count": 39
     },
     {
       "value": "cp",
-      "count": 2
-    },
-    {
-      "value": "cr",
-      "count": 3
-    },
-    {
-      "value": "cs",
-      "count": 104
-    },
-    {
-      "value": "ct",
-      "count": 151
-    },
-    {
-      "value": "cu",
-      "count": 5
-    },
-    {
-      "value": "cv",
       "count": 1
     },
     {
-      "value": "cw",
+      "value": "cs",
+      "count": 519
+    },
+    {
+      "value": "ct",
+      "count": 224
+    },
+    {
+      "value": "cu",
       "count": 1
     },
     {
       "value": "cy",
-      "count": 201
-    },
-    {
-      "value": "cz",
-      "count": 1
-    },
-    {
-      "value": "da",
-      "count": 106
-    },
-    {
-      "value": "db",
-      "count": 5
-    },
-    {
-      "value": "dc",
-      "count": 5
-    },
-    {
-      "value": "dd",
-      "count": 8
-    },
-    {
-      "value": "de",
       "count": 356
     },
     {
-      "value": "df",
-      "count": 1
+      "value": "cé",
+      "count": 2
     },
     {
-      "value": "dg",
-      "count": 1
+      "value": "da",
+      "count": 49
+    },
+    {
+      "value": "dd",
+      "count": 7
+    },
+    {
+      "value": "de",
+      "count": 573
     },
     {
       "value": "dh",
@@ -314,247 +210,171 @@
     },
     {
       "value": "di",
-      "count": 28
-    },
-    {
-      "value": "dj",
-      "count": 2
+      "count": 32
     },
     {
       "value": "dl",
-      "count": 1
-    },
-    {
-      "value": "dm",
-      "count": 1
-    },
-    {
-      "value": "dn",
-      "count": 1
+      "count": 2
     },
     {
       "value": "do",
-      "count": 84
-    },
-    {
-      "value": "dp",
-      "count": 5
-    },
-    {
-      "value": "dq",
-      "count": 1
-    },
-    {
-      "value": "dr",
-      "count": 5
+      "count": 90
     },
     {
       "value": "ds",
-      "count": 41
-    },
-    {
-      "value": "dt",
-      "count": 15
+      "count": 1706
     },
     {
       "value": "du",
-      "count": 9
-    },
-    {
-      "value": "dv",
-      "count": 1
+      "count": 3
     },
     {
       "value": "dy",
-      "count": 135
+      "count": 163
     },
     {
-      "value": "dz",
-      "count": 2
+      "value": "dé",
+      "count": 1
     },
     {
       "value": "ea",
-      "count": 61
+      "count": 85
     },
     {
       "value": "eb",
-      "count": 16
+      "count": 12
     },
     {
       "value": "ec",
-      "count": 18
+      "count": 15
     },
     {
       "value": "ed",
-      "count": 1276
+      "count": 11115
     },
     {
       "value": "ee",
-      "count": 186
+      "count": 255
     },
     {
       "value": "ef",
-      "count": 23
+      "count": 32
     },
     {
       "value": "eg",
-      "count": 27
+      "count": 26
     },
     {
       "value": "eh",
-      "count": 9
-    },
-    {
-      "value": "ei",
-      "count": 16
-    },
-    {
-      "value": "ek",
-      "count": 30
-    },
-    {
-      "value": "el",
-      "count": 300
-    },
-    {
-      "value": "em",
-      "count": 54
-    },
-    {
-      "value": "en",
-      "count": 697
-    },
-    {
-      "value": "eo",
-      "count": 21
-    },
-    {
-      "value": "ep",
-      "count": 43
-    },
-    {
-      "value": "eq",
-      "count": 2
-    },
-    {
-      "value": "er",
-      "count": 3099
-    },
-    {
-      "value": "es",
-      "count": 490
-    },
-    {
-      "value": "et",
-      "count": 383
-    },
-    {
-      "value": "eu",
       "count": 8
     },
     {
+      "value": "ei",
+      "count": 22
+    },
+    {
+      "value": "ek",
+      "count": 24
+    },
+    {
+      "value": "el",
+      "count": 344
+    },
+    {
+      "value": "em",
+      "count": 59
+    },
+    {
+      "value": "en",
+      "count": 941
+    },
+    {
+      "value": "eo",
+      "count": 10
+    },
+    {
+      "value": "ep",
+      "count": 58
+    },
+    {
+      "value": "er",
+      "count": 6116
+    },
+    {
+      "value": "es",
+      "count": 15334
+    },
+    {
+      "value": "et",
+      "count": 562
+    },
+    {
+      "value": "eu",
+      "count": 9
+    },
+    {
       "value": "ev",
-      "count": 18
+      "count": 3
     },
     {
       "value": "ew",
-      "count": 69
+      "count": 90
     },
     {
       "value": "ex",
-      "count": 50
+      "count": 71
     },
     {
       "value": "ey",
-      "count": 242
+      "count": 180
     },
     {
       "value": "ez",
-      "count": 36
+      "count": 9
     },
     {
       "value": "fa",
       "count": 11
     },
     {
-      "value": "fb",
-      "count": 1
-    },
-    {
-      "value": "fc",
-      "count": 6
-    },
-    {
-      "value": "fd",
-      "count": 2
-    },
-    {
       "value": "fe",
-      "count": 39
+      "count": 46
     },
     {
       "value": "ff",
-      "count": 102
-    },
-    {
-      "value": "fg",
-      "count": 1
+      "count": 152
     },
     {
       "value": "fi",
       "count": 3
     },
     {
-      "value": "fk",
-      "count": 1
-    },
-    {
-      "value": "fl",
-      "count": 7
-    },
-    {
-      "value": "fm",
-      "count": 2
-    },
-    {
-      "value": "fn",
-      "count": 1
-    },
-    {
       "value": "fo",
-      "count": 9
-    },
-    {
-      "value": "fr",
-      "count": 3
-    },
-    {
-      "value": "fs",
-      "count": 2
-    },
-    {
-      "value": "ft",
-      "count": 75
-    },
-    {
-      "value": "fu",
       "count": 4
     },
     {
-      "value": "fw",
-      "count": 2
+      "value": "fs",
+      "count": 223
+    },
+    {
+      "value": "ft",
+      "count": 107
+    },
+    {
+      "value": "fu",
+      "count": 3
     },
     {
       "value": "fy",
-      "count": 105
+      "count": 180
+    },
+    {
+      "value": "fé",
+      "count": 2
     },
     {
       "value": "ga",
-      "count": 43
-    },
-    {
-      "value": "gb",
-      "count": 2
+      "count": 50
     },
     {
       "value": "gd",
@@ -562,115 +382,79 @@
     },
     {
       "value": "ge",
-      "count": 378
+      "count": 610
     },
     {
       "value": "gg",
-      "count": 5
+      "count": 4
     },
     {
       "value": "gh",
-      "count": 57
+      "count": 67
     },
     {
       "value": "gi",
-      "count": 13
-    },
-    {
-      "value": "gk",
-      "count": 1
+      "count": 17
     },
     {
       "value": "gm",
-      "count": 6
+      "count": 7
     },
     {
       "value": "gn",
-      "count": 21
+      "count": 35
     },
     {
       "value": "go",
-      "count": 63
-    },
-    {
-      "value": "gp",
-      "count": 2
-    },
-    {
-      "value": "gr",
-      "count": 3
+      "count": 72
     },
     {
       "value": "gs",
-      "count": 43
-    },
-    {
-      "value": "gt",
-      "count": 3
+      "count": 1160
     },
     {
       "value": "gu",
-      "count": 4
+      "count": 2
     },
     {
       "value": "gy",
-      "count": 189
+      "count": 403
     },
     {
-      "value": "ha",
-      "count": 63
-    },
-    {
-      "value": "hc",
-      "count": 1
-    },
-    {
-      "value": "hd",
-      "count": 2
-    },
-    {
-      "value": "he",
-      "count": 81
-    },
-    {
-      "value": "hf",
+      "value": "gé",
       "count": 3
     },
     {
-      "value": "hg",
-      "count": 2
+      "value": "ha",
+      "count": 49
+    },
+    {
+      "value": "he",
+      "count": 105
     },
     {
       "value": "hh",
-      "count": 1
+      "count": 2
     },
     {
       "value": "hi",
-      "count": 28
+      "count": 31
     },
     {
       "value": "hl",
-      "count": 4
+      "count": 3
     },
     {
       "value": "hm",
-      "count": 9
+      "count": 12
     },
     {
       "value": "hn",
-      "count": 10
+      "count": 6
     },
     {
       "value": "ho",
       "count": 31
-    },
-    {
-      "value": "hp",
-      "count": 2
-    },
-    {
-      "value": "hq",
-      "count": 2
     },
     {
       "value": "hr",
@@ -678,43 +462,43 @@
     },
     {
       "value": "hs",
-      "count": 264
+      "count": 564
     },
     {
       "value": "ht",
-      "count": 146
+      "count": 209
     },
     {
       "value": "hu",
-      "count": 11
+      "count": 5
     },
     {
       "value": "hy",
-      "count": 158
+      "count": 310
     },
     {
-      "value": "hz",
-      "count": 4
+      "value": "hé",
+      "count": 5
     },
     {
       "value": "ia",
-      "count": 375
+      "count": 652
     },
     {
       "value": "ib",
-      "count": 16
+      "count": 19
     },
     {
       "value": "ic",
-      "count": 987
+      "count": 2092
     },
     {
       "value": "id",
-      "count": 213
+      "count": 481
     },
     {
       "value": "ie",
-      "count": 288
+      "count": 284
     },
     {
       "value": "if",
@@ -722,86 +506,66 @@
     },
     {
       "value": "ig",
-      "count": 31
-    },
-    {
-      "value": "ih",
-      "count": 1
+      "count": 39
     },
     {
       "value": "ii",
-      "count": 33
-    },
-    {
-      "value": "ik",
-      "count": 16
-    },
-    {
-      "value": "il",
-      "count": 157
-    },
-    {
-      "value": "im",
-      "count": 58
-    },
-    {
-      "value": "in",
-      "count": 486
-    },
-    {
-      "value": "io",
-      "count": 72
-    },
-    {
-      "value": "ip",
-      "count": 152
-    },
-    {
-      "value": "iq",
-      "count": 2
-    },
-    {
-      "value": "ir",
-      "count": 84
-    },
-    {
-      "value": "is",
-      "count": 279
-    },
-    {
-      "value": "it",
-      "count": 221
-    },
-    {
-      "value": "iv",
       "count": 14
     },
     {
-      "value": "iw",
-      "count": 1
+      "value": "ik",
+      "count": 25
+    },
+    {
+      "value": "il",
+      "count": 239
+    },
+    {
+      "value": "im",
+      "count": 59
+    },
+    {
+      "value": "in",
+      "count": 740
+    },
+    {
+      "value": "io",
+      "count": 50
+    },
+    {
+      "value": "ip",
+      "count": 244
+    },
+    {
+      "value": "ir",
+      "count": 91
+    },
+    {
+      "value": "is",
+      "count": 870
+    },
+    {
+      "value": "it",
+      "count": 329
+    },
+    {
+      "value": "iv",
+      "count": 3
     },
     {
       "value": "ix",
-      "count": 48
+      "count": 57
     },
     {
       "value": "iz",
-      "count": 18
+      "count": 9
     },
     {
       "value": "ja",
-      "count": 5
-    },
-    {
-      "value": "jd",
-      "count": 1
+      "count": 7
     },
     {
       "value": "je",
-      "count": 1
-    },
-    {
-      "value": "jg",
       "count": 1
     },
     {
@@ -817,44 +581,16 @@
       "count": 5
     },
     {
-      "value": "jp",
-      "count": 1
-    },
-    {
-      "value": "jr",
-      "count": 1
-    },
-    {
       "value": "ju",
       "count": 1
     },
     {
-      "value": "jv",
-      "count": 1
-    },
-    {
-      "value": "jw",
-      "count": 1
-    },
-    {
       "value": "ka",
-      "count": 53
-    },
-    {
-      "value": "kb",
-      "count": 1
-    },
-    {
-      "value": "kc",
-      "count": 1
+      "count": 44
     },
     {
       "value": "ke",
-      "count": 199
-    },
-    {
-      "value": "kg",
-      "count": 3
+      "count": 291
     },
     {
       "value": "kh",
@@ -862,47 +598,19 @@
     },
     {
       "value": "ki",
-      "count": 33
-    },
-    {
-      "value": "kk",
-      "count": 1
-    },
-    {
-      "value": "kl",
-      "count": 1
-    },
-    {
-      "value": "km",
-      "count": 1
-    },
-    {
-      "value": "kn",
-      "count": 1
+      "count": 25
     },
     {
       "value": "ko",
-      "count": 18
-    },
-    {
-      "value": "kp",
-      "count": 1
-    },
-    {
-      "value": "kr",
-      "count": 1
+      "count": 17
     },
     {
       "value": "ks",
-      "count": 40
-    },
-    {
-      "value": "kt",
-      "count": 2
+      "count": 1029
     },
     {
       "value": "ku",
-      "count": 6
+      "count": 5
     },
     {
       "value": "kw",
@@ -910,55 +618,47 @@
     },
     {
       "value": "ky",
-      "count": 120
+      "count": 128
     },
     {
       "value": "la",
-      "count": 189
+      "count": 241
     },
     {
       "value": "lb",
-      "count": 7
+      "count": 3
     },
     {
       "value": "lc",
-      "count": 3
-    },
-    {
-      "value": "ld",
-      "count": 150
-    },
-    {
-      "value": "le",
-      "count": 1292
-    },
-    {
-      "value": "lf",
-      "count": 29
-    },
-    {
-      "value": "lg",
-      "count": 3
-    },
-    {
-      "value": "lh",
       "count": 1
     },
     {
+      "value": "ld",
+      "count": 168
+    },
+    {
+      "value": "le",
+      "count": 2551
+    },
+    {
+      "value": "lf",
+      "count": 34
+    },
+    {
       "value": "li",
-      "count": 58
+      "count": 82
     },
     {
       "value": "lk",
-      "count": 44
+      "count": 54
     },
     {
       "value": "ll",
-      "count": 329
+      "count": 391
     },
     {
       "value": "lm",
-      "count": 25
+      "count": 30
     },
     {
       "value": "ln",
@@ -970,58 +670,54 @@
     },
     {
       "value": "lp",
-      "count": 9
-    },
-    {
-      "value": "lr",
-      "count": 2
+      "count": 13
     },
     {
       "value": "ls",
-      "count": 30
+      "count": 1680
     },
     {
       "value": "lt",
-      "count": 80
+      "count": 124
     },
     {
       "value": "lu",
-      "count": 10
+      "count": 6
     },
     {
-      "value": "ly",
-      "count": 987
-    },
-    {
-      "value": "lz",
+      "value": "lx",
       "count": 1
     },
     {
-      "value": "ma",
-      "count": 108
+      "value": "ly",
+      "count": 4943
     },
     {
-      "value": "mb",
-      "count": 36
+      "value": "là",
+      "count": 1
     },
     {
-      "value": "mc",
-      "count": 2
-    },
-    {
-      "value": "md",
-      "count": 4
-    },
-    {
-      "value": "me",
-      "count": 204
-    },
-    {
-      "value": "mf",
+      "value": "lé",
       "count": 3
     },
     {
-      "value": "mg",
+      "value": "ma",
+      "count": 163
+    },
+    {
+      "value": "mb",
+      "count": 54
+    },
+    {
+      "value": "md",
+      "count": 1
+    },
+    {
+      "value": "me",
+      "count": 349
+    },
+    {
+      "value": "mf",
       "count": 1
     },
     {
@@ -1029,68 +725,48 @@
       "count": 24
     },
     {
-      "value": "mk",
-      "count": 1
-    },
-    {
       "value": "ml",
-      "count": 5
+      "count": 1
     },
     {
       "value": "mm",
-      "count": 7
+      "count": 2
     },
     {
       "value": "mn",
-      "count": 10
+      "count": 11
     },
     {
       "value": "mo",
-      "count": 34
+      "count": 44
     },
     {
       "value": "mp",
-      "count": 67
-    },
-    {
-      "value": "mr",
-      "count": 1
+      "count": 91
     },
     {
       "value": "ms",
-      "count": 18
+      "count": 1399
     },
     {
       "value": "mt",
-      "count": 5
+      "count": 1
     },
     {
       "value": "mu",
       "count": 3
     },
     {
-      "value": "mv",
-      "count": 1
-    },
-    {
-      "value": "mw",
-      "count": 2
-    },
-    {
       "value": "my",
-      "count": 100
+      "count": 206
     },
     {
-      "value": "mz",
-      "count": 1
+      "value": "mé",
+      "count": 3
     },
     {
       "value": "na",
-      "count": 237
-    },
-    {
-      "value": "nb",
-      "count": 1
+      "count": 155
     },
     {
       "value": "nc",
@@ -1098,75 +774,47 @@
     },
     {
       "value": "nd",
-      "count": 387
+      "count": 502
     },
     {
       "value": "ne",
-      "count": 748
-    },
-    {
-      "value": "nf",
-      "count": 2
+      "count": 1239
     },
     {
       "value": "ng",
-      "count": 1811
+      "count": 10636
     },
     {
       "value": "nh",
-      "count": 3
+      "count": 2
     },
     {
       "value": "ni",
-      "count": 68
-    },
-    {
-      "value": "nj",
-      "count": 1
+      "count": 55
     },
     {
       "value": "nk",
-      "count": 107
-    },
-    {
-      "value": "nm",
-      "count": 2
+      "count": 141
     },
     {
       "value": "nn",
-      "count": 42
+      "count": 4
     },
     {
       "value": "no",
-      "count": 75
-    },
-    {
-      "value": "np",
-      "count": 2
-    },
-    {
-      "value": "nr",
-      "count": 1
+      "count": 65
     },
     {
       "value": "ns",
-      "count": 137
+      "count": 4029
     },
     {
       "value": "nt",
-      "count": 1076
+      "count": 1769
     },
     {
       "value": "nu",
-      "count": 8
-    },
-    {
-      "value": "nv",
-      "count": 1
-    },
-    {
-      "value": "nw",
-      "count": 2
+      "count": 7
     },
     {
       "value": "nx",
@@ -1174,535 +822,379 @@
     },
     {
       "value": "ny",
-      "count": 152
+      "count": 198
     },
     {
       "value": "nz",
-      "count": 5
+      "count": 1
+    },
+    {
+      "value": "né",
+      "count": 4
     },
     {
       "value": "oa",
-      "count": 17
+      "count": 22
     },
     {
       "value": "ob",
-      "count": 35
+      "count": 39
     },
     {
       "value": "oc",
-      "count": 16
+      "count": 10
     },
     {
       "value": "od",
-      "count": 133
+      "count": 209
     },
     {
       "value": "oe",
-      "count": 42
+      "count": 38
     },
     {
       "value": "of",
-      "count": 36
+      "count": 63
     },
     {
       "value": "og",
-      "count": 50
+      "count": 71
     },
     {
       "value": "oh",
-      "count": 7
+      "count": 10
     },
     {
       "value": "oi",
-      "count": 7
-    },
-    {
-      "value": "oj",
-      "count": 1
+      "count": 12
     },
     {
       "value": "ok",
-      "count": 82
+      "count": 107
     },
     {
       "value": "ol",
-      "count": 83
+      "count": 147
     },
     {
       "value": "om",
-      "count": 140
+      "count": 188
     },
     {
       "value": "on",
-      "count": 2250
+      "count": 3411
     },
     {
       "value": "oo",
-      "count": 41
+      "count": 63
     },
     {
       "value": "op",
-      "count": 111
-    },
-    {
-      "value": "oq",
-      "count": 1
+      "count": 167
     },
     {
       "value": "or",
-      "count": 476
+      "count": 854
     },
     {
       "value": "os",
-      "count": 57
+      "count": 667
     },
     {
       "value": "ot",
-      "count": 195
+      "count": 278
     },
     {
       "value": "ou",
-      "count": 24
+      "count": 23
     },
     {
       "value": "ov",
-      "count": 30
+      "count": 1
     },
     {
       "value": "ow",
-      "count": 145
+      "count": 185
     },
     {
       "value": "ox",
-      "count": 62
+      "count": 74
     },
     {
       "value": "oy",
-      "count": 58
+      "count": 77
     },
     {
       "value": "oz",
-      "count": 6
+      "count": 3
     },
     {
       "value": "pa",
-      "count": 26
-    },
-    {
-      "value": "pb",
-      "count": 2
-    },
-    {
-      "value": "pc",
-      "count": 4
-    },
-    {
-      "value": "pd",
-      "count": 2
+      "count": 27
     },
     {
       "value": "pe",
-      "count": 141
-    },
-    {
-      "value": "pf",
-      "count": 4
-    },
-    {
-      "value": "pg",
-      "count": 4
+      "count": 250
     },
     {
       "value": "ph",
-      "count": 58
+      "count": 140
     },
     {
       "value": "pi",
-      "count": 16
-    },
-    {
-      "value": "pk",
-      "count": 2
-    },
-    {
-      "value": "pl",
-      "count": 3
-    },
-    {
-      "value": "pm",
-      "count": 5
-    },
-    {
-      "value": "pn",
-      "count": 3
+      "count": 15
     },
     {
       "value": "po",
-      "count": 21
+      "count": 16
     },
     {
       "value": "pp",
-      "count": 8
-    },
-    {
-      "value": "pr",
-      "count": 5
+      "count": 3
     },
     {
       "value": "ps",
-      "count": 37
+      "count": 764
     },
     {
       "value": "pt",
-      "count": 60
+      "count": 84
     },
     {
       "value": "pu",
-      "count": 5
-    },
-    {
-      "value": "pv",
-      "count": 1
-    },
-    {
-      "value": "pw",
-      "count": 1
-    },
-    {
-      "value": "px",
-      "count": 1
+      "count": 2
     },
     {
       "value": "py",
-      "count": 94
+      "count": 162
+    },
+    {
+      "value": "pé",
+      "count": 2
     },
     {
       "value": "qa",
       "count": 1
     },
     {
-      "value": "qb",
-      "count": 1
-    },
-    {
-      "value": "qc",
-      "count": 1
-    },
-    {
       "value": "qi",
-      "count": 2
+      "count": 1
     },
     {
       "value": "ql",
-      "count": 3
-    },
-    {
-      "value": "qm",
-      "count": 2
-    },
-    {
-      "value": "qq",
-      "count": 1
-    },
-    {
-      "value": "qr",
-      "count": 1
-    },
-    {
-      "value": "qt",
       "count": 1
     },
     {
       "value": "ra",
-      "count": 194
+      "count": 185
     },
     {
       "value": "rb",
-      "count": 22
+      "count": 32
     },
     {
       "value": "rc",
-      "count": 9
+      "count": 8
     },
     {
       "value": "rd",
-      "count": 356
+      "count": 442
     },
     {
       "value": "re",
-      "count": 551
+      "count": 877
     },
     {
       "value": "rf",
-      "count": 19
+      "count": 18
     },
     {
       "value": "rg",
-      "count": 58
+      "count": 14
     },
     {
       "value": "rh",
-      "count": 5
+      "count": 2
     },
     {
       "value": "ri",
-      "count": 55
-    },
-    {
-      "value": "rj",
-      "count": 1
+      "count": 41
     },
     {
       "value": "rk",
-      "count": 125
+      "count": 190
     },
     {
       "value": "rl",
-      "count": 31
+      "count": 47
     },
     {
       "value": "rm",
-      "count": 86
+      "count": 235
     },
     {
       "value": "rn",
-      "count": 125
+      "count": 190
     },
     {
       "value": "ro",
-      "count": 95
+      "count": 72
     },
     {
       "value": "rp",
-      "count": 19
+      "count": 36
     },
     {
       "value": "rr",
-      "count": 16
+      "count": 14
     },
     {
       "value": "rs",
-      "count": 74
+      "count": 5889
     },
     {
       "value": "rt",
-      "count": 195
+      "count": 260
     },
     {
       "value": "ru",
-      "count": 11
+      "count": 8
     },
     {
       "value": "rv",
-      "count": 4
-    },
-    {
-      "value": "rw",
-      "count": 1
-    },
-    {
-      "value": "rx",
       "count": 2
     },
     {
       "value": "ry",
-      "count": 773
+      "count": 1318
+    },
+    {
+      "value": "ré",
+      "count": 3
     },
     {
       "value": "sa",
-      "count": 65
-    },
-    {
-      "value": "sb",
-      "count": 2
+      "count": 47
     },
     {
       "value": "sc",
-      "count": 8
-    },
-    {
-      "value": "sd",
-      "count": 3
+      "count": 6
     },
     {
       "value": "se",
-      "count": 517
-    },
-    {
-      "value": "sf",
-      "count": 3
-    },
-    {
-      "value": "sg",
-      "count": 1
+      "count": 1434
     },
     {
       "value": "sh",
-      "count": 371
+      "count": 564
     },
     {
       "value": "si",
-      "count": 23
-    },
-    {
-      "value": "sj",
-      "count": 1
+      "count": 19
     },
     {
       "value": "sk",
-      "count": 50
-    },
-    {
-      "value": "sl",
-      "count": 5
+      "count": 39
     },
     {
       "value": "sm",
-      "count": 400
-    },
-    {
-      "value": "sn",
-      "count": 3
+      "count": 836
     },
     {
       "value": "so",
-      "count": 24
+      "count": 39
     },
     {
       "value": "sp",
-      "count": 20
-    },
-    {
-      "value": "sq",
-      "count": 2
-    },
-    {
-      "value": "sr",
-      "count": 4
+      "count": 16
     },
     {
       "value": "ss",
-      "count": 1918
+      "count": 3055
     },
     {
       "value": "st",
-      "count": 865
+      "count": 2581
     },
     {
       "value": "su",
-      "count": 11
-    },
-    {
-      "value": "sv",
-      "count": 1
-    },
-    {
-      "value": "sw",
-      "count": 4
-    },
-    {
-      "value": "sy",
-      "count": 91
-    },
-    {
-      "value": "sz",
-      "count": 1
-    },
-    {
-      "value": "ta",
-      "count": 150
-    },
-    {
-      "value": "tb",
-      "count": 2
-    },
-    {
-      "value": "tc",
-      "count": 6
-    },
-    {
-      "value": "td",
       "count": 5
     },
     {
-      "value": "te",
-      "count": 1155
+      "value": "sy",
+      "count": 124
     },
     {
-      "value": "tg",
-      "count": 1
-    },
-    {
-      "value": "th",
-      "count": 250
-    },
-    {
-      "value": "ti",
-      "count": 57
-    },
-    {
-      "value": "tl",
-      "count": 9
-    },
-    {
-      "value": "tm",
+      "value": "sz",
       "count": 2
     },
     {
-      "value": "tn",
-      "count": 3
-    },
-    {
-      "value": "to",
-      "count": 122
-    },
-    {
-      "value": "tp",
-      "count": 4
-    },
-    {
-      "value": "tr",
-      "count": 4
-    },
-    {
-      "value": "ts",
-      "count": 62
-    },
-    {
-      "value": "tt",
-      "count": 64
-    },
-    {
-      "value": "tu",
-      "count": 17
-    },
-    {
-      "value": "tv",
+      "value": "sé",
       "count": 6
     },
     {
-      "value": "tw",
+      "value": "ta",
+      "count": 183
+    },
+    {
+      "value": "te",
+      "count": 2352
+    },
+    {
+      "value": "th",
+      "count": 337
+    },
+    {
+      "value": "ti",
+      "count": 61
+    },
+    {
+      "value": "tl",
+      "count": 6
+    },
+    {
+      "value": "to",
+      "count": 140
+    },
+    {
+      "value": "tp",
       "count": 1
     },
     {
-      "value": "tx",
-      "count": 1
+      "value": "ts",
+      "count": 4351
+    },
+    {
+      "value": "tt",
+      "count": 24
+    },
+    {
+      "value": "tu",
+      "count": 7
     },
     {
       "value": "ty",
-      "count": 856
+      "count": 1474
     },
     {
       "value": "tz",
-      "count": 43
+      "count": 25
+    },
+    {
+      "value": "tà",
+      "count": 2
+    },
+    {
+      "value": "té",
+      "count": 3
     },
     {
       "value": "ua",
-      "count": 20
+      "count": 15
     },
     {
       "value": "ub",
-      "count": 30
+      "count": 36
     },
     {
       "value": "uc",
@@ -1710,63 +1202,63 @@
     },
     {
       "value": "ud",
-      "count": 40
-    },
-    {
-      "value": "ue",
-      "count": 151
-    },
-    {
-      "value": "uf",
-      "count": 1
-    },
-    {
-      "value": "ug",
-      "count": 35
-    },
-    {
-      "value": "uh",
-      "count": 3
-    },
-    {
-      "value": "ui",
-      "count": 11
-    },
-    {
-      "value": "uk",
-      "count": 11
-    },
-    {
-      "value": "ul",
-      "count": 194
-    },
-    {
-      "value": "um",
-      "count": 292
-    },
-    {
-      "value": "un",
       "count": 41
     },
     {
+      "value": "ue",
+      "count": 199
+    },
+    {
+      "value": "uf",
+      "count": 4
+    },
+    {
+      "value": "ug",
+      "count": 45
+    },
+    {
+      "value": "uh",
+      "count": 5
+    },
+    {
+      "value": "ui",
+      "count": 6
+    },
+    {
+      "value": "uk",
+      "count": 12
+    },
+    {
+      "value": "ul",
+      "count": 273
+    },
+    {
+      "value": "um",
+      "count": 632
+    },
+    {
+      "value": "un",
+      "count": 45
+    },
+    {
       "value": "uo",
-      "count": 2
+      "count": 3
     },
     {
       "value": "up",
-      "count": 70
+      "count": 182
     },
     {
       "value": "ur",
-      "count": 94
+      "count": 199
     },
     {
       "value": "us",
-      "count": 846
+      "count": 1660
     },
     {
       "value": "ut",
-      "count": 156
+      "count": 242
     },
     {
       "value": "uu",
@@ -1774,255 +1266,163 @@
     },
     {
       "value": "uv",
-      "count": 3
+      "count": 1
     },
     {
       "value": "ux",
-      "count": 25
+      "count": 35
     },
     {
       "value": "uy",
-      "count": 9
-    },
-    {
-      "value": "uz",
-      "count": 9
-    },
-    {
-      "value": "va",
-      "count": 47
-    },
-    {
-      "value": "vb",
-      "count": 1
-    },
-    {
-      "value": "vc",
-      "count": 1
-    },
-    {
-      "value": "vd",
-      "count": 3
-    },
-    {
-      "value": "ve",
-      "count": 511
-    },
-    {
-      "value": "vf",
-      "count": 2
-    },
-    {
-      "value": "vg",
-      "count": 2
-    },
-    {
-      "value": "vi",
-      "count": 14
-    },
-    {
-      "value": "vj",
-      "count": 1
-    },
-    {
-      "value": "vl",
-      "count": 1
-    },
-    {
-      "value": "vn",
-      "count": 2
-    },
-    {
-      "value": "vo",
-      "count": 11
-    },
-    {
-      "value": "vp",
-      "count": 3
-    },
-    {
-      "value": "vr",
-      "count": 1
-    },
-    {
-      "value": "vs",
-      "count": 2
-    },
-    {
-      "value": "vt",
-      "count": 4
-    },
-    {
-      "value": "vy",
-      "count": 25
-    },
-    {
-      "value": "wa",
-      "count": 14
-    },
-    {
-      "value": "wc",
-      "count": 1
-    },
-    {
-      "value": "wd",
-      "count": 7
-    },
-    {
-      "value": "we",
       "count": 13
     },
     {
-      "value": "wh",
-      "count": 1
-    },
-    {
-      "value": "wi",
+      "value": "ué",
       "count": 6
     },
     {
-      "value": "wk",
-      "count": 9
+      "value": "va",
+      "count": 40
     },
     {
-      "value": "wl",
+      "value": "ve",
+      "count": 1075
+    },
+    {
+      "value": "vi",
+      "count": 7
+    },
+    {
+      "value": "vo",
+      "count": 17
+    },
+    {
+      "value": "vs",
+      "count": 11
+    },
+    {
+      "value": "vy",
       "count": 29
     },
     {
-      "value": "wm",
-      "count": 1
+      "value": "wa",
+      "count": 8
     },
     {
-      "value": "wn",
-      "count": 105
-    },
-    {
-      "value": "wo",
-      "count": 1
-    },
-    {
-      "value": "wp",
-      "count": 3
-    },
-    {
-      "value": "ws",
-      "count": 14
-    },
-    {
-      "value": "wt",
-      "count": 5
-    },
-    {
-      "value": "wu",
-      "count": 1
-    },
-    {
-      "value": "wv",
-      "count": 1
-    },
-    {
-      "value": "ww",
-      "count": 2
-    },
-    {
-      "value": "wx",
-      "count": 1
-    },
-    {
-      "value": "wy",
-      "count": 18
-    },
-    {
-      "value": "xa",
-      "count": 1
-    },
-    {
-      "value": "xe",
-      "count": 4
-    },
-    {
-      "value": "xi",
-      "count": 11
-    },
-    {
-      "value": "xl",
-      "count": 2
-    },
-    {
-      "value": "xo",
-      "count": 1
-    },
-    {
-      "value": "xp",
-      "count": 2
-    },
-    {
-      "value": "xs",
-      "count": 2
-    },
-    {
-      "value": "xt",
-      "count": 9
-    },
-    {
-      "value": "xv",
-      "count": 3
-    },
-    {
-      "value": "xx",
-      "count": 2
-    },
-    {
-      "value": "xy",
-      "count": 11
-    },
-    {
-      "value": "ya",
-      "count": 30
-    },
-    {
-      "value": "yb",
-      "count": 1
-    },
-    {
-      "value": "yc",
-      "count": 1
-    },
-    {
-      "value": "yd",
+      "value": "wd",
       "count": 6
     },
     {
+      "value": "we",
+      "count": 5
+    },
+    {
+      "value": "wi",
+      "count": 2
+    },
+    {
+      "value": "wk",
+      "count": 10
+    },
+    {
+      "value": "wl",
+      "count": 33
+    },
+    {
+      "value": "wm",
+      "count": 3
+    },
+    {
+      "value": "wn",
+      "count": 153
+    },
+    {
+      "value": "wo",
+      "count": 4
+    },
+    {
+      "value": "wp",
+      "count": 2
+    },
+    {
+      "value": "ws",
+      "count": 289
+    },
+    {
+      "value": "wt",
+      "count": 3
+    },
+    {
+      "value": "wy",
+      "count": 19
+    },
+    {
+      "value": "xa",
+      "count": 3
+    },
+    {
+      "value": "xe",
+      "count": 8
+    },
+    {
+      "value": "xi",
+      "count": 3
+    },
+    {
+      "value": "xp",
+      "count": 1
+    },
+    {
+      "value": "xt",
+      "count": 11
+    },
+    {
+      "value": "xu",
+      "count": 1
+    },
+    {
+      "value": "xx",
+      "count": 1
+    },
+    {
+      "value": "xy",
+      "count": 25
+    },
+    {
+      "value": "ya",
+      "count": 19
+    },
+    {
+      "value": "yd",
+      "count": 2
+    },
+    {
       "value": "ye",
-      "count": 24
+      "count": 39
+    },
+    {
+      "value": "yf",
+      "count": 1
     },
     {
       "value": "yg",
       "count": 1
     },
     {
-      "value": "yi",
-      "count": 1
-    },
-    {
-      "value": "yk",
-      "count": 2
-    },
-    {
       "value": "yl",
-      "count": 17
+      "count": 49
     },
     {
       "value": "ym",
-      "count": 7
+      "count": 21
     },
     {
       "value": "yn",
-      "count": 24
+      "count": 4
     },
     {
       "value": "yo",
-      "count": 9
+      "count": 8
     },
     {
       "value": "yp",
@@ -2034,67 +1434,75 @@
     },
     {
       "value": "ys",
-      "count": 27
-    },
-    {
-      "value": "yt",
-      "count": 2
-    },
-    {
-      "value": "yu",
-      "count": 2
+      "count": 415
     },
     {
       "value": "yx",
-      "count": 6
+      "count": 9
     },
     {
       "value": "za",
-      "count": 25
+      "count": 30
     },
     {
       "value": "ze",
-      "count": 344
-    },
-    {
-      "value": "zh",
-      "count": 1
+      "count": 704
     },
     {
       "value": "zi",
-      "count": 12
-    },
-    {
-      "value": "zl",
-      "count": 1
-    },
-    {
-      "value": "zn",
-      "count": 1
+      "count": 5
     },
     {
       "value": "zo",
-      "count": 21
-    },
-    {
-      "value": "zr",
-      "count": 1
-    },
-    {
-      "value": "zt",
-      "count": 2
+      "count": 19
     },
     {
       "value": "zu",
-      "count": 2
+      "count": 3
     },
     {
       "value": "zy",
-      "count": 33
+      "count": 40
     },
     {
       "value": "zz",
-      "count": 13
+      "count": 15
+    },
+    {
+      "value": "às",
+      "count": 2
+    },
+    {
+      "value": "án",
+      "count": 1
+    },
+    {
+      "value": "çu",
+      "count": 1
+    },
+    {
+      "value": "éd",
+      "count": 2
+    },
+    {
+      "value": "ée",
+      "count": 17
+    },
+    {
+      "value": "és",
+      "count": 24
+    },
+    {
+      "value": "ña",
+      "count": 4
+    },
+    {
+      "value": "ño",
+      "count": 3
+    },
+    {
+      "value": "ós",
+      "count": 1
     }
   ]
 }

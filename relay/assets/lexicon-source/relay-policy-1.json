@@ -1,0 +1,49 @@
+{
+  "lexicon_version": "relay-esdb-1e5b7d3a-70-v1",
+  "pinned_commit": "1e5b7d3a72f47a71da5d28686c1dd4b397178485",
+  "archive_sha256": "a4ccb5766e3473bca38168f9e91c62dc191832cf2c5fe0f5b5d12949903ef43d",
+  "selected_size": 70,
+  "comparison_sizes": [
+    60,
+    70
+  ],
+  "spellings": "A,B,Z,C,D",
+  "variant_level": 2,
+  "scope": "Contemporary dictionary English and useful technical vocabulary; full word forms, contractions, accents and spelling variants. Excludes names, abbreviations and word parts except explicit Relay additions. Size 70 can include uncommon words; dictionary membership is not a safety or usage endorsement.",
+  "exclude_poses": "abbr,pre,suf,wp,we,x",
+  "exclude_pos_classes": "person,surname,place,name,demonym,trademark,abbr,upper,name?,upper?,abbr?",
+  "categories": ",hacker",
+  "exclude_exact": {
+    "cd": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "cm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "dg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "dkl": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "dm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "emf": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "emfs": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "hg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "hl": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kb": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kbar": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kbars": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kc": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "kg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "km": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "lbw": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "lm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "lx": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "mg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "mips": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "ml": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "mm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "pj's": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+    "wysiwyg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications."
+  },
+  "preserve_case": [
+    "I",
+    "I'm",
+    "I've",
+    "I'll",
+    "I'd"
+  ]
+}

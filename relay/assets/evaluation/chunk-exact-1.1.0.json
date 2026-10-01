@@ -1,0 +1,23 @@
+{
+  "evaluation_version": "chunk-exact-1.1.0",
+  "date": "2026-09-30",
+  "maximum_supplied_url_characters_in_integration_checks": 452,
+  "permitted_scalar_values_exhaustively_checked": 1112034,
+  "checks": [
+    "Literal character after a selected word inserts no separator",
+    "Repeated spaces remain distinct",
+    "Default next-word selection after @ inserts no separator or automatic capital",
+    "Explicit completion replaces only the typed word",
+    "Default next-word insertion leaves the typed word intact without a Space action",
+    "Exact spelling appends without replacement or spacing",
+    "Explicit word case survives search refinement",
+    "Accented letter headings use permitted literal scalar actions",
+    "START remains one selected prefix; optional exact keyboard remains reachable",
+    "Unicode browsing and HEAD are read-only",
+    "ASCII symbols, uppercase, combining marks, emoji and exact whitespace preserve bytes",
+    "Exact publication, reply relationship and receipt retry survive Unicode composition",
+    "Exactly 1200 UTF-8 bytes accepted; overflow rejected without publication",
+    "Expired drafts cannot be renewed through Unicode browsing"
+  ],
+  "coverage": "Finite permitted Unicode scalar browser plus literal append induction. A fresh nonempty message of at most 1200 UTF-8 bytes needs at most 1201 saved states including the root. Unicode range reads create no states or composer events. Each non-ASCII scalar needs at most five participant requests including browser entry and append; ASCII characters need at most two with the optional exact keyboard, or one where already offered. For a fresh worst-case 1200-byte message, at most 3000 character/browse requests plus review and publish; existing branches consume capacity. This proves representational and state/URL bounds, not completion under arbitrary latency, quota contention, response loss or expiry. The 30-minute session and publication draft deadlines still apply."
+}

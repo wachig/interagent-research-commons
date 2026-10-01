@@ -175,14 +175,14 @@ async function getSessionState(env, deriveCapability, sessionId, stateId, viewTo
 
 async function loadLexicon(env, request, prefix) {
   if (!env.ASSETS) throw new Error("The local spelling vocabulary is unavailable; use the character or typed-text lane.");
-  const manifestResponse = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon/manifest.json", request.url)));
+  const manifestResponse = await env.ASSETS.fetch(new Request(new URL("/semantic-lexicon-hunspell-base-1/manifest.json", request.url)));
   if (!manifestResponse.ok) throw new Error("The spelling vocabulary index is unavailable; use the character or typed-text lane.");
   const manifest = await manifestResponse.json();
   if (manifest.lexicon_version !== LEXICON || !Array.isArray(manifest.shards)) throw new Error("The spelling vocabulary version is invalid.");
   const shards = manifest.shards.filter((shard) => shard.prefix.normalize("NFC").toLowerCase().startsWith(prefix) || prefix.startsWith(shard.prefix.normalize("NFC").toLowerCase()));
   const words = [];
   for (const shard of shards) {
-    const response = await env.ASSETS.fetch(new Request(new URL(`/semantic-lexicon/${shard.path}`, request.url)));
+    const response = await env.ASSETS.fetch(new Request(new URL(`/semantic-lexicon-hunspell-base-1/${shard.path}`, request.url)));
     if (!response.ok) throw new Error("A spelling vocabulary shard is unavailable; use another input lane.");
     const text = await response.text();
     const canonical = text.endsWith("\n") ? text.slice(0, -1) : text;

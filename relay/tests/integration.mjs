@@ -464,7 +464,7 @@ try {
   assert.equal(health.integrity_check.status, "passed");
   const protocol = await (await fetch(`${base}/protocol.json`)).json();
   assert.equal(protocol.methods.mutation_url_links_published, true);
-  assert.equal(protocol.schema_version, "0.25.0");
+  assert.equal(protocol.schema_version, "0.26.0");
   assert.ok(protocol.operations.some((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard/" && operation.purpose.includes("Compatibility entry")), "the current protocol documents the deterministic chunk keyboard");
   const chunkKeyboard2Operation = protocol.operations.find((operation) => operation.path === "/predictive-keyboard/html/chunk-keyboard-2/");
   assert.ok(chunkKeyboard2Operation?.purpose.includes("Compatibility entry"), "the current protocol documents the separately routed variant");
@@ -501,9 +501,9 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.2.0");
+  assert.equal(registry.registry_version, "1.3.0");
   assert.equal(registry.methods.length, 6);
-  assert.deepEqual((await getJson(`${base}/methods/1.2.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   for (const method of registry.methods) {
     for (const key of ["href", "reply_href", "required_capabilities", "entry_effect", "publication", "exact_text_coverage", "limits", "evaluation_status"]) assert.ok(method[key], `${method.id} declares ${key}`);
@@ -513,11 +513,11 @@ try {
     assert.ok(protocol.operations.some((op) => op.path === method.href.split("#")[0] && op.purpose.includes(method.title)), `${method.id} technical description derives from the registry`);
   }
 
-  assert.equal(service.identity.protocol_revision, "0.25.0");
+  assert.equal(service.identity.protocol_revision, "0.26.0");
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "1.4.0");
+  assert.equal(service.bootstrap_revision, "1.5.0");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -526,7 +526,7 @@ try {
   assert.equal(service.policies.participation, "/participation-policy");
   assert.equal(service.schemas.message, "/schemas/message-1.1.0.schema.json");
   assert.equal(service.schemas.collection, "/schemas/collection-1.3.0.schema.json");
-  assert.equal(service.schemas.protocol, "/schemas/protocol-0.25.0.schema.json");
+  assert.equal(service.schemas.protocol, "/schemas/protocol-0.26.0.schema.json");
   assert.deepEqual(service.operations.participate.keyboards.map((entry) => entry.href), [
     "/predictive-keyboard/html/chunk-keyboard-3/", "/predictive-keyboard/html/word-links/",
     "/predictive-keyboard/html/prefix-keyboard/", "/compose/token/o200k/",
@@ -618,7 +618,7 @@ try {
   const readPreflight = await fetch(`${base}/poll`, { method: "OPTIONS" });
   assert.equal(readPreflight.headers.get("access-control-allow-origin"), "*");
   assert.equal(readPreflight.headers.get("access-control-allow-methods"), "GET, HEAD, OPTIONS");
-  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["protocol", "0.22.0"], ["protocol", "0.25.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.3.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
+  const schemas = await Promise.all([["protocol", "0.4.0"], ["protocol", "0.5.0"], ["protocol", "0.6.0"], ["protocol", "0.7.0"], ["protocol", "0.8.0"], ["protocol", "0.9.0"], ["protocol", "0.10.0"], ["protocol", "0.12.0"], ["protocol", "0.13.0"], ["protocol", "0.14.0"], ["protocol", "0.15.0"], ["protocol", "0.16.0"], ["protocol", "0.18.0"], ["protocol", "0.19.0"], ["protocol", "0.20.0"], ["protocol", "0.21.0"], ["protocol", "0.22.0"], ["protocol", "0.26.0"], ["collection", "0.3.0"], ["collection", "0.4.0"], ["collection", "0.5.0"], ["collection", "0.7.0"], ["collection", "0.8.0"], ["collection", "0.9.0"], ["collection", "1.0.0"], ["collection", "1.1.0"], ["collection", "1.3.0"], ["collection", "1.3.0"], ["message", "0.3.0"], ["message", "0.4.0"], ["message", "0.5.0"], ["message", "0.7.0"], ["message", "0.8.0"], ["message", "0.9.0"], ["message", "1.0.0"], ["message", "1.1.0"], ["health", "1.0.0"]].map(async ([name, version]) => [
     `${name}-${version}`,
     await (await fetch(`${base}/schemas/${name}-${version}.schema.json`)).json(),
   ]));
@@ -626,7 +626,7 @@ try {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   for (const schema of schemaMap.values()) ajv.addSchema(schema);
-  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.25.0.schema.json");
+  const validateProtocol = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/protocol-0.26.0.schema.json");
   const validateHealth = ajv.getSchema("https://relay.interagentresearchcommons.org/schemas/health-1.0.0.schema.json");
   assert.equal(validateHealth(health), true, `health response matches its versioned schema: ${JSON.stringify(validateHealth.errors)}`);
   assert.equal(validateProtocol(protocol), true, `protocol representation validates: ${JSON.stringify(validateProtocol.errors)}`);
@@ -1553,7 +1553,7 @@ try {
     console.log(`Reply verified locally: ${method.title}.`);
   }
   const privacy19 = await (await fetch(`${quickBase}/privacy.txt`)).text();
-  assert.match(privacy19, /Version 1\.11\.0/);
+  assert.match(privacy19, /Version 1\.12\.0/);
   assert.match(privacy19, /HISTORICAL SEMANTIC SESSIONS/);
   assert.match(privacy19, /Current word suggestions use a contextual model/);
   const privacy18 = await (await fetch(`${quickBase}/privacy/history/1.8.0.txt`)).text();

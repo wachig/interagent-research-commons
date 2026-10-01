@@ -1,0 +1,93 @@
+{
+  "format": "relay-esdb-export-1",
+  "policy": {
+    "lexicon_version": "relay-esdb-1e5b7d3a-70-v1",
+    "pinned_commit": "1e5b7d3a72f47a71da5d28686c1dd4b397178485",
+    "archive_sha256": "a4ccb5766e3473bca38168f9e91c62dc191832cf2c5fe0f5b5d12949903ef43d",
+    "selected_size": 70,
+    "comparison_sizes": [
+      60,
+      70
+    ],
+    "spellings": "A,B,Z,C,D",
+    "variant_level": 2,
+    "scope": "Contemporary dictionary English and useful technical vocabulary; full word forms, contractions, accents and spelling variants. Excludes names, abbreviations and word parts except explicit Relay additions. Size 70 can include uncommon words; dictionary membership is not a safety or usage endorsement.",
+    "exclude_poses": "abbr,pre,suf,wp,we,x",
+    "exclude_pos_classes": "person,surname,place,name,demonym,trademark,abbr,upper,name?,upper?,abbr?",
+    "categories": ",hacker",
+    "exclude_exact": {
+      "cd": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "cm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "dg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "dkl": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "dm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "emf": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "emfs": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "hg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "hl": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "kb": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "kbar": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "kbars": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "kc": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "kg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "km": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "lbw": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "lm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "lx": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "mg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "mips": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "ml": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "mm": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "pj's": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications.",
+      "wysiwyg": "Observed abbreviation or unit-symbol leakage through upstream ordinary-word classifications."
+    },
+    "preserve_case": [
+      "I",
+      "I'm",
+      "I've",
+      "I'll",
+      "I'd"
+    ]
+  },
+  "additions_sha256": "b4bda19135f081ba683b1bfaffaf6d523300cce53fc0bc151960ccc38a73559f",
+  "exports": [
+    {
+      "size": 60,
+      "upstream_filtered_forms": 93543,
+      "with_additions": 93573,
+      "utf8_bytes": 909750,
+      "gzip_bytes": 250947,
+      "sha256": "816eeca9cf2756062e41b554835a69b314669d2554b5c28e15a8bb734dedd8fa",
+      "export_arguments": [
+        "word-list",
+        "60",
+        "A,B,Z,C,D",
+        "2",
+        "--wo-poses=abbr,pre,suf,wp,we,x",
+        "--wo-pos-classes=person,surname,place,name,demonym,trademark,abbr,upper,name?,upper?,abbr?",
+        "--categories=,hacker",
+        "--hyphen",
+        "--apostrophe=True"
+      ]
+    },
+    {
+      "size": 70,
+      "upstream_filtered_forms": 147515,
+      "with_additions": 147545,
+      "utf8_bytes": 1485447,
+      "gzip_bytes": 397608,
+      "sha256": "664f84b31f2905cb295e39f9c6725a63f4936d9ae22f4d00a2d7bf7975233813",
+      "export_arguments": [
+        "word-list",
+        "70",
+        "A,B,Z,C,D",
+        "2",
+        "--wo-poses=abbr,pre,suf,wp,we,x",
+        "--wo-pos-classes=person,surname,place,name,demonym,trademark,abbr,upper,name?,upper?,abbr?",
+        "--categories=,hacker",
+        "--hyphen",
+        "--apostrophe=True"
+      ]
+    }
+  ]
+}
