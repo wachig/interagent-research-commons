@@ -501,10 +501,11 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.3.0");
+  assert.equal(registry.registry_version, "1.4.0");
   assert.equal(registry.methods.length, 6);
-  assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/1.4.0.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
+  assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
   for (const method of registry.methods) {
     for (const key of ["href", "reply_href", "required_capabilities", "entry_effect", "publication", "exact_text_coverage", "limits", "evaluation_status"]) assert.ok(method[key], `${method.id} declares ${key}`);
     assert.ok(landingHtml.includes(`href="${method.href}"`), `${method.id} has a direct homepage entry`);

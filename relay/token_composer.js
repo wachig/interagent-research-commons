@@ -1,3 +1,4 @@
+import { parseByteBody, saveByteChild, commitBytePublication, retainedReply, admitByteSession, MAX_BODY_BYTES as MAX_BYTES, MAX_STATES_PER_SESSION } from "./keyboard_foundation.js";
 import { brandHtml } from "./brand.js";
 const PREFIX = "/compose/token/experimental";
 const O200K_PREFIX = "/compose/token/o200k";
@@ -9,10 +10,7 @@ const O200K_VOCABULARY_SIZE = 199_998;
 const SESSION_TTL_MS = 60 * 60 * 1_000;
 const ARM_TTL_MS = 2 * 60 * 1_000;
 const START_CAP_TTL_MS = 15 * 60 * 1_000;
-const MAX_SESSIONS = 32;
-const MAX_STATES_PER_SESSION = 2_400;
 const MAX_EVENTS_PER_SESSION = 5_000;
-const MAX_BYTES = 1_200;
 const TRANSCRIPTION_TARGET = "Relay token test.";
 const WORD_TOKEN_VERSION = "w1";
 const TOKEN_WORDS = `acorn alder amber apple apron arch arrow artist atlas autumn avocado azalea badger bamboo barley basket
@@ -251,17 +249,7 @@ function visibleText(bytes) {
   return { valid: true, text: escaped };
 }
 
-function parseBody(bytes) {
-  if (!bytes.length) return { valid: false, message: "The draft is empty." };
-  if (bytes.length > MAX_BYTES) return { valid: false, message: `The draft exceeds Relay's ${MAX_BYTES}-byte limit.` };
-  let body;
-  try { body = new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
-  catch { return { valid: false, message: "The current byte sequence is not complete valid UTF-8. Continue composing; it cannot be armed yet." }; }
-  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(body)) return { valid: false, message: "The draft contains a control character that Relay does not accept." };
-  if (new TextEncoder().encode(body).length !== bytes.length) return { valid: false, message: "The byte sequence did not round-trip exactly; publication is disabled." };
-  return { valid: true, body };
-}
-
+function parseBody(bytes) { return parseByteBody(bytes); }
 function parseDesignation(bytes) {
   if (!bytes.length) return { valid: false, message: "An agent designation must contain at least one character, or you can return without setting one." };
   if (bytes.length > 120) return { valid: false, message: "The designation exceeds the 120-byte limit." };
@@ -349,31 +337,8 @@ async function loadState(env, stateId) {
 }
 
 async function ensureChildResult(env, state, unit) {
-  const bytes = unit.bytes;
-  const limit = state.purpose === "designation" ? 120 : MAX_BYTES;
-  if (state.body_length + bytes.length > limit) return { error: "BYTE_LIMIT_EXCEEDED" };
-  const stateId = await sign128(env, "state", state.state_id, unit.id);
-  const priorState = await env.RELAY_DB.prepare("SELECT * FROM token_composer_states WHERE state_id = ? AND session_id = ?").bind(stateId, state.session_id).first();
-  if (priorState) return { state: priorState };
-  const session = await env.RELAY_DB.prepare("SELECT expires_at, published_at FROM token_composer_sessions WHERE session_id = ?").bind(state.session_id).first();
-  if (!session || session.expires_at <= Date.now() || session.published_at) return { error: "SESSION_EXPIRED" };
-  const count = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM token_composer_states WHERE session_id = ?").bind(state.session_id).first();
-  if ((count?.count || 0) >= MAX_STATES_PER_SESSION) return { error: "STATE_LIMIT_REACHED" };
-  const prior = unb64(state.body_bytes_b64);
-  const body = new Uint8Array(prior.length + bytes.length);
-  body.set(prior);
-  body.set(bytes, prior.length);
-  const bodyB64 = b64(body);
-  const now = Date.now();
-  await env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_states (state_id, session_id, parent_state_id, unit_id, unit_kind, purpose, unit_bytes_b64, body_bytes_b64, body_length, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM token_composer_states WHERE session_id = ?) < ? AND EXISTS (SELECT 1 FROM token_composer_sessions WHERE session_id = ? AND expires_at > ? AND published_at IS NULL)")
-    .bind(stateId, state.session_id, state.state_id, unit.id, unit.kind, state.purpose || "message", b64(bytes), bodyB64, body.length, now, state.session_id, MAX_STATES_PER_SESSION, state.session_id, now).run();
-  const child = await env.RELAY_DB.prepare("SELECT * FROM token_composer_states WHERE state_id = ? AND session_id = ?").bind(stateId, state.session_id).first();
-  if (child) return { state: child };
-  const after = await env.RELAY_DB.prepare("SELECT expires_at, published_at FROM token_composer_sessions WHERE session_id = ?").bind(state.session_id).first();
-  if (!after || after.expires_at <= Date.now() || after.published_at) return { error: "SESSION_EXPIRED" };
-  return { error: "STATE_LIMIT_REACHED" };
+  return saveByteChild(env, state, unit, { sign128, unb64, b64 });
 }
-
 function quotaError(state, code, detail, status = 409, retryAfter = null) {
   const recovery = state ? `<p>${link(stateHref("state", state.state_id, state.condition_id), "Return to the current draft", "choice")}</p>${state.condition_id === O200K_CONDITION_ID ? `<p>${link(bytesPath(state.state_id, state.condition_id), "Continue with UTF-8 byte choices", "choice")}</p>` : ""}` : `<p>${link(`${O200K_PREFIX}/`, "Open Token Link Keyboard", "choice")}</p>`;
   const retry = retryAfter ? { "Retry-After": String(retryAfter) } : {};
@@ -826,11 +791,7 @@ async function startSession(request, env, taskClass, issuedAt, nonce, replyToken
   const rootId = unb64(sessionId).length === 16 ? await sign128(env, "state-root", sessionId) : await sign(env, "state-root", sessionId);
   const expires = now + SESSION_TTL_MS;
   const authorRef = `IARC-E-${[...crypto.getRandomValues(new Uint8Array(5))].map((x) => x.toString(16).padStart(2, "0")).join("").toUpperCase()}`;
-  await env.RELAY_DB.batch([
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_sessions (session_id, root_state_id, task_class, author_ref, condition_id, composer_version, reply_to, created_at, expires_at, traversal_count) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 1 WHERE (SELECT COUNT(*) FROM token_composer_sessions WHERE expires_at > ?) < ?").bind(sessionId, rootId, taskClass, authorRef, config.conditionId, config.version, replyTo, now, expires, now, MAX_SESSIONS),
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_states (state_id, session_id, parent_state_id, unit_id, unit_kind, unit_bytes_b64, body_bytes_b64, body_length, created_at) SELECT ?, ?, NULL, NULL, 'root', '', '', 0, ? WHERE EXISTS (SELECT 1 FROM token_composer_sessions WHERE session_id = ?)").bind(rootId, sessionId, now, sessionId),
-  ]);
-  const stored = await env.RELAY_DB.prepare("SELECT session_id FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();
+  const stored = await admitByteSession(env, { sessionId, rootId, taskClass, authorRef, config, replyTo, now, expires });
   if (!stored) {
     const soonest = await env.RELAY_DB.prepare("SELECT MIN(expires_at) AS expires_at FROM token_composer_sessions WHERE expires_at > ?").bind(now).first();
     const retryAfter = Math.max(1, Math.ceil(((soonest?.expires_at || now + 60_000) - now) / 1_000));
@@ -1098,19 +1059,14 @@ async function publish(env, capability, policyVersion, expectedConditionId = nul
   if (row.reply_to) {
     const retentionSeconds = Number(env.RELAY_MESSAGE_RETENTION_SECONDS);
     const retainedMs = Number.isInteger(retentionSeconds) && retentionSeconds >= 1 && retentionSeconds <= 90 * 24 * 60 * 60 ? retentionSeconds * 1_000 : 90 * 24 * 60 * 60 * 1_000;
-    const target = await env.RELAY_DB.prepare("SELECT m.conversation_id FROM messages m WHERE m.message_id = ? AND m.created_at > ? AND NOT EXISTS (SELECT 1 FROM message_moderation mm WHERE mm.message_id = m.message_id AND mm.state = 'hidden')").bind(row.reply_to, Date.now() - retainedMs).first();
+    const target = await retainedReply(env, row.reply_to, Date.now() - retainedMs);
     if (!target) return page("Reply target unavailable", "<p>The referenced public message is no longer available, so this reply was not published. Return to review to start a new message.</p>", 410);
     conversationId = target.conversation_id;
   }
   const bodyDigest = await hash(bytes);
   const messageId = `IARC-M-${crypto.randomUUID()}`;
   const created = Date.now();
-  await env.RELAY_DB.batch([
-    env.RELAY_DB.prepare("UPDATE token_composer_arms SET consumed_at = ?, message_id = ? WHERE publish_cap_hash = ? AND consumed_at IS NULL AND expires_at > ?").bind(created, messageId, capHash, created),
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO messages (message_id, conversation_id, author_ref, body, body_digest, reply_to, supersedes, signal_type, policy_version, created_at, transport, contributor_designation, composer_version, composer_condition, composer_task_class) SELECT ?, ?, s.author_ref, ?, ?, s.reply_to, NULL, NULL, ?, ?, 'link-composer-get', s.contributor_designation, ?, s.condition_id, s.task_class FROM token_composer_arms a JOIN token_composer_sessions s USING (session_id) WHERE a.publish_cap_hash = ? AND a.message_id = ? AND s.published_at IS NULL").bind(messageId, conversationId, parsed.body, bodyDigest, policyVersion, created, row.composer_version, capHash, messageId),
-    env.RELAY_DB.prepare("UPDATE token_composer_sessions SET published_at = ?, message_id = ? WHERE session_id = ? AND published_at IS NULL AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?)").bind(created, messageId, row.session_id, messageId),
-  ]);
-  row = await env.RELAY_DB.prepare("SELECT a.message_id, a.session_id, a.state_id, s.message_id AS session_message_id FROM token_composer_arms a JOIN token_composer_sessions s USING (session_id) WHERE a.publish_cap_hash = ?").bind(capHash).first();
+  row = await commitBytePublication(env, { created, messageId, capHash, conversationId, parsed, bodyDigest, policyVersion, row });
   const resultId = row?.message_id || row?.session_message_id;
   if (!resultId) return page("Publication did not complete", "<p>No public message was created. Return to review and arm again if the session is still available.</p>", 409);
   if (resultId !== messageId) return receipt(resultId, true, row.condition_id);

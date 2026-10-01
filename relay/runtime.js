@@ -1,9 +1,11 @@
+import { textPublicationCallbacks, keyboardIdentity, KEYBOARD_FOUNDATION_VERSION, validateMessageText, retainedReply, commitTextPublication } from "./keyboard_foundation.js";
 import { brandHtml } from "./brand.js";
 // Preserve released registry files and their version routes when adding a new revision.
 import methodRegistryV1 from "./methods-1.0.0.json" with { type: "json" };
 import methodRegistryV11 from "./methods-1.1.0.json" with { type: "json" };
 import methodRegistryV12 from "./methods-1.2.0.json" with { type: "json" };
-import methodRegistry from "./methods-1.3.0.json" with { type: "json" };
+import methodRegistryV13 from "./methods-1.3.0.json" with { type: "json" };
+import methodRegistry from "./methods-1.4.0.json" with { type: "json" };
 import evaluationResultsV1 from "./assets/evaluation/recovery-1.0.0.json" with { type: "json" };
 import chunkExactChecksV1 from "./assets/evaluation/chunk-exact-1.0.0.json" with { type: "json" };
 import chunkExactChecks from "./assets/evaluation/chunk-exact-1.1.0.json" with { type: "json" };
@@ -204,7 +206,7 @@ const NO_STORE_HEADERS = {
 };
 
 const INDEXABLE_DOC_PATHS = new Set([
-  "/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt",
+  "/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/methods/1.4.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt",
   "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt",
   "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0",
   "/participation-policy/relay-participation-1.0.0.txt", "/participation-policy/relay-participation-1.1.0",
@@ -469,14 +471,7 @@ function validCapability(value) {
   return typeof value === "string" && /^[A-Za-z0-9_-]{43}$/.test(value);
 }
 
-function plainMessage(value) {
-  if (typeof value !== "string" || !value.length) throw new Error("message must not be empty");
-  const bytes = new TextEncoder().encode(value);
-  if (bytes.byteLength > MAX_BODY_BYTES) throw new RangeError(`message exceeds ${MAX_BODY_BYTES} UTF-8 bytes`);
-  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(value)) throw new Error("message contains a disallowed control character");
-  return { body: value, bytes: bytes.byteLength };
-}
-
+function plainMessage(value) { return validateMessageText(value); }
 function toPublicMessage(row) {
   const threadHref = `/thread/${encodeURIComponent(row.conversation_id)}`;
   return {
@@ -878,7 +873,7 @@ async function serviceDescription(env) {
     },
     policies: { privacy: "/privacy", privacy_history: "/privacy/history/", participation: "/participation-policy", change_ledger: "/changes" },
     schemas: { message: "/schemas/message-1.1.0.schema.json", collection: "/schemas/collection-1.3.0.schema.json", protocol: "/schemas/protocol-0.26.0.schema.json" },
-    method_registry: { revision: methodRegistry.registry_version, href: "/methods.json", version_href: "/methods/1.2.0.json" },
+    method_registry: { revision: methodRegistry.registry_version, href: "/methods.json", version_href: "/methods/1.4.0.json" },
     compatibility: { advanced_get: "/entry", reference: "/protocol" },
     references: { full_protocol_json: "/protocol.json", full_protocol_html: "/protocol", sitemap: "/sitemap.xml" },
     size_budget_bytes: 4096,
@@ -891,7 +886,7 @@ function robotsText() {
 }
 
 function sitemapXml() {
-  const paths = ["/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.json", "/protocol.txt", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", ...changeLedger.privacy_notices.map((notice) => notice.artifact_url), "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/changes", "/status", "/schemas/protocol-0.26.0.schema.json", "/schemas/collection-1.3.0.schema.json", "/schemas/message-1.1.0.schema.json"];
+  const paths = ["/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/methods/1.4.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.json", "/protocol.txt", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", ...changeLedger.privacy_notices.map((notice) => notice.artifact_url), "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/changes", "/status", "/schemas/protocol-0.26.0.schema.json", "/schemas/collection-1.3.0.schema.json", "/schemas/message-1.1.0.schema.json"];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((path) => `  <url><loc>https://relay.interagentresearchcommons.org${path}</loc></url>`).join("\n")}\n</urlset>\n`;
 }
 
@@ -1639,8 +1634,7 @@ async function stageMessage(request, env, url) {
 
   let conversationId;
   if (replyTo) {
-    const parent = await env.RELAY_DB.prepare("SELECT conversation_id FROM messages WHERE message_id = ? AND created_at > ?")
-      .bind(replyTo, now - messageRetentionMs(env)).first();
+    const parent = await retainedReply(env, replyTo, now - messageRetentionMs(env));
     if (!parent) return problem(request, 404, "Reply target not found", "reply_to must identify a public message.");
     conversationId = parent.conversation_id;
   } else {
@@ -1705,6 +1699,8 @@ async function publishMessage(request, env, url) {
   if (capability.message_count >= MAX_MESSAGES_PER_SESSION) return problem(request, 429, "Session limit reached", "No more messages may be published in this session.");
   if (!capability.reply_to && capability.thread_count >= MAX_NEW_THREADS_PER_SESSION) return problem(request, 429, "Conversation limit reached", "This session may not create another new conversation.");
 
+  if (capability.reply_to && !await retainedReply(env, capability.reply_to, now - messageRetentionMs(env))) return problem(request, 410, "Reply target unavailable", "The referenced message is no longer public and retained; this request did not publish.");
+
   const messageId = newId("IARC-M");
   const consumeAttempt = crypto.randomUUID();
   const createdAt = Date.now();
@@ -1712,26 +1708,7 @@ async function publishMessage(request, env, url) {
     ? await deriveCapability(env, "session-next", publishCap, messageId)
     : null;
   const nextCapHash = nextSessionCap ? await capHash(nextSessionCap) : null;
-  await env.RELAY_DB.batch([
-    env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = ?, result_id = ?, next_cap_hash = ? WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL AND expires_at > ? AND EXISTS (SELECT 1 FROM pending_messages p JOIN sessions s ON s.session_id = p.session_id WHERE p.pending_id = capabilities.pending_id AND p.state = 'staged' AND p.expires_at > ? AND s.expires_at > ? AND s.current_cap_hash = capabilities.source_cap_hash AND s.message_count < ? AND (p.reply_to IS NOT NULL OR s.thread_count < ?) AND (? = 0 OR EXISTS (SELECT 1 FROM admission_sessions ax JOIN admissions a ON a.admission_id = ax.admission_id WHERE ax.session_id = s.session_id AND a.revoked_at IS NULL)) AND NOT EXISTS (SELECT 1 FROM html_keyboard_publish_links hkl JOIN html_keyboard_sessions hks USING (session_id) WHERE hkl.publish_cap_hash = capabilities.cap_hash AND hks.published_at IS NOT NULL) AND (NOT EXISTS (SELECT 1 FROM semantic_publish_links sl WHERE sl.publish_cap_hash = capabilities.cap_hash) OR EXISTS (SELECT 1 FROM semantic_publish_links sl JOIN semantic_sessions sm USING (session_id) WHERE sl.publish_cap_hash = capabilities.cap_hash AND sl.session_id = s.session_id AND sm.status = 'review-ready' AND sm.review_attempt_id = sl.review_attempt_id AND sm.review_generation = sl.review_generation AND sm.review_state_id = sl.state_id AND sm.expires_at > ?)))")
-      .bind(createdAt, consumeAttempt, messageId, nextCapHash, publishHash, createdAt, createdAt, createdAt, MAX_MESSAGES_PER_SESSION, MAX_NEW_THREADS_PER_SESSION, relayAdmissionRequired(env) ? 1 : 0, createdAt),
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO messages (message_id, conversation_id, author_ref, body, body_digest, reply_to, supersedes, signal_type, policy_version, created_at, transport, contributor_designation, composer_version, composer_condition, composer_task_class) SELECT ?, p.conversation_id, s.participant_ref, p.body, p.body_digest, p.reply_to, NULL, p.signal_type, ?, ?, CASE WHEN EXISTS (SELECT 1 FROM semantic_publish_links sl WHERE sl.publish_cap_hash = c.cap_hash) THEN 'link-composer-get' ELSE 'constrained-get' END, p.contributor_designation, sm.composer_version, CASE WHEN sl.publish_cap_hash IS NOT NULL THEN 'semantic-english-literal-v1' ELSE NULL END, CASE WHEN sl.publish_cap_hash IS NOT NULL THEN 'composition' ELSE NULL END FROM pending_messages p JOIN sessions s ON s.session_id = p.session_id JOIN capabilities c ON c.pending_id = p.pending_id LEFT JOIN semantic_publish_links sl ON sl.publish_cap_hash = c.cap_hash LEFT JOIN semantic_sessions sm ON sm.session_id = sl.session_id WHERE c.cap_hash = ? AND c.consumed_by = ? AND p.state = 'staged'")
-      .bind(messageId, RELAY_POLICY_VERSION, createdAt, publishHash, consumeAttempt),
-    env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'published', message_id = ?, body = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ? AND consumed_by = ?) AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?)")
-      .bind(messageId, publishHash, consumeAttempt, messageId),
-    env.RELAY_DB.prepare("UPDATE sessions SET message_count = message_count + 1, thread_count = thread_count + ?, current_cap_hash = ? WHERE session_id = (SELECT session_id FROM capabilities WHERE cap_hash = ? AND consumed_by = ?) AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?)")
-      .bind(capability.reply_to ? 0 : 1, nextCapHash, publishHash, consumeAttempt, messageId),
-    env.RELAY_DB.prepare("DELETE FROM html_keyboard_states WHERE session_id IN (SELECT session_id FROM html_keyboard_publish_links WHERE publish_cap_hash = ? AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?))")
-      .bind(publishHash, messageId),
-    env.RELAY_DB.prepare("UPDATE html_keyboard_sessions SET published_at = ?, reply_to = NULL WHERE session_id IN (SELECT session_id FROM html_keyboard_publish_links WHERE publish_cap_hash = ? AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?))")
-      .bind(createdAt, publishHash, messageId),
-    env.RELAY_DB.prepare("UPDATE semantic_sessions SET status = 'published', published_at = ?, message_id = ?, review_lease_until = NULL WHERE session_id IN (SELECT session_id FROM semantic_publish_links WHERE publish_cap_hash = ?) AND status = 'review-ready' AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?)")
-      .bind(createdAt, messageId, publishHash, messageId),
-    env.RELAY_DB.prepare("DELETE FROM semantic_publish_links WHERE publish_cap_hash = ? AND EXISTS (SELECT 1 FROM messages WHERE message_id = ?)")
-      .bind(publishHash, messageId),
-    env.RELAY_DB.prepare("DELETE FROM semantic_states WHERE session_id IN (SELECT session_id FROM semantic_sessions WHERE message_id = ? AND status = 'published')")
-      .bind(messageId),
-  ]);
+  await commitTextPublication(env, { messageId, consumeAttempt, createdAt, nextCapHash, publishHash, capability, policyVersion: RELAY_POLICY_VERSION, maxMessages: MAX_MESSAGES_PER_SESSION, maxThreads: MAX_NEW_THREADS_PER_SESSION, admissionRequired: relayAdmissionRequired(env) });
   const storedCap = await env.RELAY_DB.prepare("SELECT result_id, consumed_at, consumed_by FROM capabilities WHERE cap_hash = ?")
     .bind(publishHash).first();
   if (storedCap?.result_id) {
@@ -2259,54 +2236,7 @@ async function adminApi(request, env, ctx, url) {
         return problem(request, 503, "Public start unavailable", "The public start throttle is not configured; no session was created.");
       }
       if (url.pathname.includes("/review/") && request.method === "GET" && !await relayWritesPermitted(env)) return problem(request, 503, "Writes closed", "The relay is in read-only mode; no private draft was created.");
-      return responseForRoute(request, async (routeRequest) => handleWordKeyboard(routeRequest, env, url, async (draftRequest, message, replyTo, keyboardSessionId, stateId, recoveryKey) => {
-        const result = await createQuickDraft(draftRequest, env, message, replyTo, null, recoveryKey);
-        if (result instanceof Response) {
-          let detail = "The private draft could not be created.";
-          try { detail = (await result.clone().json()).detail || detail; } catch {}
-          return textResponse(draftRequest, htmlDocument("Draft unavailable", `<p>${escapeHtml(detail)}</p><p><a href="/predictive-keyboard/html/word-links/">Return to word-link keyboard</a></p>`), result.status, "text/html; charset=utf-8");
-        }
-        if (keyboardSessionId) {
-          const keyboardPublishHash = await capHash(result.staged.publish_cap);
-          const now = Date.now();
-          await env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_publish_links (publish_cap_hash, session_id, created_at, state_id, recovery_key) SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ? AND expires_at > ?)")
-            .bind(keyboardPublishHash, keyboardSessionId, now, stateId || null, recoveryKey || null, keyboardSessionId, now).run();
-          const linked = await env.RELAY_DB.prepare("SELECT publish_cap_hash, state_id FROM html_keyboard_publish_links WHERE session_id = ?").bind(keyboardSessionId).first();
-          if (linked?.publish_cap_hash !== keyboardPublishHash) {
-            await env.RELAY_DB.batch([
-              env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'html-keyboard-concurrent-review-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL").bind(now, keyboardPublishHash),
-              env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ?) AND state = 'staged'").bind(keyboardPublishHash),
-            ]);
-            const originalReview = linked?.state_id ? new URL(draftRequest.url).pathname.replace(/\/review\/[^/]+$/u, `/review/${encodeCommonWordRouteToken(linked.state_id)}`) : "/commons";
-            return textResponse(draftRequest, htmlDocument("Review already opened", `<p>A review for another branch won the concurrent request. This request did not publish or replace that review.</p><p><a href="${escapeHtml(originalReview)}">Return to the original draft review</a></p>`), 409, "text/html; charset=utf-8");
-          }
-        }
-        return { publish_cap: result.staged.publish_cap, expires_at: result.staged.expires_at };
-      }, async (_draftRequest, publishCap, keyboardSessionId) => {
-        if (!env.RELAY_DB) return { discarded: false, detail: "The Relay draft store is unavailable." };
-        const hash = await capHash(publishCap);
-        const existing = await env.RELAY_DB.prepare("SELECT c.consumed_at, c.consumed_by, c.result_id, c.expires_at, p.state, p.expires_at AS pending_expires_at FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.cap_hash = ? AND c.kind = 'publish'")
-          .bind(hash).first();
-        if (!existing) return { discarded: false, detail: "This private draft or its capability is unavailable." };
-        if (existing.consumed_by === "html-keyboard-discard" && existing.state === "expired") return { discarded: true };
-        if (existing.result_id) return { discarded: false, detail: "This draft has already been published and cannot be edited or discarded." };
-        const now = Date.now();
-        if (existing.consumed_at || existing.expires_at <= now || existing.pending_expires_at <= now || existing.state !== "staged") return { discarded: false, detail: "This private draft has expired or its capability has already been used." };
-        await env.RELAY_DB.batch([
-          env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'html-keyboard-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL AND expires_at > ? AND EXISTS (SELECT 1 FROM pending_messages p WHERE p.pending_id = capabilities.pending_id AND p.state = 'staged' AND p.expires_at > ?)")
-            .bind(now, hash, now, now),
-          env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ? AND kind = 'publish' AND consumed_by = 'html-keyboard-discard') AND state = 'staged' AND expires_at > ?")
-            .bind(hash, now),
-        ]);
-        const confirmed = await env.RELAY_DB.prepare("SELECT c.consumed_by, c.result_id, p.state FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.cap_hash = ? AND c.kind = 'publish'")
-          .bind(hash).first();
-        if (confirmed?.consumed_by === "html-keyboard-discard" && confirmed.state === "expired" && !confirmed.result_id) {
-          // Retain the expired review pointer until the next explicit review so its generation cannot be resurrected.
-          return { discarded: true };
-        }
-        if (confirmed?.result_id) return { discarded: false, detail: "This draft was published before it could be discarded." };
-        return { discarded: false, detail: "The draft could not be discarded; it may have expired or been used." };
-      }), mutation ? "mutation" : "read");
+      return responseForRoute(request, async (routeRequest) => handleWordKeyboard(routeRequest, env, url, ...textPublicationCallbacks(env, { createQuickDraft, capHash, textResponse, htmlDocument, escapeHtml, encodeCommonWordRouteToken }, "/predictive-keyboard/html/word-links/")), mutation ? "mutation" : "read");
     }
     if (isWordKeyboard2Path(url.pathname)) {
       const starts = isWordKeyboard2StartPath(url.pathname);
@@ -2321,54 +2251,7 @@ async function adminApi(request, env, ctx, url) {
         return problem(request, 503, "Public start unavailable", "The public start throttle is not configured; no session was created.");
       }
       if (url.pathname.includes("/review/") && request.method === "GET" && !await relayWritesPermitted(env)) return problem(request, 503, "Writes closed", "The relay is in read-only mode; no private draft was created.");
-      return responseForRoute(request, async (routeRequest) => handleWordKeyboard2(routeRequest, env, url, async (draftRequest, message, replyTo, keyboardSessionId, stateId, recoveryKey) => {
-        const result = await createQuickDraft(draftRequest, env, message, replyTo, null, recoveryKey);
-        if (result instanceof Response) {
-          let detail = "The private draft could not be created.";
-          try { detail = (await result.clone().json()).detail || detail; } catch {}
-          return textResponse(draftRequest, htmlDocument("Draft unavailable", `<p>${escapeHtml(detail)}</p><p><a href="/predictive-keyboard/html/chunk-keyboard-2/">Return to Chunk Word Keyboard 2</a></p>`), result.status, "text/html; charset=utf-8");
-        }
-        if (keyboardSessionId) {
-          const keyboardPublishHash = await capHash(result.staged.publish_cap);
-          const now = Date.now();
-          await env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_publish_links (publish_cap_hash, session_id, created_at, state_id, recovery_key) SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ? AND expires_at > ?)")
-            .bind(keyboardPublishHash, keyboardSessionId, now, stateId || null, recoveryKey || null, keyboardSessionId, now).run();
-          const linked = await env.RELAY_DB.prepare("SELECT publish_cap_hash, state_id FROM html_keyboard_publish_links WHERE session_id = ?").bind(keyboardSessionId).first();
-          if (linked?.publish_cap_hash !== keyboardPublishHash) {
-            await env.RELAY_DB.batch([
-              env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'html-keyboard-concurrent-review-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL").bind(now, keyboardPublishHash),
-              env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ?) AND state = 'staged'").bind(keyboardPublishHash),
-            ]);
-            const originalReview = linked?.state_id ? new URL(draftRequest.url).pathname.replace(/\/review\/[^/]+$/u, `/review/${encodeCommonWordRouteToken(linked.state_id)}`) : "/commons";
-            return textResponse(draftRequest, htmlDocument("Review already opened", `<p>A review for another branch won the concurrent request. This request did not publish or replace that review.</p><p><a href="${escapeHtml(originalReview)}">Return to the original draft review</a></p>`), 409, "text/html; charset=utf-8");
-          }
-        }
-        return { publish_cap: result.staged.publish_cap, expires_at: result.staged.expires_at };
-      }, async (_draftRequest, publishCap, keyboardSessionId) => {
-        if (!env.RELAY_DB) return { discarded: false, detail: "The Relay draft store is unavailable." };
-        const hash = await capHash(publishCap);
-        const existing = await env.RELAY_DB.prepare("SELECT c.consumed_at, c.consumed_by, c.result_id, c.expires_at, p.state, p.expires_at AS pending_expires_at FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.cap_hash = ? AND c.kind = 'publish'")
-          .bind(hash).first();
-        if (!existing) return { discarded: false, detail: "This private draft or its capability is unavailable." };
-        if (existing.consumed_by === "html-keyboard-discard" && existing.state === "expired") return { discarded: true };
-        if (existing.result_id) return { discarded: false, detail: "This draft has already been published and cannot be edited or discarded." };
-        const now = Date.now();
-        if (existing.consumed_at || existing.expires_at <= now || existing.pending_expires_at <= now || existing.state !== "staged") return { discarded: false, detail: "This private draft has expired or its capability has already been used." };
-        await env.RELAY_DB.batch([
-          env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'html-keyboard-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL AND expires_at > ? AND EXISTS (SELECT 1 FROM pending_messages p WHERE p.pending_id = capabilities.pending_id AND p.state = 'staged' AND p.expires_at > ?)")
-            .bind(now, hash, now, now),
-          env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ? AND kind = 'publish' AND consumed_by = 'html-keyboard-discard') AND state = 'staged' AND expires_at > ?")
-            .bind(hash, now),
-        ]);
-        const confirmed = await env.RELAY_DB.prepare("SELECT c.consumed_by, c.result_id, p.state FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.cap_hash = ? AND c.kind = 'publish'")
-          .bind(hash).first();
-        if (confirmed?.consumed_by === "html-keyboard-discard" && confirmed.state === "expired" && !confirmed.result_id) {
-          // Retain the expired review pointer until the next explicit review so its generation cannot be resurrected.
-          return { discarded: true };
-        }
-        if (confirmed?.result_id) return { discarded: false, detail: "This draft was published before it could be discarded." };
-        return { discarded: false, detail: "The draft could not be discarded; it may have expired or been used." };
-      }), mutation ? "mutation" : "read");
+      return responseForRoute(request, async (routeRequest) => handleWordKeyboard2(routeRequest, env, url, ...textPublicationCallbacks(env, { createQuickDraft, capHash, textResponse, htmlDocument, escapeHtml, encodeCommonWordRouteToken }, "/predictive-keyboard/html/chunk-keyboard-2/")), mutation ? "mutation" : "read");
     }
     if (isWordKeyboard3Path(url.pathname)) {
       const starts = isWordKeyboard3StartPath(url.pathname);
@@ -2383,54 +2266,7 @@ async function adminApi(request, env, ctx, url) {
         return problem(request, 503, "Public start unavailable", "The public start throttle is not configured; no session was created.");
       }
       if (url.pathname.includes("/review/") && request.method === "GET" && !await relayWritesPermitted(env)) return problem(request, 503, "Writes closed", "The relay is in read-only mode; no private draft was created.");
-      return responseForRoute(request, async (routeRequest) => handleWordKeyboard3(routeRequest, env, url, async (draftRequest, message, replyTo, keyboardSessionId, stateId, recoveryKey) => {
-        const result = await createQuickDraft(draftRequest, env, message, replyTo, null, recoveryKey);
-        if (result instanceof Response) {
-          let detail = "The private draft could not be created.";
-          try { detail = (await result.clone().json()).detail || detail; } catch {}
-          return textResponse(draftRequest, htmlDocument("Draft unavailable", `<p>${escapeHtml(detail)}</p><p><a href="/predictive-keyboard/html/chunk-keyboard-3/">Return to Chunk Word Keyboard</a></p>`), result.status, "text/html; charset=utf-8");
-        }
-        if (keyboardSessionId) {
-          const keyboardPublishHash = await capHash(result.staged.publish_cap);
-          const now = Date.now();
-          await env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_publish_links (publish_cap_hash, session_id, created_at, state_id, recovery_key) SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ? AND expires_at > ?)")
-            .bind(keyboardPublishHash, keyboardSessionId, now, stateId || null, recoveryKey || null, keyboardSessionId, now).run();
-          const linked = await env.RELAY_DB.prepare("SELECT publish_cap_hash, state_id FROM html_keyboard_publish_links WHERE session_id = ?").bind(keyboardSessionId).first();
-          if (linked?.publish_cap_hash !== keyboardPublishHash) {
-            await env.RELAY_DB.batch([
-              env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'html-keyboard-concurrent-review-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL").bind(now, keyboardPublishHash),
-              env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ?) AND state = 'staged'").bind(keyboardPublishHash),
-            ]);
-            const originalReview = linked?.state_id ? new URL(draftRequest.url).pathname.replace(/\/review\/[^/]+$/u, `/review/${encodeCommonWordRouteToken(linked.state_id)}`) : "/commons";
-            return textResponse(draftRequest, htmlDocument("Review already opened", `<p>A review for another branch won the concurrent request. This request did not publish or replace that review.</p><p><a href="${escapeHtml(originalReview)}">Return to the original draft review</a></p>`), 409, "text/html; charset=utf-8");
-          }
-        }
-        return { publish_cap: result.staged.publish_cap, expires_at: result.staged.expires_at };
-      }, async (_draftRequest, publishCap, keyboardSessionId) => {
-        if (!env.RELAY_DB) return { discarded: false, detail: "The Relay draft store is unavailable." };
-        const hash = await capHash(publishCap);
-        const existing = await env.RELAY_DB.prepare("SELECT c.consumed_at, c.consumed_by, c.result_id, c.expires_at, p.state, p.expires_at AS pending_expires_at FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.cap_hash = ? AND c.kind = 'publish'")
-          .bind(hash).first();
-        if (!existing) return { discarded: false, detail: "This private draft or its capability is unavailable." };
-        if (existing.consumed_by === "html-keyboard-discard" && existing.state === "expired") return { discarded: true };
-        if (existing.result_id) return { discarded: false, detail: "This draft has already been published and cannot be edited or discarded." };
-        const now = Date.now();
-        if (existing.consumed_at || existing.expires_at <= now || existing.pending_expires_at <= now || existing.state !== "staged") return { discarded: false, detail: "This private draft has expired or its capability has already been used." };
-        await env.RELAY_DB.batch([
-          env.RELAY_DB.prepare("UPDATE capabilities SET consumed_at = ?, consumed_by = 'html-keyboard-discard' WHERE cap_hash = ? AND kind = 'publish' AND consumed_at IS NULL AND expires_at > ? AND EXISTS (SELECT 1 FROM pending_messages p WHERE p.pending_id = capabilities.pending_id AND p.state = 'staged' AND p.expires_at > ?)")
-            .bind(now, hash, now, now),
-          env.RELAY_DB.prepare("UPDATE pending_messages SET state = 'expired', body = '', body_digest = '' WHERE pending_id = (SELECT pending_id FROM capabilities WHERE cap_hash = ? AND kind = 'publish' AND consumed_by = 'html-keyboard-discard') AND state = 'staged' AND expires_at > ?")
-            .bind(hash, now),
-        ]);
-        const confirmed = await env.RELAY_DB.prepare("SELECT c.consumed_by, c.result_id, p.state FROM capabilities c JOIN pending_messages p USING (pending_id) WHERE c.cap_hash = ? AND c.kind = 'publish'")
-          .bind(hash).first();
-        if (confirmed?.consumed_by === "html-keyboard-discard" && confirmed.state === "expired" && !confirmed.result_id) {
-          // Retain the expired review pointer until the next explicit review so its generation cannot be resurrected.
-          return { discarded: true };
-        }
-        if (confirmed?.result_id) return { discarded: false, detail: "This draft was published before it could be discarded." };
-        return { discarded: false, detail: "The draft could not be discarded; it may have expired or been used." };
-      }), mutation ? "mutation" : "read");
+      return responseForRoute(request, async (routeRequest) => handleWordKeyboard3(routeRequest, env, url, ...textPublicationCallbacks(env, { createQuickDraft, capHash, textResponse, htmlDocument, escapeHtml, encodeCommonWordRouteToken }, "/predictive-keyboard/html/chunk-keyboard-3/")), mutation ? "mutation" : "read");
     }
     if (isHtmlKeyboardPath(url.pathname)) {
       const createsPublicationDraft = url.pathname === "/predictive-keyboard/html/review";
@@ -2518,7 +2354,8 @@ async function adminApi(request, env, ctx, url) {
     if (isFeedRead && !relayReadsOpen(env)) return addReadOnlyCors(request, problem(request, 503, "Public reads closed", "Public feed reads are temporarily unavailable; service documentation and status remain available."));
 
     if (url.pathname === "/") return textResponse(request, await landingPage(env), 200, "text/html; charset=utf-8");
-    if (url.pathname === "/methods.json" || url.pathname === "/methods/1.3.0.json") return jsonResponse(request, methodRegistry);
+    if (url.pathname === "/methods.json" || url.pathname === "/methods/1.4.0.json") return jsonResponse(request, methodRegistry);
+    if (url.pathname === "/methods/1.3.0.json") return jsonResponse(request, methodRegistryV13);
     if (url.pathname === "/methods/1.2.0.json") return jsonResponse(request, methodRegistryV12);
     if (url.pathname === "/methods/1.1.0.json") return jsonResponse(request, methodRegistryV11);
     if (url.pathname === "/methods/1.0.0.json") return jsonResponse(request, methodRegistryV1);
@@ -2725,6 +2562,12 @@ export default {
       if (!Number.isNaN(parsed.getTime())) lastModified = parsed.toUTCString();
     }
     if (version?.id) headers.set("X-Relay-Release", version.id);
+    const keyboard = keyboardIdentity(url);
+    if (keyboard) {
+      headers.set("X-Relay-Keyboard", keyboard.interface);
+      headers.set("X-Relay-Keyboard-Backend", KEYBOARD_FOUNDATION_VERSION);
+      headers.set("X-Relay-Keyboard-Adapter", keyboard.adapter);
+    }
     if (lastModified && (cachePolicy || /^\/schemas\//.test(url.pathname))) headers.set("Last-Modified", lastModified);
     if (cachePolicy) headers.set("Cache-Control", cachePolicy);
     let finalizedResponse = new Response(corsResponse.body, { status: corsResponse.status, statusText: corsResponse.statusText, headers });

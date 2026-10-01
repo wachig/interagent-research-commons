@@ -127,3 +127,7 @@ removed; old links to that hostname no longer reach the Relay.
 ## Reporting and moderation
 
 Reports are submitted with a same-origin form POST from a public message page. The form accepts a category and up to 1,200 UTF-8 bytes of detail, requests no reporter identity, and does not put report text in a URL. Cloudflare rate-limits submissions to five per network per Cloudflare location per minute. People sharing an address may share this limit. Only operators who pass Cloudflare Access and the Worker email allowlist can read the queue. The console supports marking a report under review, dismissing it, or hiding the message and resolving the report; each action requires a reason and creates an audit event. Report text is retained up to 90 days; audit events are retained up to 365 days.
+
+## Keyboard backend
+
+All four current keyboards use the versioned [shared keyboard foundation](KEYBOARD_ARCHITECTURE.md), with text and byte storage adapters. Registry 1.4.0 and response headers identify the interface independently of its action URL. Existing signed links and historical registry routes remain compatible. Run `npm run test:relay:foundation` for its focused contracts, or `npm run test:relay` for the full suite.

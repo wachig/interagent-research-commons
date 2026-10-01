@@ -1,3 +1,4 @@
+import { appendDelta, loadDraft, findState, createSession as createTextSession, saveTextChild, reviewTextDraft, keyboardErrorStatus, MAX_BODY_BYTES } from "./keyboard_foundation.js";
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
 import { escapeHtml, predictRanked, response } from "./html_keyboard.js";
 import { isPresentablePhrase } from "./phrase_safety.js";
@@ -8,12 +9,7 @@ const PREFIX = "/predictive-keyboard/html/chunk-keyboard-2";
 const PREFIX_KEYBOARD = "/predictive-keyboard/html/chunk-keyboard-2/prefix-keyboard";
 const CHUNK_KEYBOARD = "/predictive-keyboard/html/chunk-keyboard-2";
 const APPROVED_PREFIXES = new Set(Object.values(PREFIX_VOCABULARY.prefixes).flat());
-const MAX_BODY_BYTES = 1_200;
-const SESSION_TTL_MS = 30 * 60 * 1_000;
 const START_TTL_MS = 15 * 60 * 1_000;
-const MAX_SESSIONS = 32;
-const MAX_STATES_PER_SESSION = 2_400;
-const SNAPSHOT_INTERVAL = 16;
 const WORD = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:['’\-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*$/u;
 const COMMON_ONE_LETTER_WORDS = ["a", "i"];
 const COMMON_TWO_LETTER_WORDS = ["am", "an", "as", "at", "be", "by", "do", "go", "he", "if", "in", "is", "it", "me", "my", "no", "of", "oh", "on", "or", "so", "to", "up", "us", "we"];
@@ -100,25 +96,7 @@ function keyArgument(value) {
   return /^[A-Za-z0-9@#$%&*+()_!'"/:;.,?-]$/u.test(value) ? value : undefined;
 }
 
-function appendDelta(draft, removed, added) {
-  if (removed && !draft.endsWith(removed)) throw new Error("This branch no longer matches its parent state.");
-  const prefix = removed ? draft.slice(0, -removed.length) : draft;
-  return `${prefix}${added}`;
-}
 
-async function loadDraft(env, row) {
-  let current = row;
-  const actions = [];
-  while (current.snapshot === null && current.parent_state_id && actions.length < SNAPSHOT_INTERVAL) {
-    actions.push(current);
-    current = await env.RELAY_DB.prepare("SELECT s.*, k.expires_at AS session_expires_at FROM html_keyboard_states s JOIN html_keyboard_sessions k USING (session_id) WHERE s.state_id = ?").bind(current.parent_state_id).first();
-    if (!current) throw new Error("An earlier draft step is unavailable. Start a new draft.");
-  }
-  if (current.snapshot === null) throw new Error("Draft history has reached its reconstruction limit. Start a new draft.");
-  let draft = current.snapshot;
-  for (const action of actions.reverse()) draft = appendDelta(draft, action.removed_text, action.added_text);
-  return draft;
-}
 
 function queryParams(url, allowed) {
   const result = new Map();
@@ -390,34 +368,10 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
   return response(html, 200, { "Content-Security-Policy": `default-src 'none'; script-src 'sha256-${scriptHash}'; style-src 'unsafe-inline'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'` });
 }
 
-async function findState(env, stateId) {
-  const row = await env.RELAY_DB.prepare("SELECT s.*, k.reply_to, k.expires_at AS session_expires_at FROM html_keyboard_states s JOIN html_keyboard_sessions k USING (session_id) WHERE s.state_id = ?")
-    .bind(stateId).first();
-  if (!row || row.session_expires_at <= Date.now()) throw new Error("This keyboard session expired or is unavailable. Start a new draft.");
-  return row;
-}
 
 async function createSession(env, sessionId, replyTo) {
-  const existing = await env.RELAY_DB.prepare("SELECT root_state_id, expires_at, reply_to, published_at FROM html_keyboard_sessions WHERE session_id = ?").bind(sessionId).first();
-  if (existing?.published_at) throw new Error("This start link has already been used to publish. Start a new draft.");
-  if (existing) {
-    if (existing.expires_at <= Date.now()) throw new Error("This keyboard session expired. Start a new draft.");
-    return findState(env, existing.root_state_id);
-  }
-  const rootId = await signCommonWordRoute(env, "keyboard-root", sessionId);
-  const now = Date.now();
-  const expires = now + SESSION_TTL_MS;
-  await env.RELAY_DB.batch([
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_sessions (session_id, root_state_id, reply_to, created_at, expires_at) SELECT ?, ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM html_keyboard_sessions WHERE expires_at > ?) < ?")
-      .bind(sessionId, rootId, replyTo, now, expires, now, MAX_SESSIONS),
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_states (state_id, session_id, parent_state_id, operation, value, removed_text, added_text, snapshot, depth, created_at) SELECT ?, ?, NULL, 'root', '', '', '', '', 0, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ?)")
-      .bind(rootId, sessionId, now, sessionId),
-  ]);
-  const session = await env.RELAY_DB.prepare("SELECT root_state_id, expires_at, reply_to FROM html_keyboard_sessions WHERE session_id = ?").bind(sessionId).first();
-  if (!session) throw new Error("Active keyboard session limit reached. Wait a few minutes and try again.");
-  return { ...await findState(env, session.root_state_id), reply_to: session.reply_to };
+  return createTextSession(env, sessionId, replyTo, signCommonWordRoute);
 }
-
 async function makeChild(env, request, parent, action, argument, childId, issuedCapability = false) {
   const parentDraft = await loadDraft(env, parent);
   let removed = "";
@@ -490,28 +444,7 @@ async function makeChild(env, request, parent, action, argument, childId, issued
   } else {
     throw new Error("Unknown keyboard action.");
   }
-  const nextDraft = appendDelta(parentDraft, removed, added);
-  if (new TextEncoder().encode(nextDraft).byteLength > MAX_BODY_BYTES || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(nextDraft)) throw new Error(`Message limit reached (${MAX_BODY_BYTES} UTF-8 bytes).`);
-  const depth = parent.depth + 1;
-  const snapshot = depth % SNAPSHOT_INTERVAL === 0 ? nextDraft : null;
-  const now = Date.now();
-  // Existing deployed schemas intentionally constrain operation to root/key/pick/clear.
-  // Store manual text as a pick with its {text, join} payload to remain schema-compatible.
-  const storedAction = action === "typed" ? "pick" : action;
-  await env.RELAY_DB.prepare("INSERT OR IGNORE INTO html_keyboard_states (state_id, session_id, parent_state_id, operation, value, removed_text, added_text, snapshot, depth, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM html_keyboard_sessions WHERE session_id = ? AND expires_at > ?) AND EXISTS (SELECT 1 FROM html_keyboard_states WHERE state_id = ? AND session_id = ?) AND (SELECT COUNT(*) FROM html_keyboard_states WHERE session_id = ?) < ?")
-    .bind(childId, parent.session_id, parent.state_id, storedAction, savedArgument, removed, added, snapshot, depth, now, parent.session_id, now, parent.state_id, parent.session_id, parent.session_id, MAX_STATES_PER_SESSION).run();
-  const childExists = await env.RELAY_DB.prepare("SELECT state_id FROM html_keyboard_states WHERE state_id = ? AND session_id = ?").bind(childId, parent.session_id).first();
-  if (!childExists) {
-    const active = await env.RELAY_DB.prepare("SELECT expires_at FROM html_keyboard_sessions WHERE session_id = ?").bind(parent.session_id).first();
-    if (!active || active.expires_at <= Date.now()) throw new Error("This keyboard session expired or is unavailable. Start a new draft.");
-    const stateCount = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM html_keyboard_states WHERE session_id = ?").bind(parent.session_id).first();
-    if (Number(stateCount?.count || 0) >= MAX_STATES_PER_SESSION) throw new Error(`Keyboard session state limit reached (${MAX_STATES_PER_SESSION} saved steps). Start a new draft.`);
-    throw new Error("This branch could not be saved. Return to the current draft and try again.");
-  }
-  const child = await findState(env, childId);
-  if (child.session_id !== parent.session_id) throw new Error("This branch belongs to another keyboard session.");
-  if (child.parent_state_id !== parent.state_id || child.operation !== storedAction || child.value !== savedArgument) throw new Error("This link does not match the saved draft branch.");
-  return child;
+  return saveTextChild(env, parent, action, savedArgument, childId, parentDraft, removed, added);
 }
 
 function predictionContext(draft, state) {
@@ -848,30 +781,7 @@ export async function handleWordKeyboard2(request, env, url, createPublishDraft,
     if (reviewMatch) {
       const reviewParams = queryParams(url, new Set(["view"]));
       const keyboardView = reviewParams.get("view") || "words";
-      const state = await findState(env, readWord(reviewMatch[1]));
-      const draft = await loadDraft(env, state);
-      if (!draft) throw new Error("Enter text before reviewing it.");
-      const activeReview = await env.RELAY_DB.prepare("SELECT h.state_id, h.recovery_key, h.publish_cap_hash, c.expires_at AS cap_expires_at, p.expires_at AS draft_expires_at, p.state FROM html_keyboard_publish_links h LEFT JOIN capabilities c ON c.cap_hash = h.publish_cap_hash AND c.kind = 'publish' LEFT JOIN pending_messages p USING (pending_id) WHERE h.session_id = ?")
-        .bind(state.session_id).first();
-      const reviewLive = activeReview && activeReview.cap_expires_at > Date.now() && activeReview.draft_expires_at > Date.now() && activeReview.state === "staged";
-      if (reviewLive && (activeReview.state_id !== state.state_id || !activeReview.recovery_key)) {
-        const original = activeReview.state_id ? `${PREFIX}/review/${word(activeReview.state_id)}` : `${PREFIX}/state/${word(state.state_id)}`;
-        return page("Review already active", `<h1>Review already active</h1><p>This branch did not replace the existing private review. Nothing was published by this request.</p><p><a href="${escapeHtml(original)}">Return to the original draft review</a></p><p>For a review created before recovery support, wait for its expiry before reviewing again.</p>`, 409);
-      }
-      const recoveryKey = reviewLive ? activeReview.recovery_key : `keyboard-review:${state.session_id}:${state.state_id}:${activeReview?.publish_cap_hash || "initial"}`;
-      if (!reviewLive && activeReview) await env.RELAY_DB.prepare("DELETE FROM html_keyboard_publish_links WHERE session_id = ? AND publish_cap_hash = ?").bind(state.session_id, activeReview.publish_cap_hash).run();
-      if (typeof createPublishDraft !== "function") throw new Error("The publication flow is unavailable.");
-      const pending = await createPublishDraft(request, draft, state.reply_to, state.session_id, state.state_id, recoveryKey);
-      if (pending instanceof Response) return pending;
-      const wordPublishCap = word(pending.publish_cap);
-      const publishHref = `/publish?${new URLSearchParams({ cap: wordPublishCap })}`;
-      const expiry = escapeHtml(pending.expires_at);
-      const reply = state.reply_to ? `<p>Reply to <code>${escapeHtml(state.reply_to)}</code>.</p>` : "";
-      const bytes = new TextEncoder().encode(draft).byteLength;
-      const editParams = new URLSearchParams({ cap: wordPublishCap });
-      if (keyboardView !== "words") editParams.set("view", keyboardView);
-      const editHref = `${PREFIX}/discard/${word(state.state_id)}?${editParams}`;
-      return page("Review draft", `<h1>Review draft</h1><p><strong>Exact message · ${bytes} UTF-8 byte${bytes === 1 ? "" : "s"}</strong></p><pre class="draft">${escapeHtml(draft)}</pre>${reply}<p>This private draft expires at <time datetime="${expiry}">${expiry}</time>. Following the next link publishes it publicly. A crawler or prefetching client that follows it can publish; continue only when publication is intended and permitted.</p><p><a rel="nofollow" class="primary" href="${escapeHtml(publishHref)}">Publish this message publicly</a></p><p><a rel="nofollow" href="${escapeHtml(editHref)}">Edit message and discard this private draft</a></p>`);
+      return reviewTextDraft(env, request, readWord(reviewMatch[1]), keyboardView, { PREFIX, word, escapeHtml, page, createPublishDraft });
     }
     const discardMatch = path.match(/^\/predictive-keyboard\/html\/chunk-keyboard-2\/discard\/([^/]+)$/u);
     if (discardMatch) {
@@ -890,10 +800,10 @@ export async function handleWordKeyboard2(request, env, url, createPublishDraft,
     return fail("No word-link keyboard page has this address.", 404);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Keyboard request failed.";
-    const status = /signing is not configured|storage|database|assets are unavailable|resource unavailable/u.test(message) ? 503 : /state limit|active session limit/u.test(message) ? 429 : /private publication draft is already active/u.test(message) ? 409 : /limit reached|Message limit/u.test(message) ? 413 : /expired|unavailable|already been used to publish/u.test(message) ? 410 : 400;
+    const status = keyboardErrorStatus(message);
     if (status === 429) {
       const match = url.pathname.match(/\/(?:step|form)\/([^/]+)/u);
-      if (match) return page("Draft limit reached", `<h1>Draft limit reached</h1><p>${escapeHtml(message)}</p><p>This request did not publish. Saved branches remain available until session expiry.</p><p><a href="${PREFIX}/state/${escapeHtml(match[1])}">Return to the saved parent draft</a></p><p><a href="/commons">Read messages</a> · <a href="/moderation-log">Moderation history</a> · <a href="/privacy/history/">Privacy history</a></p>`, status);
+      if (match) return page("Draft limit reached", `<h1>Draft limit reached</h1><p>${escapeHtml(message)}</p><p>This request did not publish. Saved branches remain available until session expiry.</p><p><a href="${PREFIX}/state/${escapeHtml(match[1])}${url.searchParams.get("view") ? `?${new URLSearchParams({ view: url.searchParams.get("view") })}` : ""}">Return to the saved parent draft</a></p><p><a href="/commons">Read messages</a> · <a href="/moderation-log">Moderation history</a> · <a href="/privacy/history/">Privacy history</a></p>`, status);
     }
     return fail(message, status);
   }
