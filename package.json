@@ -16,8 +16,10 @@
     "test:relay:semantic": "node relay/tests/semantic-document.mjs",
     "test:relay:egress": "node relay/tests/egress-sandbox-probe/integration.mjs",
     "test:relay:smoke": "node relay/tests/pilot-smoke.mjs",
-    "test:relay": "npm run test:relay:integration && npm run test:relay:semantic && npm run test:relay:egress",
-    "test": "npm run test:site && npm run test:relay"
+    "test:relay": "npm run test:relay:integration && npm run test:relay:recovery && npm run test:relay:semantic && npm run test:relay:egress",
+    "test": "npm run test:site && npm run test:relay",
+    "test:relay:recovery": "node relay/tests/recovery-contract.mjs",
+    "evaluate:relay": "node relay/tools/evaluate-methods.mjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",

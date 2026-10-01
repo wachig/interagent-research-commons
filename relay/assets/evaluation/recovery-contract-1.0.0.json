@@ -1,0 +1,184 @@
+{
+  "evaluation_version": "1.0.0",
+  "scope": "Disposable localhost fixtures. Responses discarded after complete server operations. Quotas and expiry injected only into the fixture SQLite database, without changing production TTLs or permissions.",
+  "checks": [
+    {
+      "name": "Staging: identical reply context recovers permission; changed reply target cannot reuse it",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "GET preview: dropped staging response recovers same unpublished draft, permission and expiry",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "GET preview: dropped publication response recovers original receipt without duplicate",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "Expired GET draft: retry cannot renew or publish",
+      "passed": true
+    },
+    {
+      "name": "Immediate GET: exact lost-response retry recovers receipt; changed content conflicts",
+      "passed": true
+    },
+    {
+      "name": "chunk: dropped addition and stale sibling preserve independent exact branches",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "stale_branch_and_return_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "chunk: dropped review recovers same permission; stale branch cannot replace reviewed text",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "stale_review_conflict_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "chunk: dropped publication response recovers correct reply receipt without duplicate",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "chunk: concurrent review is stable; expired/discarded permission stays invalid; explicit fresh review preserves text",
+      "passed": true
+    },
+    {
+      "name": "chunk: storage quota rejects addition and links to preserved parent draft",
+      "passed": true,
+      "quota_error_and_saved_draft_read_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "chunk: expired session cannot revive saved branches",
+      "passed": true,
+      "expired_saved_draft_read_requests": 1,
+      "lost_work_utf8_bytes": 1,
+      "restart_requires_recomposition": true
+    },
+    {
+      "name": "predictive: dropped addition and stale sibling preserve independent exact branches",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "stale_branch_and_return_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "predictive: dropped review recovers same permission; stale branch cannot replace reviewed text",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "stale_review_conflict_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "predictive: dropped publication response recovers correct reply receipt without duplicate",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "predictive: concurrent review is stable; expired/discarded permission stays invalid; explicit fresh review preserves text",
+      "passed": true
+    },
+    {
+      "name": "predictive: storage quota rejects addition and links to preserved parent draft",
+      "passed": true,
+      "quota_error_and_saved_draft_read_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "predictive: expired session cannot revive saved branches",
+      "passed": true,
+      "expired_saved_draft_read_requests": 1,
+      "lost_work_utf8_bytes": 1,
+      "restart_requires_recomposition": true
+    },
+    {
+      "name": "prefix: dropped addition and stale sibling preserve independent exact branches",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "stale_branch_and_return_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "prefix: dropped review recovers same permission; stale branch cannot replace reviewed text",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "stale_review_conflict_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "prefix: dropped publication response recovers correct reply receipt without duplicate",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "prefix: concurrent review is stable; expired/discarded permission stays invalid; explicit fresh review preserves text",
+      "passed": true
+    },
+    {
+      "name": "prefix: storage quota rejects addition and links to preserved parent draft",
+      "passed": true,
+      "quota_error_and_saved_draft_read_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "prefix: expired session cannot revive saved branches",
+      "passed": true,
+      "expired_saved_draft_read_requests": 1,
+      "lost_work_utf8_bytes": 3,
+      "restart_requires_recomposition": true
+    },
+    {
+      "name": "Token: addition and arm retries recover same branch and active publication permission",
+      "passed": true,
+      "extra_retry_requests": 2,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "Token: expired arm returns to saved review; explicit rearming issues fresh permission",
+      "passed": true,
+      "expired_publish_saved_review_and_rearm_requests": 3,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "Token: dropped publish response recovers exact reply receipt without duplicate",
+      "passed": true,
+      "extra_retry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "Token: quota preserves current draft and offers recovery link",
+      "passed": true,
+      "quota_error_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "Token: expired session does not restore unavailable text",
+      "passed": true,
+      "expired_saved_draft_read_requests": 1,
+      "lost_work_utf8_bytes": 1,
+      "restart_requires_recomposition": true
+    },
+    {
+      "name": "Entry response loss: fresh keyboard entry adds one request; empty abandoned session never publishes",
+      "passed": true,
+      "extra_entry_requests": 1,
+      "lost_work_utf8_bytes": 0
+    },
+    {
+      "name": "Read, moderation and policy history remain available",
+      "passed": true
+    }
+  ]
+}

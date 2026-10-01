@@ -138,17 +138,30 @@
     {
       "changed_object": "IARC Relay data and privacy notice",
       "version": "1.9.0",
-      "operation": "description correction; current keyboard entries separated from historical semantic sessions; collection and retention unchanged",
+      "operation": "superseded; historical notice preserved",
       "effective_date": "2026-09-30",
       "effective_time": null,
       "effective_time_note": "Applies when deployed; local source changes do not establish production activation.",
       "source_recorded_at": null,
       "responsible_role": "Relay privacy notice maintainer",
+      "artifact_url": "/privacy/history/1.9.0",
+      "text_url": "/privacy/history/1.9.0.txt",
+      "supersedes": "1.8.0",
+      "superseded_by": "1.10.0",
+      "effective_at": null
+    },
+    {
+      "changed_object": "IARC Relay data and privacy notice",
+      "version": "1.10.0",
+      "operation": "current recovery-contract clarification; existing retention and collection purposes unchanged",
+      "effective_date": "2026-09-30",
+      "effective_time": null,
+      "source_recorded_at": null,
+      "responsible_role": "Relay privacy notice maintainer",
       "artifact_url": "/privacy",
       "text_url": "/privacy.txt",
-      "supersedes": "1.8.0",
-      "superseded_by": null,
-      "effective_at": null
+      "supersedes": "1.9.0",
+      "effective_time_note": "Applies when deployed; source change does not establish a production activation timestamp."
     }
   ],
   "participation_policies": [
@@ -440,14 +453,26 @@
     {
       "changed_object": "IARC Relay protocol JSON Schema contract",
       "version": "0.23.0",
-      "operation": "current; Chunk Word Keyboard 2 initial layout and short-word section update",
+      "operation": "superseded; historical schema preserved",
       "source_recorded_at": "2026-09-29T13:54:40-07:00",
       "effective_at": "2026-09-29T20:55:04.976Z",
       "effective_time_note": "Production activation confirmed by Wrangler deployment history and live HTTPS verification.",
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.23.0.schema.json",
       "source_commit_subject": "Refine Chunk Word Keyboard 2 start view",
-      "deployment_version_id": "10c3a2f4-7fd9-4f5b-a59c-2b9551003c33"
+      "deployment_version_id": "10c3a2f4-7fd9-4f5b-a59c-2b9551003c33",
+      "superseded_by": "0.24.0"
+    },
+    {
+      "changed_object": "IARC Relay protocol JSON Schema contract",
+      "version": "0.24.0",
+      "operation": "current recovery contract: idempotent staging, keyboard reviews and receipt replay",
+      "effective_at": null,
+      "source_recorded_at": null,
+      "responsible_role": "Relay protocol maintainer",
+      "artifact_url": "/schemas/protocol-0.24.0.schema.json",
+      "supersedes": "0.23.0",
+      "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source."
     }
   ]
 }

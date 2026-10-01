@@ -42,7 +42,7 @@ function page(title, body, status = 200) {
 }
 
 function fail(message, status = 400) {
-  return page("Keyboard unavailable", `<h1>Keyboard unavailable</h1><p>${escapeHtml(message)}</p><p><a href="${PREFIX}/">Start a new draft</a></p>`, status);
+  return page("Keyboard unavailable", `<h1>Keyboard unavailable</h1><p>${escapeHtml(message)}</p><p><a href="${PREFIX}/">Start a new draft</a></p><p><a href="/commons">Read messages</a> · <a href="/moderation-log">Moderation history</a> · <a href="/privacy/history/">Privacy history</a></p>`, status);
 }
 
 function validReplyTarget(value) {
@@ -95,7 +95,7 @@ function keyArgument(value) {
   if (new Set(["space", "period", "comma", "question", "exclamation", "apostrophe", "colon", "hyphen", "semicolon", "quote", "enter"]).has(value)) {
     return new Map([["space", " "], ["period", "."], ["comma", ","], ["question", "?"], ["exclamation", "!"], ["apostrophe", "'"], ["colon", ":"], ["hyphen", "-"], ["semicolon", ";"], ["quote", '"'], ["enter", "\n"]]).get(value);
   }
-  return /^[A-Za-z0-9@#$%&*+()_!'"/.,?-]$/u.test(value) ? value : undefined;
+  return /^[A-Za-z0-9@#$%&*+()_!'"/:;.,?-]$/u.test(value) ? value : undefined;
 }
 
 function appendDelta(draft, removed, added) {
@@ -635,6 +635,11 @@ async function renderKeyboard(request, env, state, url) {
     if (startPair) {
       const candidates = startAndEndMatches.filter((value) => (!insidePair || bodyPairs(value).includes(insidePair)) && wordsFor(value).length >= 2);
       const category = (value) => /^[\p{Lu}\p{M}\p{N}]+$/u.test(value) ? 2 : /^[\p{Lu}]/u.test(value) ? 1 : 0;
+      const byWord = new Map();
+      for (const value of candidates) {
+        const key = value.toLocaleLowerCase("en-US");
+        if (!byWord.has(key) || category(value) < category(byWord.get(key))) byWord.set(key, value);
+      }
       const matchingWords = [...byWord.values()].sort((left, right) => category(left) - category(right) || left.localeCompare(right, "en-US"));
       const pageWords = matchingWords.slice(offset, offset + 20);
       const wordLinks = await Promise.all(pageWords.map(async (item) => {
@@ -642,7 +647,6 @@ async function renderKeyboard(request, env, state, url) {
         const label = autoCase(item, context);
         return `<a rel="nofollow" aria-label="Add ${escapeHtml(label)}" href="${escapeHtml(await makeLink("pick", choice, true, ""))}">${escapeHtml(label)}</a>`;
       }));
-      const filters = [`START ${startPair}`, insidePair ? `INSIDE ${insidePair}` : "", endPair ? `END ${endPair}` : ""].filter(Boolean).join(" · ");
       const candidateHref = (nextOffset) => {
         const query = new URLSearchParams({ view: "prefix" });
         for (const [role, pair] of [["start", startPair], ["inside", insidePair], ["end", endPair]]) {
@@ -865,12 +869,17 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       const state = await findState(env, readWord(reviewMatch[1]));
       const draft = await loadDraft(env, state);
       if (!draft) throw new Error("Enter text before reviewing it.");
-      const activeReview = await env.RELAY_DB.prepare("SELECT c.expires_at AS cap_expires_at, p.expires_at AS draft_expires_at, p.state FROM html_keyboard_publish_links h JOIN capabilities c ON c.cap_hash = h.publish_cap_hash AND c.kind = 'publish' JOIN pending_messages p USING (pending_id) WHERE h.session_id = ?")
+      const activeReview = await env.RELAY_DB.prepare("SELECT h.state_id, h.recovery_key, h.publish_cap_hash, c.expires_at AS cap_expires_at, p.expires_at AS draft_expires_at, p.state FROM html_keyboard_publish_links h LEFT JOIN capabilities c ON c.cap_hash = h.publish_cap_hash AND c.kind = 'publish' LEFT JOIN pending_messages p USING (pending_id) WHERE h.session_id = ?")
         .bind(state.session_id).first();
-      if (activeReview && activeReview.cap_expires_at > Date.now() && activeReview.draft_expires_at > Date.now() && activeReview.state === "staged") throw new Error("A private publication draft is already active for this keyboard session. Use its review page, or wait for it to expire before reviewing again.");
-      await env.RELAY_DB.prepare("DELETE FROM html_keyboard_publish_links WHERE session_id = ?").bind(state.session_id).run();
+      const reviewLive = activeReview && activeReview.cap_expires_at > Date.now() && activeReview.draft_expires_at > Date.now() && activeReview.state === "staged";
+      if (reviewLive && (activeReview.state_id !== state.state_id || !activeReview.recovery_key)) {
+        const original = activeReview.state_id ? `${PREFIX}/review/${word(activeReview.state_id)}` : `${PREFIX}/state/${word(state.state_id)}`;
+        return page("Review already active", `<h1>Review already active</h1><p>This branch did not replace the existing private review. Nothing was published by this request.</p><p><a href="${escapeHtml(original)}">Return to the original draft review</a></p><p>For a review created before recovery support, wait for its expiry before reviewing again.</p>`, 409);
+      }
+      const recoveryKey = reviewLive ? activeReview.recovery_key : `keyboard-review:${state.session_id}:${state.state_id}:${activeReview?.publish_cap_hash || "initial"}`;
+      if (!reviewLive && activeReview) await env.RELAY_DB.prepare("DELETE FROM html_keyboard_publish_links WHERE session_id = ? AND publish_cap_hash = ?").bind(state.session_id, activeReview.publish_cap_hash).run();
       if (typeof createPublishDraft !== "function") throw new Error("The publication flow is unavailable.");
-      const pending = await createPublishDraft(request, draft, state.reply_to, state.session_id);
+      const pending = await createPublishDraft(request, draft, state.reply_to, state.session_id, state.state_id, recoveryKey);
       if (pending instanceof Response) return pending;
       const wordPublishCap = word(pending.publish_cap);
       const publishHref = `/publish?${new URLSearchParams({ cap: wordPublishCap })}`;
@@ -900,6 +909,10 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
   } catch (error) {
     const message = error instanceof Error ? error.message : "Keyboard request failed.";
     const status = /signing is not configured|storage|database|assets are unavailable|resource unavailable/u.test(message) ? 503 : /state limit|active session limit/u.test(message) ? 429 : /private publication draft is already active/u.test(message) ? 409 : /limit reached|Message limit/u.test(message) ? 413 : /expired|unavailable|already been used to publish/u.test(message) ? 410 : 400;
+    if (status === 429) {
+      const match = url.pathname.match(/\/(?:step|form)\/([^/]+)/u);
+      if (match) return page("Draft limit reached", `<h1>Draft limit reached</h1><p>${escapeHtml(message)}</p><p>This request did not publish. Saved branches remain available until session expiry.</p><p><a href="${PREFIX}/state/${escapeHtml(match[1])}">Return to the saved parent draft</a></p><p><a href="/commons">Read messages</a> · <a href="/moderation-log">Moderation history</a> · <a href="/privacy/history/">Privacy history</a></p>`, status);
+    }
     return fail(message, status);
   }
 }

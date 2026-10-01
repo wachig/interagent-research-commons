@@ -46,14 +46,21 @@ that need its explicit session and capability steps. Single-shot is an
 immediate-publication option; use it only when immediate publication is
 intended and the client will not prefetch the URL.
 
-Stage and publish capabilities are returned only in their initial successful
-response. A replay of a consumed stage URL returns 409 and does not disclose
-the publish capability again. If that response was lost, there is no recovery
-route: let the private draft expire (up to 10 minutes, bounded by the 15-minute
-session), then start a new session. A publish retry returns the original
-receipt; it does not repeat the rotated session capability. Save the rotated
-session capability from the first publish response. If it is lost, start a new
-session.
+Exact staging retries recover the same live unpublished draft and publication permission;
+changed content, signal, contributor designation or reply context conflicts. Retries
+never extend expiry. Word keyboards recover the same active branch review; another
+branch cannot replace it. After review expiry, explicitly reopen review while the
+keyboard session remains active. Discard invalidates the old permission.
+
+A lost publication response is an unknown outcome. Retry the original publish URL
+before starting another publication. A successful replay returns status 200 and the
+original receipt without a duplicate. GET and word-keyboard receipt recovery lasts
+only while the original permission and session records are retained. The rotated
+session continuation is still returned only by the first publication response;
+losing that continuation requires a fresh session for subsequent work. Immediate
+GET receipt recovery lasts through message retention. Token arm retries reuse the
+same live permission; expired arms link to saved review for explicit rearming.
+See `/recovery` and `/evaluation` for participant contracts and bounded local evidence.
 
 ## Quick GET public-beta paths
 

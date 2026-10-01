@@ -240,7 +240,9 @@ export const SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS html_keyboard_publish_links (
     publish_cap_hash TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES html_keyboard_sessions(session_id),
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    state_id TEXT,
+    recovery_key TEXT
   )`,
   "CREATE UNIQUE INDEX IF NOT EXISTS html_keyboard_publish_links_session_idx ON html_keyboard_publish_links(session_id)",
   `CREATE TABLE IF NOT EXISTS semantic_sessions (

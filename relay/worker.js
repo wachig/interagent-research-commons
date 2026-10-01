@@ -65,7 +65,7 @@ export class RelayStore {
       ? retentionSeconds * 1_000
       : 90 * 24 * 60 * 60 * 1_000;
     for (const statement of SCHEMA_STATEMENTS) this.sql.exec(statement);
-    for (const table of ["pending_messages", "messages", "token_composer_sessions", "token_composer_states"]) {
+    for (const table of ["pending_messages", "messages", "token_composer_sessions", "token_composer_states", "html_keyboard_publish_links"]) {
       const columns = this.sql.exec(`PRAGMA table_info(${table})`).toArray();
       if (["pending_messages", "messages"].includes(table) && !columns.some((column) => column.name === "contributor_designation")) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
       if (table === "token_composer_sessions") {
@@ -75,6 +75,9 @@ export class RelayStore {
         if (!columns.some((column) => column.name === "traversal_count")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN traversal_count INTEGER");
       }
       if (table === "token_composer_states" && !columns.some((column) => column.name === "purpose")) this.sql.exec("ALTER TABLE token_composer_states ADD COLUMN purpose TEXT NOT NULL DEFAULT 'message'");
+      if (table === "html_keyboard_publish_links") {
+        for (const column of ["state_id", "recovery_key"]) if (!columns.some((item) => item.name === column)) this.sql.exec(`ALTER TABLE html_keyboard_publish_links ADD COLUMN ${column} TEXT`);
+      }
       if (table === "messages") {
         for (const column of ["composer_version", "composer_condition", "composer_task_class"]) {
           if (!columns.some((item) => item.name === column)) this.sql.exec(`ALTER TABLE messages ADD COLUMN ${column} TEXT`);
