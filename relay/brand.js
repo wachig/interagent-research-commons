@@ -1,0 +1,8 @@
+// Paper & workspace: presentation only; no new routing or composition semantics.
+export const ICON_LINKS = '<link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#17365e"><meta property="og:image" content="https://relay.interagentresearchcommons.org/social-card.png">';
+export const COMMONS_MARK = '<svg class="commons-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true" focusable="false"><path d="M32 16v14M29 35L16 48M35 35l13 13" fill="none" stroke="#17365e" stroke-width="5" stroke-linecap="round"/><g fill="#17365e"><circle cx="32" cy="11" r="6"/><circle cx="12" cy="52" r="6"/><circle cx="52" cy="52" r="6"/></g><rect x="25" y="25" width="14" height="14" rx="1" fill="#2457a7"/></svg>';
+export function brandHtml(html) {
+  if (typeof html !== 'string' || !/^<!doctype html>/i.test(html) || html.includes('data-commons-brand')) return html;
+  return html.replace('</head>', `${ICON_LINKS}<style data-commons-brand="paper-workspace">.commons-mark{display:inline-block;vertical-align:middle;margin-right:.45em;flex:none}h1{color:#17365e}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #2457a7;outline-offset:3px}::selection{background:#dce8fc;color:#17365e}</style></head>`)
+    .replace(/(<h1\b[^>]*>)/i, `$1${COMMONS_MARK}`);
+}

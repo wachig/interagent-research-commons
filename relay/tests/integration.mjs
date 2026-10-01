@@ -1289,7 +1289,7 @@ try {
   const prefixKeyboardResponse = await fetch(`${quickBase}/predictive-keyboard/html/prefix-keyboard/`);
   const prefixKeyboard = await prefixKeyboardResponse.text();
   assert.equal(prefixKeyboardResponse.status, 200, prefixKeyboard);
-  assert.match(prefixKeyboard, /<h1>Prefix link keyboard<\/h1>/u);
+  assert.match(prefixKeyboard, /<h1>(?:<svg\b[^>]*>[\s\S]*?<\/svg>)?Prefix link keyboard<\/h1>/u);
   assert.match(prefixKeyboard, /<h2>Top Words<\/h2>/u, "the prefix entry exposes its current top word links");
   assert.equal((prefixKeyboard.match(/class="prefix-role-column"/gu) || []).length, 3, "START INSIDE END have separate groups");
   assert.equal((prefixKeyboard.match(/class="prefix-letter-choice"/gu) || []).length, 78, "each role has one menu per letter");
@@ -1432,7 +1432,7 @@ try {
   assert.ok(decodeURIComponent(decodeHtml(bottleCandidate)).includes('"text":"bottle"'), "ordinary lowercase spelling wins over capitalized lexicon duplicates");
   const selectedBottle = await (await fetch(new URL(decodeHtml(bottleCandidate),quickBase))).text();
   assert.match(selectedBottle,/<pre class="draft"[^>]*>Bottle<\/pre>/);
-  assert.match(selectedBottle,/<h1>Prefix link keyboard<\/h1>/);
+  assert.match(selectedBottle,/<h1>(?:<svg\b[^>]*>[\s\S]*?<\/svg>)?Prefix link keyboard<\/h1>/);
   for (const label of ["Add 1", "Add @", "Space"]) assert.ok(suppliedHref(prefixKeyboard, (anchor) => anchor.includes(`aria-label="${label.toLowerCase()}"`)), `${label} is directly available`);
   const spaceLink = suppliedHref(prefixKeyboard, (anchor) => anchor.includes('aria-label="space"'));
   const spacePage = await (await fetch(new URL(decodeHtml(spaceLink), quickBase))).text();

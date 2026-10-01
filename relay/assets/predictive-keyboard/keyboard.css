@@ -3,10 +3,10 @@
   --ink: #172333;
   --muted: #53657a;
   --line: #ccd6df;
-  --paper: #f4f6f7;
+  --paper: #ffffff;
   --card: #fff;
-  --green: #176b56;
-  --focus: #176b56;
+  --green: #2457a7;
+  --focus: #2457a7;
 }
 
 * { box-sizing: border-box; }
@@ -21,7 +21,7 @@ main { max-width: 900px; margin: 0 auto; padding: clamp(22px, 5vw, 56px); }
 h1 { margin: 0; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.08; letter-spacing: -.04em; }
 .intro { max-width: 68ch; margin: 12px 0 24px; color: var(--muted); font-size: 1.05rem; }
 nav { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 22px; }
-a { color: #155e66; text-underline-offset: 3px; }
+a { color: #2457a7; text-underline-offset: 3px; }
 .panel { margin: 14px 0; padding: clamp(15px, 3vw, 22px); border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
 .notice { padding: 12px; border-left: 4px solid #9a5a17; background: #fff8e8; }
 .publish-panel > p { max-width: 72ch; }

@@ -3,9 +3,14 @@ import assert from 'node:assert/strict';
 import {fixture,parse,decode} from './local-evaluation.mjs';
 const f=await fixture();let checked=0;const mismatches=[];
 try {
+for(const route of ['/favicon.svg','/favicon.ico','/favicon-48.png','/apple-touch-icon.png','/apple-touch-icon-precomposed.png','/icon-192.png','/icon-512.png','/site.webmanifest','/social-card.png']){
+ const get=await f.request(route,{html:true});assert.equal(get.status,200,`Brand asset ${route}`);
+ const head=await f.request(route,{method:'HEAD',html:true});assert.equal(head.status,200);assert.equal(head.text,'');
+ const post=await f.request(route,{method:'POST',html:true});assert.equal(post.status,405,'Brand assets cannot publish');
+}
 async function page(url){const r=await f.request(url,{html:true});assert.equal(r.status,200,`${r.status}: ${r.text.slice(0,120)}`);const p=parse(r.text,r.url);if(p.draft===' ')p.draft='';return p;}
 function find(p,label){const l=p.links.find(l=>l.text===label||l['aria-label']===label);assert.ok(l,`Missing ${label}`);return l.url;}
-function shell(p){for(const [text,path] of [['Return to Relay home','/'],['Privacy','/privacy'],['Policy','/participation-policy']])assert.ok(p.links.some(l=>l.text===text&&new URL(l.url).pathname===path),`Missing ${text}`);for(const label of ['About this keyboard','Instructions'])assert.ok(p.html.includes(`<summary>${label}</summary>`),`Missing ${label}`);}
+function shell(p){assert.ok(p.html.includes('data-commons-brand="paper-workspace"'),"Shared identity present");assert.ok(p.html.includes('href="/site.webmanifest"'),"Manifest discoverable");assert.ok(p.html.includes('class="commons-mark"'),"Decorative commons mark present");for(const [text,path] of [['Return to Relay home','/'],['Privacy','/privacy'],['Policy','/participation-policy']])assert.ok(p.links.some(l=>l.text===text&&new URL(l.url).pathname===path),`Missing ${text}`);for(const label of ['About this keyboard','Instructions'])assert.ok(p.html.includes(`<summary>${label}</summary>`),`Missing ${label}`);}
 const expected=label=>label==='Space'?' ':label==='↵'?'\n':label.startsWith('Uppercase ')?label.slice(-1).toUpperCase():label;
 for(const route of ['/predictive-keyboard/html/word-links/','/predictive-keyboard/html/prefix-keyboard/','/predictive-keyboard/html/chunk-keyboard-3/']){
  const root=await page(route);shell(root);const chunk=route.includes('chunk-keyboard');
