@@ -535,9 +535,9 @@
   "required_successes": 210,
   "heartbeat_id": "relay-keyboard-verification",
   "status": "active",
-  "updated_at": "2026-10-02T18:27:46.500Z",
+  "updated_at": "2026-10-02T20:02:46.295675+00:00",
   "next_work": "No active testers. Before00:00UTC2026-10-03 stay quiet unless actionable state changes; do not dispatch doomed tests under exhausted database write allowance. After reset use one bounded unpublished canary, require successful draft start and recorded native telemetry, pin current release, then fresh Luna for unfilled P03 methods using tester-instructions.md. All210criteria remain pending; heartbeat staysactive.",
-  "deployed_release": "6d1cc6bc-7166-4036-8bd8-a3a51170b9f0",
+  "deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
     "observed_at": "2026-10-02T19:51:25Z",
@@ -551,6 +551,9 @@
     "public_bootstrap_status": 200,
     "public_stored_message_status": 500,
     "private_export_status": 500,
-    "read_recovery_confirmed": false
+    "read_recovery_confirmed": false,
+    "recovery_deployed_commit": "f38cbd8",
+    "recovery_deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
+    "index_live_installation_confirmed": false
   }
 }
