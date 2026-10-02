@@ -145,8 +145,9 @@ function slotRows(stateId, document, selectedFrame, selected) {
 async function renderState(request, env, state, extra = {}) {
   const draft = await loadDraft(env, state);
   const document = stateDocument(state);
-  const requestedFrame = extra.frame === undefined ? document.frames.length - 1 : Number(extra.frame);
-  const frameIndex = Number.isSafeInteger(requestedFrame) && requestedFrame >= 0 && requestedFrame < document.frames.length ? requestedFrame : Math.max(0, document.frames.length - 1);
+  const requestedFrame = extra.frame == null ? document.frames.length - 1 : Number(extra.frame);
+  if (document.frames.length && (!Number.isSafeInteger(requestedFrame) || requestedFrame < 0 || requestedFrame >= document.frames.length)) throw new TypeError("Choose a frame shown in this draft.");
+  const frameIndex = Math.max(0, requestedFrame);
   const frame = document.frames[frameIndex];
   const slotId = frame ? selectedSlot(document, frameIndex, extra.slot || "") : "";
   const preview = document.frames.length ? renderFrameDocument(document) : "Choose a sentence frame to start.";
@@ -156,7 +157,8 @@ async function renderState(request, env, state, extra = {}) {
   const undo = state.parent_state_id ? `<a class="control" href="${escapeHtml(stateHref(state.parent_state_id))}">Undo last change</a>` : "";
   let content = `<header class="top"><div><h1>Frame Keyboard</h1><p><a href="/">Return to Relay home</a> · <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p><details><summary>About this keyboard</summary><p>Hand-authored sentence structures with editable slots. Shortcuts are fixed additions, not model predictions. <a href="${escapeHtml(frameHome(state.reply_to || ""))}">Start a new Frame draft</a>.</p></details></div><section><h2>Current draft · ${bytes} / ${MAX_BODY_BYTES} UTF-8 bytes</h2><pre class="draft">${escapeHtml(draft || "(empty)")}</pre><p class="notice">${state.reply_to ? `Reply to ${escapeHtml(state.reply_to)} · ` : ""}This frame preview may include unfinished slot markers; only the text above is stored.</p></section></header>`;
   if (document.frames.length) {
-    content += `<section class="panel"><h2>Frame preview</h2><pre class="draft">${escapeHtml(preview)}</pre><p class="hint">Select a slot to edit it. Required slots must be filled before review.</p><div>${slotRows(state.state_id, document, frameIndex, slotId)}</div></section>`;
+    const sentences = document.frames.length > 1 ? `<nav class="tools" aria-label="Sentence navigation">${document.frames.map((block, index) => index === frameIndex ? `<span aria-current="true">Editing sentence ${index + 1}</span>` : `<a href="${escapeHtml(stateHref(state.state_id, { frame: index }))}">Edit sentence ${index + 1} · ${escapeHtml(block.definition.label)}</a>`).join("")}</nav>` : "";
+    content += `${sentences}<section class="panel"><h2>Frame preview</h2><pre class="draft">${escapeHtml(preview)}</pre><p class="hint">Select a slot to edit it. Required slots must be filled before review.</p><div>${slotRows(state.state_id, document, frameIndex, slotId)}</div></section>`;
     if (frame && slotId) {
       const value = frame.slots[slotId].value;
       const shortcuts = (SLOT_CHOICES[slotId] || []).map((choice) => makeActionLink(env, state, { type: "replace", frame: frameIndex, slot: slotId, value: choice }, choice, { frame: frameIndex, slot: slotId }));
@@ -212,14 +214,14 @@ async function renderWords(request, env, state, params) {
 
 async function renderCharacters(state, extra) {
   const document = stateDocument(state);
-  const fi = extra.frame === undefined ? document.frames.length - 1 : Number(extra.frame);
+  const fi = extra.frame == null ? document.frames.length - 1 : Number(extra.frame);
   if (!Number.isSafeInteger(fi) || fi < 0 || fi >= document.frames.length) throw new TypeError("Choose a frame shown in this draft.");
   const si = extra.slot || "";
   const block = document.frames[fi];
   if (!block || !Object.hasOwn(block.slots, si)) throw new TypeError("Choose a slot before composing characters.");
   const range = extra.unicode || "";
-  const href = (value) => makeActionLink(state.env, state, { type: "append-char", frame: fi, slot: si, value }, displayChar(value), { frame: fi, slot: si });
-  const backspace = block.slots[si].value ? await makeActionLink(state.env, state, { type: "backspace", frame: fi, slot: si }, "Backspace", { frame: fi, slot: si }) : "";
+  const href = (value) => makeActionLink(state.env, state, { type: "append-char", frame: fi, slot: si, value, return_view: "characters", unicode: range }, displayChar(value), { frame: fi, slot: si });
+  const backspace = block.slots[si].value ? await makeActionLink(state.env, state, { type: "backspace", frame: fi, slot: si, return_view: "characters", unicode: range }, "Backspace", { frame: fi, slot: si }) : "";
   const ascii = !range ? (await Promise.all(ASCII_KEYS.map(href))).join("") : "";
   let unicode = "";
   if (!range) unicode = unicodeChoices("").map((prefix) => `<a href="${escapeHtml(pathUrl(`/characters/${token(state.state_id)}`, { frame: fi, slot: si, unicode: prefix }))}">${prefix.toUpperCase()}…</a>`).join("");
@@ -286,6 +288,10 @@ export async function handleFrameKeyboard(request, env, url, createPublishDraft,
       const cap = url.searchParams.get("cap") || "";
       const op = JSON.parse(raw);
       if (url.searchParams.size !== 2 || url.searchParams.getAll("op").length !== 1 || url.searchParams.getAll("cap").length !== 1 || await signCommonWordRoute(env, "frame-action", state.state_id, childId, raw) !== cap || await signCommonWordRoute(env, "frame-child-state", state.state_id, raw) !== childId) throw new TypeError("Frame action signature is invalid.");
+      if (op.return_view !== undefined) {
+        if (op.return_view !== "characters" || !["append-char", "backspace"].includes(op.type) || typeof op.unicode !== "string") throw new TypeError("Frame action return view is invalid.");
+        unicodeChoices(op.unicode);
+      }
       const oldDraft = await loadDraft(env, state);
       const doc = stateDocument(state);
       let next;
@@ -299,6 +305,7 @@ export async function handleFrameKeyboard(request, env, url, createPublishDraft,
       else if (op.type === "backspace" && Number.isSafeInteger(op.frame) && typeof op.slot === "string") next = backspaceFrameSlot(doc, op.slot, op.frame);
       else throw new TypeError("Frame action is not supported.");
       const state2 = await createDocumentChild(env, state, oldDraft, next.document, op, "Frame change");
+      if (op.return_view === "characters") return await renderCharacters({ ...state2, env }, { frame: op.frame, slot: op.slot, unicode: op.unicode });
       return await renderState(request, env, state2, { frame: op.frame, slot: op.slot });
     }
     const reviewMatch = path.match(/^\/predictive-keyboard\/html\/frame-keyboard\/review\/([^/]+)$/u);

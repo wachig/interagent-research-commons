@@ -30,3 +30,7 @@ The older Semantic Composer plan shares infrastructure concepts but describes ap
 2. Ship the separate no-JavaScript `/predictive-keyboard/html/frame-keyboard/` route with a versioned method-registry entry; no compatibility keyboard or existing menu entry is removed.
 3. Verify immutable slot edits and frame changes, exact rendering, Unicode, review rejection for incomplete slots, reply, expiry, publication, and recovery.
 4. Keep Frame labeled unevaluated. Run the 24-example paired comparison with the held-out user phrases only after the user signals that the competing keyboard is frozen and ready.
+
+## Focused navigation correction (2026-10-01)
+
+Character selections and Backspace issued by the exact lane return directly to that lane, retaining the chosen sentence, slot and Unicode range. Return-view metadata is part of the signed operation; existing issued links retain their original behavior. Default state links select the last sentence, and supplied sentence-navigation links allow earlier slots to be revised without changing later sentences. Navigation itself creates no saved text state. Regression coverage checks consecutive literal characters, character retry, consecutive supplementary-plane characters, Backspace, earlier-sentence revision and default Undo navigation. The standard Relay suite now includes Frame; production smoke expectations reflect registry 2.0.0 and seven keyboards. The comparative-efficiency gate remains unpassed.
