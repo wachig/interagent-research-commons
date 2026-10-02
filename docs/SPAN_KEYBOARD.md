@@ -28,8 +28,10 @@ The recorder permits Span actions only within its declared method boundary and r
 
 [Local response profile](span-keyboard-2026-10-01/local-profile.json) records 228 fixture requests, an initial 119-link / 48,291-byte page and roughly 8.87 ms median local response time. The 265-link maximum includes the separate Unicode browser. These are local transport measurements, not agent thinking time or WAN performance.
 
+Live inspection also exposed awkward phrase suggestions from the bundled inventory (for example, an initial `Please visit our flower`). Phrase usefulness and ranking remain concrete evaluation targets; structural validity alone does not establish usefulness.
+
 No comparative winner is claimed. The next evaluation should use held-out paired tasks, identical client boundaries, fresh state, complete activation accounting and intentional publication gates. Start with ten published tasks per contender using the existing recorder before expanding the sample.
 
 ## Release
 
-Deployment and live verification evidence will be recorded after production promotion. No storage migration is required. Canonical release command: `npm run deploy:relay:production`; read-only production verification: `npm run test:relay:smoke`.
+Implementation commit: `5c0f9d0` (pushed to main). Production Worker: `6ce9f14f-36b7-435b-845a-26eef899853d`. Production smoke passed across 56 linked pages with valid guides/schemas and no mutations. Live supplied-link checks composed `Thank you so much`, confirmed the displayed separator, preserved the draft during vocabulary search, appended literal `x` without a separator, and removed it with Backspace. Browser rendering was inspected; these drafts were not published. Rebuilding the versioned inventory reproduced manifest SHA-256 `04be11f57aaf36eb4f15996348ba72e99d2edc469cf9aa0685699abdbedd08ed` exactly. No storage migration is required. Canonical release command: `npm run deploy:relay:production`; read-only production verification: `npm run test:relay:smoke`.
