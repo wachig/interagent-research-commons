@@ -29,6 +29,7 @@
     "test:relay:optimizations": "node relay/tests/keyboard-optimizations.mjs",
     "test:relay:short-word": "node relay/tests/short-word-keyboard.mjs",
     "test:relay:span": "node relay/tests/span-keyboard.mjs",
+    "test:relay:frame": "node relay/tests/frame-keyboard.mjs",
     "build:relay:span": "python3 relay/semantic/build-span.py"
   },
   "devDependencies": {

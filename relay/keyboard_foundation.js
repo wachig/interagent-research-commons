@@ -163,6 +163,7 @@ export function keyboardErrorStatus(message) {
 export function keyboardIdentity(url) {
   const path = url.pathname;
   if (path.startsWith("/compose/token/")) return { interface: "token", adapter: "utf8-bytes-v1" };
+  if (path.startsWith("/predictive-keyboard/html/frame-keyboard")) return { interface: "frame", adapter: "structured-frame-text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/chunk-keyboard-3")) return { interface: "chunk", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/chunk-keyboard-2")) return { interface: "chunk-2-historical", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/prefix-keyboard") || (path.startsWith("/predictive-keyboard/html/word-links") && url.searchParams.get("view") === "prefix")) return { interface: "prefix", adapter: "text-snapshot-v1" };

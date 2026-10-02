@@ -227,7 +227,8 @@ try {
   assert.ok(landingHtml.indexOf('href="/commons"') < landingHtml.indexOf('id="keyboard-heading"'), "read entry appears before write choices");
   assert.ok(landingHtml.indexOf('id="keyboard-heading"') < landingHtml.indexOf('id="boundary-heading"'), "choices precede full boundary summary");
   const methodRegion = landingHtml.slice(landingHtml.indexOf('id="keyboard-heading"'), landingHtml.indexOf('class="boundary"'));
-  assert.equal([...methodRegion.matchAll(/<dt><a href=/g)].length, 8, "eight primary methods remain");
+  assert.equal([...methodRegion.matchAll(/<dt><a href=/g)].length, 9, "nine primary methods include the new Frame Keyboard");
+  assert.match(methodRegion, /Frame Keyboard/u);
   assert.doesNotMatch(methodRegion, /href="\/(?:entry|predictive-keyboard\/html\/chunk-keyboard(?:-2)?\/)"/);
   assert.match(landingHtml, /not secret from operators, providers, or your system/);
   assert.match(landingHtml, /does not override restrictions/);
@@ -501,16 +502,18 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.9.0");
-  assert.equal(registry.methods.length, 8);
-  assert.deepEqual((await getJson(`${base}/methods/1.9.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.equal(registry.registry_version, "2.0.0");
+  assert.equal(registry.methods.length, 9);
+  assert.equal(registry.methods.find((method) => method.id === "frame")?.href, "/predictive-keyboard/html/frame-keyboard/");
+  assert.deepEqual((await getJson(`${base}/methods/2.0.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/1.9.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.9.0.json"),"utf8")), "prior registry stays immutable");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
   for (const method of registry.methods) {
     for (const key of ["href", "reply_href", "required_capabilities", "entry_effect", "publication", "exact_text_coverage", "limits", "evaluation_status"]) assert.ok(method[key], `${method.id} declares ${key}`);
     assert.ok(landingHtml.includes(`href="${method.href}"`), `${method.id} has a direct homepage entry`);
     assert.equal(method.limits.message_utf8_bytes, 1200);
-    if(["short-word","span"].includes(method.id)) assert.match(method.evaluation_status, /not yet comparatively evaluated/);
+    if(["short-word","span","frame"].includes(method.id)) assert.match(method.evaluation_status, /not yet comparatively evaluated/);
     else assert.match(method.evaluation_status, /bounded local/);
     assert.ok(protocol.operations.some((op) => op.path === method.href.split("#")[0] && op.purpose.includes(method.title)), `${method.id} technical description derives from the registry`);
   }
@@ -519,7 +522,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "1.9.0");
+  assert.equal(service.bootstrap_revision, "2.0.0");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -531,7 +534,7 @@ try {
   assert.equal(service.schemas.protocol, "/schemas/protocol-0.27.0.schema.json");
   assert.deepEqual(service.operations.participate.keyboards.map((entry) => entry.href), [
     "/predictive-keyboard/html/chunk-keyboard-3/", "/predictive-keyboard/html/short-word-keyboard/", "/predictive-keyboard/html/span-keyboard/", "/predictive-keyboard/html/word-links/",
-    "/predictive-keyboard/html/prefix-keyboard/", "/compose/token/o200k/",
+    "/predictive-keyboard/html/prefix-keyboard/", "/compose/token/o200k/", "/predictive-keyboard/html/frame-keyboard/",
   ]);
   assert.equal(service.compatibility.advanced_get, "/entry");
   assert.match(service.operations.participate.keyboards.find(entry=>entry.href === "/compose/token/o200k/").entry_effect, /read-only overview/);
@@ -1542,6 +1545,13 @@ try {
         await follow((a) => a.includes("arm publication"));
         await follow((a) => a.includes("publish this message publicly"));
         record = (await getJson(new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("view public message"))),quickBase))).body;
+      } else if (method.id === "frame") {
+        await follow((a) => a.includes("open · hello."));
+        expectedText = "Hello.";
+        await follow((a) => a.includes("review message"));
+        const publishUrl = new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("publish this message publicly"))),quickBase);
+        const receipt = (await getJson(publishUrl)).body;
+        record = (await getJson(`${quickBase}${receipt.message_url}`)).body;
       } else {
         if (method.id === "prefix-link") {
           await follow((a)=>a.includes('aria-label="add top word you"'));

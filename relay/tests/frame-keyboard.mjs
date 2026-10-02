@@ -1,0 +1,115 @@
+import assert from 'node:assert/strict';
+import { fixture, parse } from '../tools/local-evaluation.mjs';
+import { appendFrameSlotText, changeLastFrame, convertFrameToPlainText, createFrameDocument, fillFrameSlot, frameIsComplete, renderFrameDocument } from '../frame_document.js';
+import { keyboardIdentity, KEYBOARD_FOUNDATION_VERSION } from '../keyboard_foundation.js';
+import { decodeCommonWordRouteToken } from '../token_composer.js';
+
+const frame = fillFrameSlot(createFrameDocument('request-could'), 'action', 'restart the scanner');
+assert.equal(renderFrameDocument(frame.document, { placeholders: false }), 'Could you restart the scanner?');
+assert.equal(frameIsComplete(frame.document), true);
+assert.equal(renderFrameDocument(convertFrameToPlainText(frame.document).document, { placeholders: false }), 'Could you restart the scanner?');
+assert.equal(renderFrameDocument(changeLastFrame(frame.document, 'hello').document, { placeholders: false }), 'Hello.');
+assert.equal(renderFrameDocument(appendFrameSlotText(createFrameDocument('free-text'), 'text', 'Keep\tspacing\n').document, { placeholders: false }), 'Keep\tspacing\n');
+assert.throws(() => fillFrameSlot(createFrameDocument('request-could'), 'missing', 'text'));
+assert.equal(keyboardIdentity(new URL('https://relay.invalid/predictive-keyboard/html/frame-keyboard/state/a')).adapter, 'structured-frame-text-snapshot-v1');
+
+const service = await fixture();
+const html = async (route) => {
+  const result = await service.request(route, { html: true });
+  return { ...result, ...parse(result.text, result.url) };
+};
+const click = (page, labelOrTest) => {
+  const link = page.links.find(typeof labelOrTest === 'string' ? (item) => item.text === labelOrTest : labelOrTest);
+  assert.ok(link, `Missing Frame Keyboard link: ${labelOrTest}`);
+  return new URL(link.url).pathname + new URL(link.url).search;
+};
+try {
+  const methods = (await service.request('/methods.json')).body;
+  assert.equal(methods.registry_version, '2.0.0');
+  const entry = methods.methods.find((method) => method.id === 'frame');
+  assert.ok(entry);
+  let page = await html(entry.href);
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get('x-relay-keyboard'), 'frame');
+  assert.equal(page.headers.get('x-relay-keyboard-backend'), KEYBOARD_FOUNDATION_VERSION);
+  assert.equal(page.headers.get('x-relay-keyboard-adapter'), 'structured-frame-text-snapshot-v1');
+  page = await html(click(page, (item) => /start\//u.test(item.url) && item.text.includes('Could you')));
+  assert.equal(page.status, 200);
+  assert.match(page.text, /Frame preview/u);
+  const stateToken = new URL(page.links.find((item) => item.text === 'Browse words').url).pathname.split('/').at(-1);
+  assert.equal((await html(`/predictive-keyboard/html/frame-keyboard/review/${stateToken}`)).status, 400, 'incomplete frames cannot be reviewed');
+  page = await html(click(page, 'restart the device'));
+  assert.equal(page.draft, 'Could you restart the device?');
+  assert.match(page.text, /Convert to ordinary text/u);
+  page = await html(click(page, 'open the settings'));
+  assert.equal(page.draft, 'Could you open the settings?');
+  page = await html(click(page, 'Undo last change'));
+  assert.equal(page.draft, 'Could you restart the device?');
+  page = await html(click(page, 'Open · Hello.'));
+  assert.equal(page.draft, 'Hello.');
+  page = await html(click(page, 'Undo last change'));
+  assert.equal(page.draft, 'Could you restart the device?');
+  page = await html(click(page, 'Add: Thanks for [event].'));
+  page = await html(click(page, 'checking the readings'));
+  assert.equal(page.draft, 'Could you restart the device? Thanks for checking the readings.');
+  page = await html(click(page, 'Convert to ordinary text'));
+  assert.equal(page.draft, 'Could you restart the device? Thanks for checking the readings.');
+  const state = new URL(page.url).pathname.split('/').at(-1);
+  const review = await html(`/predictive-keyboard/html/frame-keyboard/review/${state}`);
+  assert.equal(review.status, 200);
+  const discard = await html(click(review, 'Edit message and discard this private draft'));
+  assert.equal(discard.status, 200);
+  assert.match(discard.text, /Nothing was published/u);
+  const reviewAgain = await html(`/predictive-keyboard/html/frame-keyboard/review/${state}`);
+  const published = await html(click(reviewAgain, 'Publish this message publicly'));
+  assert.equal(published.status, 201);
+  const receipt = new URL(click(published, (item) => /\/message\/IARC-M-/u.test(item.url)), service.base);
+  assert.equal((await service.request(receipt.pathname.replace(/\/view$/u, ''))).body.body, 'Could you restart the device? Thanks for checking the readings.');
+
+  let free = await html(entry.href);
+  free = await html(click(free, (item) => /start\//u.test(item.url) && item.text.includes('Write a sentence')));
+  free = await html(click(free, 'Compose exact text'));
+  free = await html(click(free, 'Line break'));
+  assert.equal(free.draft, '\n');
+  free = await html(click(free, 'Compose exact text'));
+  const selectRange = (prefix) => {
+    const found = free.links.find((item) => new URL(item.url).searchParams.get('unicode') === prefix);
+    assert.ok(found, `Missing Unicode range ${prefix}; choices: ${free.links.map((item) => new URL(item.url).searchParams.get('unicode')).filter(Boolean).join(',')}`);
+    return new URL(found.url).pathname + new URL(found.url).search;
+  };
+  for (const prefix of ['01', '01f', '01f6']) free = await html(selectRange(prefix));
+  free = await html(click(free, '😀'));
+  assert.equal(free.draft, '\n😀');
+  const freeState = new URL(free.url).pathname.split('/').at(-1);
+  const freeReview = await html(`/predictive-keyboard/html/frame-keyboard/review/${freeState}`);
+  assert.equal(freeReview.status, 200);
+  const freePublished = await html(click(freeReview, 'Publish this message publicly'));
+  const freeReceipt = new URL(click(freePublished, (item) => /\/message\/IARC-M-/u.test(item.url)), service.base);
+  assert.equal((await service.request(freeReceipt.pathname.replace(/\/view$/u, ''))).body.body, '\n😀');
+
+  let expiring = await html(entry.href);
+  expiring = await html(click(expiring, (item) => /start\//u.test(item.url) && item.text.includes('Good morning')));
+  const reviewHref = expiring.links.find((item) => item.text === 'Review message').url;
+  const expiringState = new URL(reviewHref).pathname.split('/').at(-1);
+  const expiringId = decodeCommonWordRouteToken(expiringState);
+  const session = (await service.sql('SELECT session_id FROM html_keyboard_states WHERE state_id = ?', expiringId))[0];
+  assert.ok(session);
+  await service.sql('UPDATE html_keyboard_sessions SET expires_at = 1 WHERE session_id = ?', session.session_id);
+  const expiredPage = await html(`/predictive-keyboard/html/frame-keyboard/state/${expiringState}`);
+  assert.equal(expiredPage.status, 410);
+  assert.match(expiredPage.text, /session expired or is unavailable/u);
+  assert.ok(expiredPage.links.some((item) => item.url.endsWith('/predictive-keyboard/html/frame-keyboard/')));
+
+  const seed = await service.request('/quick/one-shot?' + new URLSearchParams({ message: 'A local reply target.', confirm: 'publish-public-message', request_id: crypto.randomUUID() }));
+  let reply = await html(entry.reply_href.replace('{message_id}', seed.body.message_id));
+  reply = await html(click(reply, (item) => /start\//u.test(item.url) && item.text.includes('Hello.')));
+  const replyState = new URL(reply.links.find((item) => item.text === 'Review message').url).pathname.split('/').at(-1);
+  const replyReview = await html(`/predictive-keyboard/html/frame-keyboard/review/${replyState}`);
+  const replyPublished = await html(click(replyReview, 'Publish this message publicly'));
+  const replyMessage = (await service.sql('SELECT body, reply_to FROM messages WHERE reply_to = ? ORDER BY created_at DESC LIMIT 1', seed.body.message_id))[0];
+  assert.equal(replyMessage.body, 'Hello.');
+  assert.equal(replyMessage.reply_to, seed.body.message_id);
+  console.log('Frame Keyboard: catalogue, slot replacement, frame change/undo, multi-frame text, plain-text conversion, incomplete-review block, discard, publication, exact newline/emoji, reply, and same-keyboard expiry recovery passed.');
+} finally {
+  await service.close();
+}
