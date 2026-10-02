@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { fixture, parse } from '../tools/local-evaluation.mjs';
-import { appendFrameSlotText, changeLastFrame, convertFrameToPlainText, createFrameDocument, fillFrameSlot, frameIsComplete, renderFrameDocument } from '../frame_document.js';
+import { appendFrameSlotText, changeLastFrame, convertFrameToPlainText, createFrameDocument, fillFrameSlot, frameIsComplete, renderFrameDocument, validateFrameDocument, FRAME_CATALOGUE } from '../frame_document.js';
 import { keyboardIdentity, KEYBOARD_FOUNDATION_VERSION } from '../keyboard_foundation.js';
 import { decodeCommonWordRouteToken } from '../token_composer.js';
 
@@ -12,6 +12,18 @@ assert.equal(renderFrameDocument(changeLastFrame(frame.document, 'hello').docume
 assert.equal(renderFrameDocument(appendFrameSlotText(createFrameDocument('free-text'), 'text', 'Keep\tspacing\n').document, { placeholders: false }), 'Keep\tspacing\n');
 assert.throws(() => fillFrameSlot(createFrameDocument('request-could'), 'missing', 'text'));
 assert.equal(keyboardIdentity(new URL('https://relay.invalid/predictive-keyboard/html/frame-keyboard/state/a')).adapter, 'structured-frame-text-snapshot-v1');
+
+for (const item of FRAME_CATALOGUE) validateFrameDocument(createFrameDocument(item.id));
+for (const segment of [null, undefined, 3, 'bad', [], ['bad'], {}, {slot: 'text'}, {slot: 'text', label: 'sentence', extra: true}, {text: 'ok', extra: true}, {text: '\uD800'}, {text: '\u0000'}]) {
+  const invalid = createFrameDocument('free-text');
+  invalid.frames[0].definition.segments.push(segment);
+  assert.throws(() => validateFrameDocument(invalid), TypeError, 'Malformed segments are rejected before rendering');
+}
+const assertOrientation = (page) => {
+  for (const label of ['Return to Relay home', 'Privacy', 'Policy']) assert.ok(page.links.some((link) => link.text === label));
+  for (const summary of ['About this keyboard', 'Instructions']) assert.ok(page.text.includes(`<summary>${summary}</summary>`));
+  assert.ok(!/<(?:script|form|input|textarea)\b/iu.test(page.text));
+};
 
 const service = await fixture();
 const html = async (route) => {
@@ -25,10 +37,15 @@ const click = (page, labelOrTest) => {
 };
 try {
   const methods = (await service.request('/methods.json')).body;
-  assert.equal(methods.registry_version, '2.0.0');
+  assert.equal(methods.registry_version, '2.0.1');
   const entry = methods.methods.find((method) => method.id === 'frame');
   assert.ok(entry);
+  assert.match(entry.entry_effect, /read-only.*selecting a frame creates/u);
+  assert.equal((await service.request('/methods/2.0.0.json')).body.methods.find((method) => method.id === 'frame').entry_effect, 'temporary unpublished session', 'Historical registry stays unchanged');
+  const sessionsBeforeEntry = await service.sql('SELECT COUNT(*) AS n FROM html_keyboard_sessions');
   let page = await html(entry.href);
+  assert.deepEqual(await service.sql('SELECT COUNT(*) AS n FROM html_keyboard_sessions'), sessionsBeforeEntry, 'Entry menu creates no session');
+  assertOrientation(page);
   assert.equal(page.status, 200);
   assert.equal(page.headers.get('x-relay-keyboard'), 'frame');
   assert.equal(page.headers.get('x-relay-keyboard-backend'), KEYBOARD_FOUNDATION_VERSION);
@@ -36,6 +53,7 @@ try {
   page = await html(click(page, (item) => /start\//u.test(item.url) && item.text.includes('Could you')));
   assert.equal(page.status, 200);
   assert.match(page.text, /Frame preview/u);
+  assertOrientation(page);
   const stateToken = new URL(page.links.find((item) => item.text === 'Browse words').url).pathname.split('/').at(-1);
   assert.equal((await html(`/predictive-keyboard/html/frame-keyboard/review/${stateToken}`)).status, 400, 'incomplete frames cannot be reviewed');
   page = await html(click(page, 'restart the device'));
@@ -79,9 +97,18 @@ try {
   const receipt = new URL(click(published, (item) => /\/message\/IARC-M-/u.test(item.url)), service.base);
   assert.equal((await service.request(receipt.pathname.replace(/\/view$/u, ''))).body.body, 'Could you restart the device? Thanks for checking the readings.');
 
+  let slotLabels = await html(entry.href);
+  slotLabels = await html(click(slotLabels, (item) => /start\//u.test(item.url) && item.text.includes('Why did')));
+  const actionEdit = slotLabels.links.find((item) => item.text === 'Edit slot');
+  assert.equal(actionEdit['aria-label'], 'Edit slot action in sentence 1');
+  slotLabels = await html(click(slotLabels, 'Edit slot'));
+  assert.equal(slotLabels.links.find((item) => item.text === 'Edit slot')['aria-label'], 'Edit slot subject in sentence 1');
+  assertOrientation(await html(click(slotLabels, 'Browse words')));
+
   let free = await html(entry.href);
   free = await html(click(free, (item) => /start\//u.test(item.url) && item.text.includes('Write a sentence')));
   free = await html(click(free, 'Compose exact text'));
+  assertOrientation(free);
   const firstChar = click(free, 'x');
   free = await html(firstChar);
   assert.equal(free.draft, 'x');

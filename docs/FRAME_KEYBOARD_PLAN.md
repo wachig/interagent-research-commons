@@ -29,10 +29,16 @@ The older Semantic Composer plan shares infrastructure concepts but describes ap
 1. Recheck the shared keyboard state schema and publication callbacks; Frame uses their existing temporary session/state tables.
 2. Ship the separate no-JavaScript `/predictive-keyboard/html/frame-keyboard/` route with a versioned method-registry entry; no compatibility keyboard or existing menu entry is removed.
 3. Verify immutable slot edits and frame changes, exact rendering, Unicode, review rejection for incomplete slots, reply, expiry, publication, and recovery.
-4. Keep Frame labeled unevaluated. Run the 24-example paired comparison with the held-out user phrases only after the user signals that the competing keyboard is frozen and ready.
+4. Keep Frame labeled unevaluated. Keep the separately authored 24-example development feasibility comparison separate from the ten held-out user evaluation phrases. Run the held-out paired evaluation only after the user signals that participating keyboards are frozen and ready.
 
 ## Focused navigation correction (2026-10-01)
 
 Character selections and Backspace issued by the exact lane return directly to that lane, retaining the chosen sentence, slot and Unicode range. Return-view metadata is part of the signed operation; existing issued links retain their original behavior. Default state links select the last sentence, and supplied sentence-navigation links allow earlier slots to be revised without changing later sentences. Navigation itself creates no saved text state. Regression coverage checks consecutive literal characters, character retry, consecutive supplementary-plane characters, Backspace, earlier-sentence revision and default Undo navigation. The standard Relay suite now includes Frame; production smoke expectations reflect registry 2.0.0 and seven keyboards. The comparative-efficiency gate remains unpassed.
 
 Correction release: commit `8ba6ec1`, production Worker `566fac98-a230-4b38-a9b9-1af18c658bdd`. Frame, foundation and all-nine-method integration tests passed. Production smoke passed 56 linked pages. A separate 14-request supplied-link check used an unpublished temporary draft to verify earlier-sentence navigation/revision, default Undo selection, consecutive literal selections, Backspace lane persistence and return to the current slot. No message was published by that live check. Held-out phrases were not used.
+
+## Small contract and shell corrections (2026-10-01)
+
+Malformed frame segments (including null, primitive and array values) are rejected by validation before rendering. Slot edit links identify their sentence and slot to assistive technology. A shared Frame orientation fragment restores Home, Privacy, Policy, About and Instructions on the menu, state, word and character pages; colors use the existing keyboard workspace palette and the already shared brand/focus treatment. Registry 2.0.1 describes entry as read-only, with session creation occurring on frame selection; historical 2.0.0 is preserved.
+
+A separate audit is still needed for Frame-specific concurrent action retries, quota exhaustion, lost publication responses, HEAD non-mutation and comprehensive tampering/byte-limit paths. These broader checks were not performed in this correction. The comparative-efficiency gate remains unpassed.

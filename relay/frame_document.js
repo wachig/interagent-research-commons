@@ -57,7 +57,12 @@ function validateFrameBlock(document) {
   const definition = document.definition;
   if (!definition || typeof definition !== "object" || definition.id !== document.frame_id || typeof definition.label !== "string" || definition.label.length > 180 || typeof definition.group !== "string" || definition.group.length > 80 || !/^frame-catalogue-\d+\.\d+\.\d+$/u.test(definition.version) || !Array.isArray(definition.segments) || !definition.segments.length || definition.segments.length > 64 || !document.slots || typeof document.slots !== "object" || Array.isArray(document.slots)) throw new TypeError("Frame draft is invalid.");
   for (const segment of definition.segments) {
-    if (!segment || typeof segment !== "object" || Array.isArray(segment) || (typeof segment.text === "string" && Object.keys(segment).length === 1 && !/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u.test(segment.text)) || (typeof segment.slot === "string" && typeof segment.label === "string" && Object.keys(segment).length === 2 && /^[a-z][a-z0-9_-]{0,31}$/u.test(segment.slot) && segment.label.length <= 80)) continue;
+    if (!segment || typeof segment !== "object" || Array.isArray(segment)) throw new TypeError("Frame definition is invalid.");
+    if (typeof segment.text === "string" && Object.keys(segment).length === 1) {
+      if (segment.text) assertText(segment.text, "Frame literal text");
+      continue;
+    }
+    if (typeof segment.slot === "string" && typeof segment.label === "string" && Object.keys(segment).length === 2 && SLOT_ID.test(segment.slot) && segment.label.length <= 80) continue;
     throw new TypeError("Frame definition is invalid.");
   }
   const declared = definition.segments.filter((segment) => segment.slot).map((segment) => segment.slot);
