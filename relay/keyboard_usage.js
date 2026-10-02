@@ -127,7 +127,8 @@ export async function recordKeyboardUsage(env,request,response) {
       const rows=granted?choices.slice(0,allocation):[],statements=[];
       if(rows.length<choices.length)await env.RELAY_DB.prepare('UPDATE keyboard_usage_runs SET choices_truncated=1 WHERE run_id=?').bind(runId).run();
       for(let i=0;i<rows.length;i+=10){const chunk=rows.slice(i,i+10);statements.push(env.RELAY_DB.prepare('INSERT INTO keyboard_usage_choices (fingerprint,run_id,section,choice_rank,action,expires_at) VALUES '+chunk.map(()=>'(?,?,?,?,?,?)').join(',')+' ON CONFLICT(fingerprint,run_id) DO NOTHING').bind(...chunk.flat()));}
-      for(let i=0;i<statements.length;i+=16)await env.RELAY_DB.batch(statements.slice(i,i+16));
+      // Keep serialized storage RPC batches comfortably below the 32,768-byte boundary.
+      for(let i=0;i<statements.length;i+=4)await env.RELAY_DB.batch(statements.slice(i,i+4));
     }
   }
   if(!capped){

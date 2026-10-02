@@ -44,6 +44,13 @@ try{
   assert.ok(events.every(e=>e.response_bytes>0&&e.server_ms>=0));
   if(method.id==='token-link'){await f.sql('DELETE FROM token_composer_states WHERE session_id IN (SELECT session_id FROM token_composer_sessions WHERE published_at IS NOT NULL)');assert.equal((await html(publishHref)).status,200,'receipt replay survives private trace deletion');}
  }
+ // Exercise realistic high-choice word pages through the actual storage RPC, not just literal keys.
+ let sentence=await html('/predictive-keyboard/html/chunk-keyboard-3/');const sentenceRun=sentence.headers.get('x-relay-usage-run');let sentenceRequests=1;
+ for(const word of ['Can','you']) {
+   const choice=link(sentence,l=>l.text.toLowerCase()===word.toLowerCase()&&/\/step\/.*\/pick\//.test(l.url));
+   sentence=await html(choice);sentenceRequests++;
+ }
+ assert.equal((await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_events WHERE run_id=?',sentenceRun))[0].n,sentenceRequests,'dense candidate pages retain every observed word selection');
  // Choice attribution is sourced from emitted links without saving their text.
  let p=await html('/predictive-keyboard/html/short-word-keyboard/');const run=p.headers.get('x-relay-usage-run');p=await html(link(p,l=>l.text==='You'&&/\/step\//.test(l.url)));
  const choice=(await f.sql('SELECT section,choice_rank,delta_bytes FROM keyboard_usage_events WHERE run_id=? ORDER BY created_at DESC LIMIT 1',run))[0];
