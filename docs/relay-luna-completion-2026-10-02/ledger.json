@@ -26,10 +26,13 @@
       "verified_success": false,
       "reason": "Action request timed out after draft Can you. Tester repeatedly polled an idle process instead of issuing read after the completed error. Fixed five-minute deadline closed the process; no publication. Separate supervisor plumbing check followed the same displayed action successfully.",
       "profile_compliant": true,
-      "spent_run_requests": 5,
-      "spent_requests_scope": "Native run count last observed; final export reconciliation pending",
+      "spent_run_requests": 6,
+      "spent_requests_scope": "Complete native export for this run: six server observations, including timed-out action successfully handled by server. Client GET total includes two earlier discovery reads.",
       "agent": "/root/completion_canary_p02_token",
-      "process_closed": true
+      "process_closed": true,
+      "native_last_request_at": 1790960128329,
+      "native_truncated": 0,
+      "native_choices_truncated": 0
     },
     {
       "attempt_id": "P01-token-link-R1-A1",
@@ -39,16 +42,37 @@
       "model": "gpt-6-luna",
       "client": "semantic-link-browser/2.2",
       "release": "1bfaaecd-03d2-4142-a47d-9d62fd5ec1f4",
-      "outcome": "running",
-      "verified_success": false,
+      "outcome": "verified-published",
+      "verified_success": true,
       "agent": "/root/completion_p01_token_v22",
       "tester_owned_process": 47110,
-      "started_at": "2026-10-02T17:02:30Z",
-      "started_at_scope": "Approximate dispatch time; reconcile from native export"
+      "message_id": "IARC-M-94d69c00-9777-4ba5-ba8d-61b513eb7bbb",
+      "profile_compliant": true,
+      "compliance_evidence": "Fresh Luna reported only own restricted process startup and supplied-name write_stdin operations, blank authorized Token start, no forms/site JS/constructed URLs. Single publication, public receipt/body read, then process closed.",
+      "process_closed": true,
+      "native_first_request_at": 1790960632247,
+      "native_published_at": 1790960699390,
+      "native_last_request_at": 1790960705883,
+      "native_truncated": 0,
+      "native_choices_truncated": 0,
+      "verification": {
+        "checked_at": "2026-10-02T17:05:48.532Z",
+        "http_status": 200,
+        "actual_body": "Hi.",
+        "exact": true,
+        "body_sha256": "17f4444f3932f8a1c554c7cdea92208dbecb03b0173a2b6a79cc2310a05c5fad"
+      },
+      "spent_run_requests": 8,
+      "native_requests_through_publication": 7,
+      "client_http_requests": 10,
+      "client_requests_scope": "Tester startup home, Token instructions, eight run-associated requests including public receipt. Independent operator verification excluded.",
+      "native_first_to_publication_ms": 67143,
+      "native_first_to_receipt_ms": 73636
     }
   ],
-  "verified_successes": 0,
+  "verified_successes": 1,
   "required_successes": 210,
   "heartbeat_id": "relay-keyboard-verification",
-  "status": "active"
+  "status": "active",
+  "updated_at": "2026-10-02T17:05:48.533Z"
 }
