@@ -2,7 +2,7 @@
   "benchmark": "relay-luna-owner-phrases-1.0.0",
   "cohort": "owner-phrases-2026-10-02-r1",
   "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
-  "generated_at": "2026-10-02T09:39:35.274Z",
+  "generated_at": "2026-10-02T10:07:42.988Z",
   "attempted_all_planned_slots": false,
   "all_attempts_closed": false,
   "missing_slots": [
@@ -27,28 +27,24 @@
     "span::P08",
     "span::P09",
     "span::P10",
-    "predictive-word::P04",
     "predictive-word::P05",
     "predictive-word::P06",
     "predictive-word::P07",
     "predictive-word::P08",
     "predictive-word::P09",
     "predictive-word::P10",
-    "prefix-link::P04",
     "prefix-link::P05",
     "prefix-link::P06",
     "prefix-link::P07",
     "prefix-link::P08",
     "prefix-link::P09",
     "prefix-link::P10",
-    "token-link::P04",
     "token-link::P05",
     "token-link::P06",
     "token-link::P07",
     "token-link::P08",
     "token-link::P09",
     "token-link::P10",
-    "frame::P04",
     "frame::P05",
     "frame::P06",
     "frame::P07",
@@ -56,9 +52,9 @@
     "frame::P09",
     "frame::P10"
   ],
-  "not_attempted": 49,
+  "not_attempted": 45,
   "planned": 70,
-  "closed": 21,
+  "closed": 25,
   "complete": false,
   "methods": [
     {
@@ -133,21 +129,21 @@
     },
     {
       "method": "predictive-word",
-      "attempts": 3,
-      "closed": 3,
+      "attempts": 4,
+      "closed": 4,
       "exact_completed": 2,
-      "failed": 1,
+      "failed": 2,
       "interrupted": 0,
       "costs_complete": true,
       "spent_totals_are_lower_bounds": false,
-      "completion_fraction_closed": 0.6666666666666666,
+      "completion_fraction_closed": 0.5,
       "failure_categories": {
-        "unclassified": 1
+        "unclassified": 2
       },
       "median_completed_activations": 63,
       "median_completed_entry_to_finish_ms": 642109.5,
-      "spent_activations_all_attempts": 131,
-      "spent_http_all_attempts": 131,
+      "spent_activations_all_attempts": 139,
+      "spent_http_all_attempts": 139,
       "median_completed_http_requests": 63,
       "median_completed_wire_bytes": 480349,
       "median_completed_extracted_tokens": 101955.5,
@@ -156,44 +152,44 @@
     },
     {
       "method": "prefix-link",
-      "attempts": 3,
-      "closed": 3,
+      "attempts": 4,
+      "closed": 4,
       "exact_completed": 2,
-      "failed": 1,
+      "failed": 2,
       "interrupted": 0,
       "costs_complete": true,
       "spent_totals_are_lower_bounds": false,
-      "completion_fraction_closed": 0.6666666666666666,
+      "completion_fraction_closed": 0.5,
       "failure_categories": {
-        "unclassified": 1
+        "unclassified": 2
       },
       "median_completed_activations": 19.5,
       "median_completed_entry_to_finish_ms": 207447,
-      "spent_activations_all_attempts": 44,
-      "spent_http_all_attempts": 44,
+      "spent_activations_all_attempts": 72,
+      "spent_http_all_attempts": 72,
       "median_completed_http_requests": 19.5,
       "median_completed_wire_bytes": 145740.5,
       "median_completed_extracted_tokens": 28885,
       "total_recorded_client_errors": 0,
-      "total_blocked_navigation_commands": 0
+      "total_blocked_navigation_commands": 8
     },
     {
       "method": "token-link",
-      "attempts": 3,
-      "closed": 3,
+      "attempts": 4,
+      "closed": 4,
       "exact_completed": 0,
       "failed": 2,
-      "interrupted": 1,
+      "interrupted": 2,
       "costs_complete": true,
       "spent_totals_are_lower_bounds": false,
       "completion_fraction_closed": 0,
       "failure_categories": {
-        "unclassified": 3
+        "unclassified": 4
       },
       "median_completed_activations": null,
       "median_completed_entry_to_finish_ms": null,
-      "spent_activations_all_attempts": 12,
-      "spent_http_all_attempts": 12,
+      "spent_activations_all_attempts": 32,
+      "spent_http_all_attempts": 32,
       "median_completed_http_requests": null,
       "median_completed_wire_bytes": null,
       "median_completed_extracted_tokens": null,
@@ -202,26 +198,26 @@
     },
     {
       "method": "frame",
-      "attempts": 3,
-      "closed": 3,
+      "attempts": 4,
+      "closed": 4,
       "exact_completed": 1,
-      "failed": 2,
+      "failed": 3,
       "interrupted": 0,
       "costs_complete": true,
       "spent_totals_are_lower_bounds": false,
-      "completion_fraction_closed": 0.3333333333333333,
+      "completion_fraction_closed": 0.25,
       "failure_categories": {
-        "unclassified": 2
+        "unclassified": 3
       },
       "median_completed_activations": 53,
       "median_completed_entry_to_finish_ms": 507683,
-      "spent_activations_all_attempts": 71,
-      "spent_http_all_attempts": 71,
+      "spent_activations_all_attempts": 119,
+      "spent_http_all_attempts": 119,
       "median_completed_http_requests": 53,
       "median_completed_wire_bytes": 449377,
       "median_completed_extracted_tokens": 41160,
       "total_recorded_client_errors": 0,
-      "total_blocked_navigation_commands": 0
+      "total_blocked_navigation_commands": 3
     }
   ],
   "pairs": [
@@ -520,7 +516,7 @@
     "benchmark": "relay-luna-owner-phrases-1.0.0",
     "cohort": "owner-phrases-2026-10-02-r1",
     "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
-    "generated_at": "2026-10-02T09:39:35.275Z",
+    "generated_at": "2026-10-02T10:07:42.989Z",
     "attempted_all_planned_slots": false,
     "all_attempts_closed": false,
     "missing_slots": [
@@ -545,28 +541,24 @@
       "span::P08",
       "span::P09",
       "span::P10",
-      "predictive-word::P04",
       "predictive-word::P05",
       "predictive-word::P06",
       "predictive-word::P07",
       "predictive-word::P08",
       "predictive-word::P09",
       "predictive-word::P10",
-      "prefix-link::P04",
       "prefix-link::P05",
       "prefix-link::P06",
       "prefix-link::P07",
       "prefix-link::P08",
       "prefix-link::P09",
       "prefix-link::P10",
-      "token-link::P04",
       "token-link::P05",
       "token-link::P06",
       "token-link::P07",
       "token-link::P08",
       "token-link::P09",
       "token-link::P10",
-      "frame::P04",
       "frame::P05",
       "frame::P06",
       "frame::P07",
@@ -574,9 +566,9 @@
       "frame::P09",
       "frame::P10"
     ],
-    "not_attempted": 49,
+    "not_attempted": 45,
     "planned": 63,
-    "closed": 14,
+    "closed": 18,
     "complete": false,
     "methods": [
       {
@@ -636,73 +628,75 @@
       },
       {
         "method": "predictive-word",
-        "attempts": 2,
-        "closed": 2,
+        "attempts": 3,
+        "closed": 3,
         "exact_completed": 2,
-        "failed": 0,
-        "interrupted": 0,
-        "costs_complete": true,
-        "spent_totals_are_lower_bounds": false,
-        "completion_fraction_closed": 1,
-        "failure_categories": {},
-        "median_completed_activations": 63,
-        "median_completed_entry_to_finish_ms": 642109.5,
-        "spent_activations_all_attempts": 126,
-        "spent_http_all_attempts": 126
-      },
-      {
-        "method": "prefix-link",
-        "attempts": 2,
-        "closed": 2,
-        "exact_completed": 1,
         "failed": 1,
         "interrupted": 0,
         "costs_complete": true,
         "spent_totals_are_lower_bounds": false,
-        "completion_fraction_closed": 0.5,
+        "completion_fraction_closed": 0.6666666666666666,
         "failure_categories": {
           "unclassified": 1
         },
+        "median_completed_activations": 63,
+        "median_completed_entry_to_finish_ms": 642109.5,
+        "spent_activations_all_attempts": 134,
+        "spent_http_all_attempts": 134
+      },
+      {
+        "method": "prefix-link",
+        "attempts": 3,
+        "closed": 3,
+        "exact_completed": 1,
+        "failed": 2,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0.3333333333333333,
+        "failure_categories": {
+          "unclassified": 2
+        },
         "median_completed_activations": 31,
         "median_completed_entry_to_finish_ms": 340106,
-        "spent_activations_all_attempts": 36,
-        "spent_http_all_attempts": 36
+        "spent_activations_all_attempts": 64,
+        "spent_http_all_attempts": 64
       },
       {
         "method": "token-link",
-        "attempts": 2,
-        "closed": 2,
+        "attempts": 3,
+        "closed": 3,
         "exact_completed": 0,
         "failed": 1,
-        "interrupted": 1,
+        "interrupted": 2,
         "costs_complete": true,
         "spent_totals_are_lower_bounds": false,
         "completion_fraction_closed": 0,
         "failure_categories": {
-          "unclassified": 2
+          "unclassified": 3
         },
         "median_completed_activations": null,
         "median_completed_entry_to_finish_ms": null,
-        "spent_activations_all_attempts": 10,
-        "spent_http_all_attempts": 10
+        "spent_activations_all_attempts": 30,
+        "spent_http_all_attempts": 30
       },
       {
         "method": "frame",
-        "attempts": 2,
-        "closed": 2,
+        "attempts": 3,
+        "closed": 3,
         "exact_completed": 1,
-        "failed": 1,
+        "failed": 2,
         "interrupted": 0,
         "costs_complete": true,
         "spent_totals_are_lower_bounds": false,
-        "completion_fraction_closed": 0.5,
+        "completion_fraction_closed": 0.3333333333333333,
         "failure_categories": {
-          "unclassified": 1
+          "unclassified": 2
         },
         "median_completed_activations": 53,
         "median_completed_entry_to_finish_ms": 507683,
-        "spent_activations_all_attempts": 60,
-        "spent_http_all_attempts": 60
+        "spent_activations_all_attempts": 108,
+        "spent_http_all_attempts": 108
       }
     ],
     "pairs": [
@@ -965,6 +959,1099 @@
             "b_extracted_tokens": 41160
           }
         ]
+      },
+      {
+        "a": "token-link",
+        "b": "frame",
+        "completed_pairs": 0,
+        "cases": []
+      }
+    ],
+    "limitations": [
+      "Purposive targets: no population confidence intervals or universal winner.",
+      "HTTP transport time includes subprocess setup and transfer but excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
+      "Wire bytes count encoded response bodies only, not headers/TLS.",
+      "o200k extracted tokens are a declared proxy, not Luna usage/billing tokens.",
+      "Historical raw temporary traces were lost after restart; durable new traces stay private. Export URL hashes cannot be followed.",
+      "Calibration and infrastructure interruptions are separate from scored keyboard outcomes."
+    ]
+  },
+  "character_groups": [
+    {
+      "group": "ASCII-only",
+      "target_ids": [
+        "P01",
+        "P02",
+        "P06",
+        "P07",
+        "P08",
+        "P10"
+      ],
+      "benchmark": "relay-luna-owner-phrases-1.0.0",
+      "cohort": "owner-phrases-2026-10-02-r1",
+      "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+      "generated_at": "2026-10-02T10:07:42.989Z",
+      "attempted_all_planned_slots": false,
+      "all_attempts_closed": false,
+      "missing_slots": [
+        "chunk-word::P06",
+        "chunk-word::P07",
+        "chunk-word::P08",
+        "chunk-word::P10",
+        "short-word::P06",
+        "short-word::P07",
+        "short-word::P08",
+        "short-word::P10",
+        "span::P06",
+        "span::P07",
+        "span::P08",
+        "span::P10",
+        "predictive-word::P06",
+        "predictive-word::P07",
+        "predictive-word::P08",
+        "predictive-word::P10",
+        "prefix-link::P06",
+        "prefix-link::P07",
+        "prefix-link::P08",
+        "prefix-link::P10",
+        "token-link::P06",
+        "token-link::P07",
+        "token-link::P08",
+        "token-link::P10",
+        "frame::P06",
+        "frame::P07",
+        "frame::P08",
+        "frame::P10"
+      ],
+      "not_attempted": 28,
+      "planned": 42,
+      "closed": 14,
+      "complete": false,
+      "methods": [
+        {
+          "method": "chunk-word",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 2,
+          "failed": 0,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 1,
+          "failure_categories": {},
+          "median_completed_activations": 13,
+          "median_completed_entry_to_finish_ms": 114133,
+          "spent_activations_all_attempts": 26,
+          "spent_http_all_attempts": 26
+        },
+        {
+          "method": "short-word",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 1,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0.5,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": 14,
+          "median_completed_entry_to_finish_ms": 144794,
+          "spent_activations_all_attempts": 23,
+          "spent_http_all_attempts": 23
+        },
+        {
+          "method": "span",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 0,
+          "failed": 1,
+          "interrupted": 1,
+          "costs_complete": false,
+          "spent_totals_are_lower_bounds": true,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 1,
+            "transport": 1
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 7,
+          "spent_http_all_attempts": 7
+        },
+        {
+          "method": "predictive-word",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 1,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0.5,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": 75,
+          "median_completed_entry_to_finish_ms": 739614,
+          "spent_activations_all_attempts": 80,
+          "spent_http_all_attempts": 80
+        },
+        {
+          "method": "prefix-link",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 2,
+          "failed": 0,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 1,
+          "failure_categories": {},
+          "median_completed_activations": 19.5,
+          "median_completed_entry_to_finish_ms": 207447,
+          "spent_activations_all_attempts": 39,
+          "spent_http_all_attempts": 39
+        },
+        {
+          "method": "token-link",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 0,
+          "failed": 1,
+          "interrupted": 1,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 2
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 4,
+          "spent_http_all_attempts": 4
+        },
+        {
+          "method": "frame",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 1,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0.5,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": 53,
+          "median_completed_entry_to_finish_ms": 507683,
+          "spent_activations_all_attempts": 64,
+          "spent_http_all_attempts": 64
+        }
+      ],
+      "pairs": [
+        {
+          "a": "chunk-word",
+          "b": "short-word",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 18,
+              "b_activations": 14,
+              "activation_delta_a_minus_b": 4,
+              "a_ms": 167902,
+              "b_ms": 144794,
+              "a_wire_bytes": 170768,
+              "b_wire_bytes": 115936,
+              "a_extracted_tokens": 68434,
+              "b_extracted_tokens": 20311
+            }
+          ]
+        },
+        {
+          "a": "chunk-word",
+          "b": "span",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "predictive-word",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 18,
+              "b_activations": 75,
+              "activation_delta_a_minus_b": -57,
+              "a_ms": 167902,
+              "b_ms": 739614,
+              "a_wire_bytes": 170768,
+              "b_wire_bytes": 542079,
+              "a_extracted_tokens": 68434,
+              "b_extracted_tokens": 111158
+            }
+          ]
+        },
+        {
+          "a": "chunk-word",
+          "b": "prefix-link",
+          "completed_pairs": 2,
+          "cases": [
+            {
+              "task": "P01",
+              "class": "owner-selected-everyday",
+              "a_activations": 8,
+              "b_activations": 8,
+              "activation_delta_a_minus_b": 0,
+              "a_ms": 60364,
+              "b_ms": 74788,
+              "a_wire_bytes": 51677,
+              "b_wire_bytes": 54518,
+              "a_extracted_tokens": 17080,
+              "b_extracted_tokens": 9779
+            },
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 18,
+              "b_activations": 31,
+              "activation_delta_a_minus_b": -13,
+              "a_ms": 167902,
+              "b_ms": 340106,
+              "a_wire_bytes": 170768,
+              "b_wire_bytes": 236963,
+              "a_extracted_tokens": 68434,
+              "b_extracted_tokens": 47991
+            }
+          ]
+        },
+        {
+          "a": "chunk-word",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "frame",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 18,
+              "b_activations": 53,
+              "activation_delta_a_minus_b": -35,
+              "a_ms": 167902,
+              "b_ms": 507683,
+              "a_wire_bytes": 170768,
+              "b_wire_bytes": 449377,
+              "a_extracted_tokens": 68434,
+              "b_extracted_tokens": 41160
+            }
+          ]
+        },
+        {
+          "a": "short-word",
+          "b": "span",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "predictive-word",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 14,
+              "b_activations": 75,
+              "activation_delta_a_minus_b": -61,
+              "a_ms": 144794,
+              "b_ms": 739614,
+              "a_wire_bytes": 115936,
+              "b_wire_bytes": 542079,
+              "a_extracted_tokens": 20311,
+              "b_extracted_tokens": 111158
+            }
+          ]
+        },
+        {
+          "a": "short-word",
+          "b": "prefix-link",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 14,
+              "b_activations": 31,
+              "activation_delta_a_minus_b": -17,
+              "a_ms": 144794,
+              "b_ms": 340106,
+              "a_wire_bytes": 115936,
+              "b_wire_bytes": 236963,
+              "a_extracted_tokens": 20311,
+              "b_extracted_tokens": 47991
+            }
+          ]
+        },
+        {
+          "a": "short-word",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "frame",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 14,
+              "b_activations": 53,
+              "activation_delta_a_minus_b": -39,
+              "a_ms": 144794,
+              "b_ms": 507683,
+              "a_wire_bytes": 115936,
+              "b_wire_bytes": 449377,
+              "a_extracted_tokens": 20311,
+              "b_extracted_tokens": 41160
+            }
+          ]
+        },
+        {
+          "a": "span",
+          "b": "predictive-word",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "prefix-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "predictive-word",
+          "b": "prefix-link",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 75,
+              "b_activations": 31,
+              "activation_delta_a_minus_b": 44,
+              "a_ms": 739614,
+              "b_ms": 340106,
+              "a_wire_bytes": 542079,
+              "b_wire_bytes": 236963,
+              "a_extracted_tokens": 111158,
+              "b_extracted_tokens": 47991
+            }
+          ]
+        },
+        {
+          "a": "predictive-word",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "predictive-word",
+          "b": "frame",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 75,
+              "b_activations": 53,
+              "activation_delta_a_minus_b": 22,
+              "a_ms": 739614,
+              "b_ms": 507683,
+              "a_wire_bytes": 542079,
+              "b_wire_bytes": 449377,
+              "a_extracted_tokens": 111158,
+              "b_extracted_tokens": 41160
+            }
+          ]
+        },
+        {
+          "a": "prefix-link",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "prefix-link",
+          "b": "frame",
+          "completed_pairs": 1,
+          "cases": [
+            {
+              "task": "P02",
+              "class": "owner-selected-everyday",
+              "a_activations": 31,
+              "b_activations": 53,
+              "activation_delta_a_minus_b": -22,
+              "a_ms": 340106,
+              "b_ms": 507683,
+              "a_wire_bytes": 236963,
+              "b_wire_bytes": 449377,
+              "a_extracted_tokens": 47991,
+              "b_extracted_tokens": 41160
+            }
+          ]
+        },
+        {
+          "a": "token-link",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        }
+      ],
+      "limitations": [
+        "Purposive targets: no population confidence intervals or universal winner.",
+        "HTTP transport time includes subprocess setup and transfer but excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
+        "Wire bytes count encoded response bodies only, not headers/TLS.",
+        "o200k extracted tokens are a declared proxy, not Luna usage/billing tokens.",
+        "Historical raw temporary traces were lost after restart; durable new traces stay private. Export URL hashes cannot be followed.",
+        "Calibration and infrastructure interruptions are separate from scored keyboard outcomes."
+      ]
+    },
+    {
+      "group": "curly-apostrophe-U2019",
+      "target_ids": [
+        "P03",
+        "P04",
+        "P05",
+        "P09"
+      ],
+      "benchmark": "relay-luna-owner-phrases-1.0.0",
+      "cohort": "owner-phrases-2026-10-02-r1",
+      "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+      "generated_at": "2026-10-02T10:07:42.989Z",
+      "attempted_all_planned_slots": false,
+      "all_attempts_closed": false,
+      "missing_slots": [
+        "chunk-word::P04",
+        "chunk-word::P05",
+        "chunk-word::P09",
+        "short-word::P04",
+        "short-word::P05",
+        "short-word::P09",
+        "span::P04",
+        "span::P05",
+        "span::P09",
+        "predictive-word::P05",
+        "predictive-word::P09",
+        "prefix-link::P05",
+        "prefix-link::P09",
+        "token-link::P05",
+        "token-link::P09",
+        "frame::P05",
+        "frame::P09"
+      ],
+      "not_attempted": 17,
+      "planned": 28,
+      "closed": 11,
+      "complete": false,
+      "methods": [
+        {
+          "method": "chunk-word",
+          "attempts": 1,
+          "closed": 1,
+          "exact_completed": 0,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 12,
+          "spent_http_all_attempts": 12
+        },
+        {
+          "method": "short-word",
+          "attempts": 1,
+          "closed": 1,
+          "exact_completed": 0,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 15,
+          "spent_http_all_attempts": 15
+        },
+        {
+          "method": "span",
+          "attempts": 1,
+          "closed": 1,
+          "exact_completed": 0,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 11,
+          "spent_http_all_attempts": 11
+        },
+        {
+          "method": "predictive-word",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 1,
+          "failed": 1,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0.5,
+          "failure_categories": {
+            "unclassified": 1
+          },
+          "median_completed_activations": 51,
+          "median_completed_entry_to_finish_ms": 544605,
+          "spent_activations_all_attempts": 59,
+          "spent_http_all_attempts": 59
+        },
+        {
+          "method": "prefix-link",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 0,
+          "failed": 2,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 2
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 33,
+          "spent_http_all_attempts": 33
+        },
+        {
+          "method": "token-link",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 0,
+          "failed": 1,
+          "interrupted": 1,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 2
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 28,
+          "spent_http_all_attempts": 28
+        },
+        {
+          "method": "frame",
+          "attempts": 2,
+          "closed": 2,
+          "exact_completed": 0,
+          "failed": 2,
+          "interrupted": 0,
+          "costs_complete": true,
+          "spent_totals_are_lower_bounds": false,
+          "completion_fraction_closed": 0,
+          "failure_categories": {
+            "unclassified": 2
+          },
+          "median_completed_activations": null,
+          "median_completed_entry_to_finish_ms": null,
+          "spent_activations_all_attempts": 55,
+          "spent_http_all_attempts": 55
+        }
+      ],
+      "pairs": [
+        {
+          "a": "chunk-word",
+          "b": "short-word",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "span",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "predictive-word",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "prefix-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "chunk-word",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "span",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "predictive-word",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "prefix-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "short-word",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "predictive-word",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "prefix-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "span",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "predictive-word",
+          "b": "prefix-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "predictive-word",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "predictive-word",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "prefix-link",
+          "b": "token-link",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "prefix-link",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        },
+        {
+          "a": "token-link",
+          "b": "frame",
+          "completed_pairs": 0,
+          "cases": []
+        }
+      ],
+      "limitations": [
+        "Purposive targets: no population confidence intervals or universal winner.",
+        "HTTP transport time includes subprocess setup and transfer but excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
+        "Wire bytes count encoded response bodies only, not headers/TLS.",
+        "o200k extracted tokens are a declared proxy, not Luna usage/billing tokens.",
+        "Historical raw temporary traces were lost after restart; durable new traces stay private. Export URL hashes cannot be followed.",
+        "Calibration and infrastructure interruptions are separate from scored keyboard outcomes."
+      ]
+    }
+  ],
+  "P03_P10_consistent_prompt_view": {
+    "scope": "Analytical sensitivity view: excludes early P01 prompt variants and P02 generic reminder; Token permission-context addition remains explicitly disclosed.",
+    "benchmark": "relay-luna-owner-phrases-1.0.0",
+    "cohort": "owner-phrases-2026-10-02-r1",
+    "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+    "generated_at": "2026-10-02T10:07:42.990Z",
+    "attempted_all_planned_slots": false,
+    "all_attempts_closed": false,
+    "missing_slots": [
+      "chunk-word::P04",
+      "chunk-word::P05",
+      "chunk-word::P06",
+      "chunk-word::P07",
+      "chunk-word::P08",
+      "chunk-word::P09",
+      "chunk-word::P10",
+      "short-word::P04",
+      "short-word::P05",
+      "short-word::P06",
+      "short-word::P07",
+      "short-word::P08",
+      "short-word::P09",
+      "short-word::P10",
+      "span::P04",
+      "span::P05",
+      "span::P06",
+      "span::P07",
+      "span::P08",
+      "span::P09",
+      "span::P10",
+      "predictive-word::P05",
+      "predictive-word::P06",
+      "predictive-word::P07",
+      "predictive-word::P08",
+      "predictive-word::P09",
+      "predictive-word::P10",
+      "prefix-link::P05",
+      "prefix-link::P06",
+      "prefix-link::P07",
+      "prefix-link::P08",
+      "prefix-link::P09",
+      "prefix-link::P10",
+      "token-link::P05",
+      "token-link::P06",
+      "token-link::P07",
+      "token-link::P08",
+      "token-link::P09",
+      "token-link::P10",
+      "frame::P05",
+      "frame::P06",
+      "frame::P07",
+      "frame::P08",
+      "frame::P09",
+      "frame::P10"
+    ],
+    "not_attempted": 45,
+    "planned": 56,
+    "closed": 11,
+    "complete": false,
+    "methods": [
+      {
+        "method": "chunk-word",
+        "attempts": 1,
+        "closed": 1,
+        "exact_completed": 0,
+        "failed": 1,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0,
+        "failure_categories": {
+          "unclassified": 1
+        },
+        "median_completed_activations": null,
+        "median_completed_entry_to_finish_ms": null,
+        "spent_activations_all_attempts": 12,
+        "spent_http_all_attempts": 12
+      },
+      {
+        "method": "short-word",
+        "attempts": 1,
+        "closed": 1,
+        "exact_completed": 0,
+        "failed": 1,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0,
+        "failure_categories": {
+          "unclassified": 1
+        },
+        "median_completed_activations": null,
+        "median_completed_entry_to_finish_ms": null,
+        "spent_activations_all_attempts": 15,
+        "spent_http_all_attempts": 15
+      },
+      {
+        "method": "span",
+        "attempts": 1,
+        "closed": 1,
+        "exact_completed": 0,
+        "failed": 1,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0,
+        "failure_categories": {
+          "unclassified": 1
+        },
+        "median_completed_activations": null,
+        "median_completed_entry_to_finish_ms": null,
+        "spent_activations_all_attempts": 11,
+        "spent_http_all_attempts": 11
+      },
+      {
+        "method": "predictive-word",
+        "attempts": 2,
+        "closed": 2,
+        "exact_completed": 1,
+        "failed": 1,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0.5,
+        "failure_categories": {
+          "unclassified": 1
+        },
+        "median_completed_activations": 51,
+        "median_completed_entry_to_finish_ms": 544605,
+        "spent_activations_all_attempts": 59,
+        "spent_http_all_attempts": 59
+      },
+      {
+        "method": "prefix-link",
+        "attempts": 2,
+        "closed": 2,
+        "exact_completed": 0,
+        "failed": 2,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0,
+        "failure_categories": {
+          "unclassified": 2
+        },
+        "median_completed_activations": null,
+        "median_completed_entry_to_finish_ms": null,
+        "spent_activations_all_attempts": 33,
+        "spent_http_all_attempts": 33
+      },
+      {
+        "method": "token-link",
+        "attempts": 2,
+        "closed": 2,
+        "exact_completed": 0,
+        "failed": 1,
+        "interrupted": 1,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0,
+        "failure_categories": {
+          "unclassified": 2
+        },
+        "median_completed_activations": null,
+        "median_completed_entry_to_finish_ms": null,
+        "spent_activations_all_attempts": 28,
+        "spent_http_all_attempts": 28
+      },
+      {
+        "method": "frame",
+        "attempts": 2,
+        "closed": 2,
+        "exact_completed": 0,
+        "failed": 2,
+        "interrupted": 0,
+        "costs_complete": true,
+        "spent_totals_are_lower_bounds": false,
+        "completion_fraction_closed": 0,
+        "failure_categories": {
+          "unclassified": 2
+        },
+        "median_completed_activations": null,
+        "median_completed_entry_to_finish_ms": null,
+        "spent_activations_all_attempts": 55,
+        "spent_http_all_attempts": 55
+      }
+    ],
+    "pairs": [
+      {
+        "a": "chunk-word",
+        "b": "short-word",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "chunk-word",
+        "b": "span",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "chunk-word",
+        "b": "predictive-word",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "chunk-word",
+        "b": "prefix-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "chunk-word",
+        "b": "token-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "chunk-word",
+        "b": "frame",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "short-word",
+        "b": "span",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "short-word",
+        "b": "predictive-word",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "short-word",
+        "b": "prefix-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "short-word",
+        "b": "token-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "short-word",
+        "b": "frame",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "span",
+        "b": "predictive-word",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "span",
+        "b": "prefix-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "span",
+        "b": "token-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "span",
+        "b": "frame",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "predictive-word",
+        "b": "prefix-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "predictive-word",
+        "b": "token-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "predictive-word",
+        "b": "frame",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "prefix-link",
+        "b": "token-link",
+        "completed_pairs": 0,
+        "cases": []
+      },
+      {
+        "a": "prefix-link",
+        "b": "frame",
+        "completed_pairs": 0,
+        "cases": []
       },
       {
         "a": "token-link",

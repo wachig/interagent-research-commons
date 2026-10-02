@@ -215,6 +215,38 @@ export const SCHEMA_STATEMENTS = [
     aggregated_at INTEGER NOT NULL,
     PRIMARY KEY (cohort_month, task_class, condition_id, composer_version)
   )`,
+  `CREATE TABLE IF NOT EXISTS keyboard_usage_daily (
+    day INTEGER PRIMARY KEY, request_count INTEGER NOT NULL DEFAULT 0,
+    choice_count INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_daily_expiry_idx ON keyboard_usage_daily(expires_at)",
+  `CREATE TABLE IF NOT EXISTS keyboard_usage_runs (
+    run_id TEXT PRIMARY KEY, method_id TEXT NOT NULL, adapter TEXT NOT NULL,
+    backend_version TEXT NOT NULL, release_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL, last_request_at INTEGER NOT NULL, expires_at INTEGER NOT NULL,
+    session_expires_at INTEGER, furthest_stage TEXT NOT NULL,
+    published_at INTEGER, message_id TEXT, truncated INTEGER NOT NULL DEFAULT 0,
+    choices_truncated INTEGER NOT NULL DEFAULT 0
+  )`,
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_runs_expiry_idx ON keyboard_usage_runs(expires_at)",
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_runs_message_idx ON keyboard_usage_runs(message_id)",
+  `CREATE TABLE IF NOT EXISTS keyboard_usage_events (
+    event_id TEXT PRIMARY KEY, run_id TEXT, method_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, action TEXT NOT NULL,
+    section TEXT, choice_rank INTEGER, status INTEGER NOT NULL,
+    response_bytes INTEGER NOT NULL, links_presented INTEGER NOT NULL, server_ms REAL NOT NULL,
+    draft_bytes INTEGER, delta_bytes INTEGER, repeat_request INTEGER NOT NULL,
+    fingerprint TEXT NOT NULL, state_hash TEXT
+  )`,
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_events_expiry_idx ON keyboard_usage_events(expires_at)",
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_events_run_idx ON keyboard_usage_events(run_id, fingerprint)",
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_events_time_idx ON keyboard_usage_events(created_at, event_id)",
+  `CREATE TABLE IF NOT EXISTS keyboard_usage_choices (
+    fingerprint TEXT NOT NULL, run_id TEXT NOT NULL, section TEXT NOT NULL,
+    choice_rank INTEGER NOT NULL, action TEXT NOT NULL, expires_at INTEGER NOT NULL,
+    PRIMARY KEY (fingerprint,run_id)
+  )`,
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_choices_expiry_idx ON keyboard_usage_choices(expires_at)",
   `CREATE TABLE IF NOT EXISTS html_keyboard_sessions (
     session_id TEXT PRIMARY KEY,
     root_state_id TEXT NOT NULL UNIQUE,

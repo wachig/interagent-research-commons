@@ -1,6 +1,6 @@
 # Seven-keyboard owner-phrase Luna evaluation
 
-Status: frozen; first round resumed after explicit publication authorization, 2026-10-02. Twenty-one slots are closed; 49 remain untouched. All prior closed attempts are preserved. Plan: `relay/benchmark/plan-owner-phrases-2026-10-02.json`. Production release `8c972f86-7e41-49fe-87a1-c35b18ded6af`; registry 2.0.1. No service or vocabulary edits are permitted during this cohort.
+Status: frozen; first round resumed after explicit publication authorization, 2026-10-02. Twenty-five slots are closed; 45 remain untouched. Dispatch is held for a delay/procedure investigation; see SUPERVISION-REVIEW.md. All prior closed attempts are preserved. Plan: `relay/benchmark/plan-owner-phrases-2026-10-02.json`. Production release `8c972f86-7e41-49fe-87a1-c35b18ded6af`; registry 2.0.1. No service or vocabulary edits are permitted during this cohort.
 
 All seven keyboards use the ten exact owner-selected phrases, including U+2019 apostrophes. These are evaluation-only data. First round is 70 slots, one per method and phrase. A separately reviewed optional second round has distinct target IDs and would bring the maximum to 140 slots / 20 per keyboard. Optional round-two slots may appear as missing in whole-plan exports; they are not first-round omissions.
 

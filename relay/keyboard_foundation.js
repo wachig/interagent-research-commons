@@ -1,3 +1,4 @@
+import { captureUsageState } from './keyboard_usage_context.js';
 // Shared lifecycle contracts. Renderers and wire signatures remain interface adapters.
 export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.2.0";
 export const MAX_BODY_BYTES = 1200;
@@ -24,6 +25,7 @@ export async function loadDraft(env, row) {
   if (current.snapshot === null) throw new Error("Draft history has reached its reconstruction limit. Start a new draft.");
   let draft = current.snapshot;
   for (const action of actions.reverse()) draft = appendDelta(draft, action.removed_text, action.added_text);
+  captureUsageState(env,row,new TextEncoder().encode(draft).length);
   return draft;
 }
 
@@ -31,6 +33,7 @@ export async function loadDraft(env, row) {
 export async function findState(env, stateId) {
   const row = await env.RELAY_DB.prepare("SELECT s.*, k.reply_to, k.expires_at AS session_expires_at FROM html_keyboard_states s JOIN html_keyboard_sessions k USING (session_id) WHERE s.state_id = ?")
     .bind(stateId).first();
+  captureUsageState(env,row);
   if (!row || row.session_expires_at <= Date.now()) throw new Error("This keyboard session expired or is unavailable. Start a new draft.");
   return row;
 }

@@ -181,17 +181,31 @@
     {
       "changed_object": "IARC Relay data and privacy notice",
       "version": "1.12.0",
-      "operation": "current; fuller filtered lexicon and explicit word completion",
+      "operation": "superseded; historical notice preserved",
       "effective_date": "2026-09-30",
       "effective_at": null,
       "source_recorded_at": "2026-10-01T03:31:31.081176+00:00",
       "responsible_role": "Relay privacy notice maintainer",
-      "artifact_url": "/privacy",
-      "text_url": "/privacy.txt",
+      "artifact_url": "/privacy/history/1.12.0",
+      "text_url": "/privacy/history/1.12.0.txt",
       "supersedes": "1.10.0",
       "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source.",
       "effective_time": null,
-      "source_commit_subject": "Build filtered full-word-form Relay lexicon and default next-word insertion"
+      "source_commit_subject": "Build filtered full-word-form Relay lexicon and default next-word insertion",
+      "superseded_by": "1.13.0"
+    },
+    {
+      "changed_object": "IARC Relay data and privacy notice",
+      "version": "1.13.0",
+      "operation": "current; shared keyboard usage measurements with fixed30-day retention",
+      "effective_date": "2026-10-02",
+      "effective_time": null,
+      "responsible_role": "Relay privacy notice maintainer",
+      "artifact_url": "/privacy",
+      "text_url": "/privacy.txt",
+      "supersedes": "1.12.0",
+      "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source.",
+      "source_commit_subject": "Add shared30-day server-side keyboard usage telemetry"
     }
   ],
   "participation_policies": [
@@ -540,6 +554,17 @@
       "responsible_role": "Relay protocol maintainer",
       "artifact_url": "/schemas/protocol-0.27.0.schema.json",
       "supersedes": "0.26.0",
+      "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source."
+    },
+    {
+      "changed_object": "IARC Relay protocol schema",
+      "version": "0.28.0",
+      "operation": "current; declares server keyboard usage telemetry",
+      "effective_date": "2026-10-02",
+      "effective_time": null,
+      "artifact_url": "/schemas/protocol-0.28.0.schema.json",
+      "supersedes": "0.27.0",
+      "responsible_role": "Relay protocol maintainer",
       "effective_time_note": "Applies when deployed; no production activation timestamp inferred from source."
     }
   ]

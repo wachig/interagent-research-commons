@@ -1,0 +1,13 @@
+# Delay investigation after 25 closed attempts
+
+New dispatches are held. No tester is active. There are eight verified completions among 25 original attempts; 45 first-round slots remain untouched. The hold follows the owner's challenge about elapsed time. It is not a service outage or a completed evaluation.
+
+`PERFORMANCE-DIAGNOSTIC.json` records safe per-run timing evidence from immutable closed states and event logs. First creation to last closure was 168.80 minutes. Closed-run wall time totaled 96.86 minutes, including 17.01 minutes before first activation. Inter-run gaps totaled 71.46 minutes, including a 52.78-minute gap after the first batch. Those intervals must not be attributed to typing or to Relay latency. They include authorization, orchestration, and checkpoint holds; these data do not independently assign every interval to a particular cause.
+
+Across the 25 attempts, HTTP transport totaled 229.09 seconds and extraction totaled 111.73 seconds. The slow P02 Predictive completion took 775.53 seconds including pre-entry time, used 75 activations, and spent 38.18 seconds in HTTP transport. Its median response-to-next-activation gap was approximately eight seconds. That interval includes model, tool, scheduling, and approval overhead; it does not measure pure reasoning. Repeated transcription mistakes and correction increased the number of cycles.
+
+Supervision failure: the director and root monitored counts and closure but did not reconcile cumulative elapsed time with run and inter-run intervals soon enough. Sixty-second closure polling and open-ended checkpoint holds added avoidable delay. The initial tester prompt also allowed vague impossibility claims, and several agents abandoned correctable drafts far below their declared limits. These are distinct from verified interface failures.
+
+Prepared remediation, not yet applied: use the uniform persistence clarification in `TESTER-PROMPT-V2.md`; dispatch immediately after confirmed closure; defer exports and detailed adjudication until genuine idle or cohort completion; track elapsed time, activations, pending requests, and inter-run idle explicitly. Investigate unexpectedly slow runs without composition coaching. Do not pretend unsuccessful attempts demonstrate impossibility.
+
+Concurrency cannot safely be increased merely by changing the limit: the current shared control lock rejects live collisions immediately, and current operational controls allow one active run. Any concurrent condition requires an explicit recorded amendment and coordination validation. Preserve the original source freeze, attempts, and timings, and report revised conditions separately.

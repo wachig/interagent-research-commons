@@ -20,3 +20,7 @@ run,scored,task,method,outcome,activations,http_attempts,wall_ms,wire_body_bytes
 "op1-p03-short-word","true","P03","short-word","failed","15","15","175577","133161","856408","24115","1863","true","","","1","0"
 "op1-p03-span","true","P03","span","failed","11","11","136413","90565","605397","21175","1493","true","","","","0"
 "op1-p03-token-link","true","P03","token-link","failed","8","8","127797","54409","413787","21237","1336","true","","","1","0"
+"op1-p04-frame","true","P04","frame","failed","48","48","424984","391235","2277386","36480","4807","true","","","2","0"
+"op1-p04-predictive-word","true","P04","predictive-word","failed","8","8","138071","64450","331985","10883","806","true","","","1","0"
+"op1-p04-prefix-link","true","P04","prefix-link","failed","28","28","264326","303929","2061495","80365","4751","true","","","9","0"
+"op1-p04-token-link","true","P04","token-link","infrastructure_interruption","20","20","260646","146333","1017247","48894","3188","true","","","3","0"

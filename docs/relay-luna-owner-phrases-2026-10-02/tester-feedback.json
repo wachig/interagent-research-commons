@@ -136,5 +136,30 @@
     "tool_errors_reported": 1,
     "note": "Closed failed at fifteen activations and requests without publication. Tester reported ASCII apostrophe suggestion causing review mismatch, discarded draft, and later composition mistake; inability claim does not establish coverage failure. One initial loopback permission error recovered by escalation.",
     "root_adjudication": "Agent selected ASCII quote variant emitted as labeled; previously typed curly text was not changed. Exact gate blocked publication."
+  },
+  {
+    "run": "op1-p04-predictive-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Closed failed after eight activations with incomplete unpublished draft. Tester called remaining individual-character composition impractical well before cap; no demonstrated impossibility. Loopback escalation required."
+  },
+  {
+    "run": "op1-p04-prefix-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 9,
+    "note": "Closed failed at twenty-eight activations and requests without review or publication. Tester reported stale page selection errors on eight calls, corrupted draft from stale Unicode-range expectations, and initial loopback permission error; no keyboard coverage inference."
+  },
+  {
+    "run": "op1-p04-token-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 3,
+    "note": "Closed infrastructure interruption at twenty activations, no publication. Tester reported incorrect UTF-8 byte composition followed by auto-review rejection of page20 link7 because it appends Tab rather than stated recovery; no bypass. Initial loopback permission failure and malformed local path also reported.",
+    "root_adjudication": "Mistaken Append Tab selection caught by approval review, followed by tester closure under director fixed rejection instruction. This is not a pure intended-valid-action permission failure; original interruption outcome preserved."
+  },
+  {
+    "run": "op1-p04-frame",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 2,
+    "note": "Closed failed at forty-eight activations and requests. Tester corrected claim: reviewed draft lacked period after wait; exact-target publication gate blocked. Draft discarded and start-once prevented restart. One initial loopback permission error and publication gate error reported; no public message."
   }
 ]

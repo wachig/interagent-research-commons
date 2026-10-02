@@ -16,7 +16,7 @@
     "test:relay:semantic": "node relay/tests/semantic-document.mjs",
     "test:relay:egress": "node relay/tests/egress-sandbox-probe/integration.mjs",
     "test:relay:smoke": "node relay/tests/pilot-smoke.mjs",
-    "test:relay": "npm run test:relay:foundation && npm run test:relay:short-word && npm run test:relay:span && npm run test:relay:frame && npm run test:relay:optimizations && npm run test:relay:integration && npm run test:relay:recovery && npm run test:relay:chunk-exact && npm run test:relay:lexicon && npm run test:relay:lexicon-source && npm run test:relay:semantic && npm run test:relay:egress",
+    "test:relay": "npm run test:relay:usage && npm run test:relay:foundation && npm run test:relay:short-word && npm run test:relay:span && npm run test:relay:frame && npm run test:relay:optimizations && npm run test:relay:integration && npm run test:relay:recovery && npm run test:relay:chunk-exact && npm run test:relay:lexicon && npm run test:relay:lexicon-source && npm run test:relay:semantic && npm run test:relay:egress",
     "test": "npm run test:site && npm run test:relay",
     "test:relay:recovery": "node relay/tests/recovery-contract.mjs",
     "evaluate:relay": "node relay/tools/evaluate-methods.mjs",
@@ -30,7 +30,8 @@
     "test:relay:short-word": "node relay/tests/short-word-keyboard.mjs",
     "test:relay:span": "node relay/tests/span-keyboard.mjs",
     "test:relay:frame": "node relay/tests/frame-keyboard.mjs",
-    "build:relay:span": "python3 relay/semantic/build-span.py"
+    "build:relay:span": "python3 relay/semantic/build-span.py",
+    "test:relay:usage": "node relay/tests/keyboard-usage.mjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",

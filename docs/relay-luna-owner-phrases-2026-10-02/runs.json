@@ -7,7 +7,7 @@
   "benchmark": "relay-luna-owner-phrases-1.0.0",
   "cohort": "owner-phrases-2026-10-02-r1",
   "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
-  "generated_at": "2026-10-02T09:39:35.191Z",
+  "generated_at": "2026-10-02T10:01:24.761Z",
   "limitations": [
     "Purposive targets: no population confidence intervals or universal winner.",
     "HTTP transport time includes subprocess setup and transfer but excludes client reasoning; end-to-end wall time includes orchestration and quota interruptions where recorded.",
@@ -14100,6 +14100,3971 @@
         {
           "seq": 35,
           "at": "2026-10-02T09:28:01.199Z",
+          "kind": "orchestrator-observation"
+        }
+      ]
+    },
+    {
+      "run": "op1-p04-frame",
+      "provider_tokens": null,
+      "provider_cost": null,
+      "provider_usage_source_hashes": [],
+      "benchmark": "relay-luna-owner-phrases-1.0.0",
+      "cohort": "owner-phrases-2026-10-02-r1",
+      "cohort_adjudication": null,
+      "failure_adjudication": null,
+      "execution_conditions": null,
+      "recorder_sha256": null,
+      "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+      "costs_complete": true,
+      "external_tool_errors": 2,
+      "external_tool_ms": 0,
+      "external_observation_source_hashes": [
+        "42af8b54b0b0c70c05afc17116a4e52076f57b2c3a17b710733f404dae3017a5"
+      ],
+      "failure_category": null,
+      "scored": true,
+      "task": "P04",
+      "method": "frame",
+      "profile": "strict-supplied-links-no-js-no-forms",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "inherited-unverified",
+      "release": "8c972f86-7e41-49fe-87a1-c35b18ded6af",
+      "target_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6",
+      "target_utf8_bytes": 40,
+      "reply_to": null,
+      "created_at": "2026-10-02T09:53:11.116Z",
+      "outcome": "failed",
+      "finished": true,
+      "wall_ms": 424984,
+      "pre_entry_queue_ms": 34267,
+      "entry_to_finish_ms": 390717,
+      "time_to_first_publish_activation_ms": null,
+      "activations": 48,
+      "attempted_follow_commands": 48,
+      "blocked_navigation_commands": 3,
+      "local_view_commands": 0,
+      "http_attempts": 48,
+      "http_responses": 48,
+      "http_error_responses": 0,
+      "http_status_counts": {
+        "200": 48
+      },
+      "unique_http_urls": 46,
+      "recorded_client_errors": 0,
+      "http_attempts_without_recorded_response": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 47
+      },
+      "semantic_operation_groups": {},
+      "label_based_operation_groups": {
+        "other": 47,
+        "publication_flow": 1
+      },
+      "label_grouping_limit": "Heuristic label classification only; unlabelled word/key links remain other. Inspect transition labels for exact effects.",
+      "wire_body_bytes": 391235,
+      "partial_transfer_bytes": 0,
+      "transport_error_count": 0,
+      "uncompressed_bytes": 2277386,
+      "http_ms": 19444.086206995882,
+      "extraction_ms": 11661.301751999184,
+      "extracted_tokens_o200k": 36480,
+      "links_presented": 4807,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": null,
+      "post_close_verification": null,
+      "recovery_facts": null,
+      "diagnostic_facts": null,
+      "note_sha256": "e28f46b2bdc74359173704b7ab9649c46434697b57ead4ecd278598ad4e4585d",
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-02T09:53:45.059Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-02T09:53:45.383Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "semantic": null,
+          "span_search_activations": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-02T09:53:45.680Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 245.229958999902,
+          "wire_body_bytes": 4060,
+          "uncompressed_bytes": 10131
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-02T09:53:45.948Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 888,
+          "links_presented": 45
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-02T09:53:52.821Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-02T09:53:53.072Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Frame Keyboard",
+          "intent": false,
+          "url_sha256": "37c4fb8bc17be9cdeedab7d85da7dc753f59f79778aa697302cf6349810dfd87",
+          "gap_ms": 7124
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-02T09:53:53.326Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 197.1432910002768,
+          "wire_body_bytes": 3633,
+          "uncompressed_bytes": 11768
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-02T09:53:53.586Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 433,
+          "links_presented": 21
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-02T09:54:00.589Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-02T09:54:00.827Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Start a new Frame draft",
+          "intent": false,
+          "url_sha256": "37c4fb8bc17be9cdeedab7d85da7dc753f59f79778aa697302cf6349810dfd87",
+          "gap_ms": 7241
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-02T09:54:01.076Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 189.07108400017023,
+          "wire_body_bytes": 3640,
+          "uncompressed_bytes": 11768
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-02T09:54:01.344Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 433,
+          "links_presented": 21
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-02T09:54:07.711Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-02T09:54:07.921Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Other · Write a sentence from exact characters",
+          "intent": false,
+          "url_sha256": "f24a0441e9e7e94d9869e91f55dafe3480be32670d6437e74cedaf1b414a6871",
+          "gap_ms": 6577
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-02T09:54:08.371Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 397.34137499984354,
+          "wire_body_bytes": 4291,
+          "uncompressed_bytes": 13816
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-02T09:54:08.624Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 493,
+          "links_presented": 25
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-02T09:54:14.677Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-02T09:54:14.910Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Compose exact text",
+          "intent": false,
+          "url_sha256": "bbd37dafbc484cce7d1cfd7e63d51d8ec03c396df5559faa6bfc0e10c1158d49",
+          "gap_ms": 6286
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-02T09:54:15.172Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 211.85225000046194,
+          "wire_body_bytes": 9241,
+          "uncompressed_bytes": 55400
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-02T09:54:15.424Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 825,
+          "links_presented": 119
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-02T09:54:27.611Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-02T09:54:27.937Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "P",
+          "intent": false,
+          "url_sha256": "f9a71de8fd2b656410ffafb84ab640d37337a28622becff924e30acc0ab74ccc",
+          "gap_ms": 12513
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-02T09:54:28.300Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 309.19787500053644,
+          "wire_body_bytes": 9336,
+          "uncompressed_bytes": 56816
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-02T09:54:28.565Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 831,
+          "links_presented": 120
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-02T09:54:41.144Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-02T09:54:41.355Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "l",
+          "intent": false,
+          "url_sha256": "6a0c742c181e6a9b865d5b7e68e5d87afe8845d828dcb559680dc875cd455c5c",
+          "gap_ms": 12790
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-02T09:54:41.739Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 331.8544169999659,
+          "wire_body_bytes": 9334,
+          "uncompressed_bytes": 56410
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-02T09:54:41.989Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 831,
+          "links_presented": 120
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-02T09:54:51.705Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-02T09:54:51.965Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "e",
+          "intent": false,
+          "url_sha256": "d2444db1fc33c57b5b06d1b791a2d8ec6d7cf5784a31d555b451b666ae641ddb",
+          "gap_ms": 9976
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-02T09:54:52.375Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 353.13925000000745,
+          "wire_body_bytes": 9327,
+          "uncompressed_bytes": 56990
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-02T09:54:52.629Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 831,
+          "links_presented": 120
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-02T09:54:55.435Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-02T09:54:55.672Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "a",
+          "intent": false,
+          "url_sha256": "5a1dcd01f9426a31048fd5fa0c4bc75f260508079512a4f8ca8da253994f357b",
+          "gap_ms": 3043
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-02T09:54:56.066Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 343.51091700047255,
+          "wire_body_bytes": 9349,
+          "uncompressed_bytes": 57213
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-02T09:54:56.329Z",
+          "kind": "extraction",
+          "page": 9,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-02T09:54:58.680Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-02T09:54:58.922Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "s",
+          "intent": false,
+          "url_sha256": "5ecc9383ed6787573dcbb29a5ff834058535dd66143754e7d32bbba259c59bac",
+          "gap_ms": 2593
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-02T09:54:59.386Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 411.6812920002267,
+          "wire_body_bytes": 9385,
+          "uncompressed_bytes": 57481
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-02T09:54:59.653Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-02T09:55:04.044Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-02T09:55:04.277Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "e",
+          "intent": false,
+          "url_sha256": "63f273f8f7b1ef89e69210a431311becd33c45433fce6a002eb85aab825263be",
+          "gap_ms": 4624
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-02T09:55:04.717Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 380.9111249996349,
+          "wire_body_bytes": 9348,
+          "uncompressed_bytes": 57116
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-02T09:55:04.973Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 831,
+          "links_presented": 120
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-02T09:55:07.509Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-02T09:55:07.726Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "d55dabfd65af63969c5d6ba85a8dbd1e23c8bb1331e9d3b033f978c3d7128567",
+          "gap_ms": 2753
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-02T09:55:08.200Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 423.45529100019485,
+          "wire_body_bytes": 9345,
+          "uncompressed_bytes": 57726
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-02T09:55:08.450Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 831,
+          "links_presented": 120
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-02T09:55:16.565Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-02T09:55:16.793Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "w",
+          "intent": false,
+          "url_sha256": "673768e6acc9044e2679d013fe0303bdf83f2adcd3582480d8dab294315fb634",
+          "gap_ms": 8343
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-02T09:55:17.255Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 405.1896249996498,
+          "wire_body_bytes": 9383,
+          "uncompressed_bytes": 55999
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-02T09:55:17.502Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-02T09:55:19.775Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-02T09:55:19.988Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "a",
+          "intent": false,
+          "url_sha256": "10e41e5025b8ec63118936f82f076259ce90ce2f54894d32b2668dd85ddeed80",
+          "gap_ms": 2486
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-02T09:55:20.534Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 496.3115840004757,
+          "wire_body_bytes": 9359,
+          "uncompressed_bytes": 57348
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-02T09:55:20.785Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-02T09:55:23.367Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-02T09:55:23.583Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "i",
+          "intent": false,
+          "url_sha256": "b56de3c7b5d1c6ed2834ffced9cb945b8e811a8fcfb5d3ec60fe5b3b833565d7",
+          "gap_ms": 2798
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-02T09:55:24.055Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 422.3277079993859,
+          "wire_body_bytes": 9355,
+          "uncompressed_bytes": 56520
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-02T09:55:24.305Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-02T09:55:26.542Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-02T09:55:26.753Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "t",
+          "intent": false,
+          "url_sha256": "006382c6195170e99015b8afeee3306203b16a89d4bb117f9b50feeb12177116",
+          "gap_ms": 2448
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-02T09:55:27.245Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 438.566374999471,
+          "wire_body_bytes": 9332,
+          "uncompressed_bytes": 56731
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-02T09:55:27.503Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-02T09:55:29.946Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-02T09:55:30.159Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "5fcf180a194c84f45278f352c0e63ad7b4d4193c7ad9453707f1acce215c9bb8",
+          "gap_ms": 2656
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-02T09:55:30.637Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 425.43745799921453,
+          "wire_body_bytes": 9320,
+          "uncompressed_bytes": 56073
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-02T09:55:30.886Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 832,
+          "links_presented": 120
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-02T09:55:33.599Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-02T09:55:33.825Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "I",
+          "intent": false,
+          "url_sha256": "9db416a76e55f3b1539dc9ab6ad6e6d59c4cff234627459097db4d7980c9be06",
+          "gap_ms": 2939
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-02T09:55:34.516Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 641.2828749995679,
+          "wire_body_bytes": 9333,
+          "uncompressed_bytes": 56118
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-02T09:55:34.769Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 833,
+          "links_presented": 120
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-02T09:55:37.186Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-02T09:55:37.414Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "’",
+          "intent": false,
+          "url_sha256": "070b5253c875e709549045eb424b9bf3b6af7aa955dd609811613f6f9fbb5938",
+          "gap_ms": 2645
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-02T09:55:37.997Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 522.9793339995667,
+          "wire_body_bytes": 9346,
+          "uncompressed_bytes": 57811
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-02T09:55:38.247Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 833,
+          "links_presented": 120
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-02T09:55:40.749Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-02T09:55:40.963Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "l",
+          "intent": false,
+          "url_sha256": "0bd8f4fba295b9110f5193e28d97b5e3462698c60988d2f4fb717a40bbe4f5a1",
+          "gap_ms": 2716
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-02T09:55:41.504Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 488.97520800027996,
+          "wire_body_bytes": 9357,
+          "uncompressed_bytes": 57202
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-02T09:55:41.748Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 834,
+          "links_presented": 120
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-02T09:55:44.049Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-02T09:55:44.265Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "l",
+          "intent": false,
+          "url_sha256": "82bbca924c6d78434e81317fba5c065500672e83175445e83d7aab675b42a217",
+          "gap_ms": 2517
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-02T09:55:44.620Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 302.5542920008302,
+          "wire_body_bytes": 9360,
+          "uncompressed_bytes": 56564
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-02T09:55:44.870Z",
+          "kind": "extraction",
+          "page": 21,
+          "tokens_o200k": 834,
+          "links_presented": 120
+        },
+        {
+          "seq": 85,
+          "at": "2026-10-02T09:55:47.438Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 86,
+          "at": "2026-10-02T09:55:47.650Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "316f13dc3e12c718c1de825bbd5145aa478d4b2b74980a8c164803460672d588",
+          "gap_ms": 2780
+        },
+        {
+          "seq": 87,
+          "at": "2026-10-02T09:55:48.013Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 308.17095799930394,
+          "wire_body_bytes": 9325,
+          "uncompressed_bytes": 57612
+        },
+        {
+          "seq": 88,
+          "at": "2026-10-02T09:55:48.262Z",
+          "kind": "extraction",
+          "page": 22,
+          "tokens_o200k": 834,
+          "links_presented": 120
+        },
+        {
+          "seq": 89,
+          "at": "2026-10-02T09:57:15.437Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 90,
+          "at": "2026-10-02T09:57:15.655Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "b",
+          "intent": false,
+          "url_sha256": "7dd88b1b2f187de5c2d3f5500ce384b6ed14868baeb43c8d9897978b05b0ff85",
+          "gap_ms": 87393
+        },
+        {
+          "seq": 91,
+          "at": "2026-10-02T09:57:16.021Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 315.3758749999106,
+          "wire_body_bytes": 9343,
+          "uncompressed_bytes": 57312
+        },
+        {
+          "seq": 92,
+          "at": "2026-10-02T09:57:16.271Z",
+          "kind": "extraction",
+          "page": 23,
+          "tokens_o200k": 835,
+          "links_presented": 120
+        },
+        {
+          "seq": 93,
+          "at": "2026-10-02T09:57:18.794Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 94,
+          "at": "2026-10-02T09:57:19.011Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "e",
+          "intent": false,
+          "url_sha256": "333935228a14f6719f3404577c88a2f1bc1cbc273935d04d41bf710e10ede35f",
+          "gap_ms": 2740
+        },
+        {
+          "seq": 95,
+          "at": "2026-10-02T09:57:19.427Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 365.2626250004396,
+          "wire_body_bytes": 9336,
+          "uncompressed_bytes": 56438
+        },
+        {
+          "seq": 96,
+          "at": "2026-10-02T09:57:19.685Z",
+          "kind": "extraction",
+          "page": 24,
+          "tokens_o200k": 835,
+          "links_presented": 120
+        },
+        {
+          "seq": 97,
+          "at": "2026-10-02T09:57:22.671Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 98,
+          "at": "2026-10-02T09:57:22.920Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "a5a828e79ecfc4c20908168a5eebf3600dc126c7f877ff138a81b8618bc4b4d3",
+          "gap_ms": 3235
+        },
+        {
+          "seq": 99,
+          "at": "2026-10-02T09:57:23.378Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 382.2416249997914,
+          "wire_body_bytes": 9371,
+          "uncompressed_bytes": 57233
+        },
+        {
+          "seq": 100,
+          "at": "2026-10-02T09:57:23.630Z",
+          "kind": "extraction",
+          "page": 25,
+          "tokens_o200k": 835,
+          "links_presented": 120
+        },
+        {
+          "seq": 101,
+          "at": "2026-10-02T09:57:26.063Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 102,
+          "at": "2026-10-02T09:57:26.285Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "b",
+          "intent": false,
+          "url_sha256": "83ab99df8fc7583aeff73f2a43b7094034ea326fde20455555235001d5aaf154",
+          "gap_ms": 2655
+        },
+        {
+          "seq": 103,
+          "at": "2026-10-02T09:57:26.715Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 378.71462500002235,
+          "wire_body_bytes": 9355,
+          "uncompressed_bytes": 57713
+        },
+        {
+          "seq": 104,
+          "at": "2026-10-02T09:57:26.966Z",
+          "kind": "extraction",
+          "page": 26,
+          "tokens_o200k": 836,
+          "links_presented": 120
+        },
+        {
+          "seq": 105,
+          "at": "2026-10-02T09:57:29.964Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 106,
+          "at": "2026-10-02T09:57:30.178Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "a",
+          "intent": false,
+          "url_sha256": "ff42278c3af0a06035f80ffc94409f7c2a68d9493d16c2b68210683c9ee89300",
+          "gap_ms": 3212
+        },
+        {
+          "seq": 107,
+          "at": "2026-10-02T09:57:30.617Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 385.71870800014585,
+          "wire_body_bytes": 9354,
+          "uncompressed_bytes": 57046
+        },
+        {
+          "seq": 108,
+          "at": "2026-10-02T09:57:30.860Z",
+          "kind": "extraction",
+          "page": 27,
+          "tokens_o200k": 836,
+          "links_presented": 120
+        },
+        {
+          "seq": 109,
+          "at": "2026-10-02T09:57:33.682Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 110,
+          "at": "2026-10-02T09:57:33.900Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "c",
+          "intent": false,
+          "url_sha256": "f3accb7e2bb347f39e7ce1ebbcc496bac80655bf74bf634f19464f164279b9d7",
+          "gap_ms": 3040
+        },
+        {
+          "seq": 111,
+          "at": "2026-10-02T09:57:34.494Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 544.7972499998286,
+          "wire_body_bytes": 9347,
+          "uncompressed_bytes": 56736
+        },
+        {
+          "seq": 112,
+          "at": "2026-10-02T09:57:34.744Z",
+          "kind": "extraction",
+          "page": 28,
+          "tokens_o200k": 836,
+          "links_presented": 120
+        },
+        {
+          "seq": 113,
+          "at": "2026-10-02T09:57:38.413Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 114,
+          "at": "2026-10-02T09:57:38.639Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "k",
+          "intent": false,
+          "url_sha256": "3a1e75f7d5d74c56c1ccefe6eab2262451fe7ab924c55b1daa65c39f0d4b2b35",
+          "gap_ms": 3895
+        },
+        {
+          "seq": 115,
+          "at": "2026-10-02T09:57:39.080Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 392.09329100046307,
+          "wire_body_bytes": 9342,
+          "uncompressed_bytes": 56416
+        },
+        {
+          "seq": 116,
+          "at": "2026-10-02T09:57:39.330Z",
+          "kind": "extraction",
+          "page": 29,
+          "tokens_o200k": 836,
+          "links_presented": 120
+        },
+        {
+          "seq": 117,
+          "at": "2026-10-02T09:57:43.737Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 118,
+          "at": "2026-10-02T09:57:43.953Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "1db1a4ab21deddd3276aec2c0f2ace1a7a170f7447009382291c6cd4d3bac450",
+          "gap_ms": 4623
+        },
+        {
+          "seq": 119,
+          "at": "2026-10-02T09:57:44.510Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 504.2205410003662,
+          "wire_body_bytes": 9377,
+          "uncompressed_bytes": 56797
+        },
+        {
+          "seq": 120,
+          "at": "2026-10-02T09:57:44.764Z",
+          "kind": "extraction",
+          "page": 30,
+          "tokens_o200k": 836,
+          "links_presented": 120
+        },
+        {
+          "seq": 121,
+          "at": "2026-10-02T09:57:51.166Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 122,
+          "at": "2026-10-02T09:57:51.400Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "i",
+          "intent": false,
+          "url_sha256": "625d6d89a0d3ae07b1f73ddbe019bbf1bdf672871fc60b1af41fdcdac87ff3a4",
+          "gap_ms": 6636
+        },
+        {
+          "seq": 123,
+          "at": "2026-10-02T09:57:51.937Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 474.22970800008625,
+          "wire_body_bytes": 9335,
+          "uncompressed_bytes": 57035
+        },
+        {
+          "seq": 124,
+          "at": "2026-10-02T09:57:52.191Z",
+          "kind": "extraction",
+          "page": 31,
+          "tokens_o200k": 837,
+          "links_presented": 120
+        },
+        {
+          "seq": 125,
+          "at": "2026-10-02T09:57:54.978Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 126,
+          "at": "2026-10-02T09:57:55.214Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "n",
+          "intent": false,
+          "url_sha256": "4af6dd0506d8b0e868451cd95a6dc407ef557be164aacc181f027457b848f833",
+          "gap_ms": 3023
+        },
+        {
+          "seq": 127,
+          "at": "2026-10-02T09:57:55.824Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 557.4922500001267,
+          "wire_body_bytes": 9349,
+          "uncompressed_bytes": 56922
+        },
+        {
+          "seq": 128,
+          "at": "2026-10-02T09:57:56.075Z",
+          "kind": "extraction",
+          "page": 32,
+          "tokens_o200k": 837,
+          "links_presented": 120
+        },
+        {
+          "seq": 129,
+          "at": "2026-10-02T09:57:59.252Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 130,
+          "at": "2026-10-02T09:57:59.490Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "c6b6001d549ff109fc6cf85e96346c386d65f0442513ef0093c501c1f0780e9a",
+          "gap_ms": 3415
+        },
+        {
+          "seq": 131,
+          "at": "2026-10-02T09:58:00.024Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 483.05783300008625,
+          "wire_body_bytes": 9318,
+          "uncompressed_bytes": 57001
+        },
+        {
+          "seq": 132,
+          "at": "2026-10-02T09:58:00.325Z",
+          "kind": "extraction",
+          "page": 33,
+          "tokens_o200k": 837,
+          "links_presented": 120
+        },
+        {
+          "seq": 133,
+          "at": "2026-10-02T09:58:02.783Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 134,
+          "at": "2026-10-02T09:58:03.018Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "a",
+          "intent": false,
+          "url_sha256": "db2ab3493c3eea6cc0310aab2c5793cc4ba641e3c583599332f5f58bd3e8ac95",
+          "gap_ms": 2693
+        },
+        {
+          "seq": 135,
+          "at": "2026-10-02T09:58:03.713Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 632.0533329993486,
+          "wire_body_bytes": 9362,
+          "uncompressed_bytes": 57262
+        },
+        {
+          "seq": 136,
+          "at": "2026-10-02T09:58:03.970Z",
+          "kind": "extraction",
+          "page": 34,
+          "tokens_o200k": 838,
+          "links_presented": 120
+        },
+        {
+          "seq": 137,
+          "at": "2026-10-02T09:58:07.158Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 138,
+          "at": "2026-10-02T09:58:07.377Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Space",
+          "intent": false,
+          "url_sha256": "40fcf7726f3db7baa5f71587300b78e6dc2f758fd4abf1945378531d5bb62fe1",
+          "gap_ms": 3407
+        },
+        {
+          "seq": 139,
+          "at": "2026-10-02T09:58:07.923Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 494.0262079993263,
+          "wire_body_bytes": 9365,
+          "uncompressed_bytes": 57198
+        },
+        {
+          "seq": 140,
+          "at": "2026-10-02T09:58:08.178Z",
+          "kind": "extraction",
+          "page": 35,
+          "tokens_o200k": 838,
+          "links_presented": 120
+        },
+        {
+          "seq": 141,
+          "at": "2026-10-02T09:58:10.690Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 142,
+          "at": "2026-10-02T09:58:10.905Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "m",
+          "intent": false,
+          "url_sha256": "2e8e48af70b6cbb68d6dbd2e53a75dd0ebe3f44d0895069bd789476ef1c3a6b8",
+          "gap_ms": 2727
+        },
+        {
+          "seq": 143,
+          "at": "2026-10-02T09:58:11.851Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 890.8754580002278,
+          "wire_body_bytes": 9343,
+          "uncompressed_bytes": 55702
+        },
+        {
+          "seq": 144,
+          "at": "2026-10-02T09:58:12.101Z",
+          "kind": "extraction",
+          "page": 36,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 145,
+          "at": "2026-10-02T09:58:15.324Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 146,
+          "at": "2026-10-02T09:58:15.539Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "i",
+          "intent": false,
+          "url_sha256": "8d70bb78aebc1803ac4412a6e1b3a312cb04d96d185cc9bac86175d9183538fa",
+          "gap_ms": 3438
+        },
+        {
+          "seq": 147,
+          "at": "2026-10-02T09:58:15.906Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 315.66633299924433,
+          "wire_body_bytes": 9371,
+          "uncompressed_bytes": 56678
+        },
+        {
+          "seq": 148,
+          "at": "2026-10-02T09:58:16.157Z",
+          "kind": "extraction",
+          "page": 37,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 149,
+          "at": "2026-10-02T09:58:18.689Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 150,
+          "at": "2026-10-02T09:58:18.902Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "n",
+          "intent": false,
+          "url_sha256": "cbbe2c4717ddfebe135c23e8ddae611fec159f34fea5a8f35d99c9022e013175",
+          "gap_ms": 2745
+        },
+        {
+          "seq": 151,
+          "at": "2026-10-02T09:58:19.286Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 333.2445839997381,
+          "wire_body_bytes": 9379,
+          "uncompressed_bytes": 57017
+        },
+        {
+          "seq": 152,
+          "at": "2026-10-02T09:58:19.534Z",
+          "kind": "extraction",
+          "page": 38,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 153,
+          "at": "2026-10-02T09:58:22.460Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 154,
+          "at": "2026-10-02T09:58:22.677Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "u",
+          "intent": false,
+          "url_sha256": "aa0280b069a090a23aa0159f168de92f31879e22bb9c980cb92e365f0109a63d",
+          "gap_ms": 3143
+        },
+        {
+          "seq": 155,
+          "at": "2026-10-02T09:58:23.067Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 340.4176669996232,
+          "wire_body_bytes": 9375,
+          "uncompressed_bytes": 57218
+        },
+        {
+          "seq": 156,
+          "at": "2026-10-02T09:58:23.309Z",
+          "kind": "extraction",
+          "page": 39,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 157,
+          "at": "2026-10-02T09:58:25.891Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 158,
+          "at": "2026-10-02T09:58:26.111Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "t",
+          "intent": false,
+          "url_sha256": "21cc96e54a6482afa84a756487b6deac8b894f8810f61bee33a1dca943a56dd0",
+          "gap_ms": 2802
+        },
+        {
+          "seq": 159,
+          "at": "2026-10-02T09:58:26.507Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 344.60120799951255,
+          "wire_body_bytes": 9349,
+          "uncompressed_bytes": 56835
+        },
+        {
+          "seq": 160,
+          "at": "2026-10-02T09:58:26.762Z",
+          "kind": "extraction",
+          "page": 40,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 161,
+          "at": "2026-10-02T09:58:30.144Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 162,
+          "at": "2026-10-02T09:58:30.367Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "e",
+          "intent": false,
+          "url_sha256": "80887a7de72b8c7c5118108f94d59deb64021e8f7d2a9ac78bc917fbd5b24e46",
+          "gap_ms": 3605
+        },
+        {
+          "seq": 163,
+          "at": "2026-10-02T09:58:30.755Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 334.56545799970627,
+          "wire_body_bytes": 9351,
+          "uncompressed_bytes": 56925
+        },
+        {
+          "seq": 164,
+          "at": "2026-10-02T09:58:31.009Z",
+          "kind": "extraction",
+          "page": 41,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 165,
+          "at": "2026-10-02T09:58:33.724Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 166,
+          "at": "2026-10-02T09:58:33.960Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": ".",
+          "intent": false,
+          "url_sha256": "01e9d3019f7d10eca3661b4908fc5709af8706412b179c8678434c3aa8532532",
+          "gap_ms": 2951
+        },
+        {
+          "seq": 167,
+          "at": "2026-10-02T09:58:34.599Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 577.1132079996169,
+          "wire_body_bytes": 9347,
+          "uncompressed_bytes": 57018
+        },
+        {
+          "seq": 168,
+          "at": "2026-10-02T09:58:34.851Z",
+          "kind": "extraction",
+          "page": 42,
+          "tokens_o200k": 839,
+          "links_presented": 120
+        },
+        {
+          "seq": 169,
+          "at": "2026-10-02T09:58:42.551Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 170,
+          "at": "2026-10-02T09:58:42.790Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Return to frame",
+          "intent": false,
+          "url_sha256": "ddfcb340d33d7582619938bd86d5ff14120072484bdcb981da4f00a4400d6d77",
+          "gap_ms": 7939
+        },
+        {
+          "seq": 171,
+          "at": "2026-10-02T09:58:43.208Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 361.3833339996636,
+          "wire_body_bytes": 5666,
+          "uncompressed_bytes": 22991
+        },
+        {
+          "seq": 172,
+          "at": "2026-10-02T09:58:43.457Z",
+          "kind": "extraction",
+          "page": 43,
+          "tokens_o200k": 728,
+          "links_presented": 44
+        },
+        {
+          "seq": 173,
+          "at": "2026-10-02T09:58:53.637Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 174,
+          "at": "2026-10-02T09:58:53.924Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Review message",
+          "intent": false,
+          "url_sha256": "e4a30543311e00d93ee3973723df0f826de39f17ff8fabddcede51241f784ddf",
+          "gap_ms": 10467
+        },
+        {
+          "seq": 175,
+          "at": "2026-10-02T09:58:54.635Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 642.093249999918,
+          "wire_body_bytes": 2128,
+          "uncompressed_bytes": 4583
+        },
+        {
+          "seq": 176,
+          "at": "2026-10-02T09:58:54.902Z",
+          "kind": "extraction",
+          "page": 44,
+          "tokens_o200k": 145,
+          "links_presented": 2
+        },
+        {
+          "seq": 177,
+          "at": "2026-10-02T09:59:02.212Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 178,
+          "at": "2026-10-02T09:59:13.924Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 179,
+          "at": "2026-10-02T09:59:27.352Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 180,
+          "at": "2026-10-02T09:59:27.716Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Edit message and discard this private draft",
+          "intent": false,
+          "url_sha256": "7d80ac8fb8147f740e0b3bf7e29f4e243d65c1d21dd3e3e3a4b2d72c52fe1f9f",
+          "gap_ms": 32814
+        },
+        {
+          "seq": 181,
+          "at": "2026-10-02T09:59:28.088Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 305.6469169994816,
+          "wire_body_bytes": 1664,
+          "uncompressed_bytes": 3513
+        },
+        {
+          "seq": 182,
+          "at": "2026-10-02T09:59:28.332Z",
+          "kind": "extraction",
+          "page": 45,
+          "tokens_o200k": 27,
+          "links_presented": 1
+        },
+        {
+          "seq": 183,
+          "at": "2026-10-02T09:59:36.595Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 184,
+          "at": "2026-10-02T09:59:36.818Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Edit message",
+          "intent": false,
+          "url_sha256": "c40657dfe5f205c60f539c2c9e42d52390fb7cd849caff080766954f8e6f3aa7",
+          "gap_ms": 8486
+        },
+        {
+          "seq": 185,
+          "at": "2026-10-02T09:59:37.295Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 428.7304579997435,
+          "wire_body_bytes": 5666,
+          "uncompressed_bytes": 22991
+        },
+        {
+          "seq": 186,
+          "at": "2026-10-02T09:59:37.531Z",
+          "kind": "extraction",
+          "page": 46,
+          "tokens_o200k": 728,
+          "links_presented": 44
+        },
+        {
+          "seq": 187,
+          "at": "2026-10-02T09:59:45.419Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 188,
+          "at": "2026-10-02T09:59:45.639Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Return to Relay home",
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": 8108
+        },
+        {
+          "seq": 189,
+          "at": "2026-10-02T09:59:45.904Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 215.30900000035763,
+          "wire_body_bytes": 4060,
+          "uncompressed_bytes": 10131
+        },
+        {
+          "seq": 190,
+          "at": "2026-10-02T09:59:46.138Z",
+          "kind": "extraction",
+          "page": 47,
+          "tokens_o200k": 888,
+          "links_presented": 45
+        },
+        {
+          "seq": 191,
+          "at": "2026-10-02T09:59:53.779Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 192,
+          "at": "2026-10-02T09:59:54.011Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Machine entry (JSON)",
+          "intent": false,
+          "url_sha256": "6b8fd01abf87c1538144c4adb036544a0f4c209dd6eafde509c1107c7e44ba4c",
+          "gap_ms": 7873
+        },
+        {
+          "seq": 193,
+          "at": "2026-10-02T09:59:54.272Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 198.97191699966788,
+          "wire_body_bytes": 1223,
+          "uncompressed_bytes": 4062
+        },
+        {
+          "seq": 194,
+          "at": "2026-10-02T09:59:54.278Z",
+          "kind": "extraction",
+          "page": 48,
+          "tokens_o200k": null,
+          "links_presented": 0
+        },
+        {
+          "seq": 195,
+          "at": "2026-10-02T10:00:06.951Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 196,
+          "at": "2026-10-02T10:00:16.081Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 197,
+          "at": "2026-10-02T10:00:16.114Z",
+          "kind": "finish"
+        },
+        {
+          "seq": 198,
+          "at": "2026-10-02T10:00:44.909Z",
+          "kind": "orchestrator-observation"
+        }
+      ]
+    },
+    {
+      "run": "op1-p04-predictive-word",
+      "provider_tokens": null,
+      "provider_cost": null,
+      "provider_usage_source_hashes": [],
+      "benchmark": "relay-luna-owner-phrases-1.0.0",
+      "cohort": "owner-phrases-2026-10-02-r1",
+      "cohort_adjudication": null,
+      "failure_adjudication": null,
+      "execution_conditions": null,
+      "recorder_sha256": null,
+      "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+      "costs_complete": true,
+      "external_tool_errors": 1,
+      "external_tool_ms": 0,
+      "external_observation_source_hashes": [
+        "42af8b54b0b0c70c05afc17116a4e52076f57b2c3a17b710733f404dae3017a5"
+      ],
+      "failure_category": null,
+      "scored": true,
+      "task": "P04",
+      "method": "predictive-word",
+      "profile": "strict-supplied-links-no-js-no-forms",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "inherited-unverified",
+      "release": "8c972f86-7e41-49fe-87a1-c35b18ded6af",
+      "target_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6",
+      "target_utf8_bytes": 40,
+      "reply_to": null,
+      "created_at": "2026-10-02T09:41:16.287Z",
+      "outcome": "failed",
+      "finished": true,
+      "wall_ms": 138071,
+      "pre_entry_queue_ms": 48923,
+      "entry_to_finish_ms": 89148,
+      "time_to_first_publish_activation_ms": null,
+      "activations": 8,
+      "attempted_follow_commands": 7,
+      "blocked_navigation_commands": 0,
+      "local_view_commands": 0,
+      "http_attempts": 8,
+      "http_responses": 8,
+      "http_error_responses": 0,
+      "http_status_counts": {
+        "200": 8
+      },
+      "unique_http_urls": 8,
+      "recorded_client_errors": 0,
+      "http_attempts_without_recorded_response": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 7
+      },
+      "semantic_operation_groups": {},
+      "label_based_operation_groups": {
+        "other": 7,
+        "word": 1
+      },
+      "label_grouping_limit": "Heuristic label classification only; unlabelled word/key links remain other. Inspect transition labels for exact effects.",
+      "wire_body_bytes": 64450,
+      "partial_transfer_bytes": 0,
+      "transport_error_count": 0,
+      "uncompressed_bytes": 331985,
+      "http_ms": 2755.2820830000564,
+      "extraction_ms": 2016.5993330003694,
+      "extracted_tokens_o200k": 10883,
+      "links_presented": 806,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": null,
+      "post_close_verification": null,
+      "recovery_facts": null,
+      "diagnostic_facts": null,
+      "note_sha256": "d55cf90e62231fc7c2d09dd33a30a84ee655b1d81f372579234daa24a9dc9633",
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-02T09:42:04.882Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-02T09:42:05.211Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "semantic": null,
+          "span_search_activations": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-02T09:42:05.612Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 344.86904099956155,
+          "wire_body_bytes": 4060,
+          "uncompressed_bytes": 10131
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-02T09:42:05.871Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 888,
+          "links_presented": 45
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-02T09:42:17.368Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-02T09:42:17.582Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Predictive Word Keyboard",
+          "intent": false,
+          "url_sha256": "d3d4f155015104d7ba72f7cc8e1c704db4844bae97cd44b7608d98517a5eeaea",
+          "gap_ms": 11711
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-02T09:42:17.940Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 306.53824999928474,
+          "wire_body_bytes": 10865,
+          "uncompressed_bytes": 54621
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-02T09:42:18.197Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 1366,
+          "links_presented": 101
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-02T09:42:27.088Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-02T09:42:27.297Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add top word Please",
+          "intent": false,
+          "url_sha256": "8b3fc6c4f9ff7ff4ab415c6e628a1e6f12d545e87e5ef8b31001c281e1976cec",
+          "gap_ms": 9100
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-02T09:42:27.652Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 300.32233300060034,
+          "wire_body_bytes": 9923,
+          "uncompressed_bytes": 47002
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-02T09:42:27.909Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 1164,
+          "links_presented": 86
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-02T09:42:38.561Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-02T09:42:38.783Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add Space",
+          "intent": false,
+          "url_sha256": "6646e62bc9f419d32e5bf61df90b29f368dc6d771959bc7be0d774bcc12417c4",
+          "gap_ms": 10874
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-02T09:42:39.258Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 422.88745899964124,
+          "wire_body_bytes": 9979,
+          "uncompressed_bytes": 46362
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-02T09:42:39.513Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 1170,
+          "links_presented": 86
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-02T09:42:47.514Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-02T09:42:47.732Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Exact characters and Unicode",
+          "intent": false,
+          "url_sha256": "cd33ad5f0c72695a813a63b357620bf6ad451c57ed1f07c18c68289dbccdaa56",
+          "gap_ms": 8219
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-02T09:42:48.007Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 227.68104100041091,
+          "wire_body_bytes": 7440,
+          "uncompressed_bytes": 43389
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-02T09:42:48.263Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 1573,
+          "links_presented": 122
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-02T09:42:56.455Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-02T09:42:56.670Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0077",
+          "intent": false,
+          "url_sha256": "dbc06575b924bbe3ebf0afe914ea4465bef29f936a79e2d07904b02d4c1c0e47",
+          "gap_ms": 8407
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-02T09:42:57.090Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 367.4098749998957,
+          "wire_body_bytes": 7397,
+          "uncompressed_bytes": 43401
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-02T09:42:57.349Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-02T09:43:04.033Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-02T09:43:04.260Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0061",
+          "intent": false,
+          "url_sha256": "b73d53a29d3ad9ad63f8ca7d1d7b55eb5aba84dbad17543c6fd0cc20aeaf8c7b",
+          "gap_ms": 6911
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-02T09:43:04.707Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 388.6956250006333,
+          "wire_body_bytes": 7393,
+          "uncompressed_bytes": 42699
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-02T09:43:04.963Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-02T09:43:26.100Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-02T09:43:26.317Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0072",
+          "intent": false,
+          "url_sha256": "236f1a7eb404cde204a312c46bb7df5953a0a51d8eea683c9e64e08202bab580",
+          "gap_ms": 21354
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-02T09:43:26.770Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 396.87845900002867,
+          "wire_body_bytes": 7393,
+          "uncompressed_bytes": 44380
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-02T09:43:27.032Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-02T09:43:34.337Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-02T09:43:34.374Z",
+          "kind": "finish"
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-02T09:43:48.074Z",
+          "kind": "orchestrator-observation"
+        }
+      ]
+    },
+    {
+      "run": "op1-p04-prefix-link",
+      "provider_tokens": null,
+      "provider_cost": null,
+      "provider_usage_source_hashes": [],
+      "benchmark": "relay-luna-owner-phrases-1.0.0",
+      "cohort": "owner-phrases-2026-10-02-r1",
+      "cohort_adjudication": null,
+      "failure_adjudication": null,
+      "execution_conditions": null,
+      "recorder_sha256": null,
+      "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+      "costs_complete": true,
+      "external_tool_errors": 9,
+      "external_tool_ms": 0,
+      "external_observation_source_hashes": [
+        "42af8b54b0b0c70c05afc17116a4e52076f57b2c3a17b710733f404dae3017a5"
+      ],
+      "failure_category": null,
+      "scored": true,
+      "task": "P04",
+      "method": "prefix-link",
+      "profile": "strict-supplied-links-no-js-no-forms",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "inherited-unverified",
+      "release": "8c972f86-7e41-49fe-87a1-c35b18ded6af",
+      "target_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6",
+      "target_utf8_bytes": 40,
+      "reply_to": null,
+      "created_at": "2026-10-02T09:43:48.420Z",
+      "outcome": "failed",
+      "finished": true,
+      "wall_ms": 264326,
+      "pre_entry_queue_ms": 35972,
+      "entry_to_finish_ms": 228354,
+      "time_to_first_publish_activation_ms": null,
+      "activations": 28,
+      "attempted_follow_commands": 35,
+      "blocked_navigation_commands": 8,
+      "local_view_commands": 0,
+      "http_attempts": 28,
+      "http_responses": 28,
+      "http_error_responses": 0,
+      "http_status_counts": {
+        "200": 28
+      },
+      "unique_http_urls": 27,
+      "recorded_client_errors": 0,
+      "http_attempts_without_recorded_response": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 27
+      },
+      "semantic_operation_groups": {},
+      "label_based_operation_groups": {
+        "other": 27,
+        "word": 1
+      },
+      "label_grouping_limit": "Heuristic label classification only; unlabelled word/key links remain other. Inspect transition labels for exact effects.",
+      "wire_body_bytes": 303929,
+      "partial_transfer_bytes": 0,
+      "transport_error_count": 0,
+      "uncompressed_bytes": 2061495,
+      "http_ms": 12738.622418002225,
+      "extraction_ms": 7002.452871001326,
+      "extracted_tokens_o200k": 80365,
+      "links_presented": 4751,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": null,
+      "post_close_verification": null,
+      "recovery_facts": null,
+      "diagnostic_facts": null,
+      "note_sha256": "0440d71dd82e8d44e47f67b290b6a55157dd89b23b2c259a79732692f36734b9",
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-02T09:44:24.083Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-02T09:44:24.393Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "semantic": null,
+          "span_search_activations": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-02T09:44:24.652Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 210.1925830002874,
+          "wire_body_bytes": 4060,
+          "uncompressed_bytes": 10131
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-02T09:44:24.935Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 888,
+          "links_presented": 45
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-02T09:44:32.826Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-02T09:44:33.049Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Prefix Link Keyboard",
+          "intent": false,
+          "url_sha256": "eb4aaf9aac11997c831e65740931d9acde2cde6633febd9b32c264b566338dab",
+          "gap_ms": 8114
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-02T09:44:33.423Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 323.98108400031924,
+          "wire_body_bytes": 13575,
+          "uncompressed_bytes": 99457
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-02T09:44:33.678Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 2700,
+          "links_presented": 74
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-02T09:44:42.559Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-02T09:44:42.791Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add top word Please",
+          "intent": false,
+          "url_sha256": "ee85b490c01d07f95e7025b36e7548f67d608dd9116fa616f97717bee9b19a8d",
+          "gap_ms": 9113
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-02T09:44:43.152Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 313.65895800013095,
+          "wire_body_bytes": 12691,
+          "uncompressed_bytes": 92042
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-02T09:44:43.409Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 2535,
+          "links_presented": 60
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-02T09:44:50.471Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-02T09:44:50.707Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Exact characters and Unicode",
+          "intent": false,
+          "url_sha256": "04d9518e7af9e1a31a0d75004a951768038a1451a7ccb2fe1cb9432d5d6cc6f0",
+          "gap_ms": 7298
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-02T09:44:51.000Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 234.40616699960083,
+          "wire_body_bytes": 7447,
+          "uncompressed_bytes": 45568
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-02T09:44:51.261Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 1573,
+          "links_presented": 122
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-02T09:45:02.143Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-02T09:45:02.364Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0077",
+          "intent": false,
+          "url_sha256": "9ca630be4f0e37275b1d008b9e1df0bceca8a4f21f91b25a260bcf33f08e940f",
+          "gap_ms": 11103
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-02T09:45:02.762Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 341.39329200051725,
+          "wire_body_bytes": 7471,
+          "uncompressed_bytes": 45232
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-02T09:45:03.015Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-02T09:45:14.722Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-02T09:45:17.635Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-02T09:45:20.175Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-02T09:45:22.930Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-02T09:45:25.410Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-02T09:45:31.446Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-02T09:45:34.607Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-02T09:45:40.653Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-02T09:45:49.596Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-02T09:45:49.821Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Undo last addition",
+          "intent": false,
+          "url_sha256": "04d9518e7af9e1a31a0d75004a951768038a1451a7ccb2fe1cb9432d5d6cc6f0",
+          "gap_ms": 46806
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-02T09:45:50.112Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 245.08195800054818,
+          "wire_body_bytes": 7447,
+          "uncompressed_bytes": 45568
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-02T09:45:50.357Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 1573,
+          "links_presented": 122
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-02T09:46:02.857Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-02T09:46:03.083Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append Space",
+          "intent": false,
+          "url_sha256": "637b1e6126bc883c9ad2ec9e2652a3f7c399406baab8a75e1b2e6d10d3f6a0a9",
+          "gap_ms": 12726
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-02T09:46:03.497Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 357.5834999997169,
+          "wire_body_bytes": 7427,
+          "uncompressed_bytes": 45601
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-02T09:46:03.754Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 1573,
+          "links_presented": 122
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-02T09:46:12.553Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-02T09:46:12.773Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0077",
+          "intent": false,
+          "url_sha256": "88ccb8fd2dd1b13a3b11d12bd157c0396f6b666c1dfea6ce16f2b2a86ff07a69",
+          "gap_ms": 9019
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-02T09:46:13.185Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 361.27208300027996,
+          "wire_body_bytes": 7434,
+          "uncompressed_bytes": 44717
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-02T09:46:13.441Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-02T09:46:17.184Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-02T09:46:17.393Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0061",
+          "intent": false,
+          "url_sha256": "ce5e0e25b63e8c8e9ed6743fee40d069d7afaf84b5867214ecfe1d3418bac793",
+          "gap_ms": 3952
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-02T09:46:17.799Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 355.6803339999169,
+          "wire_body_bytes": 7470,
+          "uncompressed_bytes": 46514
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-02T09:46:18.044Z",
+          "kind": "extraction",
+          "page": 9,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-02T09:46:21.091Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-02T09:46:21.302Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0069",
+          "intent": false,
+          "url_sha256": "f99462f06a60c7ff71e0fb988175cd25be03542ebb3f1b81ad1943362ed8b621",
+          "gap_ms": 3258
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-02T09:46:21.760Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 406.591707999818,
+          "wire_body_bytes": 7431,
+          "uncompressed_bytes": 45660
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-02T09:46:22.009Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-02T09:46:24.913Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-02T09:46:25.127Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0074",
+          "intent": false,
+          "url_sha256": "99dd3467710131624518819824b04ec76bc3bd164a0ae7349d18937dc982f099",
+          "gap_ms": 3118
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-02T09:46:25.589Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 416.74612499959767,
+          "wire_body_bytes": 7454,
+          "uncompressed_bytes": 45196
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-02T09:46:25.844Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-02T09:46:28.580Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-02T09:46:28.789Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+002E",
+          "intent": false,
+          "url_sha256": "93f52079b2f38b82d0ba762ee5fd934f93223436e6895453c461113826f6e3b6",
+          "gap_ms": 2945
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-02T09:46:29.304Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 463.34545799996704,
+          "wire_body_bytes": 7467,
+          "uncompressed_bytes": 46140
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-02T09:46:29.550Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 1574,
+          "links_presented": 122
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-02T09:46:32.475Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-02T09:46:32.690Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append Space",
+          "intent": false,
+          "url_sha256": "8d1b5d39761407bba478b3b0a88206d5993edf1b57a6d8dbf03425c0b12cb32a",
+          "gap_ms": 3140
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-02T09:46:33.368Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 628.4975840002298,
+          "wire_body_bytes": 7454,
+          "uncompressed_bytes": 45688
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-02T09:46:33.622Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 1575,
+          "links_presented": 122
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-02T09:46:36.893Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-02T09:46:37.106Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+0049",
+          "intent": false,
+          "url_sha256": "d543003e43567e2a68e40f9f2cccb8b9bbc9d45251aeb81f2023fc2dfd138c7f",
+          "gap_ms": 3484
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-02T09:46:37.652Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 499.47837499994785,
+          "wire_body_bytes": 7443,
+          "uncompressed_bytes": 45978
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-02T09:46:37.907Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 1576,
+          "links_presented": 122
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-02T09:46:44.929Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-02T09:46:45.182Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "U+000000–U+00FFFF",
+          "intent": false,
+          "url_sha256": "dc2f46cef785efff03e9d22b0d590b4fd56703f5df8c92af3ce0dca401c23cd1",
+          "gap_ms": 7275
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-02T09:46:45.551Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 317.00025000050664,
+          "wire_body_bytes": 2490,
+          "uncompressed_bytes": 9524
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-02T09:46:45.799Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 392,
+          "links_presented": 25
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-02T09:46:53.205Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-02T09:46:53.418Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "U+002000–U+002FFF",
+          "intent": false,
+          "url_sha256": "10e01f20611fdc8fce03cfaa0b56d9335a4fa1be3d9d3d1aa4779e403cf68760",
+          "gap_ms": 7619
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-02T09:46:53.942Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 474.08424999937415,
+          "wire_body_bytes": 2507,
+          "uncompressed_bytes": 9547
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-02T09:46:54.205Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 400,
+          "links_presented": 25
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-02T09:47:00.571Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-02T09:47:00.799Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "U+002000–U+0020FF",
+          "intent": false,
+          "url_sha256": "c242996f94939fa34b1d676a2454ccfd6de8a2f9eeac6d096134c42fbfa44764",
+          "gap_ms": 6594
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-02T09:47:01.218Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 353.5187079999596,
+          "wire_body_bytes": 15550,
+          "uncompressed_bytes": 111757
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-02T09:47:01.491Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 4668,
+          "links_presented": 265
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-02T09:47:10.352Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-02T09:47:10.563Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2019",
+          "intent": false,
+          "url_sha256": "d4917be4f0c3d76b9a86b5af3a1b752fda7b837234293000b8b1423acc00fd35",
+          "gap_ms": 9072
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-02T09:47:11.129Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 514.2324580000713,
+          "wire_body_bytes": 15507,
+          "uncompressed_bytes": 112581
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-02T09:47:11.380Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 4668,
+          "links_presented": 265
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-02T09:47:20.953Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-02T09:47:21.166Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+204D",
+          "intent": false,
+          "url_sha256": "4205a7ebd3682928abf9124d5ec1303d86f60889873eaf33888f491d69d77d93",
+          "gap_ms": 9786
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-02T09:47:21.902Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 679.7047499995679,
+          "wire_body_bytes": 15553,
+          "uncompressed_bytes": 111801
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-02T09:47:22.169Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 4671,
+          "links_presented": 265
+        },
+        {
+          "seq": 85,
+          "at": "2026-10-02T09:47:25.037Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 86,
+          "at": "2026-10-02T09:47:25.254Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+204D",
+          "intent": false,
+          "url_sha256": "bab1c74de0415ad31db8c04f173b784fb1a052f27c0d2818fd6d1b38b5cd7a9e",
+          "gap_ms": 3085
+        },
+        {
+          "seq": 87,
+          "at": "2026-10-02T09:47:25.943Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 637.5882920008153,
+          "wire_body_bytes": 15572,
+          "uncompressed_bytes": 110865
+        },
+        {
+          "seq": 88,
+          "at": "2026-10-02T09:47:26.196Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 4673,
+          "links_presented": 265
+        },
+        {
+          "seq": 89,
+          "at": "2026-10-02T09:47:28.738Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 90,
+          "at": "2026-10-02T09:47:28.956Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2001",
+          "intent": false,
+          "url_sha256": "2355d593b89c3b4563707e5c12726e142e70dc009f3c616b540afe483e192183",
+          "gap_ms": 2760
+        },
+        {
+          "seq": 91,
+          "at": "2026-10-02T09:47:29.666Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 656.1943750008941,
+          "wire_body_bytes": 15566,
+          "uncompressed_bytes": 111076
+        },
+        {
+          "seq": 92,
+          "at": "2026-10-02T09:47:29.920Z",
+          "kind": "extraction",
+          "page": 21,
+          "tokens_o200k": 4675,
+          "links_presented": 265
+        },
+        {
+          "seq": 93,
+          "at": "2026-10-02T09:47:32.429Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 94,
+          "at": "2026-10-02T09:47:32.639Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2043",
+          "intent": false,
+          "url_sha256": "9c75175b546f5cd1fe054d317b6d05ba01db4d369ab6a41c88b50e2fd4a01f2f",
+          "gap_ms": 2719
+        },
+        {
+          "seq": 95,
+          "at": "2026-10-02T09:47:33.681Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 984.8375840000808,
+          "wire_body_bytes": 15518,
+          "uncompressed_bytes": 109981
+        },
+        {
+          "seq": 96,
+          "at": "2026-10-02T09:47:33.933Z",
+          "kind": "extraction",
+          "page": 22,
+          "tokens_o200k": 4677,
+          "links_presented": 265
+        },
+        {
+          "seq": 97,
+          "at": "2026-10-02T09:47:36.641Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 98,
+          "at": "2026-10-02T09:47:36.857Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2046",
+          "intent": false,
+          "url_sha256": "1f687cac859a746f79be34e661e392cde52068305335cfa2cefff854e318a89d",
+          "gap_ms": 2924
+        },
+        {
+          "seq": 99,
+          "at": "2026-10-02T09:47:37.737Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 828.5682499995455,
+          "wire_body_bytes": 15533,
+          "uncompressed_bytes": 110854
+        },
+        {
+          "seq": 100,
+          "at": "2026-10-02T09:47:37.997Z",
+          "kind": "extraction",
+          "page": 23,
+          "tokens_o200k": 4679,
+          "links_presented": 265
+        },
+        {
+          "seq": 101,
+          "at": "2026-10-02T09:47:40.756Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 102,
+          "at": "2026-10-02T09:47:40.972Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2001",
+          "intent": false,
+          "url_sha256": "d311b105e4fcb8f435d1e33aa4581b9fe0c2b954186dedbfb56ab7e6218f8d61",
+          "gap_ms": 2975
+        },
+        {
+          "seq": 103,
+          "at": "2026-10-02T09:47:41.656Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 636.5479170000181,
+          "wire_body_bytes": 15517,
+          "uncompressed_bytes": 111832
+        },
+        {
+          "seq": 104,
+          "at": "2026-10-02T09:47:41.912Z",
+          "kind": "extraction",
+          "page": 24,
+          "tokens_o200k": 4681,
+          "links_presented": 265
+        },
+        {
+          "seq": 105,
+          "at": "2026-10-02T09:47:44.737Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 106,
+          "at": "2026-10-02T09:47:44.947Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2043",
+          "intent": false,
+          "url_sha256": "b8f65210156e6d1183626a22e63b2b80dc43b4bfb4a960109016b35f2b036cf0",
+          "gap_ms": 3035
+        },
+        {
+          "seq": 107,
+          "at": "2026-10-02T09:47:45.329Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 326.0902089998126,
+          "wire_body_bytes": 15573,
+          "uncompressed_bytes": 112072
+        },
+        {
+          "seq": 108,
+          "at": "2026-10-02T09:47:45.590Z",
+          "kind": "extraction",
+          "page": 25,
+          "tokens_o200k": 4683,
+          "links_presented": 265
+        },
+        {
+          "seq": 109,
+          "at": "2026-10-02T09:47:50.324Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 110,
+          "at": "2026-10-02T09:47:50.564Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2042",
+          "intent": false,
+          "url_sha256": "26f43c81e9eeb9766a7036514bc608a1881f7d8acfd357423a0cea2b7946ce7e",
+          "gap_ms": 4974
+        },
+        {
+          "seq": 111,
+          "at": "2026-10-02T09:47:50.936Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 314.7027080003172,
+          "wire_body_bytes": 15583,
+          "uncompressed_bytes": 113718
+        },
+        {
+          "seq": 112,
+          "at": "2026-10-02T09:47:51.193Z",
+          "kind": "extraction",
+          "page": 26,
+          "tokens_o200k": 4685,
+          "links_presented": 265
+        },
+        {
+          "seq": 113,
+          "at": "2026-10-02T09:47:56.309Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 114,
+          "at": "2026-10-02T09:47:56.519Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+205A",
+          "intent": false,
+          "url_sha256": "99795e4dd3dc9b909e7dff8da885f4b10bc543c65d846b51967ad7cb7be76559",
+          "gap_ms": 5326
+        },
+        {
+          "seq": 115,
+          "at": "2026-10-02T09:47:56.992Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 420.7627910003066,
+          "wire_body_bytes": 15640,
+          "uncompressed_bytes": 111638
+        },
+        {
+          "seq": 116,
+          "at": "2026-10-02T09:47:57.245Z",
+          "kind": "extraction",
+          "page": 27,
+          "tokens_o200k": 4687,
+          "links_presented": 265
+        },
+        {
+          "seq": 117,
+          "at": "2026-10-02T09:48:02.402Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 118,
+          "at": "2026-10-02T09:48:02.630Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Append U+2042",
+          "intent": false,
+          "url_sha256": "667f7380d1cf461c8ca7b4729b11385f15fbdf471587b5bc92f2036c19e95acd",
+          "gap_ms": 5385
+        },
+        {
+          "seq": 119,
+          "at": "2026-10-02T09:48:03.132Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 436.88066700007766,
+          "wire_body_bytes": 15549,
+          "uncompressed_bytes": 110757
+        },
+        {
+          "seq": 120,
+          "at": "2026-10-02T09:48:03.390Z",
+          "kind": "extraction",
+          "page": 28,
+          "tokens_o200k": 4689,
+          "links_presented": 265
+        },
+        {
+          "seq": 121,
+          "at": "2026-10-02T09:48:12.727Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 122,
+          "at": "2026-10-02T09:48:12.762Z",
+          "kind": "finish"
+        },
+        {
+          "seq": 123,
+          "at": "2026-10-02T09:48:29.164Z",
+          "kind": "orchestrator-observation"
+        }
+      ]
+    },
+    {
+      "run": "op1-p04-token-link",
+      "provider_tokens": null,
+      "provider_cost": null,
+      "provider_usage_source_hashes": [],
+      "benchmark": "relay-luna-owner-phrases-1.0.0",
+      "cohort": "owner-phrases-2026-10-02-r1",
+      "cohort_adjudication": null,
+      "failure_adjudication": null,
+      "execution_conditions": null,
+      "recorder_sha256": null,
+      "manifest_sha256": "9549a6b714c672a576b2f7eeadd85de2512823d5ca44403c3669b2534555f941",
+      "costs_complete": true,
+      "external_tool_errors": 3,
+      "external_tool_ms": 0,
+      "external_observation_source_hashes": [
+        "42af8b54b0b0c70c05afc17116a4e52076f57b2c3a17b710733f404dae3017a5"
+      ],
+      "failure_category": null,
+      "scored": true,
+      "task": "P04",
+      "method": "token-link",
+      "profile": "strict-supplied-links-no-js-no-forms",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "inherited-unverified",
+      "release": "8c972f86-7e41-49fe-87a1-c35b18ded6af",
+      "target_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6",
+      "target_utf8_bytes": 40,
+      "reply_to": null,
+      "created_at": "2026-10-02T09:48:29.512Z",
+      "outcome": "infrastructure_interruption",
+      "finished": true,
+      "wall_ms": 260646,
+      "pre_entry_queue_ms": 46165,
+      "entry_to_finish_ms": 214481,
+      "time_to_first_publish_activation_ms": null,
+      "activations": 20,
+      "attempted_follow_commands": 19,
+      "blocked_navigation_commands": 0,
+      "local_view_commands": 1,
+      "http_attempts": 20,
+      "http_responses": 20,
+      "http_error_responses": 0,
+      "http_status_counts": {
+        "200": 20
+      },
+      "unique_http_urls": 19,
+      "recorded_client_errors": 0,
+      "http_attempts_without_recorded_response": 0,
+      "redirects": 0,
+      "fragments": 0,
+      "activation_kinds": {
+        "initial-navigation": 1,
+        "link": 19
+      },
+      "semantic_operation_groups": {},
+      "label_based_operation_groups": {
+        "other": 8,
+        "token_or_byte": 7,
+        "browse": 5
+      },
+      "label_grouping_limit": "Heuristic label classification only; unlabelled word/key links remain other. Inspect transition labels for exact effects.",
+      "wire_body_bytes": 146333,
+      "partial_transfer_bytes": 0,
+      "transport_error_count": 0,
+      "uncompressed_bytes": 1017247,
+      "http_ms": 10786.980247995816,
+      "extraction_ms": 4992.2086649993435,
+      "extracted_tokens_o200k": 48894,
+      "links_presented": 3188,
+      "inspection_scope": "links presented by extraction; attention/links inspected are not observable",
+      "verification": null,
+      "post_close_verification": null,
+      "recovery_facts": null,
+      "diagnostic_facts": null,
+      "note_sha256": "e1006c91f96e62d9eb6a1180a629728808b305c89a7632cad5ffe7441fdeaf72",
+      "transitions": [
+        {
+          "seq": 1,
+          "at": "2026-10-02T09:49:15.352Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 2,
+          "at": "2026-10-02T09:49:15.678Z",
+          "kind": "activation",
+          "operation": "initial-navigation",
+          "semantic": null,
+          "span_search_activations": null,
+          "intent": false,
+          "url_sha256": "eabc4445a1a3617f88f96fb26f2c67ef30bef05e93e7597dbd91ddc563b2493f",
+          "gap_ms": null
+        },
+        {
+          "seq": 3,
+          "at": "2026-10-02T09:49:16.040Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 315.6330840000883,
+          "wire_body_bytes": 4060,
+          "uncompressed_bytes": 10131
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-02T09:49:16.299Z",
+          "kind": "extraction",
+          "page": 1,
+          "tokens_o200k": 888,
+          "links_presented": 45
+        },
+        {
+          "seq": 5,
+          "at": "2026-10-02T09:49:24.149Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 6,
+          "at": "2026-10-02T09:49:24.359Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Token Link Keyboard",
+          "intent": false,
+          "url_sha256": "774aef6910684d0e265fd17799aea3cb7aa0b4a72cd1965b19a93d760e937a74",
+          "gap_ms": 8060
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-02T09:49:24.602Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 194.99354199972004,
+          "wire_body_bytes": 3711,
+          "uncompressed_bytes": 8136
+        },
+        {
+          "seq": 8,
+          "at": "2026-10-02T09:49:24.852Z",
+          "kind": "extraction",
+          "page": 2,
+          "tokens_o200k": 678,
+          "links_presented": 11
+        },
+        {
+          "seq": 9,
+          "at": "2026-10-02T09:49:32.565Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-02T09:49:32.779Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Begin free-generation task",
+          "intent": false,
+          "url_sha256": "8ee3281c4895661096af77ab7bd02b33c6d427efaeaab576f84a58b26c4d6ef7",
+          "gap_ms": 7928
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-02T09:49:33.291Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 457.3122919993475,
+          "wire_body_bytes": 7983,
+          "uncompressed_bytes": 71751
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-02T09:49:33.544Z",
+          "kind": "extraction",
+          "page": 3,
+          "tokens_o200k": 3465,
+          "links_presented": 241
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-02T09:49:47.858Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 14,
+          "at": "2026-10-02T09:49:48.092Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add Please to the draft",
+          "intent": false,
+          "url_sha256": "2283579f994d2b14c7ce9344983dace1c1646b7642bd53fcc38bcc381d319d5f",
+          "gap_ms": 14548
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-02T09:49:48.742Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 598.5304589997977,
+          "wire_body_bytes": 8168,
+          "uncompressed_bytes": 71333
+        },
+        {
+          "seq": 16,
+          "at": "2026-10-02T09:49:49.001Z",
+          "kind": "extraction",
+          "page": 4,
+          "tokens_o200k": 3582,
+          "links_presented": 244
+        },
+        {
+          "seq": 17,
+          "at": "2026-10-02T09:49:57.834Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-02T09:49:58.052Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "␠w",
+          "intent": false,
+          "url_sha256": "1fb6fec197e2c9bf64f923ea309ff898fb2047b966be5399c5ba27f2528eac72",
+          "gap_ms": 9051
+        },
+        {
+          "seq": 19,
+          "at": "2026-10-02T09:49:58.742Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 624.8421660000458,
+          "wire_body_bytes": 6781,
+          "uncompressed_bytes": 47972
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-02T09:49:59.005Z",
+          "kind": "extraction",
+          "page": 5,
+          "tokens_o200k": 2717,
+          "links_presented": 132
+        },
+        {
+          "seq": 21,
+          "at": "2026-10-02T09:50:09.212Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-02T09:50:09.435Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add ␠wait to the draft",
+          "intent": false,
+          "url_sha256": "f9a52f9541b7bc350705f4d28fd063fd2bf9263d4e522aab715fb5f768f47ab5",
+          "gap_ms": 10430
+        },
+        {
+          "seq": 23,
+          "at": "2026-10-02T09:50:10.470Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 979.4201659997925,
+          "wire_body_bytes": 8221,
+          "uncompressed_bytes": 70336
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-02T09:50:10.723Z",
+          "kind": "extraction",
+          "page": 6,
+          "tokens_o200k": 3597,
+          "links_presented": 244
+        },
+        {
+          "seq": 25,
+          "at": "2026-10-02T09:50:20.564Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 26,
+          "at": "2026-10-02T09:50:20.781Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add . to the draft",
+          "intent": false,
+          "url_sha256": "5886641d853671e6b92c654ea9703ce4f2aefc5e7fe34799bd53e06414c577a4",
+          "gap_ms": 10058
+        },
+        {
+          "seq": 27,
+          "at": "2026-10-02T09:50:21.614Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 782.0929579995573,
+          "wire_body_bytes": 8239,
+          "uncompressed_bytes": 71020
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-02T09:50:21.867Z",
+          "kind": "extraction",
+          "page": 7,
+          "tokens_o200k": 3588,
+          "links_presented": 244
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-02T09:50:28.415Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-02T09:50:28.632Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add ␠I to the draft",
+          "intent": false,
+          "url_sha256": "5c5b7d87b55b65e700277331b51d4a2839cc74cd57492a915d1981b5bcf23453",
+          "gap_ms": 6765
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-02T09:50:29.343Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 652.8604579996318,
+          "wire_body_bytes": 8267,
+          "uncompressed_bytes": 72733
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-02T09:50:29.601Z",
+          "kind": "extraction",
+          "page": 8,
+          "tokens_o200k": 3604,
+          "links_presented": 244
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-02T09:50:38.193Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-02T09:50:38.409Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add ␠I to the draft",
+          "intent": false,
+          "url_sha256": "697daa76c3ff6067a33ad1202415738799355b687669521b63ee1309cd0ebdc3",
+          "gap_ms": 8808
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-02T09:50:39.280Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 820.5787079995498,
+          "wire_body_bytes": 8266,
+          "uncompressed_bytes": 72280
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-02T09:50:39.531Z",
+          "kind": "extraction",
+          "page": 9,
+          "tokens_o200k": 3613,
+          "links_presented": 244
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-02T09:50:47.213Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-02T09:50:47.420Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Remove last addition",
+          "intent": false,
+          "url_sha256": "feaaefb9b11667471b0dd4c68373341479f333c4a90987e47b7ed902744a4512",
+          "gap_ms": 7889
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-02T09:50:47.975Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 504.67370799928904,
+          "wire_body_bytes": 8267,
+          "uncompressed_bytes": 72733
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-02T09:50:48.233Z",
+          "kind": "extraction",
+          "page": 10,
+          "tokens_o200k": 3604,
+          "links_presented": 244
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-02T09:51:02.084Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-02T09:51:08.859Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 43,
+          "at": "2026-10-02T09:51:09.077Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Open the prefix overview",
+          "intent": false,
+          "url_sha256": "10f810de9f061cafac0d8b66fd42df912022152a2cd791eb3c4880f8cf62be21",
+          "gap_ms": 20844
+        },
+        {
+          "seq": 44,
+          "at": "2026-10-02T09:51:09.456Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 325.99208400025964,
+          "wire_body_bytes": 2950,
+          "uncompressed_bytes": 7902
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-02T09:51:09.705Z",
+          "kind": "extraction",
+          "page": 11,
+          "tokens_o200k": 407,
+          "links_presented": 16
+        },
+        {
+          "seq": 46,
+          "at": "2026-10-02T09:51:18.139Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-02T09:51:18.348Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Tokens beginning with a letter",
+          "intent": false,
+          "url_sha256": "f938c659c6d855b4d358cc6b145aaf4f95235a1a588cd84f9fbb6d7119b3ce2c",
+          "gap_ms": 8643
+        },
+        {
+          "seq": 48,
+          "at": "2026-10-02T09:51:18.734Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 331.7887499993667,
+          "wire_body_bytes": 3077,
+          "uncompressed_bytes": 17630
+        },
+        {
+          "seq": 49,
+          "at": "2026-10-02T09:51:18.983Z",
+          "kind": "extraction",
+          "page": 12,
+          "tokens_o200k": 584,
+          "links_presented": 63
+        },
+        {
+          "seq": 50,
+          "at": "2026-10-02T09:51:25.754Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 51,
+          "at": "2026-10-02T09:51:25.976Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "I",
+          "intent": false,
+          "url_sha256": "cd70751aaf1c33f26847953909f4bae7e8fa97080708b626c75487bfe8cee6d6",
+          "gap_ms": 6992
+        },
+        {
+          "seq": 52,
+          "at": "2026-10-02T09:51:26.841Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 805.7332920003682,
+          "wire_body_bytes": 6668,
+          "uncompressed_bytes": 46190
+        },
+        {
+          "seq": 53,
+          "at": "2026-10-02T09:51:27.100Z",
+          "kind": "extraction",
+          "page": 13,
+          "tokens_o200k": 2188,
+          "links_presented": 136
+        },
+        {
+          "seq": 54,
+          "at": "2026-10-02T09:51:37.334Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 55,
+          "at": "2026-10-02T09:51:37.570Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Return to this draft",
+          "intent": false,
+          "url_sha256": "feaaefb9b11667471b0dd4c68373341479f333c4a90987e47b7ed902744a4512",
+          "gap_ms": 10470
+        },
+        {
+          "seq": 56,
+          "at": "2026-10-02T09:51:38.144Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 518.0994579996914,
+          "wire_body_bytes": 8267,
+          "uncompressed_bytes": 72733
+        },
+        {
+          "seq": 57,
+          "at": "2026-10-02T09:51:38.403Z",
+          "kind": "extraction",
+          "page": 14,
+          "tokens_o200k": 3604,
+          "links_presented": 244
+        },
+        {
+          "seq": 58,
+          "at": "2026-10-02T09:51:45.725Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 59,
+          "at": "2026-10-02T09:51:45.948Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Browse exact UTF-8 bytes",
+          "intent": false,
+          "url_sha256": "93596138f50c904e36ef53ec2ed50d17c8ee40c39c1b09b861954849556271c8",
+          "gap_ms": 7545
+        },
+        {
+          "seq": 60,
+          "at": "2026-10-02T09:51:46.352Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 352.43779100012034,
+          "wire_body_bytes": 7957,
+          "uncompressed_bytes": 42343
+        },
+        {
+          "seq": 61,
+          "at": "2026-10-02T09:51:46.609Z",
+          "kind": "extraction",
+          "page": 15,
+          "tokens_o200k": 1539,
+          "links_presented": 126
+        },
+        {
+          "seq": 62,
+          "at": "2026-10-02T09:51:53.629Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 63,
+          "at": "2026-10-02T09:51:53.872Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Browse bytes e0 through ef",
+          "intent": false,
+          "url_sha256": "d25ecbb7048c496ba874813dd737b4b40783614f8dfd3b385fce6f302c52c883",
+          "gap_ms": 7263
+        },
+        {
+          "seq": 64,
+          "at": "2026-10-02T09:51:54.249Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 326.36966700013727,
+          "wire_body_bytes": 8944,
+          "uncompressed_bytes": 52321
+        },
+        {
+          "seq": 65,
+          "at": "2026-10-02T09:51:54.507Z",
+          "kind": "extraction",
+          "page": 16,
+          "tokens_o200k": 2162,
+          "links_presented": 142
+        },
+        {
+          "seq": 66,
+          "at": "2026-10-02T09:52:02.198Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 67,
+          "at": "2026-10-02T09:52:02.426Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add byte 0xE2 to the draft",
+          "intent": false,
+          "url_sha256": "87201245adf7ec3ae1787b24cb9ebdb8ecd28ad1c76a30ff3fe5e06e4738d469",
+          "gap_ms": 7919
+        },
+        {
+          "seq": 68,
+          "at": "2026-10-02T09:52:03.123Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 632.713457999751,
+          "wire_body_bytes": 9123,
+          "uncompressed_bytes": 52395
+        },
+        {
+          "seq": 69,
+          "at": "2026-10-02T09:52:03.385Z",
+          "kind": "extraction",
+          "page": 17,
+          "tokens_o200k": 2255,
+          "links_presented": 142
+        },
+        {
+          "seq": 70,
+          "at": "2026-10-02T09:52:10.428Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 71,
+          "at": "2026-10-02T09:52:10.649Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Browse bytes 80 through 8f",
+          "intent": false,
+          "url_sha256": "956efdb9053f66c8f3c082d86267719f5365243a03d6f85ebd511007c48f4c0b",
+          "gap_ms": 7264
+        },
+        {
+          "seq": 72,
+          "at": "2026-10-02T09:52:11.075Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 371.30291599966586,
+          "wire_body_bytes": 9136,
+          "uncompressed_bytes": 52436
+        },
+        {
+          "seq": 73,
+          "at": "2026-10-02T09:52:11.333Z",
+          "kind": "extraction",
+          "page": 18,
+          "tokens_o200k": 2271,
+          "links_presented": 142
+        },
+        {
+          "seq": 74,
+          "at": "2026-10-02T09:52:19.127Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 75,
+          "at": "2026-10-02T09:52:19.343Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Browse bytes 90 through 9f",
+          "intent": false,
+          "url_sha256": "72ba5ac52954f84a46ce55c7bca4af460fe90c43fc7311afcfa40aacb40dcb8b",
+          "gap_ms": 8010
+        },
+        {
+          "seq": 76,
+          "at": "2026-10-02T09:52:19.894Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 495.93174999952316,
+          "wire_body_bytes": 9134,
+          "uncompressed_bytes": 52429
+        },
+        {
+          "seq": 77,
+          "at": "2026-10-02T09:52:20.153Z",
+          "kind": "extraction",
+          "page": 19,
+          "tokens_o200k": 2271,
+          "links_presented": 142
+        },
+        {
+          "seq": 78,
+          "at": "2026-10-02T09:52:26.857Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 79,
+          "at": "2026-10-02T09:52:27.069Z",
+          "kind": "activation",
+          "operation": "link",
+          "semantic": null,
+          "span_search_activations": null,
+          "link_label": "Add byte 0x99 to the draft",
+          "intent": false,
+          "url_sha256": "e5fd1efe9062c28909a69a6569f20f52ee3b6296a5693acc4859806e461eb54d",
+          "gap_ms": 6916
+        },
+        {
+          "seq": 80,
+          "at": "2026-10-02T09:52:27.809Z",
+          "kind": "http",
+          "status": 200,
+          "http_ms": 695.6735410001129,
+          "wire_body_bytes": 9114,
+          "uncompressed_bytes": 52443
+        },
+        {
+          "seq": 81,
+          "at": "2026-10-02T09:52:28.042Z",
+          "kind": "extraction",
+          "page": 20,
+          "tokens_o200k": 2277,
+          "links_presented": 142
+        },
+        {
+          "seq": 82,
+          "at": "2026-10-02T09:52:50.133Z",
+          "kind": "client-command"
+        },
+        {
+          "seq": 83,
+          "at": "2026-10-02T09:52:50.176Z",
+          "kind": "finish"
+        },
+        {
+          "seq": 84,
+          "at": "2026-10-02T09:53:10.770Z",
           "kind": "orchestrator-observation"
         }
       ]

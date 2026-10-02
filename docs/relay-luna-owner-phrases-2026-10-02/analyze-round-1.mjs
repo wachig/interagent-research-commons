@@ -22,5 +22,13 @@ for(const m of comparison.methods){
  m.total_recorded_client_errors=rs.reduce((n,r)=>n+r.recorded_client_errors,0);
  m.total_blocked_navigation_commands=rs.reduce((n,r)=>n+r.blocked_navigation_commands,0);
 }
+comparison.character_groups=[];
+for(const [group,predicate] of [['ASCII-only',t=>/^[\x00-\x7f]*$/.test(t.body)],['curly-apostrophe-U2019',t=>t.body.includes('’')]]){
+ const targets=first.plan.targets.filter(predicate),taskIds=new Set(targets.map(t=>t.id));
+ comparison.character_groups.push({group,target_ids:[...taskIds],...comparisonFor({...scoped,runs:scoped.runs.filter(r=>taskIds.has(r.task))},{...first,plan:{...first.plan,targets}})});
+}
+const consistentTargets=first.plan.targets.filter(t=>!['P01','P02'].includes(t.id));
+const consistentIds=new Set(consistentTargets.map(t=>t.id));
+comparison.P03_P10_consistent_prompt_view={scope:'Analytical sensitivity view: excludes early P01 prompt variants and P02 generic reminder; Token permission-context addition remains explicitly disclosed.',...comparisonFor({...scoped,runs:scoped.runs.filter(r=>consistentIds.has(r.task))},{...first,plan:{...first.plan,targets:consistentTargets}})};
 await writeFile(dir+'/round-1-comparison.json',JSON.stringify(comparison,null,2)+'\n');
 console.log(JSON.stringify({closed:comparison.closed,planned:comparison.planned,complete:comparison.complete,methods:comparison.methods.map(m=>({method:m.method,closed:m.closed,completed:m.exact_completed,median_activations:m.median_completed_activations,spent:m.spent_activations_all_attempts}))}));
