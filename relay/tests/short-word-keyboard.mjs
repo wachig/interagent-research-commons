@@ -12,7 +12,7 @@ assert.deepEqual(withoutShortWords([{text:'THE'},{text:'research'},{text:'You'}]
 const f=await fixture();
 const page=async route=>{const r=await f.request(route,{html:true});assert.equal(r.status,200,r.text.slice(-700));return {...r,...parse(r.text,r.url)};};
 const link=(p,predicate)=>{const found=p.links.find(typeof predicate==='string'?l=>l.text===predicate:predicate);assert.ok(found,'missing supplied link');return found.url;};
-const key=(p,k)=>link(p,l=>new URL(l.url).pathname.includes(`/key/${encodeURIComponent(k)}/`));
+const key=(p,k)=>link(p,l=>new URL(l.url).pathname.includes(`/key/${encodeURIComponent(k)}/`)||new URL(l.url).pathname.includes(`/key/${encodeURIComponent("next-letter:"+k)}/`));
 try{
  const seed=(await f.request('/quick/one-shot?'+new URLSearchParams({message:'Synthetic short-word reply parent',confirm:'publish-public-message',request_id:crypto.randomUUID()}))).body;
  const root=await page('/predictive-keyboard/html/short-word-keyboard/?reply_to='+seed.message_id);
@@ -22,6 +22,13 @@ try{
  const assertFiltered=p=>{for(const l of p.links.filter(l=>l['aria-label']?.startsWith('Add top word ')||l['aria-label']?.startsWith('Complete candidate ')))assert.ok(!SHORT_WORD_SET.has(l.text.toLowerCase()));};assertFiltered(root);
  let p=await page(key(root,'t'));p=await page(link(p,l=>l['aria-label']==='Complete short word The'));assert.equal(p.draft,'The');
  p=await page(key(p,'backspace'));assert.equal(p.draft,'Th');p=await page(link(p,'Undo last addition'));assert.equal(p.draft,'The');
+ const selected=p;
+ const nextLetter=key(selected,'c');let spaced=await page(nextLetter);assert.equal(spaced.draft,'The c');assert.equal((await page(nextLetter)).draft,'The c','Retry reuses the same boundary');
+ spaced=await page(key(spaced,'a'));assert.equal(spaced.draft,'The ca');spaced=await page(link(spaced,l=>l['aria-label']==='Complete short word can'));assert.equal(spaced.draft,'The can');
+ let edited=await page(key(selected,'backspace'));edited=await page(key(edited,'e'));assert.equal(edited.draft,'The','Backspace permits literal word editing');
+ let punct=await page(key(selected,'comma'));assert.equal(punct.draft,'The,');
+ let explicit=await page(key(selected,'space'));explicit=await page(key(explicit,'c'));assert.equal(explicit.draft,'The c','Explicit Space is not duplicated');
+ let exact=await page(link(selected,'Exact characters and Unicode'));exact=await page(link(exact,l=>l['aria-label']==='Append U+0063'));assert.equal(exact.draft,'Thec','Exact lane remains literal');
  const cleared=await page(link(p,'Clear draft'));assert.equal(cleared.draft,'');assert.equal(cleared.headers.get('x-relay-keyboard'),'short-word');assert.equal((await page(link(cleared,'Undo last addition'))).draft,'The');
  let marked=await page(link(root,l=>l['aria-label']==='?123'));marked=await page(key(marked,'@'));marked=await page(link(marked,l=>l['aria-label']==='Add short word the'));assert.equal(marked.draft,'@the');
  p=root;for(const ch of 'rel')p=await page(key(p,ch));assertFiltered(p);

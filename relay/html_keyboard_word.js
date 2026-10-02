@@ -87,6 +87,7 @@ function stateHref(stateId, layout = "letters", shifted = false, prefix = "", of
 }
 
 function keyArgument(value) {
+  if (/^next-letter:[A-Za-z]$/u.test(value)) return value.slice(12);
   if (value === "backspace") return "\u0008";
   if (value.startsWith("gram:")) {
     const sequence = value.slice(5);
@@ -366,7 +367,7 @@ async function makeChild(env, request, parent, action, argument, childId, issued
         added = sequenceChars.slice(overlap).join("");
         if (parent.operation === "pick" && added && parentDraft && !/\s$/u.test(parentDraft)) added = ` ${added}`;
       } else {
-        added = selected;
+        added = argument.startsWith("next-letter:") && parentDraft && !/\s$/u.test(parentDraft) ? ` ${selected}` : selected;
       }
     }
   } else if (action === "pick") {
@@ -540,8 +541,10 @@ async function renderKeyboard(request, env, state, url) {
   }));
   const key = async (value, label = value, extraClass = "") => {
     if (value === "backspace" && !draft) return `<span class="key ${extraClass} disabled" aria-disabled="true" aria-label="Backspace unavailable for an empty draft">${escapeHtml(label)}</span>`;
-    const accessibleLabel = value === "backspace" ? "Backspace" : `Add ${label}`;
-    return `<a class="key ${extraClass}" rel="nofollow" href="${escapeHtml(`${await makeLink("key", value, (view === "prefix" || view === "short"), "")}#keyboard`)}" aria-label="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
+    const nextWordLetter = view === "short" && state.operation === "pick" && /[\p{L}\p{N}]$/u.test(draft) && /^[A-Za-z]$/u.test(value);
+    const operationValue = nextWordLetter ? `next-letter:${value}` : value;
+    const accessibleLabel = value === "backspace" ? "Backspace" : nextWordLetter ? `Start next word with ${label}` : `Add ${label}`;
+    return `<a class="key ${extraClass}" rel="nofollow" href="${escapeHtml(`${await makeLink("key", operationValue, (view === "prefix" || view === "short"), "")}#keyboard`)}" aria-label="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
   };
   const mode = (label, nextLayout, nextShifted = false, extraClass = "", accessible = label) => `<a class="key ${extraClass}" href="${escapeHtml(stateHref(state.state_id, nextLayout, nextShifted, prefix, offset, view))}" aria-label="${escapeHtml(accessible)}">${escapeHtml(label)}</a>`;
   const letters = `<div class="keyrow">${(await Promise.all("qwertyuiop".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow indented">${(await Promise.all("asdfghjkl".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow third">${mode("⇧", "letters", !shifted, "wide", shifted ? "Turn shift off" : "Turn shift on")} ${(await Promise.all("zxcvbnm".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")} ${await key("backspace", "⌫", "wide")}</div><div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("question", "?", "wide")}</div>`;

@@ -501,9 +501,9 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "1.7.0");
+  assert.equal(registry.registry_version, "1.8.0");
   assert.equal(registry.methods.length, 7);
-  assert.deepEqual((await getJson(`${base}/methods/1.7.0.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/1.8.0.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
   for (const method of registry.methods) {
@@ -519,7 +519,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "1.7.0");
+  assert.equal(service.bootstrap_revision, "1.8.0");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
