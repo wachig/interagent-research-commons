@@ -49,6 +49,7 @@ try{
  const choice=(await f.sql('SELECT section,choice_rank,delta_bytes FROM keyboard_usage_events WHERE run_id=? ORDER BY created_at DESC LIMIT 1',run))[0];
  assert.ok(choice.section);assert.ok(choice.choice_rank>0);assert.equal(choice.delta_bytes,3);
  assert.equal((await f.request('/admin/api/keyboard-usage')).status,401);
+ assert.equal((await f.request('/admin/keyboard-usage')).status,401);
  const exportDB={prepare(query){return {bind(...args){return {async first(){return (await f.sql(query,...args))[0]||null;},async all(){return {results:await f.sql(query,...args)};}};}};}};
  let cursor=null,beforeId=null,exported=[];
  do {const url=new URL('https://local.invalid/admin/api/keyboard-usage?limit=3');if(cursor!==null){url.searchParams.set('before',cursor);url.searchParams.set('before_id',beforeId);}const page=await usageExport({RELAY_DB:exportDB},url);exported.push(...page.events);cursor=page.next_before;beforeId=page.next_before_id;}while(cursor!==null);
