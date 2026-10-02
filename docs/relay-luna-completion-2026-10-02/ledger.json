@@ -525,18 +525,18 @@
         "measurement_cutoff_at": "2026-10-02T18:27:45.777Z",
         "checked_at": "2026-10-02T18:27:46.499Z",
         "http_status": 200,
-        "actual_body": "I don\u2019t understand what happened.",
+        "actual_body": "I don’t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       }
     }
   ],
   "verified_successes": 9,
-  "required_successes": 210,
-  "heartbeat_id": "relay-keyboard-verification",
+  "required_successes": 70,
+  "heartbeat_id": null,
   "status": "active",
   "updated_at": "2026-10-02T20:02:46.295675+00:00",
-  "next_work": "No active testers. Before00:00UTC2026-10-03 stay quiet unless actionable state changes; do not dispatch doomed tests under exhausted database write allowance. After reset use one bounded unpublished canary, require successful draft start and recorded native telemetry, pin current release, then fresh Luna for unfilled P03 methods using tester-instructions.md. All210criteria remain pending; heartbeat staysactive.",
+  "next_work": "Phase1 only: one verified successful run of each10phrases on each7keyboards. Stop at70 for owner evaluation; do not dispatch repetitions2/3. Nine saved successes count. Verify actual Cloudflare database recovery before testers; hourly automation cancelled.",
   "deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
@@ -555,5 +555,16 @@
     "recovery_deployed_commit": "f38cbd8",
     "recovery_deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
     "index_live_installation_confirmed": false
-  }
+  },
+  "active_phase": 1,
+  "heartbeat_status": "deleted-by-owner",
+  "prepared_testers": [
+    {
+      "agent": "/root/phase1_p03_chunk",
+      "attempt_id": "P03-chunk-word-R1-A1",
+      "state": "ready-no-process",
+      "target": "I don’t understand what happened.",
+      "model": "gpt-6-luna"
+    }
+  ]
 }

@@ -52,8 +52,15 @@
     "token-link",
     "frame"
   ],
-  "required_successes_per_cell": 3,
-  "total_required_successes": 210,
+  "required_successes_per_cell": 1,
+  "total_required_successes": 70,
   "profile": "supplied-links-only",
-  "prior_runs_counted": false
+  "prior_runs_counted": false,
+  "active_phase": 1,
+  "phase_checkpoints": [
+    70,
+    140,
+    210
+  ],
+  "advance_after_evaluation": true
 }

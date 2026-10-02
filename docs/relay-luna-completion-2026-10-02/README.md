@@ -1,3 +1,7 @@
+# Current Phase 1 checkpoint
+
+Owner revised the campaign to phases: one run per phrase/method (70), evaluate, then cumulative140 and210. Stop and evaluate at70; do not start repetitions2/3 during Phase1. The existing9verified successes count, leaving61. The hourly automation was deleted at the owner's request; work now resumes manually. Historical210requirements below describe the original campaign, not current Phase1 authorization. Current conditions/certificates remain pinned in manifest.json and ledger.json.
+
 # Completion campaign
 
 Owner requirement: three independently verified successful GPT-6 Luna runs for each of ten exact phrases on each of seven keyboards, 210 success slots. `manifest.json` is the exact corpus; curly apostrophes and all punctuation must survive byte-for-byte. This new campaign starts at zero; historical results remain separate because client/release conditions differ.

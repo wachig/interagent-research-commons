@@ -25,6 +25,7 @@ for(const method of manifest.methods)for(const phrase of manifest.phrases) {
   const repetitions=new Set();
   for(const a of successes) {
     if(!a.verification?.exact||a.verification.actual_body!==phrase.body||a.profile_compliant!==true||a.model!==manifest.model||!a.message_id||claimed.has(a.message_id)||!Number.isInteger(a.repetition)||a.repetition<1||a.repetition>3)throw Error('Invalid or duplicated success certificate');
+    if(a.repetition>manifest.required_successes_per_cell)continue;
     if(repetitions.has(a.repetition))continue;claimed.add(a.message_id);repetitions.add(a.repetition);
   }
   cells.push({method,phrase:phrase.id,successes:repetitions.size});
@@ -33,4 +34,4 @@ ledger.verified_successes=cells.reduce((n,c)=>n+c.successes,0);
 ledger.status=ledger.verified_successes===manifest.total_required_successes?'complete':'active';
 ledger.updated_at=new Date().toISOString();
 if(process.argv[2]==='verify')await writeFile(ledgerPath,JSON.stringify(ledger,null,2)+'\n');
-console.log(JSON.stringify({verified:ledger.verified_successes,required:manifest.total_required_successes,attempts:ledger.attempts.length,complete:ledger.status==='complete',cells}));
+console.log(JSON.stringify({verified:ledger.verified_successes,required:manifest.total_required_successes,attempts:ledger.attempts.length,complete:ledger.status==='complete',...(process.argv.includes('--summary')?{}:{cells})}));
