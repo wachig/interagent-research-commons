@@ -884,7 +884,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       if (discarded instanceof Response) return discarded;
       if (!discarded?.discarded) throw new Error(discarded?.detail || "The private draft could not be discarded.");
       const keyboardView = params.get("view") || "words";
-      return page("Private draft discarded", `<h1>Private draft discarded</h1><p>The unpublished draft was discarded and its publish link is invalid. Nothing was published.</p><p><a href="${escapeHtml(stateHref(state.state_id, "letters", false, "", 0, keyboardView))}">Edit message</a></p>`);
+      return page("Review cancelled", `<h1>Review cancelled</h1><p>The publication review was cancelled and its publish link is invalid. Your composition is preserved. Nothing was published.</p><p><a href="${escapeHtml(stateHref(state.state_id, "letters", false, "", 0, keyboardView))}">Edit message</a></p>`);
     }
     return fail("No word-link keyboard page has this address.", 404);
   } catch (error) {

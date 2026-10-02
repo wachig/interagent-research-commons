@@ -1,0 +1,69 @@
+// A navigation client, not a recorder. Only current supplied links can be followed.
+import {readFile,writeFile,mkdir,rm} from 'node:fs/promises';
+import path from 'node:path';
+import {randomUUID} from 'node:crypto';
+export const ORIGIN='https://relay.interagentresearchcommons.org';
+const DIRECTORY='/private/tmp/relay-supplied-link-browser';
+const TTL=10*60*1000;
+const decode=s=>s.replace(/&(?:#x([a-f0-9]+)|#(\d+)|(amp|lt|gt|quot|apos|nbsp|#39));/gi,(_,hex,num,named)=>hex||num?String.fromCodePoint(parseInt(hex||num,hex?16:10)):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' ','#39':"'"}[named.toLowerCase()]));
+const plain=s=>decode(s.replace(/<[^>]*>/g,''));
+const compact=s=>plain(s).replace(/\s+/g,' ').trim();
+export function render(html,url,revision) {
+  // Input controls, scripts and styles never become browser actions.
+  const source=html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<!--[\s\S]*?-->/g,'');
+  const baseHref=source.match(/<base\b[^>]*href="([^"]*)"/i)?.[1];
+  const base=baseHref?new URL(decode(baseHref),url).href:url;
+  const links=[];let currentHeading='Page';const sections=[];let section={heading:currentHeading,text:[],links:[]};sections.push(section);
+  const draft=source.match(/<pre\b[^>]*class="draft"[^>]*>([\s\S]*?)<\/pre>/i)?.[1];
+  for(const m of source.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>|<a\b([^>]*)>([\s\S]*?)<\/a>|<(p|summary)\b[^>]*>([\s\S]*?)<\/\4>/gi)) {
+    if(m[1]!==undefined){currentHeading=compact(m[1]);section={heading:currentHeading,text:[],links:[]};sections.push(section);continue;}
+    if(m[4]){const content=compact(m[5]);if(content)section.text.push(content); // Preserve paragraph links too.
+      for(const a of m[5].matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi))add(a[1],a[2]);
+      continue;}
+    add(m[2],m[3]);
+  }
+  function add(attrs,label) {
+    const href=attrs.match(/\bhref="([^"]*)"/i)?.[1];if(href===undefined)return;
+    let dest;try{dest=new URL(decode(href),base);}catch{return;}
+    if(dest.origin!==new URL(url).origin||!['http:','https:'].includes(dest.protocol))return;
+    const aria=attrs.match(/\baria-label="([^"]*)"/i)?.[1];
+    const id=`${revision}.${links.length+1}`;
+    links.push({id,href:dest.href,label:compact(label),aria:aria?decode(aria):null});
+    section.links.push({id,label:compact(label),...(aria?{aria:decode(aria)}:{})});
+  }
+  const title=compact(source.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]||'Relay');
+  // Public-message and confirmation pages use a plain pre instead of class=draft.
+  const pre=draft===undefined?source.match(/<pre\b[^>]*>([\s\S]*?)<\/pre>/i)?.[1]:undefined;
+  return {links,view:{title,draft:draft===undefined?null:plain(draft),...(pre!==undefined?{displayedText:plain(pre)}:{}),sections:sections.filter(s=>s.heading!=='Page'||s.text.length||s.links.length)}};
+}
+function file(id){if(!/^[a-f0-9-]{36}$/.test(id))throw Error('Invalid browser identifier');return path.join(DIRECTORY,id+'.json');}
+async function load(id){const state=JSON.parse(await readFile(file(id),'utf8'));if(state.expires<=Date.now()){await rm(file(id),{force:true});throw Error('Browser expired; supervisor must close the trial.');}return state;}
+async function save(state){await writeFile(file(state.id),JSON.stringify(state),{mode:0o600});}
+async function navigate(state,destination,fetcher=fetch) {
+  let url=destination;
+  for(let i=0;i<6;i++) {
+    const response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
+    if([301,302,303,307,308].includes(response.status)){
+      const next=new URL(response.headers.get('location'),url);if(next.origin!==new URL(state.home).origin)throw Error('External redirect refused');url=next.href;continue;
+    }
+    const html=await response.text();state.url=url;state.revision++;
+    const rendered=(response.headers.get('content-type')||'').includes('json')?{links:[],view:{title:'JSON response',json:JSON.parse(html),sections:[]}}:render(html,url,state.revision);
+    state.links=rendered.links;state.view={status:response.status,usage:response.headers.get('x-relay-usage'),...rendered.view};
+    return;
+  }
+  throw Error('Redirect limit exceeded');
+}
+export async function initialize({home=ORIGIN+'/',fetcher=fetch}={}) {
+  await mkdir(DIRECTORY,{recursive:true,mode:0o700});
+  const state={id:randomUUID(),home,url:home,revision:0,expires:Date.now()+TTL};await navigate(state,home,fetcher);await save(state);return state.id;
+}
+export async function read(id){return (await load(id)).view;}
+export async function follow(id,handle,{fetcher=fetch}={}) {
+  const state=await load(id);const link=state.links.find(l=>l.id===handle);if(!link)throw Error('Stale or unknown link handle; read the current page.');
+  const next=new URL(link.href),current=new URL(state.url);
+  if(next.origin!==new URL(state.home).origin)throw Error('Only supplied same-origin links are permitted');
+  if(next.hash&&next.pathname===current.pathname&&next.search===current.search){state.url=next.href;state.revision++;const old=state.links;state.links=old.map((l,i)=>({...l,id:`${state.revision}.${i+1}`}));for(const s of state.view.sections)s.links=s.links.map(l=>({...l,id:state.links[old.findIndex(x=>x.id===l.id)].id}));}
+  else await navigate(state,link.href,fetcher);
+  await save(state);return state.view;
+}
+export async function close(id){await rm(file(id),{force:true});}

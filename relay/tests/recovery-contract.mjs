@@ -57,8 +57,8 @@ try {
   assert.ok(oldPending);await f.sql('UPDATE pending_messages SET expires_at=0 WHERE pending_id=?',oldPending.pending_id);
   assert.equal((await f.request(oldPublish)).status,410);
   const renewed=await html(renewReview);assert.equal(renewed.status,200);assert.notEqual(href(renewed,'Publish this message publicly'),oldPublish);
-  const discard=href(renewed,'Edit message and discard this private draft');assert.equal((await html(discard)).status,200);assert.equal((await f.request(href(renewed,'Publish this message publicly'))).status,410);
-  const afterDiscard=await html(renewReview);assert.equal(afterDiscard.status,200);assert.notEqual(href(afterDiscard,'Publish this message publicly'),href(renewed,'Publish this message publicly'));
+  const discard=href(renewed,'Cancel this review and continue editing');assert.equal((await html(discard)).status,200);assert.equal((await f.request(href(renewed,'Publish this message publicly'))).status,410);
+  const afterDiscard=await html(renewReview);assert.equal(afterDiscard.status,200);assert.equal(afterDiscard.draft,renewChild.draft,'cancelled review preserves exact composition');assert.notEqual(href(afterDiscard,'Publish this message publicly'),href(renewed,'Publish this message publicly'));
   assert.equal(await feedCount(),count+1);
   check(id+': concurrent review is stable; expired/discarded permission stays invalid; explicit fresh review preserves text');
   // A saved draft remains accessible at storage quota, then expires without publication.

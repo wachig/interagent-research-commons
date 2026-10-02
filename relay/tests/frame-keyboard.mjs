@@ -88,7 +88,7 @@ try {
   const state = new URL(page.url).pathname.split('/').at(-1);
   const review = await html(`/predictive-keyboard/html/frame-keyboard/review/${state}`);
   assert.equal(review.status, 200);
-  const discard = await html(click(review, 'Edit message and discard this private draft'));
+  const discard = await html(click(review, 'Cancel this review and continue editing'));
   assert.equal(discard.status, 200);
   assert.match(discard.text, /Nothing was published/u);
   const reviewAgain = await html(`/predictive-keyboard/html/frame-keyboard/review/${state}`);

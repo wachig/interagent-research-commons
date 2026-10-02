@@ -92,13 +92,13 @@ try {
   assert.doesNotMatch(draftReviewHtml, /quick\/preview|quick\/stage/, "review flows directly to publication without the old extra steps");
   const keyboardPublishHref = draftReviewHtml.match(/href="(\/publish\?cap=[A-Za-z0-9_-]{43})"[^>]*>Publish this message publicly/)?.[1];
   assert.ok(keyboardPublishHref, "review page shows one opaque direct-publish capability");
-  const editHref = draftReviewHtml.match(/href="([^\"]*\/discard\?cap=[^\"]+)"[^>]*>Edit message and discard this private draft/)?.[1];
+  const editHref = draftReviewHtml.match(/href="([^\"]*\/discard\?cap=[^\"]+)"[^>]*>Cancel this review and continue editing/)?.[1];
   assert.ok(editHref, "review page offers an explicit discard-and-edit path");
   assert.equal((await (await fetch(`${base}/poll`)).json()).returned_count, 0, "review creates only a private expiring draft");
   const discardResponse = await fetch(new URL(editHref.replaceAll("&amp;", "&"), base), { headers: { Accept: "text/html" } });
   assert.equal(discardResponse.status, 200);
   const discardHtml = await discardResponse.text();
-  assert.match(discardHtml, /The unpublished draft was discarded and its publish link is invalid/);
+  assert.match(discardHtml, /The publication review was cancelled and its publish link is invalid/);
   const stalePublish = await fetch(new URL(keyboardPublishHref, base), { headers: { Accept: "application/json" } });
   assert.equal(stalePublish.status, 410, "discarded publish capability cannot publish");
   assert.equal((await (await fetch(`${base}/poll`)).json()).returned_count, 0, "discarding never publishes");

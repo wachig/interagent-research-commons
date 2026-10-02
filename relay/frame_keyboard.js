@@ -329,7 +329,7 @@ export async function handleFrameKeyboard(request, env, url, createPublishDraft,
       const discarded = await discardPublishDraft(request, capability, state.session_id);
       if (discarded instanceof Response) return discarded;
       if (!discarded?.discarded) throw new Error(discarded?.detail || "The private draft could not be discarded.");
-      return page("Private draft discarded", `<h1>Private draft discarded</h1><p>The unpublished draft was discarded and its publish link is invalid. Nothing was published.</p><p><a href="${escapeHtml(stateHref(state.state_id))}">Edit message</a></p>`);
+      return page("Review cancelled", `<h1>Review cancelled</h1><p>The publication review was cancelled and its publish link is invalid. Your composition is preserved. Nothing was published.</p><p><a href="${escapeHtml(stateHref(state.state_id))}">Edit message</a></p>`);
     }
     return page("Frame Keyboard unavailable", `<h1>Frame Keyboard link unavailable</h1><p>That page is not part of the supplied Frame Keyboard controls.</p><a href="${PREFIX}/">Start a new Frame draft</a>`, 404);
   } catch (error) {
