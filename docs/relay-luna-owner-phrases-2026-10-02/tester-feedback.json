@@ -1,0 +1,47 @@
+[
+  {
+    "run": "op1-p01-chunk-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Completed exact Hi.; selected word then period. One mistyped client-command path failed before reaching recorder. No keyboard defect reported."
+  },
+  {
+    "run": "op1-p01-short-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 2,
+    "note": "Exact Hi. reviewed and published, but tester navigated to service.json (Machine entry) rather than the public message record. Completion gate correctly refused; stale/back command mistakes followed. Agent reported sandbox EPERM and omitted run flag outside recorder. Outcome retained as failed; this is agent/navigation failure, not a demonstrated recorder defect."
+  },
+  {
+    "run": "op1-p01-span",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Failed after six activations; tester reported review-witness publication block and one initial loopback permission error; checkpoint confirms closed failed.",
+    "root_adjudication": "Raw review draft was Hi, missing the period in target Hi.; publication gate correctly blocked. Target transcription or agent failure, not infrastructure."
+  },
+  {
+    "run": "op1-p01-predictive-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 3,
+    "note": "Closed failed after five activations; tester reported publication review-witness block, one initial loopback permission error, and two unsuccessful back operations. No publication reported.",
+    "root_adjudication": "Raw review draft was Hi, missing the period in target Hi.; publication gate correctly blocked. Target transcription or agent failure, not infrastructure."
+  },
+  {
+    "run": "op1-p01-prefix-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Closed completed with exact root body and machine record verified; eight activations. Tester reported pair menus required GET forms and one initial loopback permission error."
+  },
+  {
+    "run": "op1-p01-token-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 4,
+    "note": "Closed failed at two activations before director intervention. Automatic approval rejected supplied free-generation task link as outside approved exact-transcription scope. Two initial loopback permission failures and later already-closed finish correction also reported. No publication.",
+    "root_adjudication": "Approval-environment interruption, not keyboard inability. Source check confirms demo phrase is hardcoded and generation start creates a blank composition session for custom assigned text. Closed failed record preserved; no retry."
+  },
+  {
+    "run": "op1-p01-frame",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 2,
+    "note": "Closed failed after eleven activations; tester reported exact reviewed target. Automatic approval rejected public publish as unauthorized irreversible effect. Initial loopback permission error also reported; later summary counted only publish rejection. No publication."
+  }
+]

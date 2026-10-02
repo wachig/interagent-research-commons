@@ -1,0 +1,30 @@
+{
+  "scope": "Root inspection supplements tester self-reports; original outcomes and costs are unchanged.",
+  "runs": [
+    {
+      "run": "op1-p01-short-word",
+      "category": "agent_navigation",
+      "evidence": "Published exact reviewed target, then followed service.json rather than public message record; failed completion gate."
+    },
+    {
+      "run": "op1-p01-span",
+      "category": "agent_transcription",
+      "evidence": "Saved review response draft was Hi without required period; exact-review publication gate correctly blocked."
+    },
+    {
+      "run": "op1-p01-predictive-word",
+      "category": "agent_transcription",
+      "evidence": "Saved review response draft was Hi without required period; exact-review publication gate correctly blocked."
+    },
+    {
+      "run": "op1-p01-token-link",
+      "category": "approval_environment_interruption",
+      "evidence": "Automatic approval rejected supplied blank composer start as unrelated task. Source confirms built-in transcription target is Relay token test.; generation creates custom-text session. Closed recorded outcome failed remains unchanged; no rejected action retried."
+    },
+    {
+      "run": "op1-p01-frame",
+      "category": "approval_environment_interruption",
+      "evidence": "Exact review witness reached. Automatic approval rejected intentional publication as unauthorized public side effect. Original failed outcome retained; no publication or bypass."
+    }
+  ]
+}

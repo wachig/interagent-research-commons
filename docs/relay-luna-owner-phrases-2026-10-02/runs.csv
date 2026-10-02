@@ -1,0 +1,8 @@
+run,scored,task,method,outcome,activations,http_attempts,wall_ms,wire_body_bytes,uncompressed_bytes,extracted_tokens_o200k,links_presented,costs_complete,provider_tokens,provider_cost,external_tool_errors,partial_transfer_bytes
+"op1-p01-chunk-word","true","P01","chunk-word","completed","8","8","100150","51677","288454","17080","1442","true","","","1","0"
+"op1-p01-short-word","true","P01","short-word","failed","9","9","163863","47211","252575","7001","525","true","","","2","0"
+"op1-p01-span","true","P01","span","failed","6","6","130846","33884","214089","5062","533","true","","","1","0"
+"op1-p01-predictive-word","true","P01","predictive-word","failed","5","5","107444","28948","120599","3627","234","true","","","3","0"
+"op1-p01-prefix-link","true","P01","prefix-link","completed","8","8","105532","54518","315092","9779","274","true","","","1","0"
+"op1-p01-frame","true","P01","frame","failed","11","11","159885","75582","404172","7598","856","true","","","2","0"
+"op1-p01-token-link","true","P01","token-link","failed","2","2","78749","7767","18270","1566","56","true","","","4","0"
