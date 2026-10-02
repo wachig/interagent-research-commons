@@ -1,10 +1,10 @@
 // A navigation client, not a recorder. Only current supplied links can be followed.
-import {readFile,writeFile,mkdir,rm} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,rm,rename} from 'node:fs/promises';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 export const ORIGIN='https://relay.interagentresearchcommons.org';
 const DIRECTORY='/private/tmp/relay-supplied-link-browser';
-const TTL=10*60*1000;
+const TTL=5*60*1000;
 const decode=s=>s.replace(/&(?:#x([a-f0-9]+)|#(\d+)|(amp|lt|gt|quot|apos|nbsp|#39));/gi,(_,hex,num,named)=>hex||num?String.fromCodePoint(parseInt(hex||num,hex?16:10)):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' ','#39':"'"}[named.toLowerCase()]));
 const plain=s=>decode(s.replace(/<[^>]*>/g,''));
 const compact=s=>plain(s).replace(/\s+/g,' ').trim();
@@ -28,7 +28,7 @@ export function render(html,url,revision) {
     if(dest.origin!==new URL(url).origin||!['http:','https:'].includes(dest.protocol))return;
     const aria=attrs.match(/\baria-label="([^"]*)"/i)?.[1];
     const id=`${revision}.${links.length+1}`;
-    links.push({id,href:dest.href,label:compact(label),aria:aria?decode(aria):null});
+    links.push({id,href:dest.href,label:compact(label),aria:aria?decode(aria):null,section:section.heading});
     section.links.push({id,label:compact(label),...(aria?{aria:decode(aria)}:{})});
   }
   const title=compact(source.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]||'Relay');
@@ -38,7 +38,7 @@ export function render(html,url,revision) {
 }
 function file(id){if(!/^[a-f0-9-]{36}$/.test(id))throw Error('Invalid browser identifier');return path.join(DIRECTORY,id+'.json');}
 async function load(id){const state=JSON.parse(await readFile(file(id),'utf8'));if(state.expires<=Date.now()){await rm(file(id),{force:true});throw Error('Browser expired; supervisor must close the trial.');}return state;}
-async function save(state){await writeFile(file(state.id),JSON.stringify(state),{mode:0o600});}
+async function save(state){await writeFile(file(state.id)+'.tmp',JSON.stringify(state),{mode:0o600});await rename(file(state.id)+'.tmp',file(state.id));}
 async function navigate(state,destination,fetcher=fetch) {
   let url=destination;
   for(let i=0;i<6;i++) {
@@ -57,13 +57,22 @@ export async function initialize({home=ORIGIN+'/',fetcher=fetch}={}) {
   await mkdir(DIRECTORY,{recursive:true,mode:0o700});
   const state={id:randomUUID(),home,url:home,revision:0,expires:Date.now()+TTL};await navigate(state,home,fetcher);await save(state);return state.id;
 }
-export async function read(id){return (await load(id)).view;}
+function observedView(state){return {...state.view,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
+export async function read(id){return observedView(await load(id));}
 export async function follow(id,handle,{fetcher=fetch}={}) {
-  const state=await load(id);const link=state.links.find(l=>l.id===handle);if(!link)throw Error('Stale or unknown link handle; read the current page.');
+  const state=await load(id);
+  let candidates;
+  if(typeof handle==='string')candidates=state.links.filter(l=>l.id===handle);
+  else if(handle&&typeof handle==='object'&&typeof handle.name==='string'&&Object.keys(handle).every(k=>['name','section'].includes(k)))candidates=state.links.filter(l=>(l.label===handle.name||l.aria===handle.name)&&(!handle.section||l.section===handle.section));
+  else throw Error('Use a supplied handle or an exact displayed link name with optional section.');
+  if(!candidates.length)throw Error('Stale or unknown link handle/name; read the current page.');
+  // Duplicate anchors to the same URL are equivalent; distinct effects must be disambiguated.
+  if(new Set(candidates.map(l=>l.href)).size>1)throw Error('Ambiguous link name; specify its displayed section or unique aria label.');
+  const link=candidates[0];
   const next=new URL(link.href),current=new URL(state.url);
   if(next.origin!==new URL(state.home).origin)throw Error('Only supplied same-origin links are permitted');
   if(next.hash&&next.pathname===current.pathname&&next.search===current.search){state.url=next.href;state.revision++;const old=state.links;state.links=old.map((l,i)=>({...l,id:`${state.revision}.${i+1}`}));for(const s of state.view.sections)s.links=s.links.map(l=>({...l,id:state.links[old.findIndex(x=>x.id===l.id)].id}));}
   else await navigate(state,link.href,fetcher);
-  await save(state);return state.view;
+  await save(state);return observedView(state);
 }
-export async function close(id){await rm(file(id),{force:true});}
+export async function close(id){await rm(file(id),{force:true});await rm(file(id)+'.tmp',{force:true});}
