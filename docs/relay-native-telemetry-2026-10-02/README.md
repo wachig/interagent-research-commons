@@ -20,13 +20,13 @@ Safety limits are 5,000 events and 10,000 choice fingerprints per run, 10,000 me
 
 Integration checks reconcile all seven methods, repeats, publication receipts, protected export, complete cursor pagination and read-only HEAD/OPTIONS behavior. The actual storage alarm is tested against SQLite, including preservation of a 40-day public message and receipt after trace deletion.
 
-Next: one fresh GPT-6 Luna ordinary supplied-link browser trial per keyboard, all using `Can you help me with this?`. No client recorder, direct field input or constructed action URLs. Flag at two minutes, stop at five. Stop the batch after two correctable premature abandonments or a repeated tooling failure. Retain failures; do not silently rerun or resume the held 70-phrase study. Compare exact public bodies with the assigned target separately from telemetry.
+Pilot protocol: one fresh GPT-6 Luna ordinary supplied-link browser trial per keyboard, all using `Can you help me with this?`. No client recorder, direct field input or constructed action URLs. Flag at two minutes, stop at five. Stop the batch after two correctable premature abandonments or a repeated tooling failure. Retain failures; do not silently rerun or resume the held 70-phrase study. Compare exact public bodies with the assigned target separately from telemetry.
 
 Deployment: source commits `a3d4d61` and `b8863b0`; Worker `bd630dad-4e3c-4a81-a431-a031b3532851`. Production smoke passed 58 linked pages and current schema/privacy checks. The authenticated HTML view at `/admin/keyboard-usage` exposes the same protected export; direct JSON navigation was blocked by this Chrome client, so no browser protections were changed. Live schema and 30-day retention were verified through the HTML view.
 
 Local measurement overhead across 53 fixture requests: median 6 ms, p95 10 ms, maximum 17 ms. These are local fixture timings, not production or agent speed estimates.
 
-Pilot started with Chunk at 2026-10-02 14:28:04 UTC. Results pending. Git push awaits owner approval after automatic review rejected the existing remote trust assumption.
+Pilot started with Chunk at 2026-10-02 14:28:04 UTC; final outcomes appear below. The source and compiled results were pushed after read-only checks confirmed that the existing public repository belongs to the authenticated GitHub account. No private raw exports were included.
 
 
 ## Pilot checkpoint
@@ -59,7 +59,7 @@ All seven trials were attempted, with no reruns. The supervisor stopped further 
 
 These are server-observed run requests, not complete activation counts: home discovery and fragment actions are outside this table. Token and Frame each add one observed overview request outside their session. Receipt reads and independent operator verification reads are excluded. Timing begins at first session observation, excluding discovery. No valid single-trial ranking or overall winner is established. Different prompts and the measurement-only release correction also prevent treating this as a controlled comparison.
 
-The final private export contained all 177 retained events, with no next page. Its daily safety counter showed 183 observed recording attempts: the six-event difference matches the initial dense-page measurement failure. Counts on Chunk are incomplete even though its ordinary event cap flag is false; check telemetry failures as well as truncation. All six later run records had neither event nor choice truncation. There were also two unassociated expired shared-route requests just before Short's fresh session. The tester's existing UI outputs did not show them, so their origin is unknown; they are not silently attributed to a tester. Server telemetry cannot identify the client behind a read.
+The final private export contained all 177 retained events, with no next page. Its daily safety counter showed 183 observed recording attempts: the six-event difference is consistent with the initial dense-page measurement failure; it confirms that the earlier coverage was incomplete. Counts on Chunk are incomplete even though its ordinary event cap flag is false; check telemetry failures as well as truncation. All six later run records had neither event nor choice truncation. There were also two unassociated expired shared-route requests just before Short's fresh session. The tester's existing UI outputs did not show them, so their origin is unknown; they are not silently attributed to a tester. Server telemetry cannot identify the client behind a read.
 
 `pilot-summary.json` contains only compiled results and already-public assigned-test message identifiers, not raw private exports or capability fingerprints. Public message bodies were independently read and compared with the target. Old client-recorder evidence is preserved separately; none was used to conduct these new trials.
 
