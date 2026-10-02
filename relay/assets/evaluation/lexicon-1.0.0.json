@@ -310,57 +310,57 @@
     {
       "prefix": "bo",
       "local_http_ms": [
-        18,
-        18,
-        18,
-        18,
-        17
+        24,
+        22,
+        24,
+        23,
+        24
       ],
-      "response_bytes": 126916
+      "response_bytes": 122441
     },
     {
       "prefix": "re",
       "local_http_ms": [
-        45,
-        44,
-        47,
-        45,
-        45
+        55,
+        52,
+        52,
+        52,
+        54
       ],
-      "response_bytes": 130191
+      "response_bytes": 125841
     },
     {
       "prefix": "con",
       "local_http_ms": [
-        53,
-        52,
-        55,
-        52,
-        52
+        34,
+        31,
+        31,
+        31,
+        32
       ],
-      "response_bytes": 999077
+      "response_bytes": 116582
     },
     {
       "prefix": "pre",
       "local_http_ms": [
-        35,
-        34,
-        34,
-        34,
-        35
+        25,
+        26,
+        24,
+        24,
+        24
       ],
-      "response_bytes": 668549
+      "response_bytes": 116664
     },
     {
       "prefix": "non",
       "local_http_ms": [
-        23,
-        21,
-        22,
-        22,
-        21
+        19,
+        19,
+        18,
+        18,
+        20
       ],
-      "response_bytes": 422541
+      "response_bytes": 115535
     }
   ],
   "limits": "No finite dictionary contains all possible valid spellings. Full inflections can increase candidate counts; SUBTLEX ordering and INSIDE/END filtering remain important. Exact character composition remains independent."
