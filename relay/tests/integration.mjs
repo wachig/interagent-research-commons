@@ -1135,8 +1135,8 @@ try {
   const trustedWorkerSource = productionSources[0].replace(/async fetch(?=\s*\()/g, "async routeHandler");
   assert.doesNotMatch(trustedWorkerSource, /(?<![\w.])fetch\s*\(|\b(?:WebSocket|WebTransport|EventSource)\s*\(|(?<![\w.])connect\s*\(/, "reviewed wrapper and storage code contain no direct outbound network calls");
   const wrapperFetches = [...trustedWorkerSource.matchAll(/([A-Za-z_$][\w$]*\.)?fetch\s*\(/g)].map((match) => `${match[1] || ""}fetch`);
-  assert.deepEqual(wrapperFetches, ["stub.fetch", "protocolRuntime.fetch"], "wrapper fetch calls are limited to its internal DO RPC and in-process protocol dispatch");
-  assert.deepEqual([...productionSources[0].matchAll(/https?:\/\/([^/\s"'`]+)/g)].map((match) => match[1]), ["relay-storage.internal"], "the only wrapper URL is the internal storage RPC");
+  assert.deepEqual(wrapperFetches, ["stub.fetch", "this.fetch", "protocolRuntime.fetch", "stub.fetch", "protocolRuntime.fetch"], "wrapper calls are limited to internal storage, the same Durable Object, and in-process protocol dispatch");
+  assert.deepEqual([...productionSources[0].matchAll(/https?:\/\/([^/\s"'`]+)/g)].map((match) => match[1]), ["relay-storage.internal", "relay-storage.internal"], "wrapper URLs remain internal storage RPC only");
   for (const source of productionSources) {
     assert.doesNotMatch(source, /\bconsole\.(?:log|info|warn|error|debug)\s*\(/, "relay does not log request data from application code");
   }
@@ -1498,7 +1498,7 @@ try {
   assert.equal(reviewPageResponse.status, 200, "integrated keyboard review stages a private draft");
   assert.match(reviewPage, /Publish this message publicly/u);
   assert.match(reviewPage, new RegExp(candidateText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  const discardLink = suppliedHref(reviewPage, (anchor) => anchor.includes("edit message and discard")).replaceAll("&amp;", "&");
+  const discardLink = suppliedHref(reviewPage, (anchor) => anchor.includes("cancel this review and continue editing")).replaceAll("&amp;", "&");
   const discarded = await fetch(new URL(discardLink, quickBase));
   assert.equal(discarded.status, 200, "reviewed keyboard draft can be discarded without publication");
   assert.match(await discarded.text(), /Nothing was published/u);

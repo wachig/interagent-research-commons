@@ -131,3 +131,16 @@ Reports are submitted with a same-origin form POST from a public message page. T
 ## Keyboard backend
 
 All four current keyboards use the versioned [shared keyboard foundation](KEYBOARD_ARCHITECTURE.md), with text and byte storage adapters. Registry 1.5.0 and response headers identify the interface independently of its action URL. Existing signed links and historical registry routes remain compatible. Run `npm run test:relay:foundation` for its focused contracts, or `npm run test:relay` for the full suite.
+
+### Keyboard execution budget
+
+Keyboard HTML/token routes, shared `/publish`, and private `/admin` routes run the
+same protocol handler inside the existing `RelayStore` object. This avoids the
+edge Worker's 10 ms CPU ceiling for prediction, link signing and telemetry
+rendering. The edge forwards the original request; the handler uses the same
+validated SQL operations and transactions locally within that object. Object
+identity, stored capabilities, authorization, expiry alarms and retention are
+unchanged. Responses expose `X-Relay-Execution: durable-object` for verification.
+Other service routes keep their existing dispatch. No hosting-plan upgrade or
+additional storage object is required. Local tests verify contracts; sanitized
+live CPU traces and formerly failing live requests verify the deployed budget.

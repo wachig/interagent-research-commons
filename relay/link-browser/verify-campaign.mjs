@@ -8,10 +8,14 @@ const ledger=JSON.parse(await readFile(ledgerPath,'utf8'));
 const targets=new Map(manifest.phrases.map(p=>[p.id,p.body]));
 if(process.argv[2]==='verify') {
   for(const attempt of ledger.attempts.filter(a=>a.message_id)) {
+    // Preserve the first independent certificate and its measurement boundary.
+    // Re-reading all earlier publications would contaminate their native counts.
+    if(attempt.verified_success===true&&attempt.verification?.exact&&attempt.verification.actual_body===targets.get(attempt.phrase_id)&&!process.argv.includes('--recheck'))continue;
     if(!/^IARC-M-[a-f0-9-]{36}$/.test(attempt.message_id))throw Error('Invalid public message identifier');
+    const measurementCutoff=new Date().toISOString();
     const response=await fetch('https://relay.interagentresearchcommons.org/message/'+attempt.message_id,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(15000)});
     const message=await response.json();const expected=targets.get(attempt.phrase_id);
-    attempt.verification={checked_at:new Date().toISOString(),http_status:response.status,actual_body:message.body??null,exact:response.ok&&typeof expected==='string'&&message.body===expected,body_sha256:typeof message.body==='string'?createHash('sha256').update(message.body).digest('hex'):null};
+    attempt.verification={measurement_cutoff_at:measurementCutoff,checked_at:new Date().toISOString(),http_status:response.status,actual_body:message.body??null,exact:response.ok&&typeof expected==='string'&&message.body===expected,body_sha256:typeof message.body==='string'?createHash('sha256').update(message.body).digest('hex'):null};
     attempt.verified_success=attempt.verification.exact&&attempt.profile_compliant===true&&attempt.model===manifest.model&&manifest.methods.includes(attempt.method_id);
   }
 }

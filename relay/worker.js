@@ -7,6 +7,10 @@ const ADMISSION_THROTTLE_WINDOW_MS = 10 * 60 * 1_000;
 const ADMIN_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1_000;
 const KEYBOARD_TELEMETRY_RETENTION_MS = 30 * 24 * 60 * 60 * 1_000;
 const REPORT_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
+// Execute expensive keyboard rendering beside its existing SQLite state.
+export function keyboardExecutionPath(pathname) {
+  return pathname.startsWith('/predictive-keyboard/html/') || pathname.startsWith('/compose/token/') || pathname.startsWith('/compose/span/') || pathname.startsWith('/compose/frame/') || pathname === '/publish' || pathname === '/admin' || pathname.startsWith('/admin/');
+}
 const RELAY_TABLES = new Set(["admissions", "admission_sessions", "admission_challenges", "sessions", "capabilities", "quick_get_tickets", "quick_get_one_shots", "pending_messages", "messages", "message_moderation", "relay_reports", "relay_admin_settings", "admin_audit", "token_composer_sessions", "token_composer_states", "token_composer_events", "token_composer_outcome_aggregates", "token_composer_arms", "token_composer_arm_expiry_observations", "token_composer_arm_expiry_aggregates", "html_keyboard_sessions", "html_keyboard_states", "html_keyboard_publish_links", "semantic_sessions", "semantic_states", "semantic_publish_links", "semantic_storage_usage", "keyboard_usage_runs", "keyboard_usage_events", "keyboard_usage_choices", "keyboard_usage_daily"]);
 
 function jsonResponse(value, status = 200) {
@@ -60,6 +64,7 @@ export class RelayDatabase {
 export class RelayStore {
   constructor(ctx, env) {
     this.ctx = ctx;
+    this.env = env;
     this.sql = ctx.storage.sql;
     const retentionSeconds = Number(env?.RELAY_MESSAGE_RETENTION_SECONDS);
     this.messageRetentionMs = Number.isInteger(retentionSeconds) && retentionSeconds >= 1 && retentionSeconds <= 90 * 24 * 60 * 60
@@ -121,6 +126,22 @@ export class RelayStore {
   }
 
   async fetch(request) {
+    if (keyboardExecutionPath(new URL(request.url).pathname)) {
+      const invoke = async payload => {
+        const response = await this.fetch(new Request('https://relay-storage.internal/sql', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}));
+        const result = await response.json();
+        if (!response.ok) throw new Error(result?.detail || 'relay storage operation failed');
+        return result;
+      };
+      const database = {
+        execute: statement => invoke({operation:'execute',statement}),
+        batch: statements => invoke({operation:'batch',statements:statements.map(statement=>({...statement,mode:'run'}))}),
+      };
+      const response = await protocolRuntime.fetch(request, {...this.env, RELAY_DB:database}, this.ctx);
+      const headers = new Headers(response.headers);
+      headers.set('X-Relay-Execution','durable-object');
+      return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+    }
     if (request.method !== "POST" || new URL(request.url).pathname !== "/sql") return jsonResponse({ detail: "not found" }, 404);
     const body = await request.text();
     if (new TextEncoder().encode(body).byteLength > MAX_STORAGE_RPC_BYTES) return jsonResponse({ detail: "storage request too large" }, 413);
@@ -251,6 +272,11 @@ export class RelayStore {
 export default {
   async fetch(request, env, ctx) {
     if (!env.RELAY_STORE) return jsonResponse({ type: "about:blank", title: "Relay unavailable", status: 503 }, 503);
+    if (keyboardExecutionPath(new URL(request.url).pathname)) {
+      const id = env.RELAY_STORE.idFromName(env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME);
+      const stub = env.RELAY_STORE.get(id);
+      return stub.fetch(request);
+    }
     const relayEnv = { ...env, ASSETS: env.ASSETS, RELAY_DB: new RelayDatabase(env.RELAY_STORE, env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME) };
     return protocolRuntime.fetch(request, relayEnv, ctx);
   },

@@ -15,6 +15,7 @@ try{
  for(const method of methods){
   console.log("Checking native telemetry:",method.id);
   let p=await html(method.href);let requests=1;
+  assert.equal(p.headers.get('x-relay-execution'),'durable-object','all seven keyboard entry renderers execute beside existing storage');
   if(method.id==='frame'){p=await html(link(p,l=>/start\//.test(l.url)&&l.text.includes('Write a sentence')));requests++;p=await html(link(p,'Compose exact text'));requests++;}
   if(method.id==='token-link'){p=await html(link(p,l=>/\/start\/generation\//.test(l.url)));requests++;p=await html(link(p,'Browse exact UTF-8 bytes'));requests++;p=await html(link(p,l=>l['aria-label']==='Browse bytes 60 through 6f'));requests++;}
   const run=p.headers.get('x-relay-usage-run');assert.match(run,/^[a-f0-9]{64}$/);

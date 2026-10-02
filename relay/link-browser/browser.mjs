@@ -46,7 +46,14 @@ async function navigate(state,destination,fetcher=fetch) {
     if([301,302,303,307,308].includes(response.status)){
       const next=new URL(response.headers.get('location'),url);if(next.origin!==new URL(state.home).origin)throw Error('External redirect refused');url=next.href;continue;
     }
-    const html=await response.text();state.url=url;state.revision++;
+    const html=await response.text();
+    // A server failure must not destroy the supplied draft/recovery links.
+    // Retain the last successful page; the caller decides whether to replay.
+    if(response.status>=500) {
+      const resourceLimit=/1102|Worker exceeded resource limits/i.test(html);
+      throw Error(`HTTP ${response.status}${resourceLimit?' (Cloudflare 1102: Worker exceeded resource limits)':''}; last supplied page preserved. No automatic action retry.`);
+    }
+    state.url=url;state.revision++;
     const rendered=(response.headers.get('content-type')||'').includes('json')?{links:[],view:{title:'JSON response',json:JSON.parse(html),sections:[]}}:render(html,url,state.revision);
     state.links=rendered.links;state.view={status:response.status,usage:response.headers.get('x-relay-usage'),...rendered.view};
     return;
