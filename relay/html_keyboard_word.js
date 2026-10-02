@@ -1,3 +1,5 @@
+import {renderSpanKeyboard,spanPredictions} from "./span_keyboard.js";
+import {consumeResolvedPick,completedPick} from "./span_contract.js";
 import {renderShortWordKeyboard,withoutShortWords} from "./short_word_keyboard.js";
 import { renderExactTextLane } from "./keyboard_exact_view.js";
 import { appendDelta, loadDraft, findState, createSession as createTextSession, saveTextChild, reviewTextDraft, keyboardErrorStatus, exactWordEffect, exactKeyText, MAX_BODY_BYTES } from "./keyboard_foundation.js";
@@ -8,6 +10,7 @@ import { PREFIX_VOCABULARY } from "./prefix_keyboard_vocabulary.js";
 
 const PREFIX = "/predictive-keyboard/html/word-links";
 const PREFIX_KEYBOARD = "/predictive-keyboard/html/prefix-keyboard";
+const SPAN_KEYBOARD = "/predictive-keyboard/html/span-keyboard";
 const SHORT_KEYBOARD = "/predictive-keyboard/html/short-word-keyboard";
 const CHUNK_KEYBOARD = "/predictive-keyboard/html/chunk-keyboard";
 const APPROVED_PREFIXES = new Set(Object.values(PREFIX_VOCABULARY.prefixes).flat());
@@ -370,12 +373,17 @@ async function makeChild(env, request, parent, action, argument, childId, issued
         added = argument.startsWith("next-letter:") && parentDraft && !/\s$/u.test(parentDraft) ? ` ${selected}` : selected;
       }
     }
+  } else if (action === "pick" && argument.startsWith('{"v":')) {
+    const partial = parent.operation === "key" && (parent.value === "backspace" || /^[\p{L}\p{M}\p{N}'’\-]$/u.test(keyArgument(parent.value) || "")) ? parentDraft.match(/[\p{L}\p{M}\p{N}'’\-]+$/u)?.[0] || "" : "";
+    const insertion = consumeResolvedPick(argument, parentDraft, partial);
+    removed = insertion.removed; added = insertion.added;
   } else if (action === "pick") {
     let choice = { text: argument, case: "as-is", wrapper: "none", suffix: "" };
     if (argument.startsWith("{")) {
       try { choice = JSON.parse(argument); }
       catch { throw new Error("The selected word action is malformed."); }
     }
+    if (choice?.v !== undefined) throw new Error("Unsupported insertion version.");
     if (!choice || typeof choice.text !== "string" || !WORD.test(choice.text) && !choice.text.split(" ").every((part) => WORD.test(part))) throw new Error("Choose a word or phrase from the displayed predictions.");
     if (!CASE.has(choice.case) || !WRAPPER.has(choice.wrapper) || !PUNCTUATION.has(choice.suffix)) throw new Error("Choose a supported case, wrapper, and punctuation option.");
     const isPhrase = choice.text.includes(" ");
@@ -408,6 +416,7 @@ async function makeChild(env, request, parent, action, argument, childId, issued
     let choice;
     try { choice = JSON.parse(argument); }
     catch { throw new Error("The typed-text action is malformed."); }
+    if (choice?.v !== undefined) throw new Error("Unsupported insertion version.");
     if (!choice || typeof choice.text !== "string" || !["exact", "space-if-needed"].includes(choice.join)) throw new Error("Choose exact text or start a new word.");
     if (new TextEncoder().encode(choice.text).byteLength > MAX_BODY_BYTES) throw new Error(`Message limit reached (${MAX_BODY_BYTES} UTF-8 bytes).`);
     added = choice.join === "space-if-needed" && parentDraft && !/\s$/u.test(parentDraft) ? ` ${choice.text}` : choice.text;
@@ -490,7 +499,7 @@ function autoCase(text, precedingText) {
 
 async function renderKeyboard(request, env, state, url) {
   const draft = await loadDraft(env, state);
-  const modeParams = queryParams(url, new Set(["lane", "range", "layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", ...PREFIX_FILTER_PARAMS]));
+  const modeParams = queryParams(url, new Set(["lane", "range", "layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", "span_effect", ...PREFIX_FILTER_PARAMS]));
   if (modeParams.get("lane") === "exact") return renderExactTextLane({ env, state, draft, range: modeParams.get("range") || "", view: modeParams.get("view") || "words", PREFIX, word, actionHref, page, escapeHtml });
   const layout = modeParams.get("layout") || "letters";
   const view = modeParams.get("view") || "words";
@@ -510,19 +519,21 @@ async function renderKeyboard(request, env, state, url) {
   if (view === "prefix" && endPair && !endPairIndex.some(({ value }) => value === endPair)) throw new Error("Choose an END pair that occurs at the end of a word in the filtered spelling lexicon.");
   const offset = Number(modeParams.get("offset") || 0);
   if (modeParams.has("shift") && !new Set(["0", "1"]).has(modeParams.get("shift"))) throw new Error("Keyboard layout link is invalid.");
-  if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks", "short"]).has(view)) throw new Error("Keyboard layout link is invalid.");
+  if (!new Set(["letters", "symbols"]).has(layout) || (shifted && layout !== "letters") || !new Set(["words", "prefix", "chunks", "short", "span"]).has(view)) throw new Error("Keyboard layout link is invalid.");
   if ([...prefix].length > 20 || /[^\p{L}\p{N}'’\-]/u.test(prefix) || !Number.isSafeInteger(offset) || offset < 0 || offset % 20 !== 0) throw new Error("Word browser prefix or page is invalid.");
+  if (view === "span" && offset !== 0) throw new Error("Choose a supplied dictionary route; Span has no offset pages.");
   if (view === "prefix" && prefix && !APPROVED_PREFIXES.has(prefix)) throw new Error("Choose a two-letter prefix from the supplied list.");
 
   if (view === "chunks") return await renderChunkKeyboard(request, env, state, draft, url, modeParams);
   const context = predictionContext(draft, state);
-  const ranked = view === "short" && !draft ? PREFIX_KEYBOARD_INITIAL_WORDS.map(text=>({text})) : usableWords(await predictRanked(env, request, context, 48));
+  let predictionUnavailable = false;
+  const ranked = view === "span" ? (!draft ? [] : prefix ? [] : await spanPredictions(env, state, async()=>usableWords(await predictRanked(env, request, context, 48))).catch(()=>{predictionUnavailable=true;return [];})) : view === "short" && !draft ? PREFIX_KEYBOARD_INITIAL_WORDS.map(text=>({text})) : usableWords(await predictRanked(env, request, context, 48));
   const predictions = view === "short" ? withoutShortWords(ranked) : ranked;
   const phrases = view === "words" && (!draft || /\s$/u.test(draft) || state.operation === "pick" || state.operation === "typed")
     ? await predictPhrases(env, request, draft, state, predictions)
     : [];
-  const directWords = predictions.slice(0, 12);
-  const moreWords = predictions.slice(12, 44);
+  const directWords = view === "span" ? [] : predictions.slice(0, 12);
+  const moreWords = view === "span" ? [] : predictions.slice(12, 44);
   const formAction = `${PREFIX}/form/${word(state.state_id)}`;
   const choiceFormAction = `${formAction}#choices`;
   const makeLink = (action, argument, resetView = false, nextPrefix = undefined) => actionHref({ ...state, env }, action, argument, layout, nextPrefix === undefined ? (resetView ? "" : prefix) : nextPrefix, resetView ? 0 : offset, view);
@@ -541,10 +552,10 @@ async function renderKeyboard(request, env, state, url) {
   }));
   const key = async (value, label = value, extraClass = "") => {
     if (value === "backspace" && !draft) return `<span class="key ${extraClass} disabled" aria-disabled="true" aria-label="Backspace unavailable for an empty draft">${escapeHtml(label)}</span>`;
-    const nextWordLetter = view === "short" && state.operation === "pick" && /[\p{L}\p{N}]$/u.test(draft) && /^[A-Za-z]$/u.test(value);
+    const nextWordLetter = view === "short" && completedPick(state) && /[\p{L}\p{N}]$/u.test(draft) && /^[A-Za-z]$/u.test(value);
     const operationValue = nextWordLetter ? `next-letter:${value}` : value;
     const accessibleLabel = value === "backspace" ? "Backspace" : nextWordLetter ? `Start next word with ${label}` : `Add ${label}`;
-    return `<a class="key ${extraClass}" rel="nofollow" href="${escapeHtml(`${await makeLink("key", operationValue, (view === "prefix" || view === "short"), "")}#keyboard`)}" aria-label="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
+    return `<a class="key ${extraClass}" ${view === "span" ? `data-relay-action="${value === "backspace" ? "backspace" : "character"}" data-relay-effect="exact"` : ""} rel="nofollow" href="${escapeHtml(`${await makeLink("key", operationValue, (view === "prefix" || view === "short" || view === "span"), "")}#keyboard`)}" aria-label="${escapeHtml(accessibleLabel)}">${escapeHtml(label)}</a>`;
   };
   const mode = (label, nextLayout, nextShifted = false, extraClass = "", accessible = label) => `<a class="key ${extraClass}" href="${escapeHtml(stateHref(state.state_id, nextLayout, nextShifted, prefix, offset, view))}" aria-label="${escapeHtml(accessible)}">${escapeHtml(label)}</a>`;
   const letters = `<div class="keyrow">${(await Promise.all("qwertyuiop".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow indented">${(await Promise.all("asdfghjkl".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")}</div><div class="keyrow third">${mode("⇧", "letters", !shifted, "wide", shifted ? "Turn shift off" : "Turn shift on")} ${(await Promise.all("zxcvbnm".split("").map((letter) => key(shifted ? letter.toUpperCase() : letter, shifted ? `Uppercase ${letter}` : letter)))).join("")} ${await key("backspace", "⌫", "wide")}</div><div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("question", "?", "wide")}</div>`;
@@ -555,7 +566,8 @@ async function renderKeyboard(request, env, state, url) {
   const reply = state.reply_to ? `<p class="notice">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted, "", 0, view) : "";
   const clearHref = draft ? await makeLink("clear", "-") : "";
-  const controls = `${undoHref ? `<a href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
+  const controls = `${undoHref ? `<a ${view === "span" ? 'data-relay-action="undo"' : ""} href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a ${view === "span" ? 'data-relay-action="clear"' : ""} rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a ${view === "span" ? 'data-relay-action="review"' : ""} rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
+  if(view === "span") return renderSpanKeyboard({env,request,state,draft,layout,shifted,prefix,predictions,predictionUnavailable,keyboard:layout === "symbols" ? symbols : letters,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,effect:modeParams.get("span_effect") || "next"});
   if(view === "short") return renderShortWordKeyboard({env,request,state,draft,layout,shifted,offset,predictions,keyboard:layout === "symbols" ? symbols : letters,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,dictionaryWords});
   const moreSection = moreWords.length
     ? `<label for="more-words">More words</label><div class="more-row"><select id="more-words" name="more" aria-label="More words">${moreOptions}</select><button type="submit" name="action" value="more">Add selected word</button></div>`
@@ -709,11 +721,11 @@ async function renderKeyboard(request, env, state, url) {
 }
 
 export function isWordKeyboardPath(pathname) {
-  return pathname === SHORT_KEYBOARD || pathname === `${SHORT_KEYBOARD}/` || pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`) || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/`;
+  return pathname === SPAN_KEYBOARD || pathname === `${SPAN_KEYBOARD}/` || pathname.startsWith(`${SPAN_KEYBOARD}/`) || pathname === SHORT_KEYBOARD || pathname === `${SHORT_KEYBOARD}/` || pathname === PREFIX || pathname === `${PREFIX}/` || pathname.startsWith(`${PREFIX}/`) || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/`;
 }
 
 export function isWordKeyboardStartPath(pathname) {
-  return pathname === SHORT_KEYBOARD || pathname === `${SHORT_KEYBOARD}/` || pathname === PREFIX || pathname === `${PREFIX}/` || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/` || pathname.includes(`${PREFIX}/start/`);
+  return pathname === SPAN_KEYBOARD || pathname === `${SPAN_KEYBOARD}/` || pathname.startsWith(`${SPAN_KEYBOARD}/`) || pathname === SHORT_KEYBOARD || pathname === `${SHORT_KEYBOARD}/` || pathname === PREFIX || pathname === `${PREFIX}/` || pathname === PREFIX_KEYBOARD || pathname === `${PREFIX_KEYBOARD}/` || pathname === CHUNK_KEYBOARD || pathname === `${CHUNK_KEYBOARD}/` || pathname.includes(`${PREFIX}/start/`);
 }
 
 export function isWordKeyboardMutationPath(pathname) {
@@ -733,13 +745,13 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     if (path === CHUNK_KEYBOARD || path === `${CHUNK_KEYBOARD}/`) {
       return new Response(null, { status: 308, headers: { ...NO_STORE, Location: `/predictive-keyboard/html/chunk-keyboard-3/${url.search}` } });
     }
-    if (path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/` || path === SHORT_KEYBOARD || path === `${SHORT_KEYBOARD}/`) {
+    if (path === SPAN_KEYBOARD || path === `${SPAN_KEYBOARD}/` || path === PREFIX || path === `${PREFIX}/` || path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/` || path === SHORT_KEYBOARD || path === `${SHORT_KEYBOARD}/`) {
       const isPrefixEntry = path === PREFIX_KEYBOARD || path === `${PREFIX_KEYBOARD}/`;
       const params = queryParams(url, new Set(["reply_to"]));
       const replyTo = params.get("reply_to") || "";
       if (replyTo && !validReplyTarget(replyTo)) throw new Error("Reply target is not a valid IARC message ID.");
       const state = await createSession(env, randomToken(), replyTo || null);
-      const viewQuery = isPrefixEntry ? "?view=prefix" : path.startsWith(SHORT_KEYBOARD) ? "?view=short" : "";
+      const viewQuery = isPrefixEntry ? "?view=prefix" : path.startsWith(SPAN_KEYBOARD) ? "?view=span" : path.startsWith(SHORT_KEYBOARD) ? "?view=short" : "";
       return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}${viewQuery}`, url.origin));
     }
     const startMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/start\/(\d{13})\/([^/]+)\/([^/]+)$/u);
@@ -757,7 +769,7 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {
-      const stateParams = queryParams(url, new Set(["lane", "range", "layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", "pick_short", "short_cap", ...PREFIX_FILTER_PARAMS]));
+      const stateParams = queryParams(url, new Set(["lane", "range", "layout", "shift", "prefix", "offset", "view", "start", "inside", "end", "word_page", "inside_page", "end_page", "pick_short", "short_cap", "span_effect", ...PREFIX_FILTER_PARAMS]));
       const state = await findState(env, readWord(stateMatch[1]));
       if (stateParams.has("pick_short") || stateParams.has("short_cap")) {
         const value = stateParams.get("pick_short") || "";
@@ -883,6 +895,8 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       if (match) return page("Draft limit reached", `<h1>Draft limit reached</h1><p>${escapeHtml(message)}</p><p>This request did not publish. Saved branches remain available until session expiry.</p><p><a href="${PREFIX}/state/${escapeHtml(match[1])}${url.searchParams.get("view") ? `?${new URLSearchParams({ view: url.searchParams.get("view") })}` : ""}">Return to the saved parent draft</a></p><p><a href="/commons">Read messages</a> · <a href="/moderation-log">Moderation history</a> · <a href="/privacy/history/">Privacy history</a></p>`, status);
     }
     const isPrefixKeyboard = url.pathname === PREFIX_KEYBOARD || url.pathname === `${PREFIX_KEYBOARD}/` || url.searchParams.get("view") === "prefix";
+    const isSpanKeyboard = url.pathname.startsWith(SPAN_KEYBOARD) || url.searchParams.get("view") === "span";
+    if (isSpanKeyboard) return fail(message, status, `${SPAN_KEYBOARD}/`, "Start a new Span Keyboard draft");
     return fail(message, status, isPrefixKeyboard ? `${PREFIX_KEYBOARD}/` : `${PREFIX}/`, isPrefixKeyboard ? "Start a new Prefix Link Keyboard draft" : "Start a new draft");
   }
 }

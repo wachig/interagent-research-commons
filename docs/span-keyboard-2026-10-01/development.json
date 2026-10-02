@@ -1,0 +1,1540 @@
+{
+  "version": "span-development-1",
+  "scope": "Purposive developer-written lowercase ASCII word/space targets; design estimates only, not agent efficiency, real timing or Chunk comparison.",
+  "assumptions": [
+    "Lexical root choices retained across contexts; runtime next-word model excluded.",
+    "Search graph and bounded phrase menus are modeled; known exact target permits graph optimization.",
+    "Greedy strategy chooses the available matching option with lowest activations per word. This is deterministic target-informed engineering, not observed agent behavior.",
+    "Counts cover composition only. Discovery, review, publication and verification are excluded; do not report these as full task costs.",
+    "No punctuation variants, Unicode browsing, correction or expiry simulation; those contracts are verified separately against local emitted links.",
+    "Development targets are not held-out competition targets."
+  ],
+  "width_estimates": {
+    "32": {
+      "root_routes": 32,
+      "max_word_selection_activations": 7,
+      "usage_weighted_word_selection_activations": 1.8957,
+      "unweighted_word_selection_activations": 4.3457
+    },
+    "48": {
+      "root_routes": 48,
+      "max_word_selection_activations": 6,
+      "usage_weighted_word_selection_activations": 1.864,
+      "unweighted_word_selection_activations": 4.0668
+    },
+    "64": {
+      "root_routes": 64,
+      "max_word_selection_activations": 6,
+      "usage_weighted_word_selection_activations": 1.8312,
+      "unweighted_word_selection_activations": 3.8638
+    }
+  },
+  "cases": [
+    {
+      "text": "we can discuss this at the same time",
+      "words_only": {
+        "cost": 15,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "we",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "can",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "discuss",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "this",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "at",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "same",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "time",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 11,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "we",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "can",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "discuss",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "this",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "at",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 3,
+            "cost": 1,
+            "text": "the same time",
+            "kind": "span"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 12,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "we",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "can",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "discuss",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "this",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 3,
+            "text": "at the",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "same time",
+            "kind": "span"
+          }
+        ]
+      }
+    },
+    {
+      "text": "i would like to understand the difference",
+      "words_only": {
+        "cost": 13,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "i",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "would",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "like",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "to",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "understand",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "difference",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 10,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "i",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "would",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "like to",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 2,
+            "text": "understand the",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "difference",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 10,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "i",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "would",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "like to",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 2,
+            "text": "understand the",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "difference",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "there is a lot of information here",
+      "words_only": {
+        "cost": 11,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "there",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "is",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "a",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "lot",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "of",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "information",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "here",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 8,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "there",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "is a",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "lot of",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "information",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "here",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 8,
+        "path": [
+          {
+            "length": 2,
+            "cost": 2,
+            "text": "there is",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "a lot",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "of",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "information",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "here",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "thank you for taking the time to explain",
+      "words_only": {
+        "cost": 13,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "thank",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "you",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "for",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "taking",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "time",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "to",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "explain",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 8,
+        "path": [
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "thank you",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "for",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "taking",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 3,
+            "cost": 1,
+            "text": "the time to",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "explain",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 8,
+        "path": [
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "thank you",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "for",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 3,
+            "text": "taking the",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "time to",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "explain",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "could you compare the two approaches",
+      "words_only": {
+        "cost": 13,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "could",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "you",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "compare",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "two",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "approaches",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 13,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "could",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "you",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "compare",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "two",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "approaches",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 13,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "could",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "you",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "compare",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "two",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "approaches",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "we should take a look at the documentation",
+      "words_only": {
+        "cost": 15,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "we",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "should",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "take",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "a",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "look",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "at",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "documentation",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 11,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "we",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "should",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "take",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 3,
+            "cost": 1,
+            "text": "a look at",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "documentation",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 12,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "we",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "should",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 3,
+            "text": "take a",
+            "kind": "span"
+          },
+          {
+            "length": 2,
+            "cost": 1,
+            "text": "look at",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "documentation",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "the compiler rejected an ambiguous expression",
+      "words_only": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "compiler",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "rejected",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "an",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "ambiguous",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "expression",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "compiler",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "rejected",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "an",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "ambiguous",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "expression",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "compiler",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "rejected",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "an",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "ambiguous",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "expression",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "validate the digest before accepting the receipt",
+      "words_only": {
+        "cost": 18,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "validate",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "digest",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "before",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "accepting",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "receipt",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 18,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "validate",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "digest",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "before",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "accepting",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "receipt",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 18,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "validate",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "digest",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "before",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "accepting",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "receipt",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "retain the original unicode normalization",
+      "words_only": {
+        "cost": 18,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "retain",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "original",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 8,
+            "text": "unicode",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "normalization",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 18,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "retain",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "original",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 8,
+            "text": "unicode",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "normalization",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 18,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "retain",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "original",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 8,
+            "text": "unicode",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "normalization",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "the transaction must preserve referential integrity",
+      "words_only": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "transaction",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "must",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "preserve",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "referential",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "integrity",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "transaction",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "must",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "preserve",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "referential",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "integrity",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "transaction",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "must",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "preserve",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "referential",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "integrity",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "use the exact identifier zeta42",
+      "words_only": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "use",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "exact",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "identifier",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 7,
+            "text": "zeta42",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "use",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "exact",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "identifier",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 7,
+            "text": "zeta42",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 17,
+        "path": [
+          {
+            "length": 2,
+            "cost": 3,
+            "text": "use the",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "exact",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "identifier",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 7,
+            "text": "zeta42",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    },
+    {
+      "text": "restart from the saved branch without publishing",
+      "words_only": {
+        "cost": 20,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "restart",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 2,
+            "text": "from",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 1,
+            "text": "the",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "saved",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "branch",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "without",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "publishing",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_optimal": {
+        "cost": 19,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "restart",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 2,
+            "text": "from the",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "saved",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "branch",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "without",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "publishing",
+            "kind": "word-or-literal"
+          }
+        ]
+      },
+      "spans_greedy": {
+        "cost": 19,
+        "path": [
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "restart",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 2,
+            "cost": 2,
+            "text": "from the",
+            "kind": "span"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "saved",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "branch",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 3,
+            "text": "without",
+            "kind": "word-or-literal"
+          },
+          {
+            "length": 1,
+            "cost": 4,
+            "text": "publishing",
+            "kind": "word-or-literal"
+          }
+        ]
+      }
+    }
+  ]
+}

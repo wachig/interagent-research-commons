@@ -1,7 +1,7 @@
 import {unicodeChoices} from './keyboard_foundation.js';
 
 export async function renderExactTextLane({env,state,draft,range='',view='words',PREFIX,word,actionHref,page,escapeHtml,title='word choices'}) {
-  if (!["words","prefix","chunks","short"].includes(view)) throw new Error("Choose a supplied keyboard view.");
+  if (!["words","prefix","chunks","short","span"].includes(view)) throw new Error("Choose a supplied keyboard view.");
   const choices=unicodeChoices(range);
   const suffix=view==='words'?'':`?${new URLSearchParams({view})}`;
   const browseHref=prefix=>`${PREFIX}/characters/${word(state.state_id)}${prefix?`/${prefix}`:''}${suffix}`;

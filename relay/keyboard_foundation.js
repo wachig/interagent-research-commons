@@ -166,6 +166,7 @@ export function keyboardIdentity(url) {
   if (path.startsWith("/predictive-keyboard/html/chunk-keyboard-3")) return { interface: "chunk", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/chunk-keyboard-2")) return { interface: "chunk-2-historical", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/prefix-keyboard") || (path.startsWith("/predictive-keyboard/html/word-links") && url.searchParams.get("view") === "prefix")) return { interface: "prefix", adapter: "text-snapshot-v1" };
+  if (path.startsWith("/predictive-keyboard/html/span-keyboard") || (path.startsWith("/predictive-keyboard/html/word-links") && url.searchParams.get("view") === "span")) return { interface: "span", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/short-word-keyboard") || (path.startsWith("/predictive-keyboard/html/word-links") && url.searchParams.get("view") === "short")) return { interface: "short-word", adapter: "text-snapshot-v1" };
   if (path.startsWith("/predictive-keyboard/html/word-links")) return { interface: "predictive", adapter: "text-snapshot-v1" };
   return null;

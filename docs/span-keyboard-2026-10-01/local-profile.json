@@ -1,0 +1,10 @@
+{
+  "scope": "Local Wrangler fixture transport/response timings, not agent or WAN speed. Full emitted pages; no selective extraction.",
+  "requests": 228,
+  "initial_root_links": 119,
+  "initial_root_html_bytes": 48291,
+  "max_links_seen_including_unicode_browser": 265,
+  "min_response_ms": 2.8470830000001115,
+  "max_response_ms": 50.94158300000004,
+  "median_response_ms": 8.865541000000121
+}

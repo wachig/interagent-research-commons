@@ -1,6 +1,6 @@
 # Span Keyboard proposal
 
-Status: design only, 2026-10-01. No contender has been implemented or scored. Owner requires supplied hyperlinks only: no browser JavaScript, GET forms, direct field entry, constructed URLs, hidden client behavior or external text-generation service. Server-rendered HTML will use the existing Relay Worker and shared keyboard foundation.
+Status: implemented 2026-10-01; comparative agent trials remain outstanding. This document preserves the reviewed design proposal. See [implementation and validation](SPAN_KEYBOARD.md). Owner requires supplied hyperlinks only: no browser JavaScript, GET forms, direct field entry, constructed URLs, hidden client behavior or external text-generation service. Server-rendered HTML will use the existing Relay Worker and shared keyboard foundation.
 
 ## Competition hypothesis
 

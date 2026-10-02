@@ -102,7 +102,8 @@ export async function act(id,action,{local=false}={}) {
     if(u.origin!==ORIGIN&&!(local&&u.hostname==='127.0.0.1'&&u.protocol==='http:'))throw Error('External supplied link blocked');
     const prefixSharedAction=state.config.method_id==='prefix-link'&&/^\/predictive-keyboard\/html\/word-links\/(?:state|step|choose|key|review|publish|discard|undo|clear|edit|designation|exact|literal|characters)\//.test(u.pathname)&&(u.searchParams.get('view')==='prefix'||/^\/predictive-keyboard\/html\/word-links\/(?:review|publish|edit)\//.test(u.pathname));
     const shortWordSharedAction=state.config.method_id==='short-word'&&/^\/predictive-keyboard\/html\/word-links\/(?:state|step|choose|key|review|publish|discard|undo|clear|edit|designation|exact|literal|characters)\//.test(u.pathname)&&(u.searchParams.get('view')==='short'||/^\/predictive-keyboard\/html\/word-links\/(?:review|publish|edit)\//.test(u.pathname));
-    if(state.config.method_href && (/^\/predictive-keyboard\//.test(u.pathname)||/^\/compose\//.test(u.pathname)||/^\/quick\//.test(u.pathname)) && !u.pathname.startsWith(state.config.method_href)&&!(prefixSharedAction||shortWordSharedAction))throw Error('Changing assigned method or using a GET shortcut is outside this strict-link run');
+    const spanSharedAction=state.config.method_id==='span'&&/^\/predictive-keyboard\/html\/word-links\/(?:state|step|review|discard|characters)\//.test(u.pathname)&&u.searchParams.get('view')==='span';
+    if(state.config.method_href && (/^\/predictive-keyboard\//.test(u.pathname)||/^\/compose\//.test(u.pathname)||/^\/quick\//.test(u.pathname)) && !u.pathname.startsWith(state.config.method_href)&&!(prefixSharedAction||shortWordSharedAction||spanSharedAction))throw Error('Changing assigned method or using a GET shortcut is outside this strict-link run');
     if(isPublish(url)&&action.intent!=='publish')throw Error('Publication requires explicit --intent publish after reviewing the exact draft');
     if(isPublish(url)&&!state.approved_publish_urls?.includes(url))throw Error('Publication blocked: this capability has no exact target/reply review witness in this run');
     };
@@ -111,7 +112,15 @@ export async function act(id,action,{local=false}={}) {
     const previous=state.current?.url;
     if(state.config.controlled)await beforeActivation(ROOT);
     state.first_activation_ms??=Date.now();state.activations++;state.last_action={url,selected};
-    await log({kind:'activation',operation:kind,url,link_label:selected?.label||selected?.text||null,explicit_publication_intent:action.intent==='publish',gap_since_last_response_ms:state.last_response_ms?Date.now()-state.last_response_ms:null});
+    let spanSearchActivations=null;
+    if(state.config.method_id==='span'&&kind==='link'){
+      const semanticAction=selected?.semantic?.action;
+      if(semanticAction?.startsWith('search'))state.span_search_activations=(state.span_search_activations||0)+1;
+      spanSearchActivations=state.span_search_activations||0;
+      if(['word','span','character','backspace','clear','undo'].includes(semanticAction))state.span_search_activations=0;
+      if(semanticAction==='search-reset')state.span_search_activations=0;
+    }
+    await log({kind:'activation',operation:kind,url,link_label:selected?.label||selected?.text||null,semantic:selected?.semantic||null,span_search_activations:spanSearchActivations,explicit_publication_intent:action.intent==='publish',gap_since_last_response_ms:state.last_response_ms?Date.now()-state.last_response_ms:null});
     if(kind==='link'&&selected?.href.includes('#')&&previous&&new URL(previous).origin+new URL(previous).pathname+new URL(previous).search===u.origin+u.pathname+u.search){
       state.current.url=url;await log({kind:'fragment',url});await save();return display(state);
     }

@@ -15,3 +15,10 @@ export function isPresentablePhrase(text) {
     && !words.some((word) => BLOCKED_PHRASE_TERMS.has(word))
     && !BLOCKED_PHRASE_PAIRS.has(words.join(" "));
 }
+
+// Versioned Span display contract; historical two-word validation stays unchanged.
+export function isPresentableSpan(text) {
+  if(typeof text!=="string" || !text.isWellFormed() || new TextEncoder().encode(text).length>96)return false;
+  const words=text.split(" ");
+  return words.length>=2 && words.length<=4 && words.every(word=>WORD.test(word)&&!BLOCKED_PHRASE_TERMS.has(word.toLocaleLowerCase("en-US"))) && !words.slice(0,-1).some((word,i)=>BLOCKED_PHRASE_PAIRS.has(`${word} ${words[i+1]}`.toLocaleLowerCase("en-US")));
+}

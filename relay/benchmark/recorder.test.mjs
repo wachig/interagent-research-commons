@@ -60,6 +60,15 @@ try{
   await act('short-exact',{op:'start'},{local:true});
   await initRun('short-switch',{...shortConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=prefix'});
   await assert.rejects(act('short-switch',{op:'start'},{local:true}),/Changing assigned method/);
+  const spanConfig={method_id:'span',method_href:'/predictive-keyboard/html/span-keyboard/',expected_body:body};
+  await initRun('span-action',{...spanConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=span'});
+  await act('span-action',{op:'start'},{local:true});
+  await initRun('span-exact',{...spanConfig,start_url:base+'/predictive-keyboard/html/word-links/characters/fixture?view=span'});
+  await act('span-exact',{op:'start'},{local:true});
+  await initRun('span-switch',{...spanConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=short'});
+  await assert.rejects(act('span-switch',{op:'start'},{local:true}),/Changing assigned method/);
+  const semantic=await extract('<a href="/word" data-relay-action="span" data-relay-span-words="3" data-relay-effect="next">a lot of</a>');
+  assert.deepEqual(semantic.links[0].semantic,{action:'span',effect:'next','span-words':'3'});
   await initRun('byline',{start_url:base+'/record',expected_body:body,expected_designation:'Tester'});await act('byline',{op:'start'},{local:true});const byline=await loadState(root+'/byline');byline.publication_receipt_id=messageId;await saveState(root+'/byline',byline);assert.equal((await act('byline',{op:'finish',outcome:'completed'},{local:true})).outcome,'published_mismatch');
   console.log('Recorder contract passed: exact text, supplied links, stale selections, fragments, redirects, compressed bytes, dropped responses, publication intent, receipt checks, and release freeze.');
 }finally{await new Promise(r=>server.close(r));await rm(root,{recursive:true});}

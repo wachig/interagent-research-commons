@@ -29,6 +29,8 @@ class Page(HTMLParser):
         if 'draft' in a.get('class','').split(): self.draft = ''; self.draft_tag = tag
         if tag == 'a' and a.get('href') is not None:
             self.anchor = {'href': a['href'], 'text': '', 'label': a.get('aria-label'), 'title': a.get('title')}
+            semantic = {key: a['data-relay-' + key] for key in ('action', 'effect', 'span-words', 'source', 'prefix-characters') if 'data-relay-' + key in a}
+            if semantic: self.anchor['semantic'] = semantic
     def handle_endtag(self, tag):
         if tag in ('script','style','svg') and self.skip:
             self.skip -= 1
