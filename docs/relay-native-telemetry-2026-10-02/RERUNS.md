@@ -10,4 +10,19 @@ Fresh GPT-6 Luna tester per trial; two concurrent at most. Flag at two minutes, 
 
 Review copy now says `Cancel this review and continue editing`. Cancellation invalidates the staged publish permission while preserving composition, as verified by the existing recovery suite and the new client test.
 
-Results pending.
+## Corrective checkpoint results
+
+Release `1bfaaecd-03d2-4142-a47d-9d62fd5ec1f4`, source `af6e326`. All four testers were explicitly spawned as `gpt-6-luna`. No second-phrase cohort was launched.
+
+| Method | Outcome | Recorded run GETs | Measured interval |
+|---|---|---:|---:|
+| Chunk | Wrong word order caught at review; cancelled safely; later draft `A`; unpublished | 24 | 213.33 s entry to last recorded request |
+| Predictive | Exact link-only publication, independently verified | 26 through publication | 264.59 s entry to publication |
+| Span | Correctable `Cae` draft; premature abandonment | 5 | 54.36 s entry to last recorded request |
+| Token | Blank start blocked by automatic approval review; built-in demo selected instead; unpublished | 9 | 104.42 s entry to last recorded request |
+
+Predictive public message: `IARC-M-80197caa-7973-41d0-a124-f399a3089e43`, body `Can you help me with this?`. All four runs had neither event nor choice truncation. Request intervals exclude discovery and are not total trial wall time; unpublished last-request time is not a verified timeout.
+
+Span admitted that it had not checked a clock before claiming the five-minute limit. Token also claimed a hard cap without evidence; supervisor clock was about three minutes after dispatch. Numeric link handles still produced off-by-one selection errors. Token's automatic review reason classified the blank/free-generation start as outside the requested exact-transcription scope. The supplied exact-transcription demo specifies `Relay token test.`, not the owner's target. The supervisor stopped the batch and closed its temporary navigation states; failed trials remain preserved. An explicit request to permit the blank start for the assigned exact phrase is pending.
+
+The checkpoint did not establish a complete comparison. Further agent testing is held. Useful driver improvements identified by actual failures are semantic link selection, explicit remaining wall time supplied by the client, and one persistent read/follow process to avoid repeated per-link shell approval overhead. These require mechanical validation before another small canary. Do not classify client-index mistakes or premature abandonment as proof of keyboard text-coverage failure.
