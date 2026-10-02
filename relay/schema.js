@@ -247,6 +247,7 @@ export const SCHEMA_STATEMENTS = [
     PRIMARY KEY (fingerprint,run_id)
   )`,
   "CREATE INDEX IF NOT EXISTS keyboard_usage_choices_expiry_idx ON keyboard_usage_choices(expires_at)",
+  "CREATE INDEX IF NOT EXISTS keyboard_usage_choices_run_idx ON keyboard_usage_choices(run_id, fingerprint)",
   `CREATE TABLE IF NOT EXISTS html_keyboard_sessions (
     session_id TEXT PRIMARY KEY,
     root_state_id TEXT NOT NULL UNIQUE,

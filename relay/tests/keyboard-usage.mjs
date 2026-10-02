@@ -76,6 +76,8 @@ try{
  assert.equal((await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_events WHERE run_id=?',limitedRun))[0].n,1,'choice exhaustion does not suppress observed request');
  const capExport=await usageExport({RELAY_DB:exportDB},new URL('https://local.invalid/admin/api/keyboard-usage'));
  assert.equal(capExport.daily_caps.issued_choices,MAX_CHOICES_PER_DAY);
+ const countPlan=await f.sql('EXPLAIN QUERY PLAN SELECT COUNT(*) FROM keyboard_usage_choices WHERE run_id=?',run);
+ assert.ok(countPlan.some(row=>/SEARCH.*keyboard_usage_choices_run_idx/.test(row.detail)),'per-run choice counts search the run index instead of scanning every run');
  const columns=await f.sql('PRAGMA table_info(keyboard_usage_events)');assert.ok(!columns.some(c=>/body|text|url|capability|ip_address/.test(c.name)));
  overhead.sort((a,b)=>a-b);console.log('Local telemetry overhead ms:',JSON.stringify({requests:overhead.length,median:overhead[Math.floor(overhead.length/2)],p95:overhead[Math.floor((overhead.length-1)*.95)],max:overhead.at(-1)}));
  console.log('Native telemetry: all seven methods, exact request/replay accounting, publication/record association, choice attribution, 30-day deadlines, read-only HEAD/OPTIONS and protected export passed.');
