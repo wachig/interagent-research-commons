@@ -1,0 +1,19 @@
+{
+  "scope": "Out-of-score root diagnostic requests; not part of any tester path",
+  "requests": [
+    {
+      "purpose": "Resume unchanged-release verification after publication authorization",
+      "route": "/",
+      "http_attempts": 1,
+      "status": 200,
+      "release": "8c972f86-7e41-49fe-87a1-c35b18ded6af"
+    },
+    {
+      "purpose": "Reachability and release check after P02 Span transport timeout",
+      "route": "/",
+      "http_attempts": 1,
+      "status": 200,
+      "release": "8c972f86-7e41-49fe-87a1-c35b18ded6af"
+    }
+  ]
+}

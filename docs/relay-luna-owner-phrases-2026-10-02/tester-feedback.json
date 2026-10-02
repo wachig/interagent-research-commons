@@ -43,5 +43,49 @@
     "source": "Luna tester final self-report; not independent tool-usage measurement",
     "tool_errors_reported": 2,
     "note": "Closed failed after eleven activations; tester reported exact reviewed target. Automatic approval rejected public publish as unauthorized irreversible effect. Initial loopback permission error also reported; later summary counted only publish rejection. No publication."
+  },
+  {
+    "run": "op1-p02-short-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 0,
+    "note": "Completed with exact public root body and machine record verified; fourteen activations. Tester described short-word panel and top-word selections plus candidate completion and punctuation; no tool errors reported."
+  },
+  {
+    "run": "op1-p02-span",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 3,
+    "note": "Closed same run infrastructure interruption after home transport timeout, one activation and request. Tester reported initial loopback permission failure and lock-blocked start and finish; later same-run finish succeeded. No keyboard use or publication.",
+    "root_adjudication": "First home request timed out after 30 seconds; state recorded transport error and one activation, with no keyboard use. Transport or environment interruption, not keyboard inability. Same-run interruption closure preserved attempt."
+  },
+  {
+    "run": "op1-p02-predictive-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Completed exact public root body with machine record verified; seventy-five activations and requests. Tester reported one initial loopback permission error and exact-lane use after suggestion-flow attempts.",
+    "protocol_deviation": "Director replied to tester progress with a generic reminder of original exactness and activation/time caps. No strategy, reset instruction, or target change was supplied."
+  },
+  {
+    "run": "op1-p02-prefix-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 0,
+    "note": "Completed exact public root target with machine record verified; thirty-one activations and requests. Tester reported exact-character lane use where top suggestions did not include required words; no tool errors after loopback access allowed."
+  },
+  {
+    "run": "op1-p02-token-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 5,
+    "note": "Closed same run infrastructure interruption after supplied free-generation task link was automatically rejected as unrelated exact-transcription workflow despite explicit authorization. Two activations; no draft or publication. Tester reported five failures including loopback permission errors, review rejection and finish note parsing error."
+  },
+  {
+    "run": "op1-p02-frame",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Completed exact public root target with machine record verified; fifty-three activations and requests. Tester reported exact-character lane use and one initial loopback permission failure recovered by escalation."
+  },
+  {
+    "run": "op1-p02-chunk-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Completed exact public root body with machine record verified; eighteen activations and requests. Tester reported large START grids, contextual top words and candidate selection; one initial loopback permission failure recovered by escalation."
   }
 ]
