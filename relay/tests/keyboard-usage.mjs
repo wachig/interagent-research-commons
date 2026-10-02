@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 // Stub only the rendering runtime's WASM import; execute the actual storage/alarm source.
 const storageSource=(await readFile(new URL('../worker.js',import.meta.url),'utf8')).replace('import protocolRuntime from "./runtime.js";', 'const protocolRuntime = {};').replace('from "./schema.js"', 'from '+JSON.stringify(new URL('../schema.js',import.meta.url).href));
 const {RelayStore}=await import('data:text/javascript;base64,'+Buffer.from(storageSource).toString('base64'));
-import {USAGE_RETENTION_MS,usageExport} from '../keyboard_usage.js';
+import {USAGE_RETENTION_MS,MAX_CHOICES_PER_DAY,usageExport} from '../keyboard_usage.js';
 const f=await fixture();const overhead=[];
 const html=async route=>{const p=await f.request(route,{html:true});assert.notEqual(p.headers.get('x-relay-usage'),'unavailable','telemetry must succeed');if(p.headers.has('x-relay-usage-ms'))overhead.push(Number(p.headers.get('x-relay-usage-ms')));return {...p,...parse(p.text,p.url)};};
 const link=(p,predicate)=>{const l=p.links.find(typeof predicate==='string'?x=>x.text===predicate:predicate);assert.ok(l,'missing supplied link');return l.url;};
@@ -22,7 +22,9 @@ try{
   if(method.id!=='token-link'&&!p.links.some(l=>l.text==='a'&&(/\/step\//.test(l.url)||/\/action\//.test(l.url)))){p=await html(link(p,l=>/^Exact characters|^Literal characters/.test(l.text)));requests++;}
   const first=method.id==='token-link'?link(p,l=>/\/branch\/[^/]+\/b61\//.test(l.url)):link(p,l=>l.text==='a'&&(/\/step\//.test(l.url)||/\/action\//.test(l.url)));
   p=await html(first);requests++;assert.equal(p.headers.get('x-relay-usage-run'),run);
-  const replay=await html(first);requests++;assert.equal(replay.headers.get('x-relay-usage-run'),run);
+  const beforeReplay=await f.sql('SELECT SUM(choice_count) AS n FROM keyboard_usage_daily');
+  const replay=await html(first);requests++;
+  assert.equal((await f.sql('SELECT SUM(choice_count) AS n FROM keyboard_usage_daily'))[0].n,beforeReplay[0].n,'replay adds a request but no duplicate issued-choice allocation');assert.equal(replay.headers.get('x-relay-usage-run'),run);
   const before=f.sql('SELECT COUNT(*) AS count FROM keyboard_usage_events WHERE run_id=?',run);
   await f.request(first,{method:'HEAD',html:true});await f.request(first,{method:'OPTIONS',html:true});
   assert.equal((await f.sql('SELECT COUNT(*) AS count FROM keyboard_usage_events WHERE run_id=?',run))[0].count,(await before)[0].count,'HEAD/OPTIONS do not add telemetry');
@@ -64,6 +66,16 @@ try{
  assert.equal(new Set(exported.map(e=>e.event_id)).size,exported.length);
  assert.equal(exported.length,(await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_events WHERE expires_at>?',Date.now()))[0].n,'compound cursor exports every retained event');
 
+ // Near-cap new pages retain request observations and mark partial rank metadata.
+ const currentDay=Math.floor(Date.now()/86400000)*86400000;
+ await f.sql('UPDATE keyboard_usage_daily SET choice_count=? WHERE day=?',MAX_CHOICES_PER_DAY-1,currentDay);
+ const limited=await html('/predictive-keyboard/html/short-word-keyboard/');
+ const limitedRun=limited.headers.get('x-relay-usage-run');
+ assert.equal((await f.sql('SELECT choice_count FROM keyboard_usage_daily WHERE day=?',currentDay))[0].choice_count,MAX_CHOICES_PER_DAY,'bounded choice cap is honored');
+ assert.equal((await f.sql('SELECT choices_truncated FROM keyboard_usage_runs WHERE run_id=?',limitedRun))[0].choices_truncated,1,'partial choices are explicitly marked');
+ assert.equal((await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_events WHERE run_id=?',limitedRun))[0].n,1,'choice exhaustion does not suppress observed request');
+ const capExport=await usageExport({RELAY_DB:exportDB},new URL('https://local.invalid/admin/api/keyboard-usage'));
+ assert.equal(capExport.daily_caps.issued_choices,MAX_CHOICES_PER_DAY);
  const columns=await f.sql('PRAGMA table_info(keyboard_usage_events)');assert.ok(!columns.some(c=>/body|text|url|capability|ip_address/.test(c.name)));
  overhead.sort((a,b)=>a-b);console.log('Local telemetry overhead ms:',JSON.stringify({requests:overhead.length,median:overhead[Math.floor(overhead.length/2)],p95:overhead[Math.floor((overhead.length-1)*.95)],max:overhead.at(-1)}));
  console.log('Native telemetry: all seven methods, exact request/replay accounting, publication/record association, choice attribution, 30-day deadlines, read-only HEAD/OPTIONS and protected export passed.');

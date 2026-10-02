@@ -1,10 +1,11 @@
 // Server-observed request facts. No client script, draft text, URLs, or IP storage.
 import {captureUsageState} from './keyboard_usage_context.js';
 import {keyboardIdentity, KEYBOARD_FOUNDATION_VERSION} from './keyboard_foundation.js';
-export const KEYBOARD_USAGE_VERSION = 'relay-keyboard-usage/1.0.0';
+export const KEYBOARD_USAGE_VERSION = 'relay-keyboard-usage/1.1.0';
 export const USAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const METHODS = {chunk:'chunk-word',predictive:'predictive-word',prefix:'prefix-link',span:'span','short-word':'short-word',token:'token-link',frame:'frame'};
 const encoder = new TextEncoder();
+export const MAX_CHOICES_PER_DAY = 100000;
 const MAX_CHOICES_PER_RUN = 10000;
 const MAX_EVENTS_PER_RUN = 5000;
 export async function usageHash(value) {
@@ -117,13 +118,22 @@ export async function recordKeyboardUsage(env,request,response) {
     capped=Number(count.count)>=MAX_EVENTS_PER_RUN;
     if(capped)await env.RELAY_DB.prepare('UPDATE keyboard_usage_runs SET truncated=1 WHERE run_id=?').bind(runId).run();
     if(!capped&&response.ok&&/^<!doctype/i.test(text)){
-      const choices=await issuedChoices(text,c.url.href,runId,expires);
+      const emitted=await issuedChoices(text,c.url.href,runId,expires);
+      // Revisited immutable pages reissue the same links. Charge only fingerprints
+      // not already stored for this run; keep each lookup/RPC payload bounded.
+      const alreadyStored=new Set();
+      for(let i=0;i<emitted.length;i+=40){
+        const fingerprints=emitted.slice(i,i+40).map(row=>row[0]);
+        const found=await env.RELAY_DB.prepare('SELECT fingerprint FROM keyboard_usage_choices WHERE run_id=? AND fingerprint IN ('+fingerprints.map(()=>'?').join(',')+')').bind(runId,...fingerprints).all();
+        for(const row of found.results||[])alreadyStored.add(row.fingerprint);
+      }
+      const choices=emitted.filter(row=>!alreadyStored.has(row[0]));
       const count=await env.RELAY_DB.prepare('SELECT COUNT(*) AS count FROM keyboard_usage_choices WHERE run_id=?').bind(runId).first();
       const available=Math.max(0,MAX_CHOICES_PER_RUN-Number(count.count));
       if(choices.length>available)await env.RELAY_DB.prepare('UPDATE keyboard_usage_runs SET choices_truncated=1 WHERE run_id=?').bind(runId).run();
       const daily=await env.RELAY_DB.prepare('SELECT choice_count FROM keyboard_usage_daily WHERE day=?').bind(day).first();
-      const allocation=Math.min(available,Math.max(0,25000-daily.choice_count),choices.length);
-      const granted=await env.RELAY_DB.prepare('UPDATE keyboard_usage_daily SET choice_count=choice_count+? WHERE day=? AND choice_count+?<=25000 RETURNING choice_count').bind(allocation,day,allocation).first();
+      const allocation=Math.min(available,Math.max(0,MAX_CHOICES_PER_DAY-daily.choice_count),choices.length);
+      const granted=await env.RELAY_DB.prepare('UPDATE keyboard_usage_daily SET choice_count=choice_count+? WHERE day=? AND choice_count+?<=? RETURNING choice_count').bind(allocation,day,allocation,MAX_CHOICES_PER_DAY).first();
       const rows=granted?choices.slice(0,allocation):[],statements=[];
       if(rows.length<choices.length)await env.RELAY_DB.prepare('UPDATE keyboard_usage_runs SET choices_truncated=1 WHERE run_id=?').bind(runId).run();
       for(let i=0;i<rows.length;i+=10){const chunk=rows.slice(i,i+10);statements.push(env.RELAY_DB.prepare('INSERT INTO keyboard_usage_choices (fingerprint,run_id,section,choice_rank,action,expires_at) VALUES '+chunk.map(()=>'(?,?,?,?,?,?)').join(',')+' ON CONFLICT(fingerprint,run_id) DO NOTHING').bind(...chunk.flat()));}
@@ -152,5 +162,5 @@ export async function usageExport(env,url) {
   const rows=events.results||[],more=rows.length>limit;const page=rows.slice(0,limit);
   const runRows=runs.results||[],runPage=runRows.slice(0,500);
   const daily=await env.RELAY_DB.prepare('SELECT day,request_count,choice_count FROM keyboard_usage_daily WHERE expires_at>? ORDER BY day DESC').bind(now).all();
-  return {daily_caps:{requests:10000,issued_choices:25000},daily_usage:daily.results||[],schema_version:KEYBOARD_USAGE_VERSION,retention_days:30,generated_at:now,runs:runPage,runs_next_before:runRows.length>500?runPage.at(-1).created_at:null,runs_next_before_id:runRows.length>500?runPage.at(-1).run_id:null,events:page,next_before:more?page.at(-1).created_at:null,next_before_id:more?page.at(-1).event_id:null,runs_list_limit:500,limitations:['Requests observed by Relay, not human or agent intent.','No model tokens, client thinking time, fragment-only activations, or compressed wire-byte measurement.','Uncompressed response bytes exclude headers and TLS. Server time includes routing/rendering and excludes analytics writes.','Choice rank is ordinal among links within the emitted heading section, not model confidence.','Repeated URLs may be retries or revisits. A published outcome does not establish an external transcription target match.','Runs/events have safety caps; truncated flags must be checked.']};
+  return {daily_caps:{requests:10000,issued_choices:MAX_CHOICES_PER_DAY},daily_usage:daily.results||[],schema_version:KEYBOARD_USAGE_VERSION,retention_days:30,generated_at:now,runs:runPage,runs_next_before:runRows.length>500?runPage.at(-1).created_at:null,runs_next_before_id:runRows.length>500?runPage.at(-1).run_id:null,events:page,next_before:more?page.at(-1).created_at:null,next_before_id:more?page.at(-1).event_id:null,runs_list_limit:500,limitations:['Requests observed by Relay, not human or agent intent.','No model tokens, client thinking time, fragment-only activations, or compressed wire-byte measurement.','Uncompressed response bytes exclude headers and TLS. Server time includes routing/rendering and excludes analytics writes.','Choice rank is ordinal among links within the emitted heading section, not model confidence.','Repeated URLs may be retries or revisits. A published outcome does not establish an external transcription target match.','Runs/events have safety caps; truncated flags must be checked.']};
 }
