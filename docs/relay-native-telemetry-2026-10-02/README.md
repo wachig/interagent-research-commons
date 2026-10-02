@@ -22,4 +22,51 @@ Integration checks reconcile all seven methods, repeats, publication receipts, p
 
 Next: one fresh GPT-6 Luna ordinary supplied-link browser trial per keyboard, all using `Can you help me with this?`. No client recorder, direct field input or constructed action URLs. Flag at two minutes, stop at five. Stop the batch after two correctable premature abandonments or a repeated tooling failure. Retain failures; do not silently rerun or resume the held 70-phrase study. Compare exact public bodies with the assigned target separately from telemetry.
 
-Deployment and pilot results: pending.
+Deployment: source commits `a3d4d61` and `b8863b0`; Worker `bd630dad-4e3c-4a81-a431-a031b3532851`. Production smoke passed 58 linked pages and current schema/privacy checks. The authenticated HTML view at `/admin/keyboard-usage` exposes the same protected export; direct JSON navigation was blocked by this Chrome client, so no browser protections were changed. Live schema and 30-day retention were verified through the HTML view.
+
+Local measurement overhead across 53 fixture requests: median 6 ms, p95 10 ms, maximum 17 ms. These are local fixture timings, not production or agent speed estimates.
+
+Pilot started with Chunk at 2026-10-02 14:28:04 UTC. Results pending. Git push awaits owner approval after automatic review rejected the existing remote trust assumption.
+
+
+## Pilot checkpoint
+
+Chunk stopped without publication after approximately one minute. The tester reported a word-order error and stopped after the review-edit action invalidated the staged publication draft. The resulting page still offered an Edit message link to the underlying composition, so this was a correctable premature abandonment, not proof of a keyboard coverage failure. The initial prompt's prohibition on deliberately discarding a recoverable draft contributed to the interpretation; remaining prompts explicitly distinguish discarding a review from abandoning composition.
+
+This trial also exposed incomplete native measurement on dense suggestion pages: the storage API rejects requests above 32,768 bytes, and 16 telemetry inserts per batch exceeded that limit. Batches are now limited to four inserts. A realistic Can → you word-choice regression test passes with the correction and fails with `X-Relay-Usage: unavailable` when the old batch size is restored. The first trial's five recorded requests are incomplete and excluded from traversal comparisons. Its known failure is retained, not rerun.
+
+The correction and a remaining token review retention sentence were deployed as commit `f02c430`, Worker `6cd91f74-e7d8-43ce-a1d3-72932c4f5acc`. The remaining six pilots use this fixed release; this pilot is a workflow validation, not a controlled ranking across the release change. Short and Predictive started at approximately 14:33 UTC in separate browser tabs. At most two testers run concurrently. No keyboard behavior was tuned between trials.
+
+
+Further pilot observations: Short Word and Prefix published the exact assigned body using supplied links. Predictive published the exact body but admitted typing `help` into a search field, violating the profile; exclude it from link-only comparisons. Span published `Can you help with this?`, missing `me`, despite reporting success. Independent public JSON reads verified these outcomes. Agent completion reports and click estimates are not authoritative correctness or traversal counts.
+
+Final Token and Frame pilots dispatched around 14:37 UTC, with the same five-minute cap. Larger testing remains held.
+
+
+## Final bounded pilot results
+
+All seven trials were attempted, with no reruns. The supervisor stopped further work when Token repeated Span's omitted-word publication error. Frame had already published before that interruption reached it; its exact public body was independently verified. No pilot reached the five-minute cap. No larger study resumed.
+
+| Keyboard | Outcome | Run GETs through publication | Entry → publication |
+|---|---|---:|---:|
+| Chunk | Unpublished; correctable abandonment; telemetry incomplete | unavailable | unavailable |
+| Short Word | Exact, link-only | 16 | 70.30 s |
+| Predictive | Exact body, invalid field input | 15 | 47.90 s |
+| Prefix | Exact, link-only | 25 | 66.48 s |
+| Span | Published without `me` | 11 | 36.18 s |
+| Token | Published without `me` | 14 | 62.87 s |
+| Frame | Exact, link-only | 32 | 73.38 s |
+
+These are server-observed run requests, not complete activation counts: home discovery and fragment actions are outside this table. Token and Frame each add one observed overview request outside their session. Receipt reads and independent operator verification reads are excluded. Timing begins at first session observation, excluding discovery. No valid single-trial ranking or overall winner is established. Different prompts and the measurement-only release correction also prevent treating this as a controlled comparison.
+
+The final private export contained all 177 retained events, with no next page. Its daily safety counter showed 183 observed recording attempts: the six-event difference matches the initial dense-page measurement failure. Counts on Chunk are incomplete even though its ordinary event cap flag is false; check telemetry failures as well as truncation. All six later run records had neither event nor choice truncation. There were also two unassociated expired shared-route requests just before Short's fresh session. The tester's existing UI outputs did not show them, so their origin is unknown; they are not silently attributed to a tester. Server telemetry cannot identify the client behind a read.
+
+`pilot-summary.json` contains only compiled results and already-public assigned-test message identifiers, not raw private exports or capability fingerprints. Public message bodies were independently read and compared with the target. Old client-recorder evidence is preserved separately; none was used to conduct these new trials.
+
+## Actionable next steps
+
+- Clarify review recovery: say **Cancel this review and continue editing**, and distinguish the staged publication copy from the retained composition. Chunk's tester interpreted the present discard wording as losing the entire draft.
+- Put optional text-field search behind an explicit capability disclosure or separate mode. A tester used it despite a link-only instruction; ordinary telemetry cannot certify profile compliance.
+- Keep the exact final draft prominent at review. Two testers omitted `me`, yet claimed successful transcription. This is agent error evidence, not proof of a backend omission. Do not add an undisclosed server target-matching gate.
+- Reduce browsing/friction where observed: Prefix's tester fell back to character links after `Can you`; Frame used mostly characters; Token spent extra navigation on initial `Can` and space-prefixed words. Inspect supplied-link discovery before changing predictions or dictionaries.
+- Before a larger comparison, define and check profile compliance and exact public-body equality independently. Use the complete retained failure record; do not replace failures with successful reruns. Measure production analytics overhead separately from model time. This one-sentence pilot does not justify another large cohort yet.

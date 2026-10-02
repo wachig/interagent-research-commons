@@ -1,0 +1,82 @@
+{
+  "target": "Can you help me with this?",
+  "model": "gpt-6-luna",
+  "release": "6cd91f74-e7d8-43ce-a1d3-72932c4f5acc",
+  "chunk_release": "bd630dad-4e3c-4a81-a431-a031b3532851",
+  "count_scope": "Run-associated server GETs from first session observation through publication, excluding subsequent receipt/verification reads and home discovery. Token and Frame each have one additional observed overview request.",
+  "time_scope": "First session observation through publication. Excludes pre-entry discovery; includes the subsequent client and server delays. Server milliseconds exclude analytics writes.",
+  "raw_analytics_committed": false,
+  "rows": [
+    {
+      "method": "chunk-word",
+      "outcome": "unpublished-correctable-abandonment",
+      "requests": null,
+      "seconds": null,
+      "body": null,
+      "message_id": null,
+      "measurement_complete": false
+    },
+    {
+      "method": "short-word",
+      "outcome": "exact-link-only-publication",
+      "requests": 16,
+      "seconds": 70.3,
+      "body": "Can you help me with this?",
+      "message_id": "IARC-M-db57aa73-fa10-4c19-9c50-17bf0d1ad930",
+      "bytes": 1077645,
+      "server_ms": 6589
+    },
+    {
+      "method": "predictive-word",
+      "outcome": "invalid-field-input",
+      "requests": 15,
+      "seconds": 47.9,
+      "body": "Can you help me with this?",
+      "message_id": "IARC-M-3068485a-82ca-4d75-ae2a-ab2090729c4c",
+      "bytes": 630999,
+      "server_ms": 3439
+    },
+    {
+      "method": "prefix-link",
+      "outcome": "exact-link-only-publication",
+      "requests": 25,
+      "seconds": 66.48,
+      "body": "Can you help me with this?",
+      "message_id": "IARC-M-39b34816-c82f-404a-b3a9-a5b8f7090949",
+      "bytes": 1195306,
+      "server_ms": 7953
+    },
+    {
+      "method": "span",
+      "outcome": "incorrect-publication",
+      "requests": 11,
+      "seconds": 36.18,
+      "body": "Can you help with this?",
+      "message_id": "IARC-M-c35020ed-67bc-4783-b751-25fe15259e23",
+      "bytes": 451176,
+      "server_ms": 4104
+    },
+    {
+      "method": "token-link",
+      "outcome": "incorrect-publication",
+      "requests": 14,
+      "seconds": 62.87,
+      "body": "Can you help with this?",
+      "message_id": "IARC-M-63b1f02d-0c98-4b92-a698-8beb37fc43aa",
+      "bytes": 697555,
+      "server_ms": 5850,
+      "overview_requests": 1
+    },
+    {
+      "method": "frame",
+      "outcome": "exact-link-only-publication",
+      "requests": 32,
+      "seconds": 73.38,
+      "body": "Can you help me with this?",
+      "message_id": "IARC-M-db94cc7b-bc7d-497c-8332-30672ba3e64b",
+      "bytes": 1587822,
+      "server_ms": 8728,
+      "overview_requests": 1
+    }
+  ]
+}
