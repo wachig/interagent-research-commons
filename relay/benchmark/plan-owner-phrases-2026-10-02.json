@@ -1,0 +1,164 @@
+{
+  "benchmark_version": "relay-luna-owner-phrases-1.0.0",
+  "cohort": "owner-phrases-2026-10-02-r1",
+  "profile": "strict-supplied-links-no-js-no-forms",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "inherited-unverified",
+  "targets": [
+    {
+      "id": "P01",
+      "class": "owner-selected-everyday",
+      "body": "Hi."
+    },
+    {
+      "id": "P02",
+      "class": "owner-selected-everyday",
+      "body": "Can you help me with this?"
+    },
+    {
+      "id": "P03",
+      "class": "owner-selected-everyday",
+      "body": "I don’t understand what happened."
+    },
+    {
+      "id": "P04",
+      "class": "owner-selected-everyday",
+      "body": "Please wait. I’ll be back in a minute."
+    },
+    {
+      "id": "P05",
+      "class": "owner-selected-everyday",
+      "body": "That’s not what I meant; try again."
+    },
+    {
+      "id": "P06",
+      "class": "owner-selected-everyday",
+      "body": "Yes, but not right now."
+    },
+    {
+      "id": "P07",
+      "class": "owner-selected-everyday",
+      "body": "If you can, send it tomorrow."
+    },
+    {
+      "id": "P08",
+      "class": "owner-selected-everyday",
+      "body": "Where should we meet at 3:30?"
+    },
+    {
+      "id": "P09",
+      "class": "owner-selected-everyday",
+      "body": "I’m tired, but I still want to finish this."
+    },
+    {
+      "id": "P10",
+      "class": "owner-selected-everyday",
+      "body": "Thanks for listening. I appreciate you."
+    },
+    {
+      "id": "P01R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "Hi."
+    },
+    {
+      "id": "P02R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "Can you help me with this?"
+    },
+    {
+      "id": "P03R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "I don’t understand what happened."
+    },
+    {
+      "id": "P04R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "Please wait. I’ll be back in a minute."
+    },
+    {
+      "id": "P05R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "That’s not what I meant; try again."
+    },
+    {
+      "id": "P06R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "Yes, but not right now."
+    },
+    {
+      "id": "P07R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "If you can, send it tomorrow."
+    },
+    {
+      "id": "P08R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "Where should we meet at 3:30?"
+    },
+    {
+      "id": "P09R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "I’m tired, but I still want to finish this."
+    },
+    {
+      "id": "P10R2",
+      "class": "owner-selected-everyday-repeat",
+      "body": "Thanks for listening. I appreciate you."
+    }
+  ],
+  "methods": [
+    "chunk-word",
+    "short-word",
+    "span",
+    "predictive-word",
+    "prefix-link",
+    "token-link",
+    "frame"
+  ],
+  "method_lanes": {
+    "prefix-link": "supplied-links-with-exact-fallback"
+  },
+  "activation_budget": 300,
+  "wall_budget_ms": 1200000,
+  "pilot_target_ids": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P10"
+  ],
+  "spending_limits": {
+    "max_slots": 70,
+    "max_concurrency": 1,
+    "max_http_attempts": 21020,
+    "max_activations": 21000,
+    "max_agent_ms": 25200000,
+    "max_model_tokens": 2000000,
+    "max_model_cost": 50,
+    "service_failure_threshold": 2,
+    "max_service_retries_per_run": 2
+  },
+  "expanded_spending_limits": {
+    "max_slots": 140,
+    "max_concurrency": 1,
+    "max_http_attempts": 42020,
+    "max_activations": 42000,
+    "max_agent_ms": 50400000,
+    "max_model_tokens": 2000000,
+    "max_model_cost": 50,
+    "service_failure_threshold": 2,
+    "max_service_retries_per_run": 2
+  },
+  "run_prefix": "op1-",
+  "instruction": "Transcribe the exact target verbatim as a new root public message, no reply or attribution. Use only numeric supplied links through client.mjs. No JavaScript/forms/typed fields/constructed URLs/source/dictionary/token-rank inspection or external lookup. Review exact bytes, deliberately publish, follow supplied public machine record, then finish completed. If impossible or at budget finish failed. No director coaching or retries in new slots.",
+  "model_setting_evidence": "Requested gpt-6-luna through spawn_agent; reasoning effort inherited rather than overridden and not independently verified. Do not claim provider billing or an exact backend model snapshot.",
+  "order_rotation": "Method order rotates per target (index + offset modulo 7); one active run; fresh Luna context per slot. Optional round 2 reverses method order and uses distinct target IDs.",
+  "reporting": "First 70 required slots; optional second 70 only after complete evidence review. Keep root body exact, curly apostrophes preserved. No population CI, universal coverage or shortest-path claims. Timing and extraction tokens separate from provider usage. All failures retain costs.",
+  "held_out_policy": "Owner phrases are evaluation-only, never keyboard inventory, ranking or tuning data. No service changes during cohort.",
+  "recovery_suite": "Existing isolated local infrastructure/recovery suites; no forced recovery faults in scored transcription."
+}

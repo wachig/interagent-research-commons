@@ -67,6 +67,16 @@ try{
   await act('span-exact',{op:'start'},{local:true});
   await initRun('span-switch',{...spanConfig,start_url:base+'/predictive-keyboard/html/word-links/step/fixture?view=short'});
   await assert.rejects(act('span-switch',{op:'start'},{local:true}),/Changing assigned method/);
+  const frameConfig={method_id:'frame',method_href:'/predictive-keyboard/html/frame-keyboard/',expected_body:body};
+  await initRun('frame-review',{...frameConfig,start_url:base+'/predictive-keyboard/html/frame-keyboard/review/fixture'});
+  await act('frame-review',{op:'start'},{local:true});
+  const frameState=await loadState(root+'/frame-review');
+  assert.ok(frameState.review_witness);
+  await act('frame-review',{op:'follow',page:1,link:3,intent:'publish'},{local:true});
+  await act('frame-review',{op:'follow',page:2,link:5},{local:true});
+  assert.equal((await act('frame-review',{op:'finish',outcome:'completed'},{local:true})).outcome,'completed');
+  await initRun('frame-switch',{...frameConfig,start_url:base+'/predictive-keyboard/html/word-links/'});
+  await assert.rejects(act('frame-switch',{op:'start'},{local:true}),/Changing assigned method/);
   const semantic=await extract('<a href="/word" data-relay-action="span" data-relay-span-words="3" data-relay-effect="next">a lot of</a>');
   assert.deepEqual(semantic.links[0].semantic,{action:'span',effect:'next','span-words':'3'});
   await initRun('byline',{start_url:base+'/record',expected_body:body,expected_designation:'Tester'});await act('byline',{op:'start'},{local:true});const byline=await loadState(root+'/byline');byline.publication_receipt_id=messageId;await saveState(root+'/byline',byline);assert.equal((await act('byline',{op:'finish',outcome:'completed'},{local:true})).outcome,'published_mismatch');
