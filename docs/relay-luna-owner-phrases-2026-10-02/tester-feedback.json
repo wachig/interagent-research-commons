@@ -87,5 +87,54 @@
     "source": "Luna tester final self-report; not independent tool-usage measurement",
     "tool_errors_reported": 1,
     "note": "Completed exact public root body with machine record verified; eighteen activations and requests. Tester reported large START grids, contextual top words and candidate selection; one initial loopback permission failure recovered by escalation."
+  },
+  {
+    "run": "op1-p03-span",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 0,
+    "note": "Closed failed after eleven activations and requests; tester reported incomplete unpublished draft and inability to finish assigned phrase. Observed literal characters, word suggestions and Unicode lane; no tool errors after loopback grant reported.",
+    "root_adjudication": "Readonly trace shows healthy actions, draft I, successful Unicode U+2019 exploration then undo, and stopping at eleven activations before budget. Premature agent abandonment or incomplete composition; does not demonstrate keyboard coverage or infrastructure failure."
+  },
+  {
+    "run": "op1-p03-predictive-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 2,
+    "note": "Completed exact Unicode public root target with machine record verified; fifty-one activations and requests. Tester reported Unicode lane for curly apostrophe, word search and predictions; initial loopback permission error plus one malformed local command."
+  },
+  {
+    "run": "op1-p03-prefix-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 2,
+    "note": "Closed same run failed after tester ended prematurely with incomplete unpublished draft; five activations and requests. Director requested closure only, no continued composition. Tester reported initial loopback permission error and malformed local view path.",
+    "original_final_reason": "Tester final stated run still in progress, exact-character lane opened and draft I followed by space composed, target not reviewed or published, loopback escalation needed, and malformed view command did not change run. It did not identify a capacity or impossibility reason.",
+    "director_intervention": "Requested same-run failed closure only after tester final left run open; no resumed composition or alternate attempt."
+  },
+  {
+    "run": "op1-p03-token-link",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Closed failed with unpublished incomplete draft; eight activations and requests. Tester reported mistaken browse-link selection and did not finish target; loopback sandbox escalation required. No approval rejection reported.",
+    "protocol_note": "Trusted blank-session approval context added beginning P03 Token; source evidence and explicit human authorization only, no composition strategy."
+  },
+  {
+    "run": "op1-p03-frame",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Closed failed at seven activations and requests; exact target not composed or published. Tester supplied no impossibility or capacity reason and reported one initial loopback permission failure recovered with approval."
+  },
+  {
+    "run": "op1-p03-chunk-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Closed failed with incomplete unpublished draft at twelve activations and requests. Tester stated execution window insufficient despite healthy 200 responses; reported large full outputs and Unicode range transitions, initial loopback permission failure recovered by escalation.",
+    "post_close_clarification": "Tester states actual exec_command output caps were 12000, no functions.exec max_output_tokens directive, and run lasted 226770 ms within assigned 20-minute budget. Earlier 1200 cap and execution-window explanation were inaccurate self-report.",
+    "root_adjudication": "Output cap issue not substantiated; tester corrected its claim to 12000. Stopping after roughly four minutes was premature abandonment, not 20-minute budget failure."
+  },
+  {
+    "run": "op1-p03-short-word",
+    "source": "Luna tester final self-report; not independent tool-usage measurement",
+    "tool_errors_reported": 1,
+    "note": "Closed failed at fifteen activations and requests without publication. Tester reported ASCII apostrophe suggestion causing review mismatch, discarded draft, and later composition mistake; inability claim does not establish coverage failure. One initial loopback permission error recovered by escalation.",
+    "root_adjudication": "Agent selected ASCII quote variant emitted as labeled; previously typed curly text was not changed. Exact gate blocked publication."
   }
 ]

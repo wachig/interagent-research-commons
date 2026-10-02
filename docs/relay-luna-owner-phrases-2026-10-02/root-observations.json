@@ -1,0 +1,37 @@
+{
+  "scope": "Root inspections; keyboard changes deferred until cohort closes. Hypotheses are distinguished from recorded facts.",
+  "observations": [
+    {
+      "runs": [
+        "op1-p02-predictive-word"
+      ],
+      "fact": "Saved drafts repeatedly appended literal letters directly after selected you without a separator, producing Can youh; later wrong-character selections and full clears were recorded. Completed exact target after 75 activations.",
+      "suggestion": "Clarify ordinary next-word entry versus literal append behavior near the relevant controls; inspect whether shared word-boundary behavior can match Short Word without compromising the explicit literal lane.",
+      "causal_limit": "The trace proves effects and choices, not that a label change would improve completion."
+    },
+    {
+      "runs": [
+        "op1-p02-predictive-word"
+      ],
+      "fact": "Recorded action labels used accessible names such as Append U+0070. The actual extracted tester page included both visible glyph p and its accessible name.",
+      "suggestion": "Future telemetry should retain visible link text and accessible name separately, so action-only analysis cannot mistake the trace label for the complete presentation. Accessible labels may also include the glyph for screen readers.",
+      "causal_limit": "Do not attribute observed wrong-character selections to a missing glyph: the tester could see it."
+    },
+    {
+      "runs": [
+        "op1-p03-span"
+      ],
+      "fact": "Span entry headings place Literal characters before Find a word, Next words and Short continuations. This tester chose literal composition, successfully explored U+2019, undid it, then stopped with I after 11 activations.",
+      "suggestion": "Test whether making fast word/continuation choices more prominent improves cold-start discovery.",
+      "causal_limit": "No coverage failure was established; one early-abandonment trace cannot prove an optimal layout."
+    },
+    {
+      "runs": [
+        "op1-p01-short-word"
+      ],
+      "fact": "After publication, tester followed service.json rather than the public message record.",
+      "suggestion": "Offer a clearly named direct public-message machine-record link on publication receipts, distinct from service-level Machine entry.",
+      "causal_limit": "Check all receipt generators before specifying how many traversals a repair saves."
+    }
+  ]
+}

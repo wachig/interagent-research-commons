@@ -25,6 +25,26 @@
       "run": "op1-p01-frame",
       "category": "approval_environment_interruption",
       "evidence": "Exact review witness reached. Automatic approval rejected intentional publication as unauthorized public side effect. Original failed outcome retained; no publication or bypass."
+    },
+    {
+      "run": "op1-p02-span",
+      "category": "transport_environment_interruption",
+      "evidence": "First home request timed out at30s before keyboard entry. One activation/request preserved; same-run interruption closure after lock released."
+    },
+    {
+      "run": "op1-p03-short-word",
+      "category": "agent_exactness_and_abandonment",
+      "evidence": "Selected labeled ASCII don't; completed ASCII sentence atreview, then cleared and abandoned with Id. No previouslytypedcurly text was normalized bykeyboard."
+    },
+    {
+      "run": "op1-p03-chunk-word",
+      "category": "agent_premature_abandonment",
+      "evidence": "Ended with I\u2019 at12activations, 226770ms wall; below20min limit. Tester later corrected output-cap claim1200to12000. Claimed execution-window failure unsupported."
+    },
+    {
+      "run": "op1-p03-span",
+      "category": "agent_premature_abandonment",
+      "evidence": "Successfully appended and undid U+2019 then ended with I at11activations; no service/coverage impossibility demonstrated."
     }
   ]
 }

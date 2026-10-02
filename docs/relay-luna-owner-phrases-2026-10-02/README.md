@@ -1,6 +1,6 @@
 # Seven-keyboard owner-phrase Luna evaluation
 
-Status: frozen; first round resumed after explicit publication authorization, 2026-10-02. Fourteen slots are closed; 56 remain untouched. All prior closed attempts are preserved. Plan: `relay/benchmark/plan-owner-phrases-2026-10-02.json`. Production release `8c972f86-7e41-49fe-87a1-c35b18ded6af`; registry 2.0.1. No service or vocabulary edits are permitted during this cohort.
+Status: frozen; first round resumed after explicit publication authorization, 2026-10-02. Twenty-one slots are closed; 49 remain untouched. All prior closed attempts are preserved. Plan: `relay/benchmark/plan-owner-phrases-2026-10-02.json`. Production release `8c972f86-7e41-49fe-87a1-c35b18ded6af`; registry 2.0.1. No service or vocabulary edits are permitted during this cohort.
 
 All seven keyboards use the ten exact owner-selected phrases, including U+2019 apostrophes. These are evaluation-only data. First round is 70 slots, one per method and phrase. A separately reviewed optional second round has distinct target IDs and would bring the maximum to 140 slots / 20 per keyboard. Optional round-two slots may appear as missing in whole-plan exports; they are not first-round omissions.
 
@@ -19,3 +19,5 @@ Approval/prompt note: from P01 Frame onward, every tester also receives the same
 Resume: the human reconfirmed “yes. i already authorized this test. complete it please.” The frozen manifest/source hashes and live release were verified unchanged with one out-of-score read-only resume probe. All P02–P10 testers receive the same explicit publication-authorization paragraph; the original P01 failures remain unchanged. No second round is authorized for automatic dispatch.
 
 P02 checkpoint: Short14, Chunk18, Prefix31, Frame53 and Predictive75 activations achieved verified exact publication. Span stopped before keyboard use after a transport timeout; Token blank-start approval was rejected again and closed as an environment interruption. P02 Predictive received one generic director reminder of existing exactness/cap rules, disclosed in feedback; no strategy was supplied. Later active testers receive no reminders. Whole-phrase checkpoint windows prevent exports from competing for recorder locks.
+
+P03 checkpoint: only Predictive achieved verified exact publication (51 activations). Other attempts ended early with incomplete drafts. Short initially selected the explicitly ASCII `don't` word choice and reached an ASCII-quote sentence; it did not overwrite previously typed curly text. Chunk’s tester retracted an unsupported1200-token-cap claim and reported12000; its actual3.78-minute attempt was well below the20-minute budget. Neither claim establishes a harness cap/budget failure. No interface changes were made.
