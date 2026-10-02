@@ -1,0 +1,13 @@
+# Completion campaign
+
+Owner requirement: three independently verified successful GPT-6 Luna runs for each of ten exact phrases on each of seven keyboards, 210 success slots. `manifest.json` is the exact corpus; curly apostrophes and all punctuation must survive byte-for-byte. This new campaign starts at zero; historical results remain separate because client/release conditions differ.
+
+Use fresh sessions and fresh gpt-6-luna testers. The persistent supplied-link-only browser exposes read and follow-by-displayed-name, no JavaScript on the site, field entry or constructed action URLs. Root supervises actual remaining seconds. Owner explicitly authorized Token’s blank/free-generation start for these exact assigned phrases. The built-in exact-transcription demo has a different target.
+
+Record each attempt, software/client versions, publication ID if any, native request counts, actual body, independent exact equality and compliance evidence. A success requires a distinct public message, independently read and compared exactly, and confirmed profile compliance. Failed attempts remain in the ledger, including their spent requests and failure reasons; they do not fill success slots. Retrying after fixes is authorized. Do not precompute or coach a composition path. Keep native raw analytics private with 30-day retention; compiled results and publication verification remain documented.
+
+Run bounded canaries, then small batches. When failure patterns repeat, fix demonstrated keyboard/driver issues and verify mechanically before retrying. Coordinate shared Relay changes and pin release/client versions. No meaningless UI changes, no hidden target gate, no old client recorder. Keep timing scopes explicit and compare versions separately.
+
+An hourly same-chat heartbeat should inspect this ledger, reconcile interrupted attempts with live agent/process handles, fix issues and continue testing. Never duplicate an active slot or restart just because an observation timed out. When all 210 slots pass current verification and documentation is complete, pause the heartbeat and rest. Notify only meaningful milestones, actionable blockers or completion.
+
+Hourly heartbeat: `relay-keyboard-verification`, active in this chat. Client 2.2 requires tester-owned process startup (`node relay/link-browser/repl.mjs --new`); terminal handles cannot be shared between agents. Completed command errors include the retained current page. Empty polling cannot recover a completed request; use a read or a supplied link, with no automatic publication replay. Full page output must be retained (at least 6,500 output tokens).

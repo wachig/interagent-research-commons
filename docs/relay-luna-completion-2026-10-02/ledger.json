@@ -1,0 +1,54 @@
+{
+  "version": "relay-luna-completion/1.0",
+  "attempts": [
+    {
+      "attempt_id": "P02-token-link-R1-A1",
+      "phrase_id": "P02",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.0",
+      "release": "1bfaaecd-03d2-4142-a47d-9d62fd5ec1f4",
+      "outcome": "infrastructure-failure-before-entry",
+      "reason": "Tester could not access supervisor-owned terminal session. Parent verified that the same handle was still running in its own scope, then closed it. No keyboard session or publication.",
+      "spent_run_requests": 0,
+      "verified_success": false
+    },
+    {
+      "attempt_id": "P02-token-link-R1-A2",
+      "phrase_id": "P02",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.1",
+      "release": "1bfaaecd-03d2-4142-a47d-9d62fd5ec1f4",
+      "outcome": "request-timeout-and-client-recovery-failure",
+      "verified_success": false,
+      "reason": "Action request timed out after draft Can you. Tester repeatedly polled an idle process instead of issuing read after the completed error. Fixed five-minute deadline closed the process; no publication. Separate supervisor plumbing check followed the same displayed action successfully.",
+      "profile_compliant": true,
+      "spent_run_requests": 5,
+      "spent_requests_scope": "Native run count last observed; final export reconciliation pending",
+      "agent": "/root/completion_canary_p02_token",
+      "process_closed": true
+    },
+    {
+      "attempt_id": "P01-token-link-R1-A1",
+      "phrase_id": "P01",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.2",
+      "release": "1bfaaecd-03d2-4142-a47d-9d62fd5ec1f4",
+      "outcome": "running",
+      "verified_success": false,
+      "agent": "/root/completion_p01_token_v22",
+      "tester_owned_process": 47110,
+      "started_at": "2026-10-02T17:02:30Z",
+      "started_at_scope": "Approximate dispatch time; reconcile from native export"
+    }
+  ],
+  "verified_successes": 0,
+  "required_successes": 210,
+  "heartbeat_id": "relay-keyboard-verification",
+  "status": "active"
+}
