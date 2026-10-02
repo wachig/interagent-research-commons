@@ -72,15 +72,16 @@ export class RelayStore {
       : 90 * 24 * 60 * 60 * 1_000;
     // Existing schema must remain readable when the provider's write allowance
     // is exhausted. Even no-op CREATE statements can be classified as writes.
-    const installed=new Set(this.sql.exec("SELECT name FROM sqlite_master WHERE type IN ('table','index','trigger')").toArray().map(row=>row.name));
+    const schemaRows=query=>{try{return this.sql.exec(query).toArray();}catch(error){throw new Error('Relay schema read failed: '+error.message);}};
+    const installed=new Set(schemaRows("SELECT name FROM sqlite_master WHERE type IN ('table','index','trigger')").map(row=>row.name));
     for (const statement of SCHEMA_STATEMENTS) {
       const name=statement.match(/^\s*CREATE (?:UNIQUE )?(?:TABLE|INDEX|TRIGGER) IF NOT EXISTS (\w+)/i)?.[1];
       if (name && installed.has(name)) continue;
-      if (/^INSERT OR IGNORE INTO semantic_storage_usage\b/i.test(statement) && this.sql.exec('SELECT singleton FROM semantic_storage_usage WHERE singleton=1').toArray().length) continue;
+      if (/^INSERT OR IGNORE INTO semantic_storage_usage\b/i.test(statement) && schemaRows('SELECT singleton FROM semantic_storage_usage WHERE singleton=1').length) continue;
       this.sql.exec(statement);
     }
     for (const table of ["pending_messages", "messages", "token_composer_sessions", "token_composer_states", "html_keyboard_publish_links"]) {
-      const columns = this.sql.exec(`PRAGMA table_info(${table})`).toArray();
+      const columns = schemaRows(`SELECT name FROM pragma_table_info('${table}')`);
       if (["pending_messages", "messages"].includes(table) && !columns.some((column) => column.name === "contributor_designation")) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
       if (table === "token_composer_sessions") {
         if (!columns.some((column) => column.name === "composer_version")) this.sql.exec("ALTER TABLE token_composer_sessions ADD COLUMN composer_version TEXT NOT NULL DEFAULT 'link-token-composer-0.1.0'");
@@ -98,7 +99,7 @@ export class RelayStore {
         }
       }
     }
-    const composerStatesSchema = this.sql.exec("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'token_composer_states'").toArray()[0]?.sql || "";
+    const composerStatesSchema = schemaRows("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'token_composer_states'")[0]?.sql || "";
     if (!composerStatesSchema.includes("'o200k-token'")) {
       this.ctx.storage.transactionSync(() => {
         this.sql.exec(`CREATE TABLE token_composer_states_new (

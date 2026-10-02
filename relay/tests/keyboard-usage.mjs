@@ -85,7 +85,7 @@ const db=new DatabaseSync(':memory:');let scheduled=null,alarmWrites=0;
 const sql={exec(query,...values){const rows=db.prepare(query).all(...values);return {toArray(){return rows;}};}};
 const ctx={storage:{sql,transactionSync(fn){db.exec('BEGIN');try{fn();db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}},async getAlarm(){return scheduled;},async setAlarm(at){scheduled=at;alarmWrites++;},async deleteAlarm(){scheduled=null;}}};
 let store=new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});const now=Date.now();
-const readOnlySQL={exec(query,...values){if(!/^\s*(SELECT|PRAGMA)\b/i.test(query))throw Error('Exceeded allowed rows written in Durable Objects free tier.');return sql.exec(query,...values);}};
+const readOnlySQL={exec(query,...values){if(!/^\s*SELECT\b/i.test(query))throw Error('Exceeded allowed rows written in Durable Objects free tier.');return sql.exec(query,...values);}};
 const readOnlyStore=new RelayStore({...ctx,storage:{...ctx.storage,sql:readOnlySQL}},{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});
 const existingRead=await readOnlyStore.fetch(new Request('https://relay-storage.internal/sql',{method:'POST',body:JSON.stringify({operation:'execute',statement:{query:'SELECT COUNT(*) AS n FROM messages',values:[],mode:'first'}})}));
 assert.equal(existingRead.status,200,'existing database reads survive constructor write quota exhaustion');
