@@ -70,7 +70,15 @@ export class RelayStore {
     this.messageRetentionMs = Number.isInteger(retentionSeconds) && retentionSeconds >= 1 && retentionSeconds <= 90 * 24 * 60 * 60
       ? retentionSeconds * 1_000
       : 90 * 24 * 60 * 60 * 1_000;
-    for (const statement of SCHEMA_STATEMENTS) this.sql.exec(statement);
+    // Existing schema must remain readable when the provider's write allowance
+    // is exhausted. Even no-op CREATE statements can be classified as writes.
+    const installed=new Set(this.sql.exec("SELECT name FROM sqlite_master WHERE type IN ('table','index','trigger')").toArray().map(row=>row.name));
+    for (const statement of SCHEMA_STATEMENTS) {
+      const name=statement.match(/^\s*CREATE (?:UNIQUE )?(?:TABLE|INDEX|TRIGGER) IF NOT EXISTS (\w+)/i)?.[1];
+      if (name && installed.has(name)) continue;
+      if (/^INSERT OR IGNORE INTO semantic_storage_usage\b/i.test(statement) && this.sql.exec('SELECT singleton FROM semantic_storage_usage WHERE singleton=1').toArray().length) continue;
+      this.sql.exec(statement);
+    }
     for (const table of ["pending_messages", "messages", "token_composer_sessions", "token_composer_states", "html_keyboard_publish_links"]) {
       const columns = this.sql.exec(`PRAGMA table_info(${table})`).toArray();
       if (["pending_messages", "messages"].includes(table) && !columns.some((column) => column.name === "contributor_designation")) this.sql.exec(`ALTER TABLE ${table} ADD COLUMN contributor_designation TEXT`);
@@ -125,6 +133,15 @@ export class RelayStore {
     this.sql.exec(query, ...values).toArray();
   }
 
+  async #scheduleMaintenance() {
+    const now=Date.now(),at=now+60_000;
+    if (this.maintenanceAlarmAt>now) return;
+    const scheduled=await this.ctx.storage.getAlarm?.();
+    if (scheduled>now && scheduled<=at) { this.maintenanceAlarmAt=scheduled; return; }
+    await this.ctx.storage.setAlarm(at);
+    this.maintenanceAlarmAt=at;
+  }
+
   async fetch(request) {
     if (keyboardExecutionPath(new URL(request.url).pathname)) {
       const invoke = async payload => {
@@ -155,7 +172,7 @@ export class RelayStore {
         if (statement.mode === "first") return jsonResponse(this.#first(statement.query, ...statement.values));
         if (statement.mode === "all") return jsonResponse({ results: this.sql.exec(statement.query, ...statement.values).toArray() });
         this.#run(statement.query, ...statement.values);
-        await this.ctx.storage.setAlarm(Date.now() + 60_000);
+        await this.#scheduleMaintenance();
         return jsonResponse({ success: true });
       }
       if (payload.operation === "batch" && Array.isArray(payload.statements) && payload.statements.length >= 1 && payload.statements.length <= 16) {
@@ -163,7 +180,7 @@ export class RelayStore {
         this.ctx.storage.transactionSync(() => {
           for (const statement of statements) this.#run(statement.query, ...statement.values);
         });
-        await this.ctx.storage.setAlarm(Date.now() + 60_000);
+        await this.#scheduleMaintenance();
         return jsonResponse({ success: true });
       }
       return jsonResponse({ detail: "invalid storage operation" }, 400);
@@ -237,7 +254,7 @@ export class RelayStore {
     });
     const sessions = this.#first("SELECT COUNT(*) AS count FROM sessions");
     if (sessions?.count > 0) {
-      await this.ctx.storage.setAlarm(Date.now() + 60_000);
+      await this.#scheduleMaintenance();
       return;
     }
     const deadlines = [

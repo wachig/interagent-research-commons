@@ -145,4 +145,6 @@ Other service routes keep their existing dispatch. No hosting-plan upgrade or
 additional storage object is required. Local tests verify contracts; sanitized
 live CPU traces and formerly failing live requests verify the deployed budget.
 
-Native keyboard usage1.1.0 retains raw records for30days. Choice tracking allows at most100,000 daily allocations and10,000 per run; request caps remain10,000/day and5,000/run. Revisiting an immutable page counts its request again but does not recharge already-stored choice fingerprints. Existing historical daily totals are not reset. Truncation flags remain visible; exhausting choice storage does not suppress request events.
+Native keyboard usage1.1.0 retains raw records for30days. Choice tracking allows at most10,000 daily allocations and10,000 per run; request caps remain10,000/day and5,000/run. Revisiting an immutable page counts its request again but does not recharge already-stored choice fingerprints. Existing historical daily totals are not reset. Truncation flags remain visible; exhausting choice storage does not suppress request events.
+
+Existing RelayStore schema objects are checked read-only before creation; an exhausted provider write allowance no longer forces a write merely to read existing messages or private analytics. Consecutive SQL writes retain an already-scheduled maintenance alarm instead of rewriting its timer per operation. These safeguards reduce write pressure; they cannot restore an already-exhausted Cloudflare allowance.

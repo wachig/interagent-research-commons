@@ -81,10 +81,22 @@ try{
  console.log('Native telemetry: all seven methods, exact request/replay accounting, publication/record association, choice attribution, 30-day deadlines, read-only HEAD/OPTIONS and protected export passed.');
 }finally{await f.close();}
 // Invoke actual alarm cleanup against a real SQLite adapter, not a copied DELETE implementation.
-const db=new DatabaseSync(':memory:');let scheduled=null;
+const db=new DatabaseSync(':memory:');let scheduled=null,alarmWrites=0;
 const sql={exec(query,...values){const rows=db.prepare(query).all(...values);return {toArray(){return rows;}};}};
-const ctx={storage:{sql,transactionSync(fn){db.exec('BEGIN');try{fn();db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}},async setAlarm(at){scheduled=at;},async deleteAlarm(){scheduled=null;}}};
-const store=new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});const now=Date.now();
+const ctx={storage:{sql,transactionSync(fn){db.exec('BEGIN');try{fn();db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}},async getAlarm(){return scheduled;},async setAlarm(at){scheduled=at;alarmWrites++;},async deleteAlarm(){scheduled=null;}}};
+let store=new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});const now=Date.now();
+const readOnlySQL={exec(query,...values){if(!/^\s*(SELECT|PRAGMA)\b/i.test(query))throw Error('Exceeded allowed rows written in Durable Objects free tier.');return sql.exec(query,...values);}};
+const readOnlyStore=new RelayStore({...ctx,storage:{...ctx.storage,sql:readOnlySQL}},{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});
+const existingRead=await readOnlyStore.fetch(new Request('https://relay-storage.internal/sql',{method:'POST',body:JSON.stringify({operation:'execute',statement:{query:'SELECT COUNT(*) AS n FROM messages',values:[],mode:'first'}})}));
+assert.equal(existingRead.status,200,'existing database reads survive constructor write quota exhaustion');
+const deniedWrite=await readOnlyStore.fetch(new Request('https://relay-storage.internal/sql',{method:'POST',body:JSON.stringify({operation:'execute',statement:{query:"INSERT INTO keyboard_usage_daily (day,expires_at) VALUES (?,?)",values:[1,2],mode:'run'}})}));
+assert.equal(deniedWrite.status,400,'write exhaustion remains explicit; no invented success');
+for(const day of [3,4]) {
+ const written=await store.fetch(new Request('https://relay-storage.internal/sql',{method:'POST',body:JSON.stringify({operation:'execute',statement:{query:'INSERT INTO keyboard_usage_daily (day,expires_at) VALUES (?,?)',values:[day,now+1000],mode:'run'}})}));
+ assert.equal(written.status,200);
+}
+assert.equal(alarmWrites,1,'consecutive writes retain one existing maintenance alarm instead of resetting it per SQL call');
+db.exec('DELETE FROM keyboard_usage_daily');
 db.exec(`INSERT INTO keyboard_usage_runs VALUES ('expired','chunk-word','test','test','test',${now-USAGE_RETENTION_MS-1000},${now-1000},${now-1},${now-100},'started',NULL,NULL,0,0)`);
 db.exec(`INSERT INTO keyboard_usage_events VALUES ('event','expired','chunk-word',${now-USAGE_RETENTION_MS-1000},${now-1},'page-read',NULL,NULL,200,10,1,1,0,0,0,'fingerprint',NULL)`);
 db.exec(`INSERT INTO keyboard_usage_choices VALUES ('fingerprint','expired','other',1,'review',${now-1})`);

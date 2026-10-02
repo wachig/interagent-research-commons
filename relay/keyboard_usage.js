@@ -5,7 +5,7 @@ export const KEYBOARD_USAGE_VERSION = 'relay-keyboard-usage/1.1.0';
 export const USAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const METHODS = {chunk:'chunk-word',predictive:'predictive-word',prefix:'prefix-link',span:'span','short-word':'short-word',token:'token-link',frame:'frame'};
 const encoder = new TextEncoder();
-export const MAX_CHOICES_PER_DAY = 100000;
+export const MAX_CHOICES_PER_DAY = 10000;
 const MAX_CHOICES_PER_RUN = 10000;
 const MAX_EVENTS_PER_RUN = 5000;
 export async function usageHash(value) {
