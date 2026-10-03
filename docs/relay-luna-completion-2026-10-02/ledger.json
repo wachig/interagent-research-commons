@@ -529,17 +529,74 @@
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       }
+    },
+    {
+      "attempt_id": "P03-predictive-word-R1-A1",
+      "phrase_id": "P03",
+      "method_id": "predictive-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.3",
+      "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
+      "outcome": "approval-blocked-before-process",
+      "verified_success": false,
+      "agent": "/root/phase1_p03_predictive",
+      "dispatch_at": "2026-10-03T00:48:37.003215+00:00",
+      "context_scope": "Prepared fresh tester had never started a trial or process; activated for its first assigned trial.",
+      "startup_review": "Initially rejected as paused; root supplied current active-goal evidence for authorization check and one identical retry.",
+      "spent_run_requests": 0,
+      "process_closed": true,
+      "reason": "Automatic approval review still classified testing as paused. Child get_goal returns null because goal belongs to root chat; no retry or bypass. Direct owner clarification pending."
+    },
+    {
+      "attempt_id": "P03-span-R1-A1",
+      "phrase_id": "P03",
+      "method_id": "span",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.3",
+      "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
+      "outcome": "exact-review-publication-blocked-by-approval",
+      "verified_success": false,
+      "agent": "/root/phase1_p03_span",
+      "dispatch_at": "2026-10-03T00:48:37.003215+00:00",
+      "context_scope": "Prepared fresh tester had never started a trial or process; activated for its first assigned trial.",
+      "tester_owned_process": 51835,
+      "native_run": "4eaf568dc7fe5c64f410658bb002aeb698a323769d82a88d2d8e0910935d0ab0",
+      "profile_compliant": true,
+      "compliance_evidence": "Fresh Luna reported only own supplied-link-only process,20pages,no fields/siteJS/constructed URLs. Publication command rejected before execution; displayed cancellation followed, then Ctrl-D exit0.",
+      "process_closed": true,
+      "agent_reported_review": "I don\u2019t understand what happened.",
+      "agent_reported_review_exact": true,
+      "native_request_count": 19,
+      "spent_run_requests": 19,
+      "client_page_count": 20,
+      "native_first_request_at": 1790988512631,
+      "native_last_request_at": 1790988663176,
+      "native_truncated": 0,
+      "native_choices_truncated": 0,
+      "native_budget_possible_gap": false,
+      "native_repeat_requests": 0,
+      "native_http_errors": 0,
+      "native_response_bytes": 926207,
+      "native_links_presented": 2183,
+      "native_pagination_complete": true,
+      "native_published_at": null,
+      "native_message_id": null,
+      "reason": "Automatic approval review rejected Publish this message publicly as paused/unassigned despite active root goal and literal manifest assignment. No bypass. Agent cancelled review and closed; native export independently confirms19events,last discard200,reviewedstage35bytes,no publication/messageID. Infrastructure authorization failure, not keyboard transcription failure.",
+      "native_metrics_scope": "19run-associated observed requests, one discovery page outside native run. 20clientpages total; approval-blocked publish made no serverrequest. Private export not part of trial. Exact full review is agent report;35bytes independently observed, no success certificate."
     }
   ],
   "verified_successes": 9,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "paused-by-owner-for-database-audit",
-  "updated_at": "2026-10-03T00:36:11.309Z",
+  "status": "active",
+  "updated_at": "2026-10-03T00:52:37.967688+00:00",
   "next_work": [
-    "Do not dispatch testers while owner-paused. Finish database-usage audit and verification.",
-    "Phase1 remains9/70 with61unused success slots; preserve all prior attempts and certificates.",
-    "After owner resumes, pin the repaired production release and client, verify live storage headroom, and dispatch fresh Luna testers for R1 only."
+    "Await direct user resumption confirmation required by tester approval review; do not bypass rejected startup/publication.",
+    "Fresh GPT-6 Luna creation remains blocked by orchestration thread limit. Need fresh eligible context availability; do not reuse the now-scored Span context.",
+    "Phase1 remains9/70; preserve failedattempts, native requestcounts and unchanged certificates.",
+    "Use provider total headroom including20kpre-meteringmigrationwrites before bounded furtherdispatch."
   ],
   "deployed_release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
   "operational_blocker": {
@@ -547,7 +604,7 @@
     "observed_at": "2026-10-02T19:51:25Z",
     "live_error": "Exceeded allowed rows written in Durable Objects free tier.",
     "retry_not_before": "2026-10-03T00:00:00Z",
-    "tester_dispatch_allowed": false,
+    "tester_dispatch_allowed": true,
     "required_recovery": "After UTC reset, verify read-only health and a single authorized unpublished keyboard entry with recorded native telemetry before fresh Luna dispatch. Preserve all prior9certificates; do not rerun completed slots.",
     "historical_choice_counter": 23424,
     "note": "Application choice allocations do not measure provider rows written. Index/deletion/alarm writes also consume quota. No paid upgrade or new object authorized.",
@@ -559,7 +616,7 @@
     "recovery_deployed_commit": "f38b7cd",
     "recovery_deployed_release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
     "index_live_installation_confirmed": true,
-    "resolution": "Quota recovered and telemetry2.0 cost/reserve repair deployed and verified with an unpublished operator canary. Evaluation remains explicitly owner-paused; no tester dispatch."
+    "resolution": "Owner resumed active Phase1 goal. Live read and unpublished telemetry checks passed; only bounded canary dispatch permitted until cost review."
   },
   "active_phase": 1,
   "heartbeat_status": "deleted-by-owner",
@@ -574,19 +631,20 @@
     {
       "agent": "/root/phase1_p03_predictive",
       "attempt_id": "P03-predictive-word-R1-A1",
-      "state": "ready-no-process",
+      "state": "no-process",
       "model": "gpt-6-luna",
-      "status": "owner-paused-no-process"
+      "status": "approval-blocked-before-process"
     },
     {
       "agent": "/root/phase1_p03_span",
       "attempt_id": "P03-span-R1-A1",
-      "state": "ready-no-process",
+      "state": "process-closed",
       "model": "gpt-6-luna",
-      "status": "owner-paused-no-process"
+      "status": "completed-unpublished-approval-blocked",
+      "process": 51835
     }
   ],
-  "campaign_status": "paused-by-owner-for-database-audit",
+  "campaign_status": "phase1-infrastructure-blocked",
   "database_repair_verification": {
     "checked_at": "2026-10-03T00:36:11.309Z",
     "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
@@ -608,5 +666,31 @@
       "rows_written_approx": 22190,
       "scope": "Cloudflare account October3UTC usage; includes pre-repair activity"
     }
+  },
+  "orchestration_blocker": {
+    "observed_at": "2026-10-03T00:48:37.003215+00:00",
+    "kind": "agent-thread-limit",
+    "action": "spawn fresh gpt-6-luna resume_p03_chunk",
+    "result": "agent thread limit reached",
+    "trial_started": false,
+    "spent_requests": 0,
+    "available_unstarted_prepared_testers": [
+      "phase1_p03_predictive",
+      "phase1_p03_span"
+    ]
+  },
+  "bounded_resumption_cost_baseline": {
+    "at": "2026-10-03T00:46:39.696Z",
+    "metered_rows_written": 1956,
+    "metered_rows_read": 7751,
+    "provider_earlier_rows_written_approx": 22190,
+    "scope": "Metered object differs from account total due earlier migrations; no claim account counter baseline matches."
+  },
+  "bounded_resumption_cost_result": {
+    "metered_rows_written_after": 2202,
+    "increase_from_baseline": 246,
+    "scope": "Includes19Spanrunrequests plus operator health/export/accounting activity. Not exact standalone trial cost or providerbillingtotal.",
+    "issued_choices_new": 0,
+    "telemetry_paused": false
   }
 }

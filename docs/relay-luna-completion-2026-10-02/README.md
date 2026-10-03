@@ -1,6 +1,6 @@
-# Evaluation paused for database audit
+# Bounded Phase1 resumption after database audit
 
-Owner paused the evaluation on2026-10-02. No testers may be dispatched until the owner resumes. The70-success Phase1 scope and nine saved successes remain unchanged. Database-efficiency work and its release evidence are documented separately in `docs/relay-database-audit-2026-10-02/README.md`.
+The owner resumed the active70-success Phase1 goal after database recovery and repair. Start with a bounded seven-keyboard canary, preserving nine saved successes, and inspect provider headroom and private SQL costs before expanding. Current release: `aeec3798-10d7-4de8-9a17-79d6f046e2d9`, client2.3, native telemetry2.0. Today includes roughly20k provider writes before the new meter started. Fresh Luna creation hit the orchestration thread limit; the two already prepared, never-started Predictive/Span testers were activated for their first trials. Do not reuse scored tester contexts. Database evidence is in `docs/relay-database-audit-2026-10-02/README.md`.
 
 # Current Phase 1 checkpoint
 
@@ -69,3 +69,11 @@ Quota recovery repair skips already-installed CREATE schema objects on startup a
 Final live diagnostic on release6d1cc6bc-7166-4036-8bd8-a3a51170b9f0 reports `Relay schema read failed: Exceeded allowed rows read in Durable Objects free tier.` Thus both read and write daily allowances are exhausted, not just writes. Public service bootstrap returns200; a known stored message returns500 and private export1101. Do not claim read recovery or data loss. A new run/fingerprint index addresses demonstrated full-table scanning in per-run choice counts; EXPLAIN QUERY PLAN must show an indexed SEARCH. This requires schema installation when provider writes recover. Await both limits resetting and a successful live canary before testing resumes.
 
 Recovery safeguards and indexed counting are committed/pushed throughf38cbd8 and deployed as2ddf176e-69eb-4e65-b531-fd0bd4060ce7. Native usage contracts, all-seven publication/reply integration, denied-write read simulation, alarm write coalescing and egress checks passed; SELECT-only refinement and index query plan also passed the native suite. Provider-limited live recovery and index installation remain unverified until reset. No new Luna attempts were created in these blocked wakes; verified count stays9/210. Hourly automation remains active and the ledger forbids tester dispatch before2026-10-03T00:00:00Z or without a successful recovery canary.
+
+## Bounded database-repair resumption
+
+The root goal became active again on 2026-10-03 UTC. Fresh Luna creation failed with `agent thread limit reached`; no Chunk process or request was created. The two prepared, never-started Luna testers were activated for their first assigned P03 trials. Predictive startup was rejected by approval review as still paused. Its own get_goal returned null because this goal belongs to the root chat; no bypass or retry process occurred. Root requested direct owner confirmation to resolve that authorization view.
+
+Span's own process 51835 reached an agent-reported exact P03 review with 162 seconds remaining. Publication was rejected by automatic approval review as paused/unassigned. Span cancelled review through a supplied link and closed with Ctrl-D, exit 0. The protected native export independently confirms 19 events, 35 draft bytes at review, no HTTP errors/repeats/truncation/budget gap, last discard 200 and no publication/message ID. Client-reported 20 pages includes discovery. Exact full review is the agent's report, not an independent publication certificate. This is an infrastructure authorization failure and fills no success slot; count remains 9/70.
+
+Persisted SQL write counter rose from 1,956 before bounded resumption to 2,202 after reconciliation, an increase of 246 including operator health/exports/accounting. No new choice allocations or budget warnings appeared. This supports removal of old write amplification in the canary, not sustained production proof or a completed seven-keyboard batch. Both tester processes are closed or absent; no automatic retry or hourly automation.
