@@ -15,7 +15,7 @@ const get=async href=>{const r=await f.request(href,{html:true});assert.equal(r.
 const choose=(p,name)=>{const l=p.links.find(l=>l.text===name||l['aria-label']===name);assert.ok(l,'Missing supplied '+name);return l.url;};
 try{
  const current=(await f.request('/methods.json')).body;
- assert.equal(current.registry_version,'2.0.3');
+ assert.equal(current.registry_version,'2.0.4');
  assert.equal((await f.request('/methods/2.0.2.json')).body.methods[0].backend.foundation,'relay-keyboard-foundation/1.3.0','historical backend declaration remains frozen');
  for(const method of current.methods.filter(m=>m.group==='keyboard')){
    const overview=await get(method.href);

@@ -1,8 +1,9 @@
+import { frameWordAddition } from './frame_suggestions.js';
 import { COMMON_PUNCTUATION } from './common_punctuation.js';
 import { appendFrame, appendFrameSlotText, backspaceFrameSlot, changeLastFrame, convertFrameToPlainText, createFrameDocument, fillFrameSlot, frameIsComplete, renderFrameDocument, validateFrameDocument, FRAME_CATALOGUE, FRAME_CATALOGUE_VERSION } from "./frame_document.js";
 import { appendDelta, createSession, findState, keyboardErrorStatus, loadDraft, MAX_BODY_BYTES, retainedReply, reviewTextDraft, saveTextChild, unicodeChoices } from "./keyboard_foundation.js";
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
-import { escapeHtml, response } from "./html_keyboard.js";
+import { escapeHtml, response, predictRanked } from "./html_keyboard.js";
 
 const PREFIX = "/predictive-keyboard/html/frame-keyboard";
 const START_TTL_MS = 15 * 60_000;
@@ -147,6 +148,32 @@ function slotRows(stateId, document, selectedFrame, selected) {
   return Object.entries(block.slots).map(([id, slot]) => `<div class="row"><strong>${escapeHtml(slot.label)}:</strong> ${slot.value ? `<code>${escapeHtml(slot.value)}</code>` : "<em>not filled</em>"} ${selected === id ? "· editing" : `<a href="${escapeHtml(stateHref(stateId, { frame: selectedFrame, slot: id }))}" aria-label="Edit slot ${escapeHtml(slot.label)} in sentence ${selectedFrame + 1}">Edit slot</a>`}</div>`).join("");
 }
 
+async function slotSuggestions(request,env,state,document,fi,si,characters=false,range='') {
+  const block=document.frames[fi],value=block.slots[si].value;
+  let before='';for(const part of block.definition.segments){if(part.slot===si)break;before+=part.text??block.slots[part.slot].value;}
+  const context=before+value;
+  const partial=value.match(/[\p{L}\p{M}\p{N}'’\-]+$/u)?.[0]||'';
+  const links=[];const seen=new Set();
+  try {
+    for(const mode of partial?['complete','next']:['next']) {
+      const past=mode==='next'&&context&&!/\s$/u.test(context)?context+' ':context;
+      const rows=await predictRanked(env,request,past,12);
+      let modeCount=0;
+      for(const row of rows) {
+        const changed=frameWordAddition(value,row.text,mode,context);
+        if(changed===null||changed===value||seen.has(changed))continue;
+        try { fillFrameSlot(document,si,changed,fi); } catch { continue; }
+        seen.add(changed);
+        const label=mode==='complete'?`Complete current word: ${partial+changed.slice(value.length)}`:`Add next word: ${changed.slice(value.length).trimStart()}`;
+        const op={type:'replace',frame:fi,slot:si,value:changed,...(characters?{return_view:'characters',unicode:range}:{})};
+        links.push(await makeActionLink(env,state,op,label));
+        if(++modeCount>=6)break;
+      }
+    }
+  }catch{return '<p class="hint">Word suggestions unavailable; exact characters and word browsing remain available.</p>';}
+  return `<section><h3>Word suggestions</h3><p class="hint">Complete preserves the typed prefix and adds its remaining letters. Add next word preserves the slot and inserts a separating space when needed. Neither publishes.</p><div class="choices">${links.join('')||'No suggestions; use exact characters or Browse words.'}</div></section>`;
+}
+
 async function renderState(request, env, state, extra = {}) {
   const draft = await loadDraft(env, state);
   const document = stateDocument(state);
@@ -168,10 +195,11 @@ async function renderState(request, env, state, extra = {}) {
       const value = frame.slots[slotId].value;
       const shortcuts = (SLOT_CHOICES[slotId] || []).map((choice) => makeActionLink(env, state, { type: "replace", frame: frameIndex, slot: slotId, value: choice }, choice, { frame: frameIndex, slot: slotId }));
       const quick = await Promise.all(shortcuts);
+      const suggestions = await slotSuggestions(request,env,state,document,frameIndex,slotId);
       const wordUrl = pathUrl(`/words/${stateToken}`, { frame: frameIndex, slot: slotId });
       const charsUrl = pathUrl(`/characters/${stateToken}`, { frame: frameIndex, slot: slotId });
       const backspace = value ? await makeActionLink(env, state, { type: "backspace", frame: frameIndex, slot: slotId }, "Backspace one character") : "";
-      content += `<section class="panel"><h2>Editing ${escapeHtml(frame.slots[slotId].label)}</h2><pre class="draft">${escapeHtml(value || "(empty)")}</pre><div class="tools"><a class="control" href="${escapeHtml(wordUrl)}">Browse words</a><a class="control" href="${escapeHtml(charsUrl)}">Compose exact text</a>${backspace}</div>${quick.length ? `<h3>Quick slot choices</h3><div class="choices">${quick.join("")}</div>` : ""}</section>`;
+      content += `<section class="panel"><h2>Editing ${escapeHtml(frame.slots[slotId].label)}</h2><pre class="draft">${escapeHtml(value || "(empty)")}</pre><div class="tools"><a class="control" href="${escapeHtml(wordUrl)}">Browse words</a><a class="control" href="${escapeHtml(charsUrl)}">Compose exact text</a>${backspace}</div>${quick.length ? `<h3>Quick slot choices</h3><div class="choices">${quick.join("")}</div>` : ""}${suggestions}</section>`;
     }
     const replacements = await Promise.all(FRAME_CATALOGUE.map(async (candidate) => makeActionLink(env, state, { type: "change-frame", frame_id: candidate.id, catalogue: FRAME_CATALOGUE_VERSION }, `${candidate.group} · ${candidate.label}`)));
     content += `<details class="panel"><summary>Change current sentence frame</summary><p class="hint">This replaces the last frame as an undoable branch. Earlier complete sentences stay in the draft.</p><div class="choices">${replacements.join("")}</div></details>`;
@@ -217,7 +245,7 @@ async function renderWords(request, env, state, params) {
   return page("Frame Keyboard word search", `<h1>Browse words for ${escapeHtml(block.slots[si].label)}</h1>${frameOrientation(state.reply_to || "")}<p class="notice">Pinned spelling list. Prefix search does not change the draft. Missing words can be composed exactly.</p><p class="draft">${escapeHtml(draft || "(empty)")}</p><p><a href="${escapeHtml(stateHref(state.state_id, { frame: fi, slot: si }))}">Return to frame</a></p>${prefix ? `<p>Prefix <strong>${escapeHtml(prefix)}</strong> · ${words.length.toLocaleString("en-US")} matches</p>` : "<h2>Choose a starting letter</h2>"}${choices}`);
 }
 
-async function renderCharacters(state, extra) {
+async function renderCharacters(request, state, extra) {
   const document = stateDocument(state);
   const fi = extra.frame == null ? document.frames.length - 1 : Number(extra.frame);
   if (!Number.isSafeInteger(fi) || fi < 0 || fi >= document.frames.length) throw new TypeError("Choose a frame shown in this draft.");
@@ -227,6 +255,7 @@ async function renderCharacters(state, extra) {
   const range = extra.unicode || "";
   const href = (value) => makeActionLink(state.env, state, { type: "append-char", frame: fi, slot: si, value, return_view: "characters", unicode: range }, displayChar(value), { frame: fi, slot: si });
   const backspace = block.slots[si].value ? await makeActionLink(state.env, state, { type: "backspace", frame: fi, slot: si, return_view: "characters", unicode: range }, "Backspace", { frame: fi, slot: si }) : "";
+  const suggestions = !range ? await slotSuggestions(request,state.env,state,document,fi,si,true,range) : '';
   const ascii = !range ? (await Promise.all(ASCII_KEYS.map(href))).join("") : "";
   let unicode = "";
   if (!range) unicode = unicodeChoices("").map((prefix) => `<a href="${escapeHtml(pathUrl(`/characters/${token(state.state_id)}`, { frame: fi, slot: si, unicode: prefix }))}">${prefix.toUpperCase()}…</a>`).join("");
@@ -235,7 +264,7 @@ async function renderCharacters(state, extra) {
     unicode = choices.map((value) => Number.isInteger(value) ? href(String.fromCodePoint(value)) : `<a href="${escapeHtml(pathUrl(`/characters/${token(state.state_id)}`, { frame: fi, slot: si, unicode: value }))}">${escapeHtml(value.toUpperCase())}…</a>`);
     unicode = (await Promise.all(unicode)).join("");
   }
-  return page("Frame Keyboard exact characters", `<h1>Exact characters for ${escapeHtml(block.slots[si].label)}</h1>${frameOrientation(state.reply_to || "")}<p class="notice">Each selected character is appended literally to this slot. This is a complete permitted-Unicode browser. Nothing is published here.</p><pre class="draft">${escapeHtml(block.slots[si].value || "(empty)")}</pre><nav class="tools">${backspace}<a href="${escapeHtml(stateHref(state.state_id, { frame: fi, slot: si }))}">Return to frame</a>${range ? `<a href="${escapeHtml(pathUrl(`/characters/${token(state.state_id)}`, { frame: fi, slot: si, unicode: range.length === 2 ? "" : range.slice(0, -1) }))}">Parent range</a>` : ""}</nav>${!range ? `<h2>ASCII, punctuation, whitespace</h2><div class="keys">${ascii}</div><h2>Unicode ranges</h2><div class="choices">${unicode}</div>` : `<h2>Unicode ${escapeHtml(range.toUpperCase())}</h2><div class="choices">${unicode}</div>`}`);
+  return page("Frame Keyboard exact characters", `<h1>Exact characters for ${escapeHtml(block.slots[si].label)}</h1>${frameOrientation(state.reply_to || "")}<p class="notice">Each selected character is appended literally to this slot. This is a complete permitted-Unicode browser. Nothing is published here.</p><pre class="draft">${escapeHtml(block.slots[si].value || "(empty)")}</pre><nav class="tools">${backspace}<a href="${escapeHtml(stateHref(state.state_id, { frame: fi, slot: si }))}">Return to frame</a>${range ? `<a href="${escapeHtml(pathUrl(`/characters/${token(state.state_id)}`, { frame: fi, slot: si, unicode: range.length === 2 ? "" : range.slice(0, -1) }))}">Parent range</a>` : ""}</nav>${suggestions}${!range ? `<h2>ASCII, punctuation, whitespace</h2><div class="keys">${ascii}</div><h2>Unicode ranges</h2><div class="choices">${unicode}</div>` : `<h2>Unicode ${escapeHtml(range.toUpperCase())}</h2><div class="choices">${unicode}</div>`}`);
 }
 
 export function isFrameKeyboardPath(pathname) { return pathname === PREFIX || pathname.startsWith(`${PREFIX}/`); }
@@ -283,7 +312,7 @@ export async function handleFrameKeyboard(request, env, url, createPublishDraft,
       const state = await findState(env, readToken(charsMatch[1]));
       const allowed = new Set(["frame", "slot", "unicode"]);
       if ([...url.searchParams.keys()].some((key) => !allowed.has(key)) || [...allowed].some((key) => url.searchParams.getAll(key).length > 1)) throw new TypeError("Character link has an unknown option.");
-      return await renderCharacters({ ...state, env }, Object.fromEntries(url.searchParams));
+      return await renderCharacters(request, { ...state, env }, Object.fromEntries(url.searchParams));
     }
     const actionMatch = path.match(/^\/predictive-keyboard\/html\/frame-keyboard\/action\/([^/]+)\/([^/]+)$/u);
     if (actionMatch) {
@@ -294,7 +323,7 @@ export async function handleFrameKeyboard(request, env, url, createPublishDraft,
       const op = JSON.parse(raw);
       if (url.searchParams.size !== 2 || url.searchParams.getAll("op").length !== 1 || url.searchParams.getAll("cap").length !== 1 || await signCommonWordRoute(env, "frame-action", state.state_id, childId, raw) !== cap || await signCommonWordRoute(env, "frame-child-state", state.state_id, raw) !== childId) throw new TypeError("Frame action signature is invalid.");
       if (op.return_view !== undefined) {
-        if (op.return_view !== "characters" || !["append-char", "backspace"].includes(op.type) || typeof op.unicode !== "string") throw new TypeError("Frame action return view is invalid.");
+        if (op.return_view !== "characters" || !["append-char", "backspace", "replace"].includes(op.type) || typeof op.unicode !== "string") throw new TypeError("Frame action return view is invalid.");
         unicodeChoices(op.unicode);
       }
       const oldDraft = await loadDraft(env, state);
@@ -310,7 +339,7 @@ export async function handleFrameKeyboard(request, env, url, createPublishDraft,
       else if (op.type === "backspace" && Number.isSafeInteger(op.frame) && typeof op.slot === "string") next = backspaceFrameSlot(doc, op.slot, op.frame);
       else throw new TypeError("Frame action is not supported.");
       const state2 = await createDocumentChild(env, state, oldDraft, next.document, op, "Frame change");
-      if (op.return_view === "characters") return await renderCharacters({ ...state2, env }, { frame: op.frame, slot: op.slot, unicode: op.unicode });
+      if (op.return_view === "characters") return await renderCharacters(request, { ...state2, env }, { frame: op.frame, slot: op.slot, unicode: op.unicode });
       return await renderState(request, env, state2, { frame: op.frame, slot: op.slot });
     }
     const reviewMatch = path.match(/^\/predictive-keyboard\/html\/frame-keyboard\/review\/([^/]+)$/u);

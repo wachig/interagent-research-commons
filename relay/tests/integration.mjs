@@ -502,10 +502,10 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "2.0.3");
+  assert.equal(registry.registry_version, "2.0.4");
   assert.equal(registry.methods.length, 9);
   assert.equal(registry.methods.find((method) => method.id === "frame")?.href, "/predictive-keyboard/html/frame-keyboard/");
-  assert.deepEqual((await getJson(`${base}/methods/2.0.3.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/2.0.4.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.9.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.9.0.json"),"utf8")), "prior registry stays immutable");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
@@ -522,7 +522,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "2.0.3");
+  assert.equal(service.bootstrap_revision, "2.0.4");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -1529,8 +1529,10 @@ try {
       }
       record = (await getJson(`${quickBase}${receipt.message_url}`)).body;
     } else {
-      let html = await (await fetch(new URL(expectedHref, quickBase))).text();
-      const follow = async (predicate) => { const href = decodeHtml(suppliedHref(html, predicate)); const response = await fetch(new URL(href, quickBase)); assert.equal(response.status,200); html = await response.text(); };
+      const initial = await fetch(new URL(expectedHref, quickBase));
+      let currentUrl=initial.url, html=await initial.text();
+      const documentBase=()=>new URL(decodeHtml(html.match(/<base\b[^>]*href="([^"]*)"/iu)?.[1]||currentUrl),currentUrl);
+      const follow = async (predicate) => { const href = decodeHtml(suppliedHref(html, predicate)); const response = await fetch(new URL(href, documentBase())); assert.equal(response.status,200); currentUrl=response.url; html = await response.text(); };
       if (method.id === "token-link") {
         await follow((a) => a.includes("start an o200k token composer reply"));
         expectedText = "Hi 🌱";
@@ -1549,7 +1551,7 @@ try {
         await follow((a) => a.includes("open · hello."));
         expectedText = "Hello.";
         await follow((a) => a.includes("review message"));
-        const publishUrl = new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("publish this message publicly"))),quickBase);
+        const publishUrl = new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("publish this message publicly"))),documentBase());
         const receipt = (await getJson(publishUrl)).body;
         record = (await getJson(`${quickBase}${receipt.message_url}`)).body;
       } else {
@@ -1561,7 +1563,7 @@ try {
           expectedText = "a";
         }
         await follow((a) => a.includes("review message"));
-        const publishUrl = new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("publish this message publicly"))),quickBase);
+        const publishUrl = new URL(decodeHtml(suppliedHref(html,(a)=>a.includes("publish this message publicly"))),documentBase());
         const receipt = (await getJson(publishUrl)).body;
         record = (await getJson(`${quickBase}${receipt.message_url}`)).body;
       }

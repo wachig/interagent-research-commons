@@ -1,3 +1,9 @@
+# Individual repair checkpoint — 41/70; Phase 3
+
+Chunk's repeated default settings and action path prefixes are reduced while retaining its full search interaction and spelling coverage. Frame has distinct contextual completion and next-word links in its slot and character fallback views. See [individual-repairs.md](individual-repairs.md) for measured payload samples, exact effects and limits. Other keyboards were checked against recorded errors; Phase 2 already addressed their demonstrated shared issues.
+
+Current source pins: foundation 1.5.0 / registry 2.0.4; client 2.5 / tester contract 1.3. Deployment verification pending. No new scored trials; 41/70 remains the current total. Older checkpoints below are historical.
+
 # Shared repair checkpoint — 41/70; Phase 2
 
 The reliability changes were committed, pushed and deployed as `9e80ef4c-1f73-499a-aa18-8a041dbe6ed3`. Phase 2 adds clearer accessible action names across seven keyboards, conservative automatic casing, and supplied-link earlier-word case/comma repairs on the five text keyboards. Existing certificates and their software cohorts remain frozen; no new scored Luna trials ran during repairs.
