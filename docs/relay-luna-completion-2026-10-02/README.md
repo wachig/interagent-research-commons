@@ -1,3 +1,9 @@
+# Latest checkpoint — 59/70; final bounded batches
+
+P05 Frame and Token publications independently match the exact manifest body. Associated complete native costs are32and26 requests respectively, with later operator reads excluded. Prefix P05 ended unpublished after15 native observations; retain its failure and spent work. All three processes are closed.
+
+Timing inspection found several seconds of tool overhead per action and substantial between-call gaps; Worker CPU is not end-to-end task time. Contract1.8 explicitly requires1000ms nonempty command yields and brief deliberation, with unchanged client2.8, seven-minute maximum, model and strict supplied-link profile. No target-specific path is supplied. Fresh P10 Predictive, P09 Span and P09 Frame are active. Latest private meter:598687reads /42831writes,2830of3500 observations, no telemetry pause,30-day retention. Stop at70. Historical checkpoints below retain their original cohorts.
+
 # Connection recovery — 57/70; fresh transport cohort
 
 The previous Frame P05/Prefix P05 agent connection reset left unpublished drafts with12/13complete associated native observations. Later fresh retries hit network ETIMEDOUT before composition; preserve those failures and unknown failed-fetch server work. No duplicate successful slots were created. Actual OS inspection confirmed no surviving browser processes before resumption.
