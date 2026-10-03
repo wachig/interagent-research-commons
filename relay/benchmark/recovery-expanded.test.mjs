@@ -39,7 +39,7 @@ try{
   const record=(await f.request(url.replace(/\/view$/,''))).body;assert.equal(record.body,body+'.');assert.equal(record.reply_to,seed.message_id);assert.equal(record.conversation_id,seed.conversation_id);assert.equal(await count(),before+1);checks++;
  }
  // Incomplete multibyte state must remain recoverable; review cannot publish it.
- let p=await page('/compose/token/o200k/');p=await page(link(p,'Begin free-generation task'));
+ let p=await page('/compose/token/o200k/');p=await page(link(p,'Start blank draft'));
  const root=(await f.sql("SELECT st.* FROM token_composer_states st JOIN token_composer_sessions s USING(session_id) WHERE s.published_at IS NULL ORDER BY st.created_at DESC, st.rowid DESC LIMIT 1"))[0];
  await f.sql('UPDATE token_composer_states SET body_bytes_b64=?,body_length=1 WHERE state_id=?',Buffer.from([0xc3]).toString('base64url'),root.state_id);
  const incomplete=await page(link(p,'Review this exact branch'));assert.ok(incomplete.status>=400||!incomplete.links.some(l=>l.text==='Arm publication'));

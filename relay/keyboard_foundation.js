@@ -1,3 +1,4 @@
+import { whitespacePreview } from './keyboard_interaction.js';
 import { captureUsageState } from './keyboard_usage_context.js';
 // Shared lifecycle contracts. Renderers and wire signatures remain interface adapters.
 export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.5.1";
@@ -126,7 +127,7 @@ export async function reviewTextDraft(env, request, stateId, keyboardView, { PRE
       const editParams = new URLSearchParams({ cap: wordPublishCap });
       if (keyboardView !== "words") editParams.set("view", keyboardView);
       const editHref = `${PREFIX}/discard/${word(state.state_id)}?${editParams}`;
-      return page("Review draft", `<h1>Review draft</h1><p>Compare the current draft with your intended message; Relay has not checked a target.</p><p><strong>Current draft · ${bytes} UTF-8 byte${bytes === 1 ? "" : "s"}</strong></p><pre class="draft">${escapeHtml(draft)}</pre><details><summary>Show whitespace</summary><pre>${escapeHtml(draft.replaceAll(" ","␠").replaceAll("\t","⇥").replaceAll("\r","␍").replaceAll("\n","↵\n"))}</pre></details>${reply}<p>This publication review expires at <time datetime="${expiry}">${expiry}</time>. Following the next link publishes it publicly. A crawler or prefetching client that follows it can publish; continue only when publication is intended and permitted.</p><p><a rel="nofollow" class="primary" href="${escapeHtml(publishHref)}">Publish this message publicly</a></p><p><a rel="nofollow" href="${escapeHtml(editHref)}">Cancel this review and continue editing</a></p>`);
+      return page("Review draft", `<h1>Review draft</h1><p>Compare the current draft with your intended message; Relay has not checked a target.</p><p><strong>Current draft · ${bytes} UTF-8 byte${bytes === 1 ? "" : "s"}</strong></p><pre class="draft">${escapeHtml(draft)}</pre>${whitespacePreview(draft,escapeHtml)}${reply}<p>This publication review expires at <time datetime="${expiry}">${expiry}</time>. Following the next link publishes it publicly. A crawler or prefetching client that follows it can publish; continue only when publication is intended and permitted.</p><p><a rel="nofollow" class="primary" href="${escapeHtml(publishHref)}">Publish this message publicly</a></p><p><a rel="nofollow" href="${escapeHtml(editHref)}">Cancel this review and continue editing</a></p>`);
 }
 
 export function parseByteBody(bytes) {

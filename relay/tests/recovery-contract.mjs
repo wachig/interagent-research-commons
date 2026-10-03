@@ -79,7 +79,7 @@ try {
  const rearmed=await html(arm);const pub2=href(rearmed,'Publish this message publicly');assert.notEqual(pub2,pub);check('Token: expired arm returns to saved review; explicit rearming issues fresh permission',{expired_publish_saved_review_and_rearm_requests:3,lost_work_utf8_bytes:0});
  const tokenCount=await feedCount();await f.request(pub2,{html:true,drop:true});const tokenReceipt=await html(pub2);assert.equal(tokenReceipt.status,200);const message=href(tokenReceipt,l=>/\/message\/IARC-M-/.test(l.url));const tokenRecord=(await f.request(message.replace(/\/view$/,''))).body;assert.equal(tokenRecord.body,'a');assert.equal(tokenRecord.reply_to,target);assert.equal(await feedCount(),tokenCount+1);
  check('Token: dropped publish response recovers exact reply receipt without duplicate',{extra_retry_requests:1,lost_work_utf8_bytes:0});
- let q=await html('/compose/token/o200k/');q=await html(href(q,'Begin free-generation task'));
+ let q=await html('/compose/token/o200k/');q=await html(href(q,'Start blank draft'));
  const qb=await html(href(q,'Browse exact UTF-8 bytes'));const qr=await html(href(qb,l=>l['aria-label']==='Browse bytes 60 through 6f'));q=await html(href(qr,l=>/\/branch\/[^/]+\/b61\//.test(l.url)));
  const tokenSession=(await f.sql('SELECT * FROM token_composer_sessions WHERE published_at IS NULL ORDER BY created_at DESC LIMIT 1'))[0];
  await f.sql(`WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<2398) INSERT INTO token_composer_states (state_id,session_id,parent_state_id,unit_id,unit_kind,unit_bytes_b64,body_bytes_b64,body_length,created_at) SELECT ? || '-' || x,?,NULL,'root','root','','',0,? FROM n`,tokenSession.root_state_id,tokenSession.session_id,tokenSession.created_at);

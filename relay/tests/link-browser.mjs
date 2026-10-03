@@ -72,3 +72,7 @@ try {
 const signals=[];
 const redirected=await initialize({home:'https://example.test/',fetcher:async(url,options)=>{signals.push(options.signal);return signals.length===1?new Response('',{status:302,headers:{Location:'/landed'}}):new Response('<h1>Landed</h1>');}});
 try {assert.equal(signals.length,2);assert.equal(signals[0],signals[1],'redirects share one overall timeout, not fresh per-hop deadlines');}finally{await close(redirected);}
+
+const visibleWhitespace=render('<pre class="draft">a  b\t\r\n</pre><p class="whitespace-preview">Whitespace view: <code>a␠␠b⇥␍↵</code></p>','https://example.test/',1);
+assert.equal(visibleWhitespace.view.draft,'a  b\t\r\n');
+assert.ok(visibleWhitespace.view.sections.some(s=>s.text.some(t=>t.includes('a␠␠b⇥␍↵'))),'marked whitespace is inspectable without disclosure or another request');

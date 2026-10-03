@@ -11,7 +11,7 @@ try{
  await measure('chunk-con',narrow.url);
  const typing=root.links.find(l=>l['aria-label']==='Type a into draft');await measure('chunk-typed-a',typing.url);
  const pred=await measure('predictive-empty','/predictive-keyboard/html/word-links/');const key=pred.links.find(l=>/\/key\/a\//.test(l.url));await measure('predictive-typed-a',key.url);
- let token=await measure('token-overview','/compose/token/o200k/');token=await measure('token-start',token.links.find(l=>l.text==='Begin free-generation task').url);
+ let token=await measure('token-overview','/compose/token/o200k/');token=await measure('token-start',token.links.find(l=>l.text==='Start blank draft').url);
  await measure('token-byte-overview',token.links.find(l=>l.text==='Browse exact UTF-8 bytes').url);
  const output={scope:'local Wrangler; HTTP elapsed time is not Worker CPU or agent speed',measurements:results};
  if(process.argv[2])await writeFile(process.argv[2],JSON.stringify(output,null,2)+'\n');

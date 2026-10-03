@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {ordinaryAutomaticCase,repairWordCase,repairWordComma,repairSpacing,keyboardActionNames} from '../keyboard_interaction.js';
+import {ordinaryAutomaticCase,repairWordCase,repairWordComma,repairSpacing,repairPunctuation,REPAIR_PUNCTUATION,whitespacePreview,keyboardActionNames} from '../keyboard_interaction.js';
 import {fixture,parse} from '../tools/local-evaluation.mjs';
 assert.equal(ordinaryAutomaticCase('Should'),'should');assert.equal(ordinaryAutomaticCase('The'),'the');
 for(const name of ['Alice','John','NASA','OpenAI','UnfamiliarName'])assert.equal(ordinaryAutomaticCase(name),name,'intentional name/acronym case retained');
@@ -12,6 +12,14 @@ assert.equal(repairSpacing('tofinish 🌱\tend',2,'insert'),'to finish 🌱\tend
 assert.equal(repairSpacing('a  b',1,'remove'),'a b');
 assert.equal(repairSpacing('🌱x',1,'insert'),'🌱 x');
 assert.throws(()=>repairSpacing('a\tb',1,'remove'));
+for(const [symbol,ch] of Object.entries(REPAIR_PUNCTUATION)){
+ assert.equal(repairPunctuation('🌱a  b\tEND',2,'insert',symbol),`🌱a${ch}  b\tEND`);
+ assert.equal(repairPunctuation(`🌱a${ch}  b\tEND`,2,'remove',symbol),'🌱a  b\tEND');
+}
+assert.throws(()=>repairPunctuation('a',0,'remove','period'));
+assert.throws(()=>repairPunctuation('a',2,'insert','period'));
+assert.throws(()=>repairPunctuation('a',0,'insert','__proto__'));
+assert.match(whitespacePreview('a  b\t\r\nc',s=>s),/a␠␠b⇥␍↵\nc/);
 const labelled=keyboardActionNames('<h2>Keyboard</h2><a href="/key/b">b</a><h2>Find another word</h2><a href="/state/id?prefix=b">b</a>');
 assert.match(labelled,/aria-label="Keyboard: b"/);assert.match(labelled,/aria-label="Find word prefix b"/);
 const f=await fixture();
@@ -50,6 +58,23 @@ try{
   await get(choose(spacedReview,'Cancel this review and continue editing'));
   const changedSpace=new URL(spaceHref);changedSpace.pathname=changedSpace.pathname.replace('spacing%3A2%3Ainsert','spacing%3A1%3Ainsert');
   assert.notEqual(changedSpace.href,spaceHref);assert.equal((await f.request(changedSpace.href,{html:true})).status,400,'spacing offset cannot be changed without the original signature');
+  let punctuation=await get(choose(panel,'Repair punctuation'));
+  for(const [symbol,ch] of Object.entries(REPAIR_PUNCTUATION)){
+   if(symbol!=='period')punctuation=await get(choose(punctuation,`Choose ${symbol} (${ch})`));
+   const href=choose(punctuation,`Insert ${symbol} at boundary 5`);
+   const inserted=await get(href);assert.equal(inserted.draft,`Where${ch} should we meet at 3:30?`);
+   assert.equal((await get(href)).draft,inserted.draft,'punctuation replay is immutable');
+   assert.equal((await get(choose(inserted,'Undo last addition'))).draft,repaired.draft);
+   const reviewPunctuation=await get(choose(inserted,'Review message'));
+   assert.equal(reviewPunctuation.draft,inserted.draft);
+   assert.match(reviewPunctuation.text,/Whitespace view/);assert.doesNotMatch(reviewPunctuation.text,/<summary>Show whitespace/);
+   await get(choose(reviewPunctuation,'Cancel this review and continue editing'));
+   let removal=await get(choose(await get(choose(inserted,'Repair words and punctuation')),'Repair punctuation'));
+   if(symbol!=='period')removal=await get(choose(removal,`Choose ${symbol} (${ch})`));
+   assert.equal((await get(choose(removal,`Remove ${symbol} at character 6`))).draft,repaired.draft);
+   const tampered=new URL(href);tampered.pathname=tampered.pathname.replace('punctuation%3A5','punctuation%3A4');
+   assert.notEqual(tampered.href,href);assert.equal((await f.request(tampered.href,{html:true})).status,400);
+  }
   const undo=await get(choose(repaired,'Undo last addition'));assert.equal(undo.draft,original,'undo restores exact earlier full body');
   const review=await get(choose(repaired,'Review message'));assert.equal(review.draft,repaired.draft,'review sees exact case-corrected draft');
   const cancelled=await get(choose(review,'Cancel this review and continue editing'));assert.match(cancelled.text,/preserved/);

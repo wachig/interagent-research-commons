@@ -35,6 +35,9 @@ try {
   if(method.id==='frame')p=await page(href(p,l=>l.text.startsWith('Return to')&&l.url.includes('/state/')));
   const reviewHref=href(p,method.id==='token-link'?'Review this exact branch':'Review message');
   const review=await page(reviewHref);assert.equal(review.draft,wanted);
+  assert.match(review.text,/Whitespace view/,'all seven reviews expose whitespace directly');
+  assert.doesNotMatch(review.text,/<summary>Show whitespace/);
+  if(method.id==='token-link')assert.match(review.text,/Task class: <code>generation<\/code>/,'blank label leaves stored task class compatible');
   if(method.id!=='token-link'){
    for(let i=0;i<4;i++){const retry=await page(reviewHref);assert.equal(retry.draft,wanted);assert.equal(href(retry,'Publish this message publicly'),href(review,'Publish this message publicly'),'Retry recovers the same review');}
    p=await page(href(review,'Cancel this review and continue editing'));

@@ -1,4 +1,4 @@
-import {draftWords,repairWordCase} from './keyboard_interaction.js';
+import {draftWords,repairWordCase,REPAIR_PUNCTUATION} from './keyboard_interaction.js';
 export async function renderWordCaseRepair({env,state,draft,view,PREFIX,word,actionHref,page,escapeHtml,offset=0}) {
   const words=draftWords(draft);
   if(!Number.isSafeInteger(offset)||offset<0||offset%20||offset>=Math.max(1,words.length))throw Error('Choose a supplied repair page.');
@@ -17,7 +17,7 @@ export async function renderWordCaseRepair({env,state,draft,view,PREFIX,word,act
     return `<section><h2>Word ${ordinal+1}: ${escapeHtml(item.text)}</h2><div class="choices">${choices.join(' ')}</div></section>`;
   }));
   const undo=state.parent_state_id?` · <a href="${PREFIX}/state/${word(state.parent_state_id)}?view=${view}">Undo last addition</a>`:'';
-  return page('Repair words and punctuation',`<h1>Repair words and punctuation</h1><p>Choose the exact replacement shown. Case controls replace only the selected word. Comma controls insert or remove one comma immediately after it. Spacing and all following text remain. This creates an undoable unpublished branch.</p><pre class="draft">${escapeHtml(draft)}</pre>${state.reply_to?`<p>Reply to ${escapeHtml(state.reply_to)}</p>`:''}<nav><a href="${PREFIX}/word-case/${word(state.state_id)}?view=${view}&amp;spacing=1">Repair spacing</a> · <a href="${PREFIX}/state/${word(state.state_id)}?view=${view}">Return to keyboard</a>${undo}</nav>${rows.join('')}<nav>${offset?`<a href="${route(offset-20)}">Previous repair page</a>`:''} ${offset+20<words.length?`<a href="${route(offset+20)}">Next repair page</a>`:''}</nav>`);
+  return page('Repair words and punctuation',`<h1>Repair words and punctuation</h1><p>Choose the exact replacement shown. Case controls replace only the selected word. Comma controls insert or remove one comma immediately after it. Spacing and all following text remain. This creates an undoable unpublished branch.</p><pre class="draft">${escapeHtml(draft)}</pre>${state.reply_to?`<p>Reply to ${escapeHtml(state.reply_to)}</p>`:''}<nav><a href="${PREFIX}/word-case/${word(state.state_id)}?view=${view}&amp;spacing=1">Repair spacing</a> · <a href="${PREFIX}/word-case/${word(state.state_id)}?view=${view}&amp;punctuation=period">Repair punctuation</a> · <a href="${PREFIX}/state/${word(state.state_id)}?view=${view}">Return to keyboard</a>${undo}</nav>${rows.join('')}<nav>${offset?`<a href="${route(offset-20)}">Previous repair page</a>`:''} ${offset+20<words.length?`<a href="${route(offset+20)}">Next repair page</a>`:''}</nav>`);
 }
 
 export async function renderSpacingRepair({env,state,draft,view,PREFIX,word,actionHref,page,escapeHtml,offset=0}) {
@@ -36,4 +36,23 @@ export async function renderSpacingRepair({env,state,draft,view,PREFIX,word,acti
     return `<section><h2>Boundary ${pos}</h2><p><code>${escapeHtml(snippet)}</code></p><div class="choices">${links.join(' ')}</div></section>`;
   }));
   return page('Repair spacing',`<h1>Repair spacing</h1><p>Insert exactly one ordinary space at the marked boundary, or remove exactly one existing ordinary space. All other characters, repeated spaces, tabs and newlines remain unchanged. The mark │ shows the boundary; ␠ means space, ⇥ tab, ↵ LF and ␍ CR. Boundaries count Unicode characters from zero. Every choice creates an undoable unpublished branch.</p><pre class="draft">${escapeHtml(draft)}</pre><nav><a href="${PREFIX}/state/${word(state.state_id)}?view=${view}">Return to keyboard</a>${state.parent_state_id?` · <a href="${PREFIX}/state/${word(state.parent_state_id)}?view=${view}">Undo last addition</a>`:''}</nav>${rows.join('')}<nav>${offset?`<a href="${route(offset-20)}">Previous spacing page</a>`:''} ${offset+20<=chars.length?`<a href="${route(offset+20)}">Next spacing page</a>`:''}</nav>`);
+}
+
+export async function renderPunctuationRepair({env,state,draft,view,PREFIX,word,actionHref,page,escapeHtml,offset=0,symbol='period'}) {
+  const chars=[...draft];
+  if(!Number.isSafeInteger(offset)||offset<0||offset%20||offset>chars.length||!Object.hasOwn(REPAIR_PUNCTUATION,symbol))throw Error('Choose a supplied punctuation page.');
+  const route=(n,choice=symbol)=>`${PREFIX}/word-case/${word(state.state_id)}?${new URLSearchParams({view,punctuation:choice,page:String(n)})}`;
+  const selectors=Object.entries(REPAIR_PUNCTUATION).map(([name,ch])=>name===symbol?`<strong>${name} (${escapeHtml(ch)})</strong>`:`<a href="${escapeHtml(route(offset,name))}">Choose ${name} (${escapeHtml(ch)})</a>`).join(' · ');
+  const visible=values=>values.map(ch=>ch===' '?'␠':ch==='\t'?'⇥':ch==='\n'?'↵':ch==='\r'?'␍':ch).join('');
+  const rows=await Promise.all(Array.from({length:Math.min(20,chars.length+1-offset)},async(_,index)=>{
+    const pos=offset+index;
+    const snippet=visible(chars.slice(Math.max(0,pos-8),pos))+'│'+visible(chars.slice(pos,pos+8));
+    const links=await Promise.all((chars[pos]===REPAIR_PUNCTUATION[symbol]?['insert','remove']:['insert']).map(async mode=>{
+      const href=await actionHref({...state,env},'key',`punctuation:${pos}:${mode}:${symbol}`,'letters','',0,view);
+      const name=mode==='insert'?`Insert ${symbol} at boundary ${pos}`:`Remove ${symbol} at character ${pos+1}`;
+      return `<a rel="nofollow" aria-label="${name}" href="${escapeHtml(href)}">${name}</a>`;
+    }));
+    return `<section><h2>Boundary ${pos}</h2><p><code>${escapeHtml(snippet)}</code></p><div class="choices">${links.join(' ')}</div></section>`;
+  }));
+  return page('Repair punctuation',`<h1>Repair punctuation</h1><p>Insert or remove exactly one selected punctuation character at the marked boundary. All following text, whitespace and case remain unchanged. │ marks the boundary; ␠ space, ⇥ tab, ↵ LF, ␍ CR. Positions count Unicode characters from zero. Every change is an undoable unpublished branch.</p><pre class="draft">${escapeHtml(draft)}</pre><nav><a href="${PREFIX}/state/${word(state.state_id)}?view=${view}">Return to keyboard</a>${state.parent_state_id?` · <a href="${PREFIX}/state/${word(state.parent_state_id)}?view=${view}">Undo last addition</a>`:''}</nav><p>${selectors}</p>${rows.join('')}<nav>${offset?`<a href="${escapeHtml(route(offset-20))}">Previous punctuation page</a>`:''} ${offset+20<=chars.length?`<a href="${escapeHtml(route(offset+20))}">Next punctuation page</a>`:''}</nav>`);
 }

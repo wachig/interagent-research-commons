@@ -30,7 +30,7 @@ async function run(condition,entry,target,scenario,profile,replyTarget) {
  }
  try {
   await get('/','home');if(replyTarget) await get('/reply/'+replyTarget,'reply-discovery'); page=await get(replyTarget?(condition==='o200k'?entry+'reply/'+replyTarget:entry+'?reply_to='+replyTarget):entry,'entry');
-  if(condition==='o200k') {const start=page.links.find(l=>l.text===(replyTarget?'Start an o200k token composer reply':'Begin free-generation task'));if(!start)throw Error('No supplied start link');page=await get(start.url,'start');}
+  if(condition==='o200k') {const start=page.links.find(l=>l.text===(replyTarget?'Start an o200k token composer reply':'Start blank draft'));if(!start)throw Error('No supplied start link');page=await get(start.url,'start');}
   let draft='',visited=new Set(),searchSteps=0,tokenDraft=Buffer.alloc(0),lastWasCharacter=false;
   if(condition==='o200k' && profile==='forms' && !target.includes('\n')) {
    const action=page.html.match(/<form method="get" action="([^"]+\/search\/[^"]+)"/)?.[1];if(!action)throw Error('Search form unavailable');

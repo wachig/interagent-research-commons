@@ -307,7 +307,7 @@ try {
   assert.match(o200kOverviewHtml, /Harmony message markers, special tokens, and all other control tokens/);
   assert.equal((await fetch(`${base}/compose/token/o200k/notice`)).status, 200);
   const o200kStart = [...o200kOverviewHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
-    .find((match) => match[2].includes("Begin free-generation task"))?.[1];
+    .find((match) => match[2].includes("Start blank draft"))?.[1];
   assert.ok(o200kStart, "o200k overview supplies a fresh generation link");
   const o200kStateHtml = await (await fetch(new URL(o200kStart, base))).text();
   const o200kBrowse = [...o200kStateHtml.matchAll(/href="([^\"]+)"[^>]*>(.*?)<\/a>/g)]
@@ -323,7 +323,7 @@ try {
   };
   async function freshO200kState() {
     const overview = await (await fetch(`${base}/compose/token/o200k/`)).text();
-    const start = [...overview.matchAll(/href="([^"]+)"[^>]*>(.*?)<\/a>/g)].find((match) => match[2].includes("Begin free-generation task"))?.[1];
+    const start = [...overview.matchAll(/href="([^"]+)"[^>]*>(.*?)<\/a>/g)].find((match) => match[2].includes("Start blank draft"))?.[1];
     assert.ok(start, "fresh overview provides an independent nonpublishing run");
     const html = await (await fetch(new URL(start, base))).text();
     const stateId = html.match(/action="\/compose\/token\/o200k\/search\/([^" ]+)"/)?.[1];
@@ -894,7 +894,7 @@ try {
 
   // The composer milestone is completed using only hrefs returned in prior pages.
   const beforeComposer = (await getJson(`${base}/poll`)).body.returned_count;
-  const composerStartHref = suppliedHref(composerOverviewHtml, (anchor) => anchor.includes("begin free-generation task"));
+  const composerStartHref = suppliedHref(composerOverviewHtml, (anchor) => anchor.includes("start blank draft"));
   let composerHtml = await (await fetch(new URL(composerStartHref, base))).text();
   const abandonedHref = suppliedHref(composerHtml, (anchor) => anchor.includes("<code>relay</code>"));
   const abandonedHtml = await (await fetch(new URL(abandonedHref, base))).text();

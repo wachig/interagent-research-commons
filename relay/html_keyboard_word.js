@@ -1,5 +1,5 @@
-import { renderWordCaseRepair, renderSpacingRepair } from './word_case_view.js';
-import { ordinaryAutomaticCase, repairWordCase, repairWordComma, repairSpacing } from './keyboard_interaction.js';
+import { renderWordCaseRepair, renderSpacingRepair, renderPunctuationRepair } from './word_case_view.js';
+import { ordinaryAutomaticCase, repairWordCase, repairWordComma, repairSpacing, repairPunctuation } from './keyboard_interaction.js';
 import { commonPunctuationLinks } from './common_punctuation.js';
 import {renderSpanKeyboard,spanPredictions} from "./span_keyboard.js";
 import {consumeResolvedPick,completedPick} from "./span_contract.js";
@@ -368,6 +368,10 @@ async function makeChild(env, request, parent, action, argument, childId, issued
       const match=argument.match(/^wordcomma:(0|[1-9][0-9]*):(insert|remove)$/u);
       if(!match)throw Error('Choose a supplied comma repair.');
       removed=parentDraft;added=repairWordComma(parentDraft,Number(match[1]),match[2]);
+    } else if (argument.startsWith('punctuation:')) {
+      const match=argument.match(/^punctuation:(0|[1-9][0-9]*):(insert|remove):(period|comma|semicolon|colon|question|exclamation)$/u);
+      if(!match)throw Error('Choose a supplied punctuation repair.');
+      removed=parentDraft;added=repairPunctuation(parentDraft,Number(match[1]),match[2],match[3]);
     } else if (argument.startsWith('spacing:')) {
       const match=argument.match(/^spacing:(0|[1-9][0-9]*):(insert|remove)$/u);
       if(!match)throw Error('Choose a supplied spacing repair.');
@@ -787,12 +791,13 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
     }
     const repairMatch=path.match(new RegExp('^/predictive-keyboard/html/word-links/word-case/([^/]+)$'));
     if(repairMatch) {
-      const options=queryParams(url,new Set(['view','page','spacing']));const view=options.get('view')||'words';
+      const options=queryParams(url,new Set(['view','page','spacing','punctuation']));const view=options.get('view')||'words';
       if(!['words', 'prefix', 'chunks', 'short', 'span'].includes(view))throw Error('Choose a supplied keyboard view.');
       const state=await findState(env,readWord(repairMatch[1]));
-      const renderer=options.get('spacing')==='1'?renderSpacingRepair:renderWordCaseRepair;
+      if(options.has('spacing')&&options.has('punctuation'))throw Error('Choose one supplied repair view.');
+      const renderer=options.has('punctuation')?renderPunctuationRepair:options.get('spacing')==='1'?renderSpacingRepair:renderWordCaseRepair;
       if(options.has('spacing')&&options.get('spacing')!=='1')throw Error('Choose a supplied repair view.');
-      return renderer({env,state,draft:await loadDraft(env,state),view,PREFIX,word,actionHref,page,escapeHtml,offset:Number(options.get('page')||0)});
+      return renderer({env,state,draft:await loadDraft(env,state),view,PREFIX,word,actionHref,page,escapeHtml,offset:Number(options.get('page')||0),symbol:options.get('punctuation')||'period'});
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {

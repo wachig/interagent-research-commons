@@ -26,7 +26,7 @@ async function run(method,fault){
   s=await state(id);
   if(s.last_status>=400)throw Error('Service admission response HTTP '+s.last_status+': '+s.current.title);
   // The two earlier manual probes can resume from their existing observed pages.
-  if(method.id==='token-link' && s.current.links.some(l=>l.text==='Begin free-generation task'))await choose(id,/^Begin free-generation task$/);
+  if(method.id==='token-link' && s.current.links.some(l=>l.text==='Start blank draft'))await choose(id,/^Start blank draft$/);
   s=await state(id);
   if(!s.current.drafts?.includes('I')){
    if(method.id==='predictive-word' && !s.current.links.some(l=>/^(?:I|Add I)$/.test(l.label||l.text)))await choose(id,/^Turn shift on$/);

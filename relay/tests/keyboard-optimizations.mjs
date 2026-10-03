@@ -36,7 +36,7 @@ try{
  const armed=await page(choice(review,'Arm publication'));const pub=choice(armed,'Publish this message publicly');const first=await page(pub);const replay=await page(pub);assert.equal(choice(first,l=>/\/message\/IARC-M-/.test(l.url)),choice(replay,l=>/\/message\/IARC-M-/.test(l.url)));
  const body=(await f.request(choice(first,l=>/\/message\/IARC-M-/.test(l.url)))).body;assert.equal(body.body,ascii+'é🌱');assert.equal(body.reply_to,seed.message_id);outcomes.push('Token literal ASCII and UTF-8 publication; one activation per ASCII character');
  // Search fragments must never masquerade as message drafts to the existing extractor.
- p=await page('/compose/token/o200k/');p=await page(choice(p,'Begin free-generation task'));p=await page(choice(p,l=>/\/browse\/prefix\/[^/]+$/.test(new URL(l.url).pathname)));p=await page(choice(p,l=>new URL(l.url).pathname.endsWith('/group/letter')));p=await page(choice(p,l=>/^[“"]?r[”"]?$/.test(l.text)));
+ p=await page('/compose/token/o200k/');p=await page(choice(p,'Start blank draft'));p=await page(choice(p,l=>/\/browse\/prefix\/[^/]+$/.test(new URL(l.url).pathname)));p=await page(choice(p,l=>new URL(l.url).pathname.endsWith('/group/letter')));p=await page(choice(p,l=>/^[“"]?r[”"]?$/.test(l.text)));
  assert.equal((await extract(p.text)).drafts.length,1);outcomes.push('Token search prefix is separate from current draft');
  const jumps=await page(choice(p,l=>/^Browse all .* jumps$/.test(l.text)&&new URL(l.url).pathname.endsWith('/jumps/3')));assert.equal(jumps.links.filter(l=>l.class==='choice').length,64,'Jump pages are bounded');const jumpNext=await page(choice(jumps,'Next jump page'));assert.equal(new URL(choice(jumpNext,'Previous jump page')).searchParams.get('page'),'0');assert.equal(jumpNext.draft,jumps.draft);outcomes.push('Token jump pages bounded and draft preserved');
  // Candidate rendering is bounded without dropping spelling coverage.
@@ -73,7 +73,7 @@ try{
  }
  outcomes.push('Predictive and Prefix browsing preserve typed endings');
  // The whole-word Token lane is an intersection of genuine tokens and sourced spelling.
- let words=await page('/compose/token/o200k/');words=await page(choice(words,'Begin free-generation task'));
+ let words=await page('/compose/token/o200k/');words=await page(choice(words,'Start blank draft'));
  words=await page(choice(words,l=>/\/browse\/prefix\/[^/]+$/.test(new URL(l.url).pathname)));
  words=await page(choice(words,l=>new URL(l.url).pathname.endsWith('/group/letter')));
  words=await page(choice(words,l=>/^[“"]?t[”"]?$/.test(l.text)));

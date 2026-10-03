@@ -49,3 +49,16 @@ export function repairSpacing(draft,offset,mode) {
   chars.splice(offset,mode==='remove'?1:0,...(mode==='insert'?[' ']:[]));
   return chars.join('');
 }
+
+export const REPAIR_PUNCTUATION = Object.freeze({period:'.',comma:',',semicolon:';',colon:':',question:'?',exclamation:'!'});
+export function repairPunctuation(draft,offset,mode,symbol) {
+  const chars=[...draft],ch=REPAIR_PUNCTUATION[symbol];
+  if(!Number.isSafeInteger(offset)||offset<0||offset>chars.length||!['insert','remove'].includes(mode)||!Object.hasOwn(REPAIR_PUNCTUATION,symbol))throw Error('Choose a supplied punctuation repair.');
+  if(mode==='remove'&&chars[offset]!==ch)throw Error('That punctuation is not present at the selected character.');
+  chars.splice(offset,mode==='remove'?1:0,...(mode==='insert'?[ch]:[]));
+  return chars.join('');
+}
+export function whitespacePreview(draft,escapeHtml) {
+  const marked=draft.replaceAll(' ','␠').replaceAll('\t','⇥').replaceAll('\r','␍').replaceAll('\n','↵\n');
+  return `<p class="whitespace-preview">Whitespace view (␠ space, ⇥ tab, ␍ CR, ↵ LF): <code style="white-space:pre-wrap">${escapeHtml(marked)}</code></p>`;
+}
