@@ -1,3 +1,9 @@
+# Current operational blocker —20/70, no live tester processes
+
+Fresh P06 Prefix and Span both reached exact reviews, then automatic approval rejected both public-publish actions despite original human authorization inspected before startup. Neither posted; both processes closed. Native costs are complete: Prefix26requests/1,453,741uncompressed bytes; Span13requests/661,510bytes. These stop at review and cannot be compared as completed-publication costs. No server HTTPerrors were recorded in either run.
+
+One direct human confirmation has been requested for the entire remaining Phase1publicpublication scope, with a separate question for pushing compiled benchmark documentation. No perpost confirmations or bypasses. Further composition dispatch waits for the recognized confirmation rather than repeating the same blocked work. Existing20certificates remain valid and the full70goal is active. Raw private telemetry remains30dayexpiry. Older sections below are historical.
+
 # Latest verified checkpoint —20/70
 
 Three repaired-release success certificates were added: P03 Predictive, P06 Frame and P06 Chunk. Fifty required cells remain. All tester processes for this batch closed. Goal remains active; no Phase2/3 or hourly automation. Older checkpoint/status sections below are historical.
