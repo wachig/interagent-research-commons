@@ -1138,15 +1138,16 @@
   "verified_successes": 17,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "paused-by-owner",
-  "updated_at": "2026-10-03T03:31:00.197764+00:00",
+  "status": "active",
+  "updated_at": "2026-10-03T03:41:02.941505+00:00",
   "next_work": [
-    "Investigate demonstrated Prefix Review HTTP500 and private export Worker1101; establish cause rather than assume quota.",
-    "Reconcile Prefix failed native work when private export recovers.",
-    "Inspect original human Token blank-start permission before future fresh test; no repeat approval question.",
-    "Resume remaining53 certified cells only after owner resumes; no Phase2/3."
+    "Inspect current provider headroom before any new scored dispatch.",
+    "Fresh assigned P03 Prefix canary with real deadline and recovery observation; count only independent exact publication.",
+    "Fresh Token assigned test reads original human blank-start permission; no standalone punctuation production session.",
+    "Continue53 remaining Phase1 cells without redoing17 certificates; preserve release cohorts and all failures.",
+    "Historical platform exception cause remains unconfirmed; retain diagnostic references if it recurs."
   ],
-  "deployed_release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
+  "deployed_release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
     "observed_at": "2026-10-02T19:51:25Z",
@@ -1192,7 +1193,7 @@
       "process": 51835
     }
   ],
-  "campaign_status": "paused-after-active-batch",
+  "campaign_status": "repair-released-before-next-scored-batch",
   "database_repair_verification": {
     "checked_at": "2026-10-03T00:36:11.309Z",
     "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
@@ -1272,16 +1273,16 @@
     "completed": true
   },
   "latest_private_meter_snapshot": {
-    "rows_read": 51216,
-    "rows_written": 5020,
+    "rows_read": 90370,
+    "rows_written": 6793,
     "telemetry_paused": false,
     "new_choice_rows": 0,
-    "scope": "Object SQL counters since deployment, not account totals."
+    "scope": "Persisted object SQL meter for current UTC day, not provider account totals."
   },
   "repair_checkpoint": {
     "requested_by": "owner",
-    "testing_dispatch_allowed": false,
-    "reason": "Repair first; no new scored tests until validation and deployment.",
+    "testing_dispatch_allowed": true,
+    "reason": "Repair released and verified. Future scoring uses fresh Luna, actual manifest plus original human authorization, and current account headroom before dispatch. No new scored tests during repairs.",
     "historical_exception_root_cause": "unconfirmed",
     "unpublished_prefix_reproduction": {
       "exact_body": "I don’t understand what happened.",
@@ -1291,6 +1292,26 @@
       "publishes": false,
       "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9"
     },
-    "private_export_recovered": true
+    "private_export_recovered": true,
+    "repair_commit": "0627180",
+    "release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4",
+    "foundation": "relay-keyboard-foundation/1.3.0",
+    "registry": "2.0.2",
+    "required_local_suite": "all components passed",
+    "live_prefix": {
+      "native_run": "dcf49552ee47ae3c795846b2602ba3fd6601cc1e4845bffafd8d3f058176bd3e",
+      "native_events": 37,
+      "review_status": 200,
+      "cancel_status": 200,
+      "exact": true,
+      "published_at": null,
+      "message_id": null,
+      "truncated": false,
+      "budget_possible_gap": false
+    },
+    "token_extra_live_canary": {
+      "executed": false,
+      "reason": "Automatic approval review rejected a standalone punctuation production session as outside assigned-phrase permission. No bypass or process; all-seven local literal/review checks already passed."
+    }
   }
 }

@@ -1,3 +1,7 @@
+# Current repair checkpoint
+
+Repairs are deployed and pushed from0627180 as release365dcf75-c9e0-4f8f-b7f8-7275c2240ad4. All required local checks passed. Prefix exact review/cancellation and the protected export were verified live without publication; no new scored Luna run occurred. Count remains17/70. See [repair-notes.md](repair-notes.md) for evidence, limits, compact-link measurements and the unresolved historical exception cause. Older pause/blocker/release sections below are historical. Future scoring requires a current provider headroom check and fresh Luna contexts; preserve all17certificates and release boundaries.
+
 # Latest checkpoint — owner-requested pause after the active batch
 
 Phase 1 is paused at 17 independently certified successes out of 70, with53remaining. The last Prefix attempt composed the exact P03 draft but its displayed review link returned HTTP500 three times, so it did not publish. All tester processes have closed. P01 and P02 are complete across all seven keyboards; P03 is certified on Short Word, Chunk Word and Span. All scored testers use fresh GPT-6 Luna contexts. No Phase 2/3 runs or hourly automation are authorized here. Earlier status sections below are historical, including superseded blocked/heartbeat states.
