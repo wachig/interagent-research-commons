@@ -1,3 +1,7 @@
+# Repair-first handoff
+
+Owner’s latest steering is to complete repairs before further evaluation. The repairs below are complete and deployed. Two fresh attempts were dispatched before this handoff was reconciled: Token P06 omitted the comma and automatic review blocked publication; Prefix P03 was stopped at an exact review without publishing. Both processes closed and both attempts are retained. No new certificate:17/70. Native costs for these two attempts remain pending; do not infer zero spent requests. No further test dispatch occurred in this repair-first turn.
+
 # Current repair checkpoint
 
 Repairs are deployed and pushed from0627180 as release365dcf75-c9e0-4f8f-b7f8-7275c2240ad4. All required local checks passed. Prefix exact review/cancellation and the protected export were verified live without publication; no new scored Luna run occurred. Count remains17/70. See [repair-notes.md](repair-notes.md) for evidence, limits, compact-link measurements and the unresolved historical exception cause. Older pause/blocker/release sections below are historical. Future scoring requires a current provider headroom check and fresh Luna contexts; preserve all17certificates and release boundaries.

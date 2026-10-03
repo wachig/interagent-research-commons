@@ -1133,20 +1133,64 @@
       "native_budget_possible_gap": false,
       "native_execution_gap": true,
       "spent_requests_scope": "45 complete recorded native events, plus at least three client-observed failed review activations missing from logger; discovery outside run. Recorded HTTP-error count zero must not be interpreted as no failures. No message/publication certificate."
+    },
+    {
+      "attempt_id": "P03-prefix-link-R1-A2",
+      "phrase_id": "P03",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.3",
+      "release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4",
+      "foundation": "relay-keyboard-foundation/1.3.0",
+      "outcome": "stopped-for-owner-repair-first-steering",
+      "verified_success": false,
+      "agent": "/root/repaired_p03_prefix",
+      "dispatch_at": "2026-10-03T03:43:31.906572+00:00",
+      "manifest_verification_before_start": true,
+      "tester_owned_process": 29653,
+      "process_closed": true,
+      "message_id": null,
+      "review_body": "I don’t understand what happened.",
+      "failure_category": "supervisor-dispatch-before-repair-checkpoint-return",
+      "failure_reason": "Root stopped the test to honor latest repairs-first steering. Exact reviewed draft was not published. Tester corrected duplicate stand and discarded ASCII apostrophe; no certificate.",
+      "spent_requests": null,
+      "spent_requests_status": "native compilation pending; tester output truncated, no invented count",
+      "reported_seconds_remaining_at_review": 84,
+      "completed_at": "2026-10-03T03:47:15.822118+00:00"
+    },
+    {
+      "attempt_id": "P06-token-link-R1-A2",
+      "phrase_id": "P06",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.3",
+      "release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4",
+      "foundation": "relay-keyboard-foundation/1.3.0",
+      "outcome": "failed-review-mismatch-publication-blocked",
+      "verified_success": false,
+      "agent": "/root/repaired_p06_token",
+      "dispatch_at": "2026-10-03T03:43:31.906572+00:00",
+      "manifest_verification_before_start": true,
+      "tester_owned_process": 76307,
+      "process_closed": true,
+      "message_id": null,
+      "review_body": "Yes but not right now.",
+      "failure_category": "tester-exact-comparison-failure",
+      "failure_reason": "Tester omitted assigned comma, incorrectly armed publication; automatic approval rejected mismatched payload. No retry or bypass; process closed.",
+      "profile_evidence": "Actual manifest and original human Token blank-start permission read before startup; supplied links only per tester report. No exact publication.",
+      "spent_requests": null,
+      "spent_requests_status": "native compilation pending",
+      "completed_at": "2026-10-03T03:47:15.822118+00:00"
     }
   ],
   "verified_successes": 17,
   "required_successes": 70,
   "heartbeat_id": null,
   "status": "active",
-  "updated_at": "2026-10-03T03:41:02.941505+00:00",
-  "next_work": [
-    "Inspect current provider headroom before any new scored dispatch.",
-    "Fresh assigned P03 Prefix canary with real deadline and recovery observation; count only independent exact publication.",
-    "Fresh Token assigned test reads original human blank-start permission; no standalone punctuation production session.",
-    "Continue53 remaining Phase1 cells without redoing17 certificates; preserve release cohorts and all failures.",
-    "Historical platform exception cause remains unconfirmed; retain diagnostic references if it recurs."
-  ],
+  "updated_at": "2026-10-03T03:47:15.822118+00:00",
+  "next_work": "Repair checkpoint delivered; retain 17 exact publication certificates. No additional test dispatch in this turn. Failed/stopped fresh attempts retained; native metrics pending.",
   "deployed_release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
@@ -1193,7 +1237,7 @@
       "process": 51835
     }
   ],
-  "campaign_status": "repair-released-before-next-scored-batch",
+  "campaign_status": "active-post-repair-assigned-canaries",
   "database_repair_verification": {
     "checked_at": "2026-10-03T00:36:11.309Z",
     "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
@@ -1258,11 +1302,11 @@
   "external_coordination_updates": "stopped-by-owner",
   "approval_verification_improvement": "Future fresh tester reads actual manifest.json before restricted process startup and verifies assigned phrase, then records explicit byte-exact review comparison. No relaxation of link-only composition profile.",
   "current_provider_headroom": {
-    "checked_at": "2026-10-03T01:35:01.278Z",
-    "rows_read_approx": 95330,
-    "rows_written_approx": 24420,
-    "write_remaining_approx": 75580,
-    "scope": "ProvidercurrentUTCday, includespre-repairmigration. Privatecounter4118notaccounttotal."
+    "checked_at": "2026-10-03T03:42:31.436848+00:00",
+    "rows_read_approx": 145490,
+    "rows_written_approx": 27260,
+    "write_remaining_approx": 72740,
+    "scope": "Fresh Cloudflare account current UTC day, not object SQL meter."
   },
   "pause_after_active_batch": {
     "requested_by": "owner",
@@ -1281,8 +1325,8 @@
   },
   "repair_checkpoint": {
     "requested_by": "owner",
-    "testing_dispatch_allowed": true,
-    "reason": "Repair released and verified. Future scoring uses fresh Luna, actual manifest plus original human authorization, and current account headroom before dispatch. No new scored tests during repairs.",
+    "testing_dispatch_allowed": false,
+    "reason": "Owner latest steering: repairs first. Repairs completed; no further dispatch during this checkpoint.",
     "historical_exception_root_cause": "unconfirmed",
     "unpublished_prefix_reproduction": {
       "exact_body": "I don’t understand what happened.",
