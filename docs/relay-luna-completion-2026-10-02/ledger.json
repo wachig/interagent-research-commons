@@ -590,13 +590,13 @@
   "verified_successes": 9,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "active",
-  "updated_at": "2026-10-03T00:52:37.967688+00:00",
+  "status": "blocked",
+  "updated_at": "2026-10-03T00:54:53.464305+00:00",
   "next_work": [
-    "Await direct user resumption confirmation required by tester approval review; do not bypass rejected startup/publication.",
-    "Fresh GPT-6 Luna creation remains blocked by orchestration thread limit. Need fresh eligible context availability; do not reuse the now-scored Span context.",
-    "Phase1 remains9/70; preserve failedattempts, native requestcounts and unchanged certificates.",
-    "Use provider total headroom including20kpre-meteringmigrationwrites before bounded furtherdispatch."
+    "Direct owner confirmation still required by automatic approval review; do not bypass rejected trial startup/publication.",
+    "Fresh Luna capacity is now available: readiness-only agent /root/phase1_fresh_capacity_check has never started a process or trial.",
+    "Upon confirmation, refresh provider headroom, assign one unused slot and run bounded canary before enlarging the batch.",
+    "Phase1 remains9/70; retain19attemptrecords and all spent work/certificates."
   ],
   "deployed_release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
   "operational_blocker": {
@@ -644,7 +644,7 @@
       "process": 51835
     }
   ],
-  "campaign_status": "phase1-infrastructure-blocked",
+  "campaign_status": "blocked-awaiting-direct-owner-approval-confirmation",
   "database_repair_verification": {
     "checked_at": "2026-10-03T00:36:11.309Z",
     "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
@@ -677,7 +677,10 @@
     "available_unstarted_prepared_testers": [
       "phase1_p03_predictive",
       "phase1_p03_span"
-    ]
+    ],
+    "resolved_at": "2026-10-03T00:54:15.715841+00:00",
+    "resolution": "Fresh gpt-6-luna readiness-only spawn succeeded on next goal turn, fork_turns1. No live trial process or request; earlier limit was not persistent.",
+    "ready_agent": "/root/phase1_fresh_capacity_check"
   },
   "bounded_resumption_cost_baseline": {
     "at": "2026-10-03T00:46:39.696Z",
@@ -692,5 +695,13 @@
     "scope": "Includes19Spanrunrequests plus operator health/export/accounting activity. Not exact standalone trial cost or providerbillingtotal.",
     "issued_choices_new": 0,
     "telemetry_paused": false
+  },
+  "approval_blocker": {
+    "kind": "tester-publication-and-startup-review-still-sees-pause",
+    "consecutive_goal_turns": 3,
+    "last_revalidated_at": "2026-10-03T00:54:53.464305+00:00",
+    "direct_owner_confirmation_pending": true,
+    "no_live_test_processes": true,
+    "review_reason": "Testing paused; assigned manifest phrase classified as unassigned. No bypass or retry."
   }
 }
