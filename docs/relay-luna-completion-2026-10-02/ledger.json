@@ -3190,7 +3190,10 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T00-06-03-01a10095-8f38-7ca3-8cb1-b7aa7338af52.jsonl"
     },
     {
       "attempt_id": "P03-prefix-link-R1-A3",
@@ -3241,7 +3244,10 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T00-06-13-01a10095-b4a9-73a2-a74d-0567af48e712.jsonl"
     },
     {
       "attempt_id": "P07-chunk-word-R1-A2",
@@ -3293,7 +3299,10 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T00-10-38-01a10099-c090-74c1-84a2-a9ca4525787a.jsonl"
     },
     {
       "attempt_id": "P06-token-link-R1-A3",
@@ -3343,7 +3352,10 @@
         "truncated": false,
         "budget_possible_gap": false
       },
-      "timing_discrepancy": "Agentapprox53s unsupported bynativeinterval72.515s; use nativeintervalforassociatedrun, discoveryexcluded."
+      "timing_discrepancy": "Agentapprox53s unsupported bynativeinterval72.515s; use nativeintervalforassociatedrun, discoveryexcluded.",
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T00-12-02-01a1009b-0901-74a0-abd5-7c8b260b2526.jsonl"
     },
     {
       "attempt_id": "P08-prefix-link-R1-A1",
@@ -3381,7 +3393,10 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T00-14-40-01a1009d-7258-73f1-8cac-7d66fd279a92.jsonl"
     },
     {
       "attempt_id": "P08-chunk-word-R1-A2",
@@ -3418,7 +3433,10 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T00-16-08-01a1009e-c7dd-7a12-9151-24e7bf243c36.jsonl"
     },
     {
       "attempt_id": "P08-chunk-word-R1-A3",
@@ -3807,18 +3825,329 @@
       "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "registered_at": "2026-10-03T08:40:42.433802+00:00",
-      "outcome": "registered",
+      "outcome": "published-pending-independent-verification",
+      "verified_success": true,
+      "native_metrics_pending": false,
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "agent": "/root/phase4_p09_short_a1",
+      "tester_owned_process": 61512,
+      "message_id": "IARC-M-dca4de9e-7865-45a6-b864-204d15199b77",
+      "profile_compliant": true,
+      "process_closed": true,
+      "completed_at": "2026-10-03T08:54:18.824245+00:00",
+      "agent_reported_errors": [
+        "stale want choice; no mutation",
+        "Show whitespace text not a supplied link; no mutation"
+      ],
+      "agent_reported_link_activations": 23,
+      "agent_reported_timing": {
+        "publication_elapsed_seconds": 166,
+        "receipt_elapsed_seconds": 172,
+        "scope": "six-minute client countdown; total incl home fetch/agent/tool/local reads"
+      },
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T08:54:18.851Z",
+        "checked_at": "2026-10-03T08:54:19.349Z",
+        "http_status": 200,
+        "actual_body": "I’m tired, but I still want to finish this.",
+        "exact": true,
+        "body_sha256": "c10aae130a08e5c03c2fb1f2286a7ac9e608acc67f0a3df884c625e8332b6497"
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-50-22-01a100f5-0ea8-7e13-8a83-68a1d72a2cda.jsonl",
+      "spent_requests": 23,
+      "native_metrics": {
+        "run_id": "66a8ff9799594b1253f4d5c72a2f65bd27240dff06b7cdf401e79304c5407701",
+        "requests": 23,
+        "response_bytes_uncompressed": 1625862,
+        "links_presented": 3431,
+        "server_processing_ms": 722,
+        "http_errors": 0,
+        "first_request_at": 1791017452561,
+        "last_request_at": 1791017611982,
+        "published_at": 1791017606340,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 1
+      }
+    },
+    {
+      "attempt_id": "P05-predictive-word-R1-A2",
+      "phrase_id": "P05",
+      "method_id": "predictive-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T08:50:46.503217+00:00",
+      "outcome": "published-pending-independent-verification",
+      "verified_success": true,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p05_predictive_a2",
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-50-57-01a100f5-95d1-7c52-9689-ebf6aec36892.jsonl",
+      "message_id": "IARC-M-c12aca51-0df3-4526-ad72-d6256b5aab87",
+      "profile_compliant": true,
+      "process_closed": true,
+      "tester_owned_process": 59391,
+      "completed_at": "2026-10-03T08:56:36.027619+00:00",
+      "agent_reported_errors": [
+        "ambiguous s; no mutation",
+        "Show whitespace text not supplied link; no mutation"
+      ],
+      "agent_reported_link_activations": 37,
+      "agent_reported_timing": {
+        "receipt_elapsed_seconds": 259,
+        "scope": "six-minute client countdown incl home fetch/agent/tools/local read; count claimed by tester not native total"
+      },
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T08:56:36.053Z",
+        "checked_at": "2026-10-03T08:56:36.557Z",
+        "http_status": 200,
+        "actual_body": "That’s not what I meant; try again.",
+        "exact": true,
+        "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
+      },
+      "spent_requests": 38,
+      "native_metrics": {
+        "run_id": "5142069d38662227c0fbfe2a277a123d62b93e6d0ee1b042be0621b953e8713a",
+        "requests": 38,
+        "response_bytes_uncompressed": 1839875,
+        "links_presented": 3410,
+        "server_processing_ms": 36,
+        "http_errors": 0,
+        "first_request_at": 1791017484369,
+        "last_request_at": 1791017737535,
+        "published_at": 1791017732424,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 1
+      }
+    },
+    {
+      "attempt_id": "P05-span-R1-A2",
+      "phrase_id": "P05",
+      "method_id": "span",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T08:50:46.503217+00:00",
+      "outcome": "published-pending-independent-verification",
+      "verified_success": true,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p05_span_a2",
+      "tester_owned_process": 7692,
+      "message_id": "IARC-M-aa57c93d-2ce0-40eb-9436-5927ae2c53e4",
+      "profile_compliant": true,
+      "process_closed": true,
+      "completed_at": "2026-10-03T08:59:01.776578+00:00",
+      "agent_reported_errors": [],
+      "agent_reported_corrections": [
+        "Extra period after try removed by Undo; self detected"
+      ],
+      "agent_reported_link_activations": 26,
+      "agent_reported_local_reads": 0,
+      "agent_reported_timing": {
+        "receipt_elapsed_seconds": 188,
+        "scope": "six-minute client countdown including home fetch/agent/tools/local inspection"
+      },
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T08:59:01.800Z",
+        "checked_at": "2026-10-03T08:59:02.313Z",
+        "http_status": 200,
+        "actual_body": "That’s not what I meant; try again.",
+        "exact": true,
+        "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
+      },
+      "spent_requests": 26,
+      "native_metrics": {
+        "run_id": "5c4f52a14a448086713b38407f43fda490afa6206f038ef35464535d0b260fef",
+        "requests": 26,
+        "response_bytes_uncompressed": 1370414,
+        "links_presented": 3009,
+        "server_processing_ms": 460,
+        "http_errors": 0,
+        "first_request_at": 1791017698757,
+        "last_request_at": 1791017878723,
+        "published_at": 1791017872489,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 1
+      }
+    },
+    {
+      "attempt_id": "P03-token-link-R1-A5",
+      "phrase_id": "P03",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T08:57:49.964327+00:00",
+      "outcome": "published-pending-independent-verification",
+      "verified_success": true,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p03_token_a5",
+      "tester_owned_process": 86612,
+      "message_id": "IARC-M-a65c60b2-e32a-46d5-a2c7-902a1397f5f3",
+      "profile_compliant": true,
+      "process_closed": true,
+      "completed_at": "2026-10-03T09:04:32.383666+00:00",
+      "agent_reported_errors": [
+        "uninspected output-page selections, no mutations; checkpoint reported3, final reported2"
+      ],
+      "agent_reported_link_activations": 21,
+      "agent_reported_local_reads": 7,
+      "agent_reported_timing": {
+        "receipt_elapsed_seconds": 243,
+        "scope": "six-minute client countdown incl initialhome/agent/tools/localreads"
+      },
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T09:04:32.409Z",
+        "checked_at": "2026-10-03T09:04:32.934Z",
+        "http_status": 200,
+        "actual_body": "I don’t understand what happened.",
+        "exact": true,
+        "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
+      },
+      "spent_requests": 20,
+      "native_metrics": {
+        "run_id": "2fe86cf3ae8dd5191c3b4ac017a34e91195f75afe47436e0edc901701372158e",
+        "requests": 20,
+        "response_bytes_uncompressed": 1185103,
+        "links_presented": 3400,
+        "server_processing_ms": 1296,
+        "http_errors": 0,
+        "first_request_at": 1791017931495,
+        "last_request_at": 1791018151061,
+        "published_at": 1791018144741,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 1
+      }
+    },
+    {
+      "attempt_id": "P03-frame-R1-A4",
+      "phrase_id": "P03",
+      "method_id": "frame",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T08:57:49.964381+00:00",
+      "outcome": "blocked-approval-at-exact-review",
+      "verified_success": false,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p03_frame_a4",
+      "tester_owned_process": 71389,
+      "final_draft": "I don’t understand what happened.",
+      "message_id": null,
+      "process_closed": true,
+      "completed_at": "2026-10-03T09:04:32.383666+00:00",
+      "failure_reason": "Automatic review rejected exact-publication action as irreversible public post with insufficient visible authorization despite original human corpus/destination permission reads. No retry or bypass; terminal closed.",
+      "failure_category": "orchestration-approval",
+      "spent_requests": 20,
+      "native_metrics": {
+        "run_id": "d9c6d13fdef494fd4357fe5cdefdd2a36c2d3d06ff838b32b5fb5b1abb52e955",
+        "requests": 20,
+        "response_bytes_uncompressed": 1427930,
+        "links_presented": 2376,
+        "server_processing_ms": 0,
+        "http_errors": 0,
+        "first_request_at": 1791017984174,
+        "last_request_at": 1791018113998,
+        "published_at": null,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 0
+      }
+    },
+    {
+      "attempt_id": "P04-chunk-word-R1-A2",
+      "phrase_id": "P04",
+      "method_id": "chunk-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T09:05:09.039059+00:00",
+      "outcome": "in-progress",
       "verified_success": false,
       "native_metrics_pending": true,
+      "agent": "/root/phase4_p04_chunk_a2",
+      "tester_owned_process": 94271
+    },
+    {
+      "attempt_id": "P05-prefix-link-R1-A2",
+      "phrase_id": "P05",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
       "deadline_seconds": 360,
-      "output_byte_limit": 12000
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T09:05:09.039059+00:00",
+      "outcome": "registered",
+      "verified_success": false,
+      "native_metrics_pending": true
+    },
+    {
+      "attempt_id": "P03-frame-R1-A5",
+      "phrase_id": "P03",
+      "method_id": "frame",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T09:05:54.639474+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "authorization": "Owner directly reaffirmed i authorize... everything after exact Frame publication review rejection; fresh attempt, no replay of rejected capability.",
+      "agent": "/root/phase4_p03_frame_a5"
     }
   ],
-  "verified_successes": 42,
+  "verified_successes": 46,
   "required_successes": 70,
   "heartbeat_id": null,
   "status": "active",
-  "updated_at": "2026-10-03T08:45:35.605Z",
+  "updated_at": "2026-10-03T09:04:32.935Z",
   "next_work": "Phase4: fresh bounded GPT-6 Luna validation on foundation1.5.0/registry2.0.4/client2.5/contract1.3, then remaining Phase1 exact slots to70; preserve all41certificates and release cohorts.",
   "deployed_release": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
   "operational_blocker": {
@@ -4181,5 +4510,10 @@
     "reason": "5-minute cutoff prevented exact Predictive draft from review; excessive local output read commands seen across methods",
     "tests": "link-browser and evidence-audit passed",
     "retained_old_cohorts": true
+  },
+  "owner_authorization_reaffirmed": {
+    "at": "2026-10-03T09:05:54.639474+00:00",
+    "text": "i authorize... everything",
+    "scope": "remaining assigned exact corpus publications through70, including reported Frame publication rejection; no external-chat messages or unrelated actions"
   }
 }

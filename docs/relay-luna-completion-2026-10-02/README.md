@@ -1,3 +1,7 @@
+# Latest checkpoint — 46/70, client2.6 trials continuing
+
+Short Word P09, Predictive P05, Span P05 and Token P03 now have independently verified exact public receipts on the current release/client2.6 cohort. Their associated native counts are23,38,26and20 respectively; historical trials remain separate. Span caught and undid its own extra period. These are completion/path observations on different targets, not a winner ranking. Frame P03 reached an exact review but automatic approval blocked its publication; preserve its20requests and no-publication outcome. The owner explicitly renewed all authorization after that reported rejection (`i authorize... everything`); a fresh Frame attempt is permitted, with no replay of the rejected capability. Chunk P04 is also active. Stop at70; no second or third repetition.
+
 # Latest Phase 4 checkpoint — 42/70
 
 Chunk P08 has a fresh exact publication independently verified on release9b5d8d51, client2.5 / contract1.3: 19 associated native requests, ~4m24s through the tester receipt, 16 local output reads; one later independent verification event is excluded. This is one successful repaired run, not a comparative winner. Predictive P05 reached its exact draft but the five-minute cutoff blocked review. Its30associated requests remain a retained failure.
