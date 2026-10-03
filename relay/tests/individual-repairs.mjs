@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
 import {fixture,parse} from '../tools/local-evaluation.mjs';
 import {frameWordAddition} from '../frame_suggestions.js';
+import {render} from '../link-browser/browser.mjs';
+import {pages} from '../link-browser/presentation.mjs';
 assert.equal(frameWordAddition('Keep  Hel','Hello','complete'),'Keep  Hello');
 assert.equal(frameWordAddition('NASA','world','next','NASA'),'NASA world');
 assert.equal(frameWordAddition('odd','unrelated','complete'),null);
@@ -17,6 +19,10 @@ try{
   const expanded=p.text.replaceAll('href="../',`href="${prefix}`);
   assert.ok(JSON.stringify(parse(expanded,p.url).links.map(l=>l.url))===JSON.stringify(p.links.map(l=>l.url)),'compact routes preserve every resolved URL');
   assert.ok(p.text.includes('START'));
+  const extracted=render(p.text,p.url,1);
+  const output=pages(extracted.view);
+  assert.ok(output[0].sections.some(s=>s.heading==='Top Words'&&s.links.length),'contextual choices must be discoverable on the first bounded output page');
+  assert.ok(extracted.links.findIndex(l=>l.aria?.startsWith('Add top word '))<extracted.links.findIndex(l=>l.aria?.startsWith('Set START to ')),'contextual choices precede filter grids in document reading order');
   const nextWords=p.links.filter(l=>l['aria-label']?.startsWith('Add top word ')).map(l=>l['aria-label'].slice(13));
   const candidates=p.links.filter(l=>l['aria-label']?.startsWith('Add ')&&!l['aria-label'].startsWith('Add top word ')).map(l=>l['aria-label'].slice(4));
   assert.ok(!nextWords.some(w=>candidates.includes(w)),'no duplicate contextual/candidate choice');
@@ -46,6 +52,7 @@ try{
  const next=undo.links.find(l=>l.text.startsWith('Add next word: '));assert.ok(next);
  const added=await get(next.url);assert.ok(added.draft.startsWith(original+' '),'next word preserves existing typed text with separator');
  assert.equal((await f.request('/methods/2.0.3.json')).body.registry_version,'2.0.3');
+ assert.equal((await f.request('/methods/2.0.4.json')).body.registry_version,'2.0.4','previous release registry remains frozen');
  assert.equal((await f.request('/poll')).body.returned_count,0,'repair tests never publish');
  console.log('Frame supplied completions, separate next words, literal-lane return, immutable replay and undo passed.');
 }finally{await f.close();}

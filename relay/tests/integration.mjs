@@ -502,10 +502,10 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "2.0.4");
+  assert.equal(registry.registry_version, "2.0.5");
   assert.equal(registry.methods.length, 9);
   assert.equal(registry.methods.find((method) => method.id === "frame")?.href, "/predictive-keyboard/html/frame-keyboard/");
-  assert.deepEqual((await getJson(`${base}/methods/2.0.4.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/2.0.5.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.9.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.9.0.json"),"utf8")), "prior registry stays immutable");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
@@ -522,7 +522,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "2.0.4");
+  assert.equal(service.bootstrap_revision, "2.0.5");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -1315,7 +1315,7 @@ try {
   assert.equal(chunkEntry3Response.status, 200, chunkEntry3);
   assert.match(chunkEntry3, /<summary>Instructions<\/summary>/u, "Keyboard 3 groups usage guidance in its own disclosure");
   assert.match(chunkEntry3, /INSIDE pairs must occur after the first two letters\. They may overlap the ending or be the complete final pair/u, "Instructions explain the one-letter INSIDE/ending overlap");
-  assert.ok(chunkEntry3.indexOf("<h2>Numbers, symbols, and space</h2>") < chunkEntry3.indexOf('<section id="top-words">'), "the character keyboard and its controls appear above Top Words");
+  assert.match(chunkEntry3, /\.board-right>\.literal-controls\{order:0\}.*\.board-right>#top-words\{order:2\}/u, "visual order keeps the character keyboard above Top Words while document order exposes suggestions first");
   assert.match(chunkEntry3, /UTF-8 bytes used · 1200 max/u, "the live draft byte count and limit remain available inside Instructions");
   assert.doesNotMatch(chunkEntry3.match(/<section id="top-words">([\s\S]*?)<\/section>/u)?.[1] || "", /The first 12 model suggestions/u, "prediction guidance is removed from below the heading");
   assert.doesNotMatch(chunkEntry3.match(/<section id="draft">([\s\S]*?)<\/section>/u)?.[1] || "", /UTF-8 bytes/u, "the draft byte counter is moved into Instructions");

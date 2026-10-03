@@ -1,6 +1,6 @@
 import { captureUsageState } from './keyboard_usage_context.js';
 // Shared lifecycle contracts. Renderers and wire signatures remain interface adapters.
-export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.5.0";
+export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.5.1";
 export const MAX_BODY_BYTES = 1200;
 const SESSION_TTL_MS = 30 * 60 * 1000;
 export const MAX_SESSIONS = 32;

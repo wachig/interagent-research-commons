@@ -31,3 +31,11 @@ New supplied-link tests verify compact destination equivalence, no duplicate con
 ## Production receipt
 
 Source `0cb9d0f` was committed, pushed and deployed as `653d6941-c2ae-4796-b41c-7e9e3ed97331`. Production storage health, current registry 2.0.4/foundation1.5.0, preserved historical registry2.0.3 and the 4,062-byte bootstrap passed. A 17-request operator check followed supplied Chunk START/search/paging and Frame completion/literal-return/undo links. All drafts remained unpublished; zero new certificates. Required regression components all passed; historical evidence files remain unchanged.
+
+## Phase 4 follow-up: reading order
+
+Six fresh Luna attempts on release653d6941 were registered. Chunk and Span exceeded their five-minute deadlines; Frame omitted `send it` and its incorrect review was blocked. Predictive and Prefix were blocked by approval review on attempted links, before publication. Token also failed to complete before the deadline; closure was separately rejected by approval review. The independent verified count stays41/70. These failures and associated native costs remain in the ledger; no failed trial is converted to success.
+
+Chunk’s actual document order placed hundreds of START/INSIDE/END filter links before its contextual suggestions and controls. The supplied-link client paginates that document without reordering, so ordinary actions required additional local output reads. Foundation1.5.1 / registry2.0.5 put controls and contextual words earlier in document order. CSS retains the desktop columns and visual numbers-before-suggestions layout. Narrow displays expose the working tools before filters. No choice or route is removed and no target phrase is embedded. Client2.5 and tester contract1.3 remain unchanged.
+
+Contract coverage now checks contextual choices on the first bounded output page for initial, `co` and `con` views, preserves resolved compact action URLs, and freezes historical registry2.0.4. Local client/evidence/interaction/individual repair suites, publication/reply integration across all seven keyboards and both GET methods, and Frame regression checks passed. Deployment is pending; release653d6941 remains live until the production receipt is recorded.

@@ -37,7 +37,7 @@ const click = (page, labelOrTest) => {
 };
 try {
   const methods = (await service.request('/methods.json')).body;
-  assert.equal(methods.registry_version, '2.0.4');
+  assert.equal(methods.registry_version, '2.0.5');
   const entry = methods.methods.find((method) => method.id === 'frame');
   assert.ok(entry);
   assert.match(entry.entry_effect, /read-only.*selecting a frame creates/u);
