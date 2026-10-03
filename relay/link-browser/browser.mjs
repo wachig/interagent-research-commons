@@ -47,7 +47,10 @@ async function navigate(state,destination,fetcher=fetch) {
       response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
     }catch(cause){
       const error=new Error('Network fetch failed; no HTTP response received. Last supplied page preserved. No automatic action retry.',{cause});
-      error.failureClass='network-no-response';throw error;
+      error.failureClass='network-no-response';
+      const code=cause?.cause?.code||cause?.code;
+      if(typeof code==='string'&&/^(E[A-Z]+|UND_ERR_[A-Z_]+)$/.test(code))error.networkCode=code;
+      throw error;
     }
     if([301,302,303,307,308].includes(response.status)){
       const next=new URL(response.headers.get('location'),url);if(next.origin!==new URL(state.home).origin)throw Error('External redirect refused');url=next.href;continue;
@@ -84,7 +87,7 @@ export async function follow(id,handle,{fetcher=fetch}={}) {
   else throw Error('Use a supplied handle or an exact displayed link name with optional section.');
   if(!candidates.length)throw Error('Stale or unknown link handle/name; read the current page.');
   // Duplicate anchors to the same URL are equivalent; distinct effects must be disambiguated.
-  if(new Set(candidates.map(l=>l.href)).size>1)throw Error('Ambiguous link name; specify its displayed section or unique aria label.');
+  if(new Set(candidates.map(l=>l.href)).size>1)throw Error('Ambiguous link name; specify its displayed section or unique aria label. Supplied choices: '+JSON.stringify(candidates.slice(0,8).map(l=>({name:l.aria||l.label,section:l.section}))));
   const link=candidates[0];
   const next=new URL(link.href),current=new URL(state.url);
   if(next.origin!==new URL(state.home).origin)throw Error('Only supplied same-origin links are permitted');

@@ -502,10 +502,10 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "2.0.2");
+  assert.equal(registry.registry_version, "2.0.3");
   assert.equal(registry.methods.length, 9);
   assert.equal(registry.methods.find((method) => method.id === "frame")?.href, "/predictive-keyboard/html/frame-keyboard/");
-  assert.deepEqual((await getJson(`${base}/methods/2.0.2.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/2.0.3.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.9.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.9.0.json"),"utf8")), "prior registry stays immutable");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
@@ -522,7 +522,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "2.0.2");
+  assert.equal(service.bootstrap_revision, "2.0.3");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -1471,12 +1471,12 @@ try {
   const rWordsPage = await (await fetch(rWordsUrl)).text();
   assert.match(rWordsPage, /Add recursion/iu, "reviewed Commons vocabulary repairs a known useful-prefix gap");
   assert.match(rWordsPage, /Context predictions first, reviewed Commons terms next, then ordinary spellings before proper names and acronyms/u);
-  const recursionLink = rWordsPage.match(/<a rel="nofollow" href="([^"]+)">Add Recursion<\/a>/iu);
+  const recursionLink = rWordsPage.match(/<a rel="nofollow" href="([^"]+)"[^>]*>Add Recursion<\/a>/iu);
   assert.ok(recursionLink, "curated Commons words remain visible near the start of a matching prefix list");
   assert.ok(!/[?&](?:prefix|offset)=/u.test(recursionLink[1]), "choosing a prefix result clears its prefix and page offset");
   const recursionResult = await (await fetch(new URL(recursionLink[1], quickBase))).text();
   assert.match(recursionResult, /<pre class="draft"[^>]*>Recursion<\/pre>/u, "link-only prefix selection applies automatic sentence capitalization");
-  const linkOnlyCandidate = integratedKeyboard.match(/<div class="choices" aria-label="Link-only predictions"><a rel="nofollow" href="([^"]+)">([^<]+)<\/a>/u);
+  const linkOnlyCandidate = integratedKeyboard.match(/<div class="choices" aria-label="Link-only predictions"><a rel="nofollow" href="([^"]+)"[^>]*>([^<]+)<\/a>/u);
   assert.ok(linkOnlyCandidate, "link-only clients receive a first candidate link");
   assert.doesNotMatch(integratedKeyboard, /Keep the model's exact casing/u, "link-only choices do not expose a casing override");
   const linkOnlyResult = await (await fetch(new URL(linkOnlyCandidate[1], quickBase))).text();

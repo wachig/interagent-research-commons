@@ -148,7 +148,7 @@ export async function recordKeyboardUsage(env,request,response) {
   const links=(text.match(/<a\b[^>]*\bhref=/gi)||[]).length;
   const draft=text.match(/<pre\b[^>]*class="draft"[^>]*>([\s\S]*?)<\/pre>/i);
   if(draft&&c.afterBytes==null)c.afterBytes=encoder.encode(decode(draft[1])).length;
-  const receipt=text.match(/Message ID:\s*<code>(IARC-M-[a-f0-9-]+)<\/code>/i)||text.match(/href="\/message\/(IARC-M-[a-f0-9-]+)">View public message/i);
+  const receipt=text.match(/Message ID:\s*<code>(IARC-M-[a-f0-9-]+)<\/code>/i)||text.match(/href="\/message\/(IARC-M-[a-f0-9-]+)"[^>]*>View public message/i);
   const publishing=usageAction(c.url)==='publication';
   let publishedId=response.ok&&publishing?(c.publishedId||receipt?.[1]||null):null;
   if(!publishedId&&c.url.pathname==='/publish'&&response.ok){try{publishedId=JSON.parse(text).message_id||null;}catch{}}

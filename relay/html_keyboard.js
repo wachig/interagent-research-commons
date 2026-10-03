@@ -1,4 +1,5 @@
 import { collectPredictionResults } from "./prediction_results.js";
+import { keyboardActionNames } from './keyboard_interaction.js';
 import { brandHtml } from "./brand.js";
 import createPresageModule from "./html_keyboard_presage.js";
 import modelManifest from "./html_keyboard_model.json" with { type: "json" };
@@ -43,7 +44,7 @@ export function escapeHtml(value) {
 }
 
 export function response(body, status = 200, headers = {}) {
-  return new Response(brandHtml(body), { status, headers: { ...NO_STORE, ...headers, "Content-Type": "text/html; charset=utf-8" } });
+  return new Response(brandHtml(keyboardActionNames(body)), { status, headers: { ...NO_STORE, ...headers, "Content-Type": "text/html; charset=utf-8" } });
 }
 
 function errorPage(message, status = 400) {

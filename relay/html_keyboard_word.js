@@ -1,3 +1,5 @@
+import { renderWordCaseRepair } from './word_case_view.js';
+import { ordinaryAutomaticCase, repairWordCase, repairWordComma } from './keyboard_interaction.js';
 import { commonPunctuationLinks } from './common_punctuation.js';
 import {renderSpanKeyboard,spanPredictions} from "./span_keyboard.js";
 import {consumeResolvedPick,completedPick} from "./span_contract.js";
@@ -335,6 +337,7 @@ async function renderChunkKeyboard(request, env, state, draft, url, params) {
     search = `<p class="summary" aria-label="Current constraints">START <strong>${escapeHtml(start)}</strong> | INSIDE <strong>${inside.map(escapeHtml).join(", ") || "—"}</strong> | END <strong>${escapeHtml(end) || "—"}</strong></p><section class="candidate-panel"><h2>Candidates <span>(${matchingCount.toLocaleString("en-US")})</span></h2><p>${escapeHtml(resultSummary)}</p><nav class="paging" aria-label="Candidate words">${candidatePages}</nav><div class="chunks candidates" aria-label="Matching candidate words">${candidateLinks.join("") || "<p>No matching words. Remove a constraint to broaden the search.</p>"}</div><nav class="paging" aria-label="Candidate words">${candidatePages}</nav></section>${workspace}`;
   }
   const controls = [];
+  if (draft) controls.push(`<a href="${PREFIX}/word-case/${word(state.state_id)}?view=chunks">Repair words and punctuation</a>`);
   if (state.parent_state_id) controls.push(`<a href="${escapeHtml(stateHref(state.parent_state_id, "letters", false, "", 0, "chunks"))}">Undo last addition</a>`);
   if (draft) controls.push(`<a rel="nofollow" href="${escapeHtml(await actionHref({ ...state, env }, "clear", "-", "letters", "", 0, "chunks"))}">Clear draft</a>`);
   if (draft) controls.push(`<a rel="nofollow" href="${PREFIX}/review/${word(state.state_id)}?view=chunks">Review message</a>`);
@@ -357,7 +360,15 @@ async function makeChild(env, request, parent, action, argument, childId, issued
     added = keyArgument(argument);
     if (added === undefined || argument.startsWith("gram:") || argument === "backspace") throw new Error("Choose a supplied exact character.");
   } else if (action === "key") {
-    if (argument === "backspace") {
+    if (argument.startsWith('wordcase:')) {
+      const match=argument.match(/^wordcase:(0|[1-9][0-9]*):(lower|upper|capitalize)$/u);
+      if(!match)throw Error('Choose a supplied word-case repair.');
+      removed=parentDraft;added=repairWordCase(parentDraft,Number(match[1]),match[2]);
+    } else if (argument.startsWith('wordcomma:')) {
+      const match=argument.match(/^wordcomma:(0|[1-9][0-9]*):(insert|remove)$/u);
+      if(!match)throw Error('Choose a supplied comma repair.');
+      removed=parentDraft;added=repairWordComma(parentDraft,Number(match[1]),match[2]);
+    } else if (argument === "backspace") {
       removed = [...parentDraft].at(-1) || "";
     } else {
       const selected = keyArgument(argument);
@@ -492,7 +503,7 @@ function autoCase(text, precedingText) {
   let sentenceStart = !/[\p{L}\p{N}]/u.test(precedingText) || /[.!?][\s\p{Pe}\p{Pf}"'’”]*$/u.test(precedingText);
   return text.replace(/[\p{L}\p{N}][\p{L}\p{M}\p{N}'’\-]*/gu, (token) => {
     const lower = token.toLocaleLowerCase("en-US");
-    let output = lower === "i" ? "I" : CANONICAL_CASE.get(lower) || token;
+    let output = lower === "i" ? "I" : CANONICAL_CASE.get(lower) || ordinaryAutomaticCase(token);
     if (sentenceStart && !CANONICAL_CASE.has(lower) && lower !== "i") output = output.charAt(0).toLocaleUpperCase("en-US") + output.slice(1);
     sentenceStart = false;
     return output;
@@ -569,7 +580,7 @@ async function renderKeyboard(request, env, state, url) {
   const reply = state.reply_to ? `<p class="notice">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted, "", 0, view) : "";
   const clearHref = draft ? await makeLink("clear", "-") : "";
-  const controls = `${undoHref ? `<a ${view === "span" ? 'data-relay-action="undo"' : ""} href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a ${view === "span" ? 'data-relay-action="clear"' : ""} rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a ${view === "span" ? 'data-relay-action="review"' : ""} rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
+  const controls = `${draft ? `<a href="${PREFIX}/word-case/${word(state.state_id)}?view=${view}">Repair words and punctuation</a>` : ""}${undoHref ? `<a ${view === "span" ? 'data-relay-action="undo"' : ""} href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a ${view === "span" ? 'data-relay-action="clear"' : ""} rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a ${view === "span" ? 'data-relay-action="review"' : ""} rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
   if(view === "span") return renderSpanKeyboard({env,request,state,draft,layout,shifted,prefix,predictions,predictionUnavailable,keyboard:layout === "symbols" ? symbols : letters,typography,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,effect:modeParams.get("span_effect") || "next"});
   if(view === "short") return renderShortWordKeyboard({env,request,state,draft,layout,shifted,offset,predictions,keyboard:layout === "symbols" ? symbols : letters,typography,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,dictionaryWords});
   const moreSection = moreWords.length
@@ -769,6 +780,13 @@ export async function handleWordKeyboard(request, env, url, createPublishDraft, 
       if (await signCommonWordRoute(env, "keyboard-start", sessionId, replyTo, issuedAt) !== cap) throw new Error("This start link is invalid.");
       const state = await createSession(env, sessionId, replyTo || null);
       return await renderKeyboard(request, env, state, new URL(`${PREFIX}/state/${word(state.state_id)}`, url.origin));
+    }
+    const repairMatch=path.match(new RegExp('^/predictive-keyboard/html/word-links/word-case/([^/]+)$'));
+    if(repairMatch) {
+      const options=queryParams(url,new Set(['view','page']));const view=options.get('view')||'words';
+      if(!['words', 'prefix', 'chunks', 'short', 'span'].includes(view))throw Error('Choose a supplied keyboard view.');
+      const state=await findState(env,readWord(repairMatch[1]));
+      return renderWordCaseRepair({env,state,draft:await loadDraft(env,state),view,PREFIX,word,actionHref,page,escapeHtml,offset:Number(options.get('page')||0)});
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/word-links\/state\/([^/]+)$/u);
     if (stateMatch) {

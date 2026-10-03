@@ -1,3 +1,9 @@
+# Shared repair checkpoint — 41/70; Phase 2
+
+The reliability changes were committed, pushed and deployed as `9e80ef4c-1f73-499a-aa18-8a041dbe6ed3`. Phase 2 adds clearer accessible action names across seven keyboards, conservative automatic casing, and supplied-link earlier-word case/comma repairs on the five text keyboards. Existing certificates and their software cohorts remain frozen; no new scored Luna trials ran during repairs.
+
+Current repair source pins: foundation `1.4.0`, method registry `2.0.3`, local client `semantic-link-browser/2.5`, tester contract `1.3`. See [shared-repairs.md](shared-repairs.md) for scope, provenance, validation and the unresolved historical fetch failures. Private raw telemetry still expires after 30 days. Historical checkpoints below remain historical.
+
 # Repair checkpoint — 41/70; reliability phase
 
 The owner approved a four-phase repair plan before further scored testing. All previous testers are closed. P08 Prefix expired without publication; P08 Chunk was blocked by approval review before composition. Both failures and their complete associated native counts are preserved. No new scored runs were dispatched during this repair phase.
