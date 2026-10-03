@@ -3664,10 +3664,10 @@
     "scope": "Remaining exact Phase1publications/liveRelay/Tokenblankstart"
   },
   "latest_health_check": {
-    "at": "2026-10-03T06:23:51.159Z",
+    "at": "2026-10-03T08:00:51.668Z",
     "storage_readable": true,
     "writes_enabled": true,
-    "release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4"
+    "release": "29206c55-9b15-49f3-9222-1f5384d3ef65"
   },
   "private_export_access_latest": {
     "status": "Recovered via existing authenticated Chrome profile, no credentials copied",
@@ -3700,6 +3700,9 @@
     "database_schema_changed": false,
     "raw_retention_days": 30,
     "historical_network_failure_root_cause": "unconfirmed",
-    "deployment": "pending"
+    "deployment": "29206c55-9b15-49f3-9222-1f5384d3ef65",
+    "source_commit": "5ebc5cc",
+    "validation": "Full npm run test:relay passed; reproducible casing inventory verified; live health and registries passed; live supplied case/comma/undo check passed without publication.",
+    "live_bootstrap_bytes": 4062
   }
 }

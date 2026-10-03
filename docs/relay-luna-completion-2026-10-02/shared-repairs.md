@@ -12,7 +12,7 @@ Those same five text keyboards now have **Repair words and punctuation**, includ
 
 Adding accessible attributes exposed a brittle native Token receipt extractor. It now accepts attributes after the receipt href, preserving public-message association and complete native receipt accounting. Tests verify all seven methods. Database schema, retention and logging frequency are unchanged; private raw telemetry expires after 30 days.
 
-Regression tests previously rewrote two historical evaluation artifacts during ordinary test runs. They now require explicit `--write-evidence`; historical source artifacts were restored. The Phase 2 deployment also restores their published copies. Old benchmark records, certificates and release cohorts remain frozen.
+Regression tests previously rewrote two historical evaluation artifacts during ordinary test runs. They now require explicit `--write-evidence`; historical source artifacts were restored. The Phase 2 deployment serves the restored historical source artifacts; Wrangler reported no asset upload needed. Old benchmark records, certificates and release cohorts remain frozen.
 
 Method registry 2.0.3 declares foundation 1.4.0. The explicit historical 2.0.2 route remains frozen. The bounded service bootstrap remains within its 4,096-byte budget. Future local client pin is semantic-link-browser/2.5; generic tester contract stays 1.3. No client recorder, script execution, field entry, path coaching or automatic action retry was introduced.
 
@@ -23,3 +23,7 @@ One hundred local warm model-backed requests passed without an HTTP error. Produ
 ## Validation
 
 `npm run test:relay` exercises the browser boundary, seven-method native accounting and 30-day cleanup, all displayed typography, shared publication/reply boundaries, Short Word/Span/Frame behavior, local optimization contracts, integration, recovery, exact text, lexicon and egress. New supplied-link fixtures exercise all five case/comma panels, preserving full suffixes, undo/replay/review, tampered-signature rejection and no publication. The casing inventory is independently reproducible. Fresh Luna validation is still pending; no new scored publication occurred during this repair phase. The saved total remains 41/70.
+
+## Deployment receipt
+
+Source commit `5ebc5cc` was pushed; production release `29206c55-9b15-49f3-9222-1f5384d3ef65` was deployed. Read-only production health passed at 2026-10-03T08:00:51.668Z; current registry 2.0.3/foundation 1.4.0 and historical registry 2.0.2/foundation 1.3.0 were confirmed. Live bootstrap: 4,062 bytes. A single unpublished Chunk draft followed actual supplied case/comma/undo links successfully; no review or publication occurred. Full local regression suite and reproducible case-inventory verification passed. Phase 3 keyboard-specific repairs and subsequent fresh Luna validation remain separate work.
