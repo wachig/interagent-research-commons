@@ -1,3 +1,19 @@
+# Current checkpoint —25/70
+
+P07 Predictive and P04 Short Word are newly independently certified. Both actual tester execution logs confirm GPT-6 Luna at medium effort. Their native totals through receipt are22 and20requests, respectively, excluding independent verification. P08 Chunk and Frame have been dispatched fresh; no phase2/3.
+
+Latest measured first-native-request to publication: Predictive P07 151.361s with441ms summed server processing; Short Word P04 192.797s with227ms server processing. Network, tool execution and agent decision costs remain combined in the remainder. No recorded HTTP errors. Old status sections below are historical.
+
+# Latest manual resumption —23/70
+
+Owner directly resumed testing. P07 Short Word, Span and Prefix are independently certified. P07 Chunk and Frame timed out after composition errors; Token was blocked mid-composition by automatic approval review. All failed work is retained. Fresh Predictive P07 and Short Word P04 retry are running under contract1.1. No Phase2/3 or hourly automation. Older status sections below are historical.
+
+REPL inspection confirms commands are awaited sequentially; a tester report of out-of-order batched actions remains unproven. No speculative client patch was made. Compiled native metrics exclude independent verification using frozen cutoffs; home discovery is separate. Raw telemetry stays private for30days. Documentation push remains pending approval.
+
+# Goal blocked after three consecutive approval audits
+
+Phase1 remains incomplete at20/70. Automatic publication review continues to reject assigned exact posts; phasewide directhuman confirmation is pending. The same blocker was revalidated for three consecutive goal turns; no live tester processes or in-progress attempts remain. Goal is being marked blocked to stop automatic continuation costs. All certificates, failed attempts, spent requests, pinned releases and current tester contract are preserved locally. Resume from the saved20, with fresh Luna contexts carrying recognized authorization; do not rerun certified cells. No hourly automation.
+
 # Current operational blocker —20/70, no live tester processes
 
 Fresh P06 Prefix and Span both reached exact reviews, then automatic approval rejected both public-publish actions despite original human authorization inspected before startup. Neither posted; both processes closed. Native costs are complete: Prefix26requests/1,453,741uncompressed bytes; Span13requests/661,510bytes. These stop at review and cannot be compared as completed-publication costs. No server HTTPerrors were recorded in either run.
