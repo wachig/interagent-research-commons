@@ -22,3 +22,9 @@ The process ceiling remains nine minutes, as in client 2.9; it is a maximum, nev
 Passed: supplied-link browser fixtures (inspected page recovery, Unicode middle-change feedback, one timeout across redirects, no action retries, bounded output, stale/uninspected links, no field input); shared spacing fixtures on all five adapters (middle insertion/removal, exact suffix preservation, signed replay, tampering rejection, undo and reviewed body); all seven keyboards' displayed punctuation; shared foundation/publication boundaries; Relay integration including all seven reply relationships and the 4,096-byte bootstrap ceiling.
 
 Production deployment and an excluded unpublished canary are recorded below after verification. No successful comparative trials are claimed for this release.
+
+## Deployment and live verification
+
+Source `e11123e` was committed and pushed. Production deployed as `de6d6cae-f7f9-4c38-a5b9-487617d79aad`, with no asset upload needed and the same `iarc-relay-pilot-global-v1` storage identity. Live health at 2026-10-03T18:46:13Z confirmed that version, readable storage and writable service state.
+
+One excluded unpublished Chunk canary followed supplied exact-character links to `ab`, opened the supplied spacing repair, inserted at boundary1 to obtain `a b`, and followed Undo to restore `ab`. Exact bodies and literal inserted-text feedback were checked; final response was HTTP200 with telemetry recorded and client2.10. Its final navigation reported167ms (162ms through response headers,2ms body consumption). That is one operator canary, not agent task speed or a comparative measurement. No review/publication or new scored trial occurred. The existing 70 certificates remain untouched.
