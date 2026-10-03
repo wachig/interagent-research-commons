@@ -525,7 +525,7 @@
         "measurement_cutoff_at": "2026-10-02T18:27:45.777Z",
         "checked_at": "2026-10-02T18:27:46.499Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       }
@@ -534,14 +534,14 @@
   "verified_successes": 9,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "active",
-  "updated_at": "2026-10-02T20:02:46.295675+00:00",
+  "status": "paused-by-owner-for-database-audit",
+  "updated_at": "2026-10-03T00:36:11.309Z",
   "next_work": [
     "Do not dispatch testers while owner-paused. Finish database-usage audit and verification.",
     "Phase1 remains9/70 with61unused success slots; preserve all prior attempts and certificates.",
     "After owner resumes, pin the repaired production release and client, verify live storage headroom, and dispatch fresh Luna testers for R1 only."
   ],
-  "deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
+  "deployed_release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
     "observed_at": "2026-10-02T19:51:25Z",
@@ -553,12 +553,13 @@
     "note": "Application choice allocations do not measure provider rows written. Index/deletion/alarm writes also consume quota. No paid upgrade or new object authorized.",
     "read_error": "Relay schema read failed: Exceeded allowed rows read in Durable Objects free tier.",
     "public_bootstrap_status": 200,
-    "public_stored_message_status": 500,
-    "private_export_status": 500,
-    "read_recovery_confirmed": false,
-    "recovery_deployed_commit": "f38cbd8",
-    "recovery_deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
-    "index_live_installation_confirmed": false
+    "public_stored_message_status": 200,
+    "private_export_status": 200,
+    "read_recovery_confirmed": true,
+    "recovery_deployed_commit": "f38b7cd",
+    "recovery_deployed_release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
+    "index_live_installation_confirmed": true,
+    "resolution": "Quota recovered and telemetry2.0 cost/reserve repair deployed and verified with an unpublished operator canary. Evaluation remains explicitly owner-paused; no tester dispatch."
   },
   "active_phase": 1,
   "heartbeat_status": "deleted-by-owner",
@@ -585,5 +586,21 @@
       "status": "owner-paused-no-process"
     }
   ],
-  "campaign_status": "paused-by-owner-for-database-audit"
+  "campaign_status": "paused-by-owner-for-database-audit",
+  "database_repair_verification": {
+    "checked_at": "2026-10-03T00:36:11.309Z",
+    "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9",
+    "operator_only": true,
+    "publishes": false,
+    "native_run": "397743fe8b5424a42ba11460c4c1cbc156611d7f5689106d443a961e064091d7",
+    "exact_draft": "You",
+    "record_exact": true,
+    "usage_version": "relay-keyboard-usage/2.0.0",
+    "new_issued_choices": 0,
+    "budget_possible_gap": false,
+    "instance_rows_read": 5338,
+    "instance_rows_written": 1866,
+    "cost_scope": "SQL cursors since object load, includes one-time migrations; not account billing totals",
+    "git_push": "blocked-pending-explicit-public-repository-permission"
+  }
 }
