@@ -1,3 +1,9 @@
+# Current deployment — 57/70; next trials resume
+
+Telemetry-only sourcecae5b60 is committed/pushed and deployed asd0519e27-329d-4216-9e57-278f21d0a930. Live health names that release and confirms bounded storage readability plus writable service state; private export confirms3,500daily observations,30-day retention, telemetry active, and unchanged cumulative2,692observations. A single excluded unpublished Short Word entry returnedHTTP200, telemetry recorded, executiondurable-object, proving the new capped allocation query works live. The independent SQL guard tests passed before deployment. No asset, keyboard behavior, registry/foundation version, object identity, or safety budget changed.
+
+New trials pin this release and usage2.0.1; earlier cohorts remain separate. Queued Frame P05 has its old registration pin retained and new release assigned before starting. Prefix P05 is a fresh registered slot. Continue to70 and stop. Earlier checkpoints below are historical.
+
 # Latest checkpoint — 57/70; old-release trials closed
 
 Fresh Prefix P04 and Token P04 both independently verified exact public receipts. Prefix includes the previously omitted final period; the older inexact publication remains a failure. Associated native counts through tester receipt are42and39 respectively, with complete exports and one later operator verification excluded each. Client elapsed times are297and367seconds, respectively; Token corrected its omitted be before publication. All testers are closed; Frame P05 remains registered and unstarted.

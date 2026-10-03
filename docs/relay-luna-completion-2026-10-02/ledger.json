@@ -5016,15 +5016,37 @@
       "model": "gpt-6-luna",
       "client": "semantic-link-browser/2.7",
       "tester_contract": "relay-luna-tester/1.6",
-      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:09:35.670826+00:00",
-      "outcome": "registered",
+      "outcome": "in-progress",
       "verified_success": false,
       "native_metrics_pending": true,
-      "dispatch_note": "Registered but not started: app agent thread limit reached at third tester dispatch. No site action."
+      "dispatch_note": "Registered but not started: app agent thread limit reached at third tester dispatch. No site action.",
+      "registered_release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "agent": "/root/phase4_p05_frame_a1"
+    },
+    {
+      "attempt_id": "P05-prefix-link-R1-A3",
+      "phrase_id": "P05",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.7",
+      "tester_contract": "relay-luna-tester/1.6",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T10:20:40.600648+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p05_prefix_a3"
     }
   ],
   "verified_successes": 57,
@@ -5414,5 +5436,15 @@
     "output_byte_limit": 12000,
     "tests": "link-browser/evidence audit passed",
     "reason": "Exact Prefix draft also hit six-minute cutoff before review. Preserve failed cost; seven-minute hard maximum without waiting. Contract1.6 clarifies recoverable local guards and generic efficiency objective, no method-specific paths."
-  }
+  },
+  "operator_canaries": [
+    {
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "scope": "One unpublished Short Word entry; not scored",
+      "status": 200,
+      "usage": "recorded",
+      "run_id": "d49745d53edbacf0743ff25e1d7c1cc673082ff54c7a22a1635966eb8cf5083a",
+      "checked_at": "2026-10-03T10:20:40.600706+00:00"
+    }
+  ]
 }
