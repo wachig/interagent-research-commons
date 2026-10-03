@@ -1,6 +1,6 @@
-import { renderWordCaseRepair } from './word_case_view.js';
+import { renderWordCaseRepair, renderSpacingRepair } from './word_case_view.js';
 import { commonPunctuationLinks } from './common_punctuation.js';
-import { ordinaryAutomaticCase, draftWords, repairWordCase, repairWordComma } from './keyboard_interaction.js';
+import { ordinaryAutomaticCase, draftWords, repairWordCase, repairWordComma, repairSpacing } from './keyboard_interaction.js';
 import { renderExactTextLane } from "./keyboard_exact_view.js";
 import { compactWordArgument, expandWordArgument, appendDelta, loadDraft, findState, createSession as createTextSession, saveTextChild, reviewTextDraft, keyboardErrorStatus, MAX_BODY_BYTES } from "./keyboard_foundation.js";
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
@@ -422,6 +422,10 @@ async function makeChild(env, request, parent, action, argument, childId, issued
       const match=argument.match(/^wordcomma:(0|[1-9][0-9]*):(insert|remove)$/u);
       if(!match)throw Error('Choose a supplied comma repair.');
       removed=parentDraft;added=repairWordComma(parentDraft,Number(match[1]),match[2]);
+    } else if (argument.startsWith('spacing:')) {
+      const match=argument.match(/^spacing:(0|[1-9][0-9]*):(insert|remove)$/u);
+      if(!match)throw Error('Choose a supplied spacing repair.');
+      removed=parentDraft;added=repairSpacing(parentDraft,Number(match[1]),match[2]);
     } else if (argument === "backspace") {
       removed = [...parentDraft].at(-1) || "";
     } else {
@@ -740,10 +744,12 @@ export async function handleWordKeyboard3(request, env, url, createPublishDraft,
     }
     const repairMatch=path.match(new RegExp('^/predictive-keyboard/html/chunk-keyboard-3/word-case/([^/]+)$'));
     if(repairMatch) {
-      const options=queryParams(url,new Set(['view','page']));const view=options.get('view')||'words';
+      const options=queryParams(url,new Set(['view','page','spacing']));const view=options.get('view')||'words';
       if(!['words', 'prefix', 'chunks'].includes(view))throw Error('Choose a supplied keyboard view.');
       const state=await findState(env,readWord(repairMatch[1]));
-      return renderWordCaseRepair({env,state,draft:await loadDraft(env,state),view,PREFIX,word,actionHref,page,escapeHtml,offset:Number(options.get('page')||0)});
+      const renderer=options.get('spacing')==='1'?renderSpacingRepair:renderWordCaseRepair;
+      if(options.has('spacing')&&options.get('spacing')!=='1')throw Error('Choose a supplied repair view.');
+      return renderer({env,state,draft:await loadDraft(env,state),view,PREFIX,word,actionHref,page,escapeHtml,offset:Number(options.get('page')||0)});
     }
     const stateMatch = path.match(/^\/predictive-keyboard\/html\/chunk-keyboard-3\/state\/([^/]+)$/u);
     if (stateMatch) {

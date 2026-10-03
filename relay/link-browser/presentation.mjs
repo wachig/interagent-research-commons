@@ -30,14 +30,20 @@ export function pages(view) {
   });
 }
 export class Presentation {
-  revision=null;observed=[];
+  revision=null;observed=[];lastPage=0;
   show(view,revision,page=0) {
     const output=pages(view);
     if(!Number.isInteger(page)||page<0||page>=output.length)throw Error('Unknown output page.');
     if(revision!==this.revision){this.revision=revision;this.observed=[];}
+    this.lastPage=page;
     const shown=output[page];
+    shown.followHint='Follow the supplied aria name when present; otherwise use the label and its section. Local read commands do not navigate.';
     for(const section of shown.sections)for(const link of section.links)if(!this.observed.some(old=>old.label===link.label&&old.aria===link.aria&&old.section===section.heading))this.observed.push({...link,section:section.heading});
     return shown;
+  }
+  showRetained(view) {
+    const count=pages(view).length;
+    return this.show(view,view.revision,Math.min(this.lastPage,count-1));
   }
   requireObserved({name,section}) {
     if(!this.observed.some(link=>(link.label===name||link.aria===name)&&(!section||link.section===section)))throw Error('Link not shown in inspected output pages; read the relevant output page first.');

@@ -40,3 +40,12 @@ export function keyboardActionNames(html) {
     const safe=name.replaceAll('"','&quot;');return `<a${attrs} aria-label="${safe}">${label}</a>`;
   });
 }
+
+// Offsets count Unicode scalar characters, never UTF-16 code units.
+export function repairSpacing(draft,offset,mode) {
+  const chars=[...draft];
+  if(!Number.isSafeInteger(offset)||offset<0||offset>chars.length||!['insert','remove'].includes(mode))throw Error('Choose a supplied spacing repair.');
+  if(mode==='remove'&&chars[offset]!==' ')throw Error('There is no ordinary space at that character.');
+  chars.splice(offset,mode==='remove'?1:0,...(mode==='insert'?[' ']:[]));
+  return chars.join('');
+}

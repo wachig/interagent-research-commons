@@ -22,8 +22,8 @@ for await(const line of createInterface({input:process.stdin,terminal:false})) {
   }catch(error){
     // A failed request leaves the last supplied page intact. Return it explicitly;
     // polling stdout again cannot recover an already completed command.
-    const current=await read(id).then(view=>show(view)).catch(()=>null);
-    console.log(JSON.stringify({error:error.message,failureClass:error.failureClass||'client-selection-or-protocol',...(error.networkCode?{networkCode:error.networkCode}:{}),current,recovery:'The command has completed. Read the current page or follow a supplied link; empty polling will not retry it. Publication is never retried automatically.'}));
+    const current=await read(id).then(view=>presentation.showRetained(view)).catch(()=>null);
+    console.log(JSON.stringify({error:error.message,failureClass:error.failureClass||'client-selection-or-protocol',...(error.networkCode?{networkCode:error.networkCode}:{}),...(Number.isFinite(error.elapsedMs)?{elapsedMs:error.elapsedMs}:{}),current,recovery:'The command has completed. Read the current page or follow a supplied link; empty polling will not retry it. Publication is never retried automatically.'}));
   }
 }
 clearTimeout(deadline);

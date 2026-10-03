@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {ordinaryAutomaticCase,repairWordCase,repairWordComma,keyboardActionNames} from '../keyboard_interaction.js';
+import {ordinaryAutomaticCase,repairWordCase,repairWordComma,repairSpacing,keyboardActionNames} from '../keyboard_interaction.js';
 import {fixture,parse} from '../tools/local-evaluation.mjs';
 assert.equal(ordinaryAutomaticCase('Should'),'should');assert.equal(ordinaryAutomaticCase('The'),'the');
 for(const name of ['Alice','John','NASA','OpenAI','UnfamiliarName'])assert.equal(ordinaryAutomaticCase(name),name,'intentional name/acronym case retained');
@@ -8,6 +8,10 @@ assert.equal(repairWordCase('A  Straße\nend',1,'upper'),'A  STRASSE\nend','case
 assert.throws(()=>repairWordCase('word',2,'lower'));assert.throws(()=>repairWordCase('word',0,'arbitrary'));
 assert.equal(repairWordComma('Yes but not right now.',0,'insert'),'Yes, but not right now.');
 assert.equal(repairWordComma('Yes,  but\nnot right now.',0,'remove'),'Yes  but\nnot right now.');
+assert.equal(repairSpacing('tofinish 🌱\tend',2,'insert'),'to finish 🌱\tend');
+assert.equal(repairSpacing('a  b',1,'remove'),'a b');
+assert.equal(repairSpacing('🌱x',1,'insert'),'🌱 x');
+assert.throws(()=>repairSpacing('a\tb',1,'remove'));
 const labelled=keyboardActionNames('<h2>Keyboard</h2><a href="/key/b">b</a><h2>Find another word</h2><a href="/state/id?prefix=b">b</a>');
 assert.match(labelled,/aria-label="Keyboard: b"/);assert.match(labelled,/aria-label="Find word prefix b"/);
 const f=await fixture();
@@ -35,6 +39,17 @@ try{
   assert.equal((await get(choose(comma,'Undo last addition'))).draft,repaired.draft);
   const removePanel=await get(choose(comma,'Repair words and punctuation'));
   assert.equal((await get(choose(removePanel,'Remove comma after word 1'))).draft,repaired.draft);
+  const spaces=await get(choose(panel,'Repair spacing'));
+  const spaceHref=choose(spaces,'Insert space at boundary 2');
+  const spaced=await get(spaceHref);assert.equal(spaced.draft,'Wh ere should we meet at 3:30?','middle insertion preserves every suffix character');
+  assert.equal((await get(spaceHref)).draft,spaced.draft,'signed spacing replay returns same branch');
+  assert.equal((await get(choose(spaced,'Undo last addition'))).draft,repaired.draft);
+  let removeSpaces=await get(choose(await get(choose(spaced,'Repair words and punctuation')),'Repair spacing'));
+  assert.equal((await get(choose(removeSpaces,'Remove space at character 3'))).draft,repaired.draft);
+  const spacedReview=await get(choose(spaced,'Review message'));assert.equal(spacedReview.draft,spaced.draft);
+  await get(choose(spacedReview,'Cancel this review and continue editing'));
+  const changedSpace=new URL(spaceHref);changedSpace.pathname=changedSpace.pathname.replace('spacing%3A2%3Ainsert','spacing%3A1%3Ainsert');
+  assert.notEqual(changedSpace.href,spaceHref);assert.equal((await f.request(changedSpace.href,{html:true})).status,400,'spacing offset cannot be changed without the original signature');
   const undo=await get(choose(repaired,'Undo last addition'));assert.equal(undo.draft,original,'undo restores exact earlier full body');
   const review=await get(choose(repaired,'Review message'));assert.equal(review.draft,repaired.draft,'review sees exact case-corrected draft');
   const cancelled=await get(choose(review,'Cancel this review and continue editing'));assert.match(cancelled.text,/preserved/);

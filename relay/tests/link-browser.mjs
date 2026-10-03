@@ -6,8 +6,8 @@ import {pages,Presentation,OUTPUT_BYTE_LIMIT} from '../link-browser/presentation
 import {configureConnectionAttempts,CONNECTION_ATTEMPT_TIMEOUT_MS} from '../link-browser/connection.mjs';
 let connectTimeout=250;
 const transport={getDefaultAutoSelectFamilyAttemptTimeout:()=>connectTimeout,setDefaultAutoSelectFamilyAttemptTimeout:value=>connectTimeout=value};
-assert.equal(configureConnectionAttempts(transport),CONNECTION_ATTEMPT_TIMEOUT_MS);
-connectTimeout=2000;assert.equal(configureConnectionAttempts(transport),2000,'existing longer connection allowance remains intact');
+assert.equal(configureConnectionAttempts(transport,{setDefaultResultOrder:order=>assert.equal(order,'ipv4first')}),CONNECTION_ATTEMPT_TIMEOUT_MS);
+connectTimeout=2000;assert.equal(configureConnectionAttempts(transport,{setDefaultResultOrder:order=>assert.equal(order,'ipv4first')}),2000,'existing longer connection allowance remains intact');
 const crowded=render('<title>Crowded</title><pre class="draft">Exact  draft\n</pre><h2>Words</h2>'+Array.from({length:700},(_,i)=>`<a href="/pick?cap=secret${i}" aria-label="Add word ${i}">word${i}</a>`).join(''),'https://example.test/',1);
 const paged=pages(crowded.view);
 assert.ok(paged.length>1,'crowded pages have bounded local output');
@@ -17,7 +17,7 @@ assert.ok(paged.every(p=>p.draft==='Exact  draft\n'),'exact draft available on e
 assert.ok(!JSON.stringify(paged).includes('secret'),'no action capabilities exposed');
 const shown=new Presentation();shown.show(crowded.view,1);
 assert.throws(()=>shown.requireObserved({name:'word699'}),/not shown/,'hidden output links cannot be followed');
-shown.show(crowded.view,1,paged.length-1);shown.requireObserved({name:'Add word 699',section:'Words'});
+shown.show(crowded.view,1,paged.length-1);assert.equal(shown.showRetained({...crowded.view,revision:1}).outputPage,paged.length-1,'errors retain the actually inspected output page');shown.requireObserved({name:'Add word 699',section:'Words'});
 shown.show(crowded.view,2);assert.throws(()=>shown.requireObserved({name:'word699'}),/not shown/,'navigation invalidates previously presented choices');
 assert.throws(()=>shown.show(crowded.view,2,-1),/Unknown output page/);
 assert.throws(()=>pages({sections:[{heading:'Oversize',text:['x'.repeat(OUTPUT_BYTE_LIMIT+1000)],links:[]}]}),error=>error.failureClass==='client-output-overflow','unexpected oversized content fails explicitly instead of silently clipping');
@@ -34,7 +34,7 @@ await new Promise(r=>pagedChild.once('exit',r));
 const responses=pagedOutput.trim().split('\n').map(line=>JSON.parse(line));
 assert.match(responses[1].error,/not shown/,'REPL refuses hidden-page selection before navigation');
 assert.equal(responses[2].outputPage,1,'REPL permits bounded local page inspection');
-assert.match(responses[3].error,/Unknown output page/);
+assert.match(responses[3].error,/Unknown output page/);assert.equal(responses[3].current.outputPage,1,'REPL guard returns the last inspected output page without another read');
 assert.ok(responses.every(response=>Buffer.byteLength(JSON.stringify(response))<OUTPUT_BYTE_LIMIT),'normal and retained-error output remain bounded');
 assert.ok(!pagedOutput.includes('secret'),'REPL never exposes capability URLs');
 try {let page=await read(fake);assert.ok(page.remainingSeconds>0&&page.remainingSeconds<=540,'client displays actual remaining time');const fragment=page.sections.flatMap(s=>s.links).find(l=>l.label==='Words');await follow(fake,fragment.id,{fetcher});assert.equal(requests,1,'fragments do not create HTTP requests');await assert.rejects(follow(fake,fragment.id,{fetcher}),/Stale/);assert.equal(requests,1,'stale handle never performs an action');await assert.rejects(follow(fake,'https://example.test/next',{fetcher}),/Stale/);assert.equal(requests,1,'constructed URL cannot be followed');await follow(fake,{name:'Next'},{fetcher});assert.equal(requests,2,'semantic selection follows exactly the supplied link');await assert.rejects(follow(fake,{name:'invented'},{fetcher}),/unknown/);assert.equal(requests,2,'unknown name performs no request');}finally{await close(fake);}
@@ -54,12 +54,21 @@ try {
 try {
  browser=await initialize({home:service.base+'/'});
  const choose=async label=>{const p=await read(browser);const l=p.sections.flatMap(s=>s.links).find(l=>l.label===label);assert.ok(l,'missing supplied '+label);return follow(browser,l.id);};
- let p=await choose('Chunk Word Keyboard');assert.equal(p.usage,'recorded');p=await choose('Can');assert.equal(p.draft,'Can');
+ let p=await choose('Chunk Word Keyboard');assert.equal(p.usage,'recorded');assert.ok(p.timing.navigationMs>=0&&p.timing.headersMs>=0,'navigation reports actual transport timing, not tool/model latency');p=await choose('Can');assert.equal(p.draft,'Can');assert.deepEqual(p.draftChange,{commonPrefixCharacters:0,unchangedSuffixCharacters:0,removed:'',added:'Can'},'client reports the literal inspected change without target knowledge');
  const chunkPages=pages(p);assert.ok(chunkPages.every(page=>Buffer.byteLength(JSON.stringify(page))<OUTPUT_BYTE_LIMIT),'actual Chunk output fits bounded transport');
  assert.equal(chunkPages.flatMap(page=>page.sections.flatMap(section=>section.links)).length,p.sections.flatMap(section=>section.links).length,'actual Chunk retains all supplied choices');
- p=await choose('Review message');assert.equal(p.draft,'Can');assert.ok(p.sections.flatMap(s=>s.links).some(l=>l.label==='Cancel this review and continue editing'));
+ p=await choose('Review message');assert.equal(p.draft,'Can');assert.equal(p.draftChange.added,'','review is not represented as a text insertion');assert.ok(p.sections.flatMap(s=>s.links).some(l=>l.label==='Cancel this review and continue editing'));
  p=await choose('Cancel this review and continue editing');assert.ok(p.sections.some(s=>s.text.some(t=>t.includes('Your composition is preserved'))));
  p=await choose('Edit message');assert.equal(p.draft,'Can','review cancellation returns to exact composition through supplied links');
  assert.equal((await service.request('/poll')).body.returned_count,0,'cancelling a review does not publish');
  console.log('Link-only browser: literal draft rendering, supplied handles only, stale-link rejection, fragment semantics and live cancellation recovery passed.');
 }finally {if(browser)await close(browser);await service.close();}
+
+const unicodeDiff=await initialize({home:'https://example.test/',fetcher:async()=>new Response('<pre class="draft">🌱ab</pre><a href="/next">Next</a>')});
+try {
+  const page=await follow(unicodeDiff,{name:'Next'},{fetcher:async()=>new Response('<pre class="draft">🌱a b</pre>')});
+  assert.deepEqual(page.draftChange,{commonPrefixCharacters:2,unchangedSuffixCharacters:1,removed:'',added:' '},'middle change preserves literal Unicode suffix boundaries');
+}finally{await close(unicodeDiff);}
+const signals=[];
+const redirected=await initialize({home:'https://example.test/',fetcher:async(url,options)=>{signals.push(options.signal);return signals.length===1?new Response('',{status:302,headers:{Location:'/landed'}}):new Response('<h1>Landed</h1>');}});
+try {assert.equal(signals.length,2);assert.equal(signals[0],signals[1],'redirects share one overall timeout, not fresh per-hop deadlines');}finally{await close(redirected);}

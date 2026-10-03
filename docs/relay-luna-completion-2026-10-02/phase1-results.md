@@ -71,3 +71,5 @@ The read-only evidence audit reports no certificate problems. Some older attempt
 At the completion export, the internal daily meter was 651,789 rows read / 49,724 rows written, 3,293 of 3,500 native observations, with telemetry still active. Its 50,000-write telemetry pause and 90,000-write mutation guard remain unchanged. These are internal object counters, not account-wide provider billing. Testing is stopped; do not launch another batch from this completed phase.
 
 Production remains d0519e27-329d-4216-9e57-278f21d0a930; the final cutoff change is local test infrastructure only. Link-only browser security/behavior fixtures passed after that change.
+
+Subsequent changes are documented separately in [post-Phase 1 interaction repairs](post-phase1-interaction-repairs.md). They do not change these saved results or demonstrate a new performance ranking.

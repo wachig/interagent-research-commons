@@ -4,6 +4,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {configureConnectionAttempts} from './connection.mjs';
 configureConnectionAttempts();
+export const CLIENT_VERSION='semantic-link-browser/2.10';
 export const ORIGIN='https://relay.interagentresearchcommons.org';
 const DIRECTORY='/private/tmp/relay-supplied-link-browser';
 const TTL=9*60*1000;
@@ -43,24 +44,30 @@ async function load(id){const state=JSON.parse(await readFile(file(id),'utf8'));
 async function save(state){await writeFile(file(state.id)+'.tmp',JSON.stringify(state),{mode:0o600});await rename(file(state.id)+'.tmp',file(state.id));}
 async function navigate(state,destination,fetcher=fetch) {
   let url=destination;
+  const started=performance.now();
+  const navigationSignal=AbortSignal.timeout(20000);
+  let headersMs=0,bodyMs=0;
   for(let i=0;i<6;i++) {
     let response,html;
     try {
-      response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
+      response=await fetcher(url,{redirect:'manual',signal:navigationSignal,headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
     }catch(cause){
       const error=new Error('Network fetch failed; no HTTP response received. Last supplied page preserved. No automatic action retry.',{cause});
       error.failureClass='network-no-response';
+      error.elapsedMs=Math.round(performance.now()-started);
       const code=cause?.cause?.code||cause?.code;
       if(typeof code==='string'&&/^(E[A-Z]+|UND_ERR_[A-Z_]+)$/.test(code))error.networkCode=code;
       throw error;
     }
+    headersMs=performance.now()-started;
     if([301,302,303,307,308].includes(response.status)){
-      const next=new URL(response.headers.get('location'),url);if(next.origin!==new URL(state.home).origin)throw Error('External redirect refused');url=next.href;continue;
+      const next=new URL(response.headers.get('location'),url);if(next.origin!==new URL(state.home).origin)throw Error('External redirect refused');await response.body?.cancel();url=next.href;continue;
     }
     try{html=await response.text();}catch(cause){
       const error=new Error(`HTTP ${response.status} response body could not be read; last supplied page preserved. No automatic action retry.`,{cause});
       error.failureClass='network-incomplete-response';throw error;
     }
+    bodyMs=performance.now()-started-headersMs;
     // A server failure must not destroy the supplied draft/recovery links.
     // Retain the last successful page; the caller decides whether to replay.
     if(response.status>=500) {
@@ -70,7 +77,7 @@ async function navigate(state,destination,fetcher=fetch) {
     }
     state.url=url;state.revision++;
     const rendered=(response.headers.get('content-type')||'').includes('json')?{links:[],view:{title:'JSON response',json:JSON.parse(html),sections:[]}}:render(html,url,state.revision);
-    state.links=rendered.links;state.view={status:response.status,usage:response.headers.get('x-relay-usage'),...rendered.view};
+    state.links=rendered.links;state.view={timing:{headersMs:Math.round(headersMs),bodyMs:Math.round(bodyMs),navigationMs:Math.round(performance.now()-started)},status:response.status,usage:response.headers.get('x-relay-usage'),...rendered.view};
     return;
   }
   throw Error('Redirect limit exceeded');
@@ -79,7 +86,7 @@ export async function initialize({home=ORIGIN+'/',fetcher=fetch}={}) {
   await mkdir(DIRECTORY,{recursive:true,mode:0o700});
   const state={id:randomUUID(),home,url:home,revision:0,expires:Date.now()+TTL};await navigate(state,home,fetcher);await save(state);return state.id;
 }
-function observedView(state){return {...state.view,revision:state.revision,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
+function observedView(state){return {client:CLIENT_VERSION,...state.view,revision:state.revision,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
 export async function read(id){return observedView(await load(id));}
 export async function follow(id,handle,{fetcher=fetch}={}) {
   const state=await load(id);
@@ -90,11 +97,19 @@ export async function follow(id,handle,{fetcher=fetch}={}) {
   if(!candidates.length)throw Error('Stale or unknown link handle/name; read the current page.');
   // Duplicate anchors to the same URL are equivalent; distinct effects must be disambiguated.
   if(new Set(candidates.map(l=>l.href)).size>1)throw Error('Ambiguous link name; specify its displayed section or unique aria label. Supplied choices: '+JSON.stringify(candidates.slice(0,8).map(l=>({name:l.aria||l.label,section:l.section}))));
+  const previousDraft=state.view.draft;
   const link=candidates[0];
   const next=new URL(link.href),current=new URL(state.url);
   if(next.origin!==new URL(state.home).origin)throw Error('Only supplied same-origin links are permitted');
   if(next.hash&&next.pathname===current.pathname&&next.search===current.search){state.url=next.href;state.revision++;const old=state.links;state.links=old.map((l,i)=>({...l,id:`${state.revision}.${i+1}`}));for(const s of state.view.sections)s.links=s.links.map(l=>({...l,id:state.links[old.findIndex(x=>x.id===l.id)].id}));}
   else await navigate(state,link.href,fetcher);
+  if(typeof previousDraft==='string'&&typeof state.view.draft==='string') {
+    const before=[...previousDraft],after=[...state.view.draft];let same=0;
+    while(same<before.length&&same<after.length&&before[same]===after[same])same++;
+    let suffix=0;
+    while(suffix<before.length-same&&suffix<after.length-same&&before[before.length-1-suffix]===after[after.length-1-suffix])suffix++;
+    state.view.draftChange={commonPrefixCharacters:same,unchangedSuffixCharacters:suffix,removed:before.slice(same,before.length-suffix).join(''),added:after.slice(same,after.length-suffix).join('')};
+  }
   await save(state);return observedView(state);
 }
 export async function close(id){await rm(file(id),{force:true});await rm(file(id)+'.tmp',{force:true});}
