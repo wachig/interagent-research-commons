@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 // Stub only the rendering runtime's WASM import; execute the actual storage/alarm source.
 const storageSource=(await readFile(new URL('../worker.js',import.meta.url),'utf8')).replace('import protocolRuntime from "./runtime.js";', 'const protocolRuntime = {};').replace('from "./schema.js"', 'from '+JSON.stringify(new URL('../schema.js',import.meta.url).href));
 const {RelayStore}=await import('data:text/javascript;base64,'+Buffer.from(storageSource).toString('base64'));
-import {USAGE_RETENTION_MS,MAX_CHOICES_PER_DAY,usageExport} from '../keyboard_usage.js';
+import {USAGE_RETENTION_MS,MAX_REQUESTS_PER_DAY,usageExport} from '../keyboard_usage.js';
 const f=await fixture();const overhead=[];
 const html=async route=>{const p=await f.request(route,{html:true});assert.notEqual(p.headers.get('x-relay-usage'),'unavailable','telemetry must succeed');if(p.headers.has('x-relay-usage-ms'))overhead.push(Number(p.headers.get('x-relay-usage-ms')));return {...p,...parse(p.text,p.url)};};
 const link=(p,predicate)=>{const l=p.links.find(typeof predicate==='string'?x=>x.text===predicate:predicate);assert.ok(l,'missing supplied link');return l.url;};
@@ -66,18 +66,23 @@ try{
  assert.equal(new Set(exported.map(e=>e.event_id)).size,exported.length);
  assert.equal(exported.length,(await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_events WHERE expires_at>?',Date.now()))[0].n,'compound cursor exports every retained event');
 
- // Near-cap new pages retain request observations and mark partial rank metadata.
+ // No displayed choices are stored, including dense pages and replays.
+ assert.equal((await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_choices'))[0].n,0,'new telemetry writes zero per-displayed-link rows');
+ const selected=link(p,l=>/\/step\/.*\/pick\//.test(l.url));
+ assert.equal(new URL(selected).searchParams.get('__ru').length,75,'attribution is bounded');
+ const bad=new URL(selected);const token=bad.searchParams.get('__ru');bad.searchParams.set('__ru',(token[0]==='A'?'B':'A')+token.slice(1));
+ const tampered=await html(bad.href);
+ assert.equal(tampered.status,200,'invalid analytics metadata cannot break an otherwise valid action capability');
+ const last=(await f.sql('SELECT section,choice_rank FROM keyboard_usage_events WHERE run_id=? ORDER BY created_at DESC LIMIT 1',run))[0];
+ assert.equal(last.section,null,'tampered metadata cannot fabricate presentation attribution');
  const currentDay=Math.floor(Date.now()/86400000)*86400000;
- await f.sql('UPDATE keyboard_usage_daily SET choice_count=? WHERE day=?',MAX_CHOICES_PER_DAY-1,currentDay);
+ await f.sql('UPDATE keyboard_usage_daily SET request_count=? WHERE day=?',MAX_REQUESTS_PER_DAY,currentDay);
  const limited=await html('/predictive-keyboard/html/short-word-keyboard/');
- const limitedRun=limited.headers.get('x-relay-usage-run');
- assert.equal((await f.sql('SELECT choice_count FROM keyboard_usage_daily WHERE day=?',currentDay))[0].choice_count,MAX_CHOICES_PER_DAY,'bounded choice cap is honored');
- assert.equal((await f.sql('SELECT choices_truncated FROM keyboard_usage_runs WHERE run_id=?',limitedRun))[0].choices_truncated,1,'partial choices are explicitly marked');
- assert.equal((await f.sql('SELECT COUNT(*) AS n FROM keyboard_usage_events WHERE run_id=?',limitedRun))[0].n,1,'choice exhaustion does not suppress observed request');
+ assert.equal(limited.status,200,'analytics exhaustion preserves keyboard functionality');
+ assert.equal(limited.headers.get('x-relay-usage'),'partial');
  const capExport=await usageExport({RELAY_DB:exportDB},new URL('https://local.invalid/admin/api/keyboard-usage'));
- assert.equal(capExport.daily_caps.issued_choices,MAX_CHOICES_PER_DAY);
- const countPlan=await f.sql('EXPLAIN QUERY PLAN SELECT COUNT(*) FROM keyboard_usage_choices WHERE run_id=?',run);
- assert.ok(countPlan.some(row=>/SEARCH.*keyboard_usage_choices_run_idx/.test(row.detail)),'per-run choice counts search the run index instead of scanning every run');
+ assert.equal(capExport.daily_caps.requests,MAX_REQUESTS_PER_DAY);
+ assert.equal(capExport.daily_caps.issued_choices,0);
  const columns=await f.sql('PRAGMA table_info(keyboard_usage_events)');assert.ok(!columns.some(c=>/body|text|url|capability|ip_address/.test(c.name)));
  overhead.sort((a,b)=>a-b);console.log('Local telemetry overhead ms:',JSON.stringify({requests:overhead.length,median:overhead[Math.floor(overhead.length/2)],p95:overhead[Math.floor((overhead.length-1)*.95)],max:overhead.at(-1)}));
  console.log('Native telemetry: all seven methods, exact request/replay accounting, publication/record association, choice attribution, 30-day deadlines, read-only HEAD/OPTIONS and protected export passed.');
@@ -99,7 +104,7 @@ for(const day of [3,4]) {
 }
 assert.equal(alarmWrites,1,'consecutive writes retain one existing maintenance alarm instead of resetting it per SQL call');
 db.exec('DELETE FROM keyboard_usage_daily');
-db.exec(`INSERT INTO keyboard_usage_runs VALUES ('expired','chunk-word','test','test','test',${now-USAGE_RETENTION_MS-1000},${now-1000},${now-1},${now-100},'started',NULL,NULL,0,0)`);
+db.exec(`INSERT INTO keyboard_usage_runs VALUES ('expired','chunk-word','test','test','test',${now-USAGE_RETENTION_MS-1000},${now-1000},${now-1},${now-100},'started',NULL,NULL,0,0,NULL)`);
 db.exec(`INSERT INTO keyboard_usage_events VALUES ('event','expired','chunk-word',${now-USAGE_RETENTION_MS-1000},${now-1},'page-read',NULL,NULL,200,10,1,1,0,0,0,'fingerprint',NULL)`);
 db.exec(`INSERT INTO keyboard_usage_choices VALUES ('fingerprint','expired','other',1,'review',${now-1})`);
 db.prepare('INSERT INTO messages (message_id,conversation_id,author_ref,body,body_digest,policy_version,created_at) VALUES (?,?,?,?,?,?,?)').run('retained','conversation','author','keep','digest','policy',now-40*24*60*60*1000);
@@ -109,5 +114,16 @@ db.prepare("INSERT INTO token_composer_events (event_id,session_id,event_type,cr
 db.prepare("INSERT INTO token_composer_outcome_aggregates VALUES ('2000-01','generation','condition','version','published','published',1,?)").run(now-40*86400000);
 await store.alarm();for(const table of ['keyboard_usage_events','keyboard_usage_choices','keyboard_usage_runs','keyboard_usage_daily'])assert.equal(db.prepare('SELECT COUNT(*) AS n FROM '+table).get().n,0);
 assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_events').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_states').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_outcome_aggregates').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_sessions').get().n,1,'operational receipt session remains available');
-assert.equal(db.prepare('SELECT COUNT(*) AS n FROM messages').get().n,1,'30-day telemetry cleanup does not shorten message retention');assert.ok(scheduled>now);db.close();
+assert.equal(db.prepare('SELECT COUNT(*) AS n FROM messages').get().n,1,'30-day telemetry cleanup does not shorten message retention');assert.ok(scheduled>now);
+const budgetDay=Math.floor(Date.now()/86400000)*86400000;
+db.prepare('INSERT INTO relay_storage_daily(day,rows_read,rows_written) VALUES (?,?,?) ON CONFLICT(day) DO UPDATE SET rows_read=excluded.rows_read,rows_written=excluded.rows_written').run(budgetDay,0,90000);
+const guarded=new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});
+assert.equal(guarded.telemetryAllowed(),false,'persisted safety budget disables optional telemetry after an object reload');
+const readGuarded=await guarded.fetch(new Request('https://relay-storage.internal/sql',{method:'POST',body:JSON.stringify({operation:'execute',statement:{query:'SELECT message_id FROM messages',values:[],mode:'all'}})}));
+assert.equal(readGuarded.status,200,'storage mutation guard preserves existing public record reads');
+const writeGuarded=await guarded.fetch(new Request('https://relay-storage.internal/sql',{method:'POST',body:JSON.stringify({operation:'execute',statement:{query:'INSERT INTO keyboard_usage_daily(day,expires_at) VALUES (?,?)',values:[999,999],mode:'run'}})}));
+assert.equal(writeGuarded.status,400);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM keyboard_usage_daily WHERE day=999').get().n,0,'guarded write did not occur');
+await guarded.alarm();assert.equal(scheduled,budgetDay+86401000,'cleanup defers to the next UTC allowance instead of repeatedly consuming reserved capacity');
+const actualNow=Date.now;try{Date.now=()=>actualNow()+86400000;const resetStore=new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});assert.equal(resetStore.telemetryAllowed(),true,'prior-day budget does not poison the next UTC day');}finally{Date.now=actualNow;}
+db.close();
 console.log('Actual Durable Object alarm: expired telemetry removed; 40-day public message preserved.');

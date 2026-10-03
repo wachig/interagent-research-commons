@@ -325,9 +325,19 @@ async function designationStartHref(env, stateId) {
   return `${config.prefix}/designation/start/${routeToken(stateId)}/${routeToken(signature)}`;
 }
 
+async function eventCount(env,sessionId) {
+  const session=await env.RELAY_DB.prepare("SELECT event_count FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();
+  if(session?.event_count!=null)return Number(session.event_count);
+  // One indexed backfill for sessions predating this counter; no recurring scan.
+  const count=Number((await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM token_composer_events WHERE session_id = ?").bind(sessionId).first())?.count||0);
+  await env.RELAY_DB.prepare("UPDATE token_composer_sessions SET event_count = ? WHERE session_id = ? AND event_count IS NULL").bind(count,sessionId).run();
+  return count;
+}
+
 async function event(env, { sessionId, stateId = null, eventType, unitId = null, unitBytesB64 = null, details = null, stableKey = null }) {
-  const count = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM token_composer_events WHERE session_id = ?").bind(sessionId).first();
-  if ((count?.count || 0) >= MAX_EVENTS_PER_SESSION && eventType !== "branch_used_in_final_path" && eventType !== "branch_abandoned_in_final_path") return false;
+  if(env.RELAY_DB.binding?.telemetryAllowed?.()===false)return false;
+  const count = await eventCount(env,sessionId);
+  if (count >= MAX_EVENTS_PER_SESSION && eventType !== "branch_used_in_final_path" && eventType !== "branch_abandoned_in_final_path") return false;
   const eventId = stableKey ? await sign(env, "event", sessionId, stableKey) : crypto.randomUUID();
   await env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_events (event_id, session_id, state_id, event_type, unit_id, unit_bytes_b64, details_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
     .bind(eventId, sessionId, stateId, eventType, unitId, unitBytesB64, details ? JSON.stringify(details) : null, Date.now()).run();
@@ -350,8 +360,8 @@ function quotaError(state, code, detail, status = 409, retryAfter = null) {
 }
 
 async function canAddCompositionEvent(env, sessionId) {
-  const count = await env.RELAY_DB.prepare("SELECT COUNT(*) AS count FROM token_composer_events WHERE session_id = ?").bind(sessionId).first();
-  return (count?.count || 0) < MAX_EVENTS_PER_SESSION;
+  const count = await eventCount(env,sessionId);
+  return count < MAX_EVENTS_PER_SESSION;
 }
 
 async function childAlreadyExists(env, state, unitId) {
@@ -1009,6 +1019,7 @@ async function arm(env, stateId) {
 }
 
 async function markFinalPath(env, sessionId, finalStateId, publishedAt) {
+  if(env.RELAY_DB.binding?.telemetryAllowed?.()===false)return;
   const all = await env.RELAY_DB.prepare("SELECT state_id, parent_state_id, unit_id, unit_bytes_b64 FROM token_composer_states WHERE session_id = ?").bind(sessionId).all();
   const byId = new Map((all.results || []).map((state) => [state.state_id, state]));
   const used = new Set();
@@ -1029,6 +1040,7 @@ async function markFinalPath(env, sessionId, finalStateId, publishedAt) {
 }
 
 async function incrementTraversal(env, sessionId) {
+  if(env.RELAY_DB.binding?.telemetryAllowed?.()===false)return;
   await env.RELAY_DB.prepare("UPDATE token_composer_sessions SET traversal_count = traversal_count + 1 WHERE session_id = ? AND traversal_count IS NOT NULL AND published_at IS NULL").bind(sessionId).run();
 }
 

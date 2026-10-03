@@ -307,7 +307,7 @@ export function exactWordEffect(parentDraft, partial, text, effect = "compose") 
 
 export async function admitByteSession(env, { sessionId, rootId, taskClass, authorRef, config, replyTo, now, expires }) {
   await env.RELAY_DB.batch([
-    env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_sessions (session_id, root_state_id, task_class, author_ref, condition_id, composer_version, reply_to, created_at, expires_at, traversal_count) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 1 WHERE (SELECT COUNT(*) FROM token_composer_sessions WHERE expires_at > ?) < ?").bind(sessionId, rootId, taskClass, authorRef, config.conditionId, config.version, replyTo, now, expires, now, MAX_SESSIONS),
+    env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_sessions (session_id, root_state_id, task_class, author_ref, condition_id, composer_version, reply_to, created_at, expires_at, traversal_count, event_count) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0 WHERE (SELECT COUNT(*) FROM token_composer_sessions WHERE expires_at > ?) < ?").bind(sessionId, rootId, taskClass, authorRef, config.conditionId, config.version, replyTo, now, expires, now, MAX_SESSIONS),
     env.RELAY_DB.prepare("INSERT OR IGNORE INTO token_composer_states (state_id, session_id, parent_state_id, unit_id, unit_kind, unit_bytes_b64, body_bytes_b64, body_length, created_at) SELECT ?, ?, NULL, NULL, 'root', '', '', 0, ? WHERE EXISTS (SELECT 1 FROM token_composer_sessions WHERE session_id = ?)").bind(rootId, sessionId, now, sessionId),
   ]);
   return await env.RELAY_DB.prepare("SELECT session_id FROM token_composer_sessions WHERE session_id = ?").bind(sessionId).first();

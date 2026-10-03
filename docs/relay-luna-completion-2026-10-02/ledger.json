@@ -536,7 +536,11 @@
   "heartbeat_id": null,
   "status": "active",
   "updated_at": "2026-10-02T20:02:46.295675+00:00",
-  "next_work": "Phase1 only: one verified successful run of each10phrases on each7keyboards. Stop at70 for owner evaluation; do not dispatch repetitions2/3. Nine saved successes count. Verify actual Cloudflare database recovery before testers; hourly automation cancelled.",
+  "next_work": [
+    "Do not dispatch testers while owner-paused. Finish database-usage audit and verification.",
+    "Phase1 remains9/70 with61unused success slots; preserve all prior attempts and certificates.",
+    "After owner resumes, pin the repaired production release and client, verify live storage headroom, and dispatch fresh Luna testers for R1 only."
+  ],
   "deployed_release": "2ddf176e-69eb-4e65-b531-fd0bd4060ce7",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
@@ -563,8 +567,23 @@
       "agent": "/root/phase1_p03_chunk",
       "attempt_id": "P03-chunk-word-R1-A1",
       "state": "ready-no-process",
-      "target": "I don’t understand what happened.",
-      "model": "gpt-6-luna"
+      "model": "gpt-6-luna",
+      "status": "owner-paused-no-process"
+    },
+    {
+      "agent": "/root/phase1_p03_predictive",
+      "attempt_id": "P03-predictive-word-R1-A1",
+      "state": "ready-no-process",
+      "model": "gpt-6-luna",
+      "status": "owner-paused-no-process"
+    },
+    {
+      "agent": "/root/phase1_p03_span",
+      "attempt_id": "P03-span-R1-A1",
+      "state": "ready-no-process",
+      "model": "gpt-6-luna",
+      "status": "owner-paused-no-process"
     }
-  ]
+  ],
+  "campaign_status": "paused-by-owner-for-database-audit"
 }

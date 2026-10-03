@@ -146,7 +146,7 @@ export const SCHEMA_STATEMENTS = [
     expires_at INTEGER NOT NULL,
     published_at INTEGER,
     message_id TEXT,
-    traversal_count INTEGER
+    traversal_count INTEGER, event_count INTEGER DEFAULT 0
   )`,
   "CREATE INDEX IF NOT EXISTS token_composer_expiry_idx ON token_composer_sessions(expires_at)",
   "CREATE INDEX IF NOT EXISTS token_composer_created_idx ON token_composer_sessions(created_at)",
@@ -175,6 +175,9 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   "CREATE INDEX IF NOT EXISTS token_composer_events_session_idx ON token_composer_events(session_id, created_at)",
+  "CREATE INDEX IF NOT EXISTS token_composer_events_created_idx ON token_composer_events(created_at)",
+  `CREATE TRIGGER IF NOT EXISTS token_event_count_insert AFTER INSERT ON token_composer_events
+   BEGIN UPDATE token_composer_sessions SET event_count = event_count + 1 WHERE session_id = NEW.session_id AND event_count IS NOT NULL; END`,
   `CREATE TABLE IF NOT EXISTS token_composer_outcome_aggregates (
     cohort_month TEXT NOT NULL,
     task_class TEXT NOT NULL CHECK (task_class IN ('transcription', 'generation')),
@@ -215,6 +218,10 @@ export const SCHEMA_STATEMENTS = [
     aggregated_at INTEGER NOT NULL,
     PRIMARY KEY (cohort_month, task_class, condition_id, composer_version)
   )`,
+  `CREATE TABLE IF NOT EXISTS relay_storage_daily (
+    day INTEGER PRIMARY KEY, rows_read INTEGER NOT NULL DEFAULT 0,
+    rows_written INTEGER NOT NULL DEFAULT 0, telemetry_paused_at INTEGER
+  )`,
   `CREATE TABLE IF NOT EXISTS keyboard_usage_daily (
     day INTEGER PRIMARY KEY, request_count INTEGER NOT NULL DEFAULT 0,
     choice_count INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NOT NULL
@@ -226,7 +233,7 @@ export const SCHEMA_STATEMENTS = [
     created_at INTEGER NOT NULL, last_request_at INTEGER NOT NULL, expires_at INTEGER NOT NULL,
     session_expires_at INTEGER, furthest_stage TEXT NOT NULL,
     published_at INTEGER, message_id TEXT, truncated INTEGER NOT NULL DEFAULT 0,
-    choices_truncated INTEGER NOT NULL DEFAULT 0
+    choices_truncated INTEGER NOT NULL DEFAULT 0, event_count INTEGER
   )`,
   "CREATE INDEX IF NOT EXISTS keyboard_usage_runs_expiry_idx ON keyboard_usage_runs(expires_at)",
   "CREATE INDEX IF NOT EXISTS keyboard_usage_runs_message_idx ON keyboard_usage_runs(message_id)",

@@ -867,7 +867,7 @@
       ],
       "properties": {
         "version": {
-          "enum": ["relay-keyboard-usage/1.0.0", "relay-keyboard-usage/1.1.0"]
+          "enum": ["relay-keyboard-usage/1.0.0", "relay-keyboard-usage/1.1.0", "relay-keyboard-usage/2.0.0"]
         },
         "methods": {
           "type": "array",

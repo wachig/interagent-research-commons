@@ -1,0 +1,84 @@
+{
+  "scope": "Mechanical localhost SQL cursor costs for100 literal a activations on each of seven keyboards. No public publication and no Luna benchmark run. Per-method deltas include the final private export. SQL accounting includes indexes; alarm API operations and budget-loading reads are excluded. No raw event data or credentials retained.",
+  "results": [
+    {
+      "method": "chunk-word",
+      "character_actions": 100,
+      "rows_read": 9868,
+      "rows_written": 1201,
+      "sql_calls": 2761,
+      "response_bytes": 8545206
+    },
+    {
+      "method": "short-word",
+      "character_actions": 100,
+      "rows_read": 10070,
+      "rows_written": 1201,
+      "sql_calls": 2761,
+      "response_bytes": 8443977
+    },
+    {
+      "method": "span",
+      "character_actions": 100,
+      "rows_read": 10072,
+      "rows_written": 1201,
+      "sql_calls": 2761,
+      "response_bytes": 5270643
+    },
+    {
+      "method": "predictive-word",
+      "character_actions": 100,
+      "rows_read": 9974,
+      "rows_written": 1201,
+      "sql_calls": 2712,
+      "response_bytes": 4865122
+    },
+    {
+      "method": "prefix-link",
+      "character_actions": 100,
+      "rows_read": 10076,
+      "rows_written": 1201,
+      "sql_calls": 2761,
+      "response_bytes": 4560836
+    },
+    {
+      "method": "token-link",
+      "character_actions": 100,
+      "rows_read": 13713,
+      "rows_written": 2896,
+      "sql_calls": 2903,
+      "response_bytes": 5214621
+    },
+    {
+      "method": "frame",
+      "character_actions": 100,
+      "rows_read": 8728,
+      "rows_written": 1201,
+      "sql_calls": 2035,
+      "response_bytes": 6486860
+    }
+  ],
+  "totals": {
+    "scope": "SQL API cursors since this Durable Object instance loaded; includes schema SQL and cleanup SQL; excludes alarm API writes, budget-loading reads and other namespaces. Not account daily billing totals.",
+    "started_at": 1790987239755,
+    "rows_read": 74369,
+    "rows_written": 10474,
+    "sql_calls": 18984,
+    "daily_budget": {
+      "day": 1790985600000,
+      "reads": 74369,
+      "writes": 10474,
+      "telemetry_pauses_at": {
+        "writes": 50000,
+        "reads": 3000000
+      },
+      "mutations_pause_at": {
+        "writes": 90000,
+        "reads": 4500000
+      },
+      "accounting_unavailable": false,
+      "accounting_paused": false
+    }
+  },
+  "generated_at": "2026-10-03T00:30:40.564516+00:00"
+}

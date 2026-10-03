@@ -1,3 +1,7 @@
+# Evaluation paused for database audit
+
+Owner paused the evaluation on2026-10-02. No testers may be dispatched until the owner resumes. The70-success Phase1 scope and nine saved successes remain unchanged. Database-efficiency work and its release evidence are documented separately in `docs/relay-database-audit-2026-10-02/README.md`.
+
 # Current Phase 1 checkpoint
 
 Owner revised the campaign to phases: one run per phrase/method (70), evaluate, then cumulative140 and210. Stop and evaluate at70; do not start repetitions2/3 during Phase1. The existing9verified successes count, leaving61. The hourly automation was deleted at the owner's request; work now resumes manually. Historical210requirements below describe the original campaign, not current Phase1 authorization. Current conditions/certificates remain pinned in manifest.json and ledger.json.
