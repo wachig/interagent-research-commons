@@ -3424,10 +3424,10 @@
   "verified_successes": 41,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "repair-phase-1",
-  "updated_at": "2026-10-03T07:29:11.580247+00:00",
-  "next_work": "Repair phase2: shared accessible action labels, reproduce capitalization, cheaper exact correction and investigate failed fetches. No new scored runs until repair checkpoint.",
-  "deployed_release": "365dcf75-c9e0-4f8f-b7f8-7275c2240ad4",
+  "status": "phase3-repairs-deployed",
+  "updated_at": "2026-10-03T08:17:21.253557+00:00",
+  "next_work": "Phase4: fresh bounded GPT-6 Luna validation on foundation1.5.0/registry2.0.4/client2.5/contract1.3, then remaining Phase1 exact slots to70; preserve all41certificates and release cohorts.",
+  "deployed_release": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
   "operational_blocker": {
     "kind": "cloudflare-free-daily-read-and-write-rows-exhausted",
     "observed_at": "2026-10-02T19:51:25Z",
@@ -3664,10 +3664,10 @@
     "scope": "Remaining exact Phase1publications/liveRelay/Tokenblankstart"
   },
   "latest_health_check": {
-    "at": "2026-10-03T08:00:51.668Z",
+    "at": "2026-10-03T08:17:21.253557+00:00",
     "storage_readable": true,
     "writes_enabled": true,
-    "release": "29206c55-9b15-49f3-9222-1f5384d3ef65"
+    "release": "653d6941-c2ae-4796-b41c-7e9e3ed97331"
   },
   "private_export_access_latest": {
     "status": "Recovered via existing authenticated Chrome profile, no credentials copied",
@@ -3711,7 +3711,7 @@
     "registry": "2.0.4",
     "client": "semantic-link-browser/2.5",
     "tester_contract": "relay-luna-tester/1.3",
-    "deployment": "pending",
+    "deployment": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
     "verified_successes_unchanged": 41,
     "fresh_luna_validation_pending": true,
     "raw_retention_days": 30,
@@ -3751,6 +3751,9 @@
         "links": 531,
         "path_encoding_saved_bytes": 1920
       }
-    ]
+    ],
+    "source_commit": "0cb9d0f",
+    "validation": "All required test:relay component checks passed. Live health, compact Chunk search/paging, Frame completion/literal return/undo passed; 17 operator requests, zero publications.",
+    "live_bootstrap_bytes": 4062
   }
 }

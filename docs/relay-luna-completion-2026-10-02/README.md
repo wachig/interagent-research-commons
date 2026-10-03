@@ -2,7 +2,7 @@
 
 Chunk's repeated default settings and action path prefixes are reduced while retaining its full search interaction and spelling coverage. Frame has distinct contextual completion and next-word links in its slot and character fallback views. See [individual-repairs.md](individual-repairs.md) for measured payload samples, exact effects and limits. Other keyboards were checked against recorded errors; Phase 2 already addressed their demonstrated shared issues.
 
-Current source pins: foundation 1.5.0 / registry 2.0.4; client 2.5 / tester contract 1.3. Deployment verification pending. No new scored trials; 41/70 remains the current total. Older checkpoints below are historical.
+Current source pins: foundation 1.5.0 / registry 2.0.4; client 2.5 / tester contract 1.3. Source `0cb9d0f` is pushed and deployed as `653d6941-c2ae-4796-b41c-7e9e3ed97331`. Required regression checks and live health/Chunk/Frame checks passed. No new scored trials; 41/70 remains the current total. Older checkpoints below are historical.
 
 # Shared repair checkpoint — 41/70; Phase 2
 
