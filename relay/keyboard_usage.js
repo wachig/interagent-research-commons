@@ -1,12 +1,13 @@
 // Server-observed request facts. No client script, draft text, URLs, or IP storage.
 import {captureUsageState} from './keyboard_usage_context.js';
 import {keyboardIdentity, KEYBOARD_FOUNDATION_VERSION} from './keyboard_foundation.js';
-export const KEYBOARD_USAGE_VERSION = 'relay-keyboard-usage/2.0.0';
+export const KEYBOARD_USAGE_VERSION = 'relay-keyboard-usage/2.0.1';
 export const USAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const METHODS = {chunk:'chunk-word',predictive:'predictive-word',prefix:'prefix-link',span:'span','short-word':'short-word',token:'token-link',frame:'frame'};
 const encoder = new TextEncoder();
 export const MAX_CHOICES_PER_DAY = 10000;
-export const MAX_REQUESTS_PER_DAY = 3000;
+// Capture ceiling only; RelayStore's earlier SQL safety pause remains authoritative.
+export const MAX_REQUESTS_PER_DAY = 3500;
 const MAX_EVENTS_PER_RUN = 5000;
 export async function usageHash(value) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(value)))].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -135,7 +136,7 @@ export async function recordKeyboardUsage(env,request,response) {
   if(!method)return null; // Historical and unrelated resources are outside this seven-method series.
   const day=Math.floor(now/86400000)*86400000;
   await env.RELAY_DB.prepare('INSERT OR IGNORE INTO keyboard_usage_daily (day,expires_at) VALUES (?,?)').bind(day,day+USAGE_RETENTION_MS).run();
-  const budget=await env.RELAY_DB.prepare('UPDATE keyboard_usage_daily SET request_count=request_count+1 WHERE day=? AND request_count<3000 RETURNING request_count').bind(day).first();
+  const budget=await env.RELAY_DB.prepare('UPDATE keyboard_usage_daily SET request_count=request_count+1 WHERE day=? AND request_count<? RETURNING request_count').bind(day,MAX_REQUESTS_PER_DAY).first();
   if(!budget){if(runId)await env.RELAY_DB.prepare('UPDATE keyboard_usage_runs SET truncated=1 WHERE run_id=?').bind(runId).run();return {runId,status:'partial'};}
   const adapter=existing?.adapter||identity?.adapter||issued?.adapter||'unknown';
   let text=await response.clone().text();

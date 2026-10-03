@@ -1,3 +1,23 @@
+# Latest checkpoint — 57/70; old-release trials closed
+
+Fresh Prefix P04 and Token P04 both independently verified exact public receipts. Prefix includes the previously omitted final period; the older inexact publication remains a failure. Associated native counts through tester receipt are42and39 respectively, with complete exports and one later operator verification excluded each. Client elapsed times are297and367seconds, respectively; Token corrected its omitted be before publication. All testers are closed; Frame P05 remains registered and unstarted.
+
+Before the capture-ceiling deployment, native count is2,692of3,000, persisted SQL meter532,683reads /40,473writes, no telemetry pause. Existing certificates and release cohorts remain frozen. Stop at70; thirteen distinct success slots remain.
+
+# Capture headroom adjustment — locally validated, deployment pending
+
+The daily observation ceiling is raised modestly from3,000to3,500, usage version2.0.1, because2,613 observations were already consumed with15success slots plus retries remaining. The allocation query now binds the exported constant, eliminating separate literal cap values. This changes telemetry coverage only: keyboard routes, suggestions, mutation limits, storage identity and expiry are unchanged. The existing SQL telemetry pause at50,000writes /3,000,000reads and mutation stop at90,000writes /4,500,000reads remain authoritative.
+
+The native suite passed all seven methods, request/replay reconciliation, protected exports,30-day expiry, cap exhaustion without keyboard failure, and actual persisted-storage checks immediately below/at the50,000-write telemetry pause. Finish the two active old-release trials before deployment; pin the new release for subsequent runs. Until deployed, production remains9b5d8d51 with the3,000observation ceiling.
+
+# Latest checkpoint — 55/70; fifteen slots remain
+
+Predictive P09 and Span P08 now have independent exact public certificates. Their complete native counts are31and20 through public receipt, respectively, excluding one later operator verification each. Current versions remain production9b5d8d51, client2.7 / contract1.6. All actual tester runtimes checked are GPT-6 Luna at medium effort.
+
+Fresh Prefix P04 and Token P04 are active. Frame P05 is registered but not started: the app rejected a third concurrent tester dispatch with its thread limit. No site action occurred for that queued dispatch. Start it when a tester slot becomes available; do not duplicate active attempts.
+
+The latest native object meter is524,277reads /38,912writes, with no telemetry pause;2,613 of3,000 daily observations are used. The observation ceiling is a separate capture limit, not a database failure or posting limit. With fifteen success slots and retries remaining, reassess capture headroom before exhaustion while preserving the existing50,000-write /3,000,000-read telemetry pause and90,000-write /4,500,000-read mutation safeguards. Retain gaps explicitly if any arise. Raw private retention remains30days. Stop at70; earlier checkpoints below are historical.
+
 # Latest checkpoint — 53/70; exact receipts required
 
 Token P07 and Frame P07 independently verified exact public bodies, adding two distinct successes. Their complete native counts are18and27 through the tester receipt, excluding one independent verification event each. Token took about169seconds and Frame222seconds in client countdown scope; the two used different paths, so this pair is evidence rather than a general winner claim.

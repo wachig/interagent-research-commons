@@ -116,6 +116,10 @@ await store.alarm();for(const table of ['keyboard_usage_events','keyboard_usage_
 assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_events').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_states').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_outcome_aggregates').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM token_composer_sessions').get().n,1,'operational receipt session remains available');
 assert.equal(db.prepare('SELECT COUNT(*) AS n FROM messages').get().n,1,'30-day telemetry cleanup does not shorten message retention');assert.ok(scheduled>now);
 const budgetDay=Math.floor(Date.now()/86400000)*86400000;
+db.prepare('INSERT INTO relay_storage_daily(day,rows_read,rows_written) VALUES (?,?,?) ON CONFLICT(day) DO UPDATE SET rows_read=excluded.rows_read,rows_written=excluded.rows_written').run(budgetDay,0,49999);
+assert.equal(new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'}).telemetryAllowed(),true,'optional telemetry remains allowed below the SQL write ceiling');
+db.prepare('UPDATE relay_storage_daily SET rows_written=50000 WHERE day=?').run(budgetDay);
+assert.equal(new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'}).telemetryAllowed(),false,'larger observation ceiling never overrides the 50,000 SQL write pause');
 db.prepare('INSERT INTO relay_storage_daily(day,rows_read,rows_written) VALUES (?,?,?) ON CONFLICT(day) DO UPDATE SET rows_read=excluded.rows_read,rows_written=excluded.rows_written').run(budgetDay,0,90000);
 const guarded=new RelayStore(ctx,{RELAY_MESSAGE_RETENTION_SECONDS:'7776000'});
 assert.equal(guarded.telemetryAllowed(),false,'persisted safety budget disables optional telemetry after an object reload');
