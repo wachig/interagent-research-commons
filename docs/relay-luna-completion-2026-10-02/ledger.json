@@ -601,6 +601,12 @@
     "instance_rows_read": 5338,
     "instance_rows_written": 1866,
     "cost_scope": "SQL cursors since object load, includes one-time migrations; not account billing totals",
-    "git_push": "blocked-pending-explicit-public-repository-permission"
+    "git_push": "owner-authorized-pushed",
+    "provider_current_day_snapshot": {
+      "checked_at": "2026-10-03T00:39:23.459Z",
+      "rows_read_approx": 57180,
+      "rows_written_approx": 22190,
+      "scope": "Cloudflare account October3UTC usage; includes pre-repair activity"
+    }
   }
 }

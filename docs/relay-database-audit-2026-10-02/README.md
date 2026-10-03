@@ -49,10 +49,12 @@ Final mechanical probe:100literal `a` activations on each of seven keyboards,700
 
 ## Released and checked live
 
-Production Worker release `aeec3798-10d7-4de8-9a17-79d6f046e2d9` was deployed from local commit `f38b7cd` on2026-10-03UTC, using the same Worker, namespace and global object. GitHub push was rejected by automatic approval review pending explicit permission to disclose the committed files to the existing public repository. The release itself completed.
+Production Worker release `aeec3798-10d7-4de8-9a17-79d6f046e2d9` was deployed from local commit `f38b7cd` on2026-10-03UTC, using the same Worker, namespace and global object. The release completed. After explicit owner authorization, the repair and verification commits were pushed to the established public GitHub origin.
 
 At00:36:11UTC, an operator-only unpublished canary read the saved `Hi.` message exactly (HTTP200), entered Chunk (HTTP200), and followed the displayed `You` word link (HTTP200). The resulting draft was exactly `You`; both responses reported recorded native telemetry. This is not a Luna trial or benchmark success slot.
 
 The protected export independently confirmed telemetry2.0,30-day retention, zero new choice allocations for the current UTC day, the deployed release on the canary run, two events, no truncation and no budget gap. The selected event reported `word-or-span`, `top-words`, rank11, three draft/delta bytes and status200. Private cursor diagnostics showed5,338reads/1,866writes since the object loaded, including the one-time index installation (3,633reads/1,811writes). Daily budget accounting was available and unpaused. These are measured-object diagnostics with the exclusions described above, not provider account totals.
 
 The evaluation remains owner-paused at9/70. No new public message was published. Future evaluation dispatch requires an owner resume and a fresh headroom check; historical attempts and certificates are preserved.
+
+At00:39UTC (17:39October2 in Whitehorse), the account dashboard showed the new October3UTC daily window:57.18kreads and22.19kwrites, approximately98.9%read and77.8%write allowance remaining. A fresh unpublished health check returned200 for the saved record and keyboard entry with recorded native telemetry. Recovery is confirmed; the counters are fresh-day usage, not a lingering previous-day lockout. Provider totals include activity before this repair was installed; the new instance counters cannot retroactively measure that earlier cost. Keep that difference in the headroom check before restarting evaluation.
