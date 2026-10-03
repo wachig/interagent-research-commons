@@ -4,7 +4,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 export const ORIGIN='https://relay.interagentresearchcommons.org';
 const DIRECTORY='/private/tmp/relay-supplied-link-browser';
-const TTL=6*60*1000;
+const TTL=7*60*1000;
 const decode=s=>s.replace(/&(?:#x([a-f0-9]+)|#(\d+)|(amp|lt|gt|quot|apos|nbsp|#39));/gi,(_,hex,num,named)=>hex||num?String.fromCodePoint(parseInt(hex||num,hex?16:10)):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' ','#39':"'"}[named.toLowerCase()]));
 const plain=s=>decode(s.replace(/<[^>]*>/g,''));
 const compact=s=>plain(s).replace(/\s+/g,' ').trim();
