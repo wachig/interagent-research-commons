@@ -1,3 +1,27 @@
+# Latest verified checkpoint —20/70
+
+Three repaired-release success certificates were added: P03 Predictive, P06 Frame and P06 Chunk. Fifty required cells remain. All tester processes for this batch closed. Goal remains active; no Phase2/3 or hourly automation. Older checkpoint/status sections below are historical.
+
+| Success | Native requests through receipt | First native request to publication | Prompt cohort |
+| --- | ---: | ---: | --- |
+| P03 Predictive |45|123.902s|1.0|
+| P06 Frame |29|142.885s|1.0|
+| P06 Chunk |15|122.930s|1.1|
+
+These exclude frozen-cutoff independent verification reads and separately exclude discovery. Native link counts are presented links, not inspected links; bytes are uncompressed. Different prompt/version cohorts must not be silently pooled or used to declare a winner. Contract1.1adds generic ongoing exact-prefix comparison, no path coaching.
+
+Retained failures include two P04 composition/time failures and four automatic approval blocks (P03 Frame, P03 Token blank start, P06 Predictive, P06 Short Word). The exact reviewed P06Short draft under1.1was blocked; it is neither a published success nor a keyboard content failure. A displayed Predictive `b` under Find another word returned HTTP500 absent from native logging; retain the native execution gap. An unpublished supplied-link reproduction with draft `Yes,` returned200. Cause remains unconfirmed; no false claim of repair.
+
+Provider account snapshot:~195,660reads/~31,720writes,~68,280writes remaining on October3UTC; figures may lag. Latest private object meter:150,330reads/11,730writes, optional telemetry unpaused. Account and object scopes differ. Raw telemetry remains private with30-dayexpiry.
+
+Latest public documentation push remains blocked by automatic approval because it considered testing/telemetry details potentially sensitive. New compiled records remain local; no bypass or repeated push.
+
+# Active Phase1 continuation after repairs
+
+Current verified total:18/70. P03 Predictive is independently certified on repaired release365dcf75-c9e0-4f8f-b7f8-7275c2240ad4. Its45native requests exclude the independent verifier read; corrected construction is retained. P03 Frame reached an exact review in37native requests but automatic approval rejected publication, so it is a failure. Fresh P04 Short Word and Chunk trials are running; both inspect actual human authorization before startup. Older status sections below are historical.
+
+The latest checkpoint commit9759240 is local: automatic approval blocked its public GitHub push because it considered testing/telemetry details sensitive. No retry or bypass occurred; local evidence recording and authorized assigned Relay tests continue. Raw telemetry remains private and expires after30days.
+
 # Repair-first handoff
 
 Owner’s latest steering is to complete repairs before further evaluation. The repairs below are complete and deployed. Two fresh attempts were dispatched before this handoff was reconciled: Token P06 omitted the comma and automatic review blocked publication; Prefix P03 was stopped at an exact review without publishing. Both processes closed and both attempts are retained. No new certificate:17/70. Native costs for these two attempts remain pending; do not infer zero spent requests. No further test dispatch occurred in this repair-first turn.
