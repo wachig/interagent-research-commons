@@ -1,3 +1,11 @@
+# Connection recovery — 57/70; fresh transport cohort
+
+The previous Frame P05/Prefix P05 agent connection reset left unpublished drafts with12/13complete associated native observations. Later fresh retries hit network ETIMEDOUT before composition; preserve those failures and unknown failed-fetch server work. No duplicate successful slots were created. Actual OS inspection confirmed no surviving browser processes before resumption.
+
+A bounded independent curl read succeeded while Node's observed250ms per-address connection attempt failed. Raising the Node allowance to1,500ms produced a successful health read and restricted-browser live startup; existing20-second navigation timeout, seven-minute trial ceiling, supplied-link restrictions and no automatic action replay remain intact. Local browser and receipt-certificate tests passed. New trials pin client2.8 / contract1.7 on unchanged productiond0519e27, usage2.0.1. This is a local transport repair, not a keyboard behavior change or site deployment.
+
+All57successful runtime records now independently confirm GPT-6Luna. Three legacy receipt certificates lacking the later measurement_cutoff_at field were inadvertently re-read by the newer verifier; their original checked_at evidence was restored from Git and extra operator reads retained separately. The verifier now freezes those legacy certificates too. Historical native costs remain frozen. Raw telemetry stays private30days; no hourly automation and stop at70.
+
 # Current deployment — 57/70; next trials resume
 
 Telemetry-only sourcecae5b60 is committed/pushed and deployed asd0519e27-329d-4216-9e57-278f21d0a930. Live health names that release and confirms bounded storage readability plus writable service state; private export confirms3,500daily observations,30-day retention, telemetry active, and unchanged cumulative2,692observations. A single excluded unpublished Short Word entry returnedHTTP200, telemetry recorded, executiondurable-object, proving the new capped allocation query works live. The independent SQL guard tests passed before deployment. No asset, keyboard behavior, registry/foundation version, object identity, or safety budget changed.

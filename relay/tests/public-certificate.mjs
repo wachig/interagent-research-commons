@@ -3,6 +3,8 @@ import {hasPublicReadCertificate} from '../link-browser/public-certificate.mjs';
 const read=body=>({verification:{http_status:200,actual_body:body,exact:body==='Hi.',body_sha256:'recorded',measurement_cutoff_at:'2026-10-03T10:00:00Z'}});
 assert.equal(hasPublicReadCertificate(read('Hi.'),'Hi.'),true);
 assert.equal(hasPublicReadCertificate(read('Hi'),'Hi.'),true);
+const legacy=read('Hi.');legacy.verification.checked_at='2026-10-02T17:05:48Z';delete legacy.verification.measurement_cutoff_at;
+assert.equal(hasPublicReadCertificate(legacy,'Hi.'),true,'legacy authoritative receipts retain their original boundary');
 assert.equal(hasPublicReadCertificate({verification:{http_status:503,actual_body:null}},'Hi.'),false);
 assert.equal(hasPublicReadCertificate(read('Hi.'),'Different target'),false);
 assert.equal(hasPublicReadCertificate({verification:{...read('Hi').verification,exact:true}},'Hi.'),false);

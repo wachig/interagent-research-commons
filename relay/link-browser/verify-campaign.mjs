@@ -2,6 +2,8 @@
 import {readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {hasPublicReadCertificate} from './public-certificate.mjs';
+import {configureConnectionAttempts} from './connection.mjs';
+configureConnectionAttempts();
 const directory=new URL('../../docs/relay-luna-completion-2026-10-02/',import.meta.url);
 const manifest=JSON.parse(await readFile(new URL('manifest.json',directory),'utf8'));
 const ledgerPath=new URL('ledger.json',directory);

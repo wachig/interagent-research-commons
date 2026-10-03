@@ -2,6 +2,8 @@
 import {readFile,writeFile,mkdir,rm,rename} from 'node:fs/promises';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {configureConnectionAttempts} from './connection.mjs';
+configureConnectionAttempts();
 export const ORIGIN='https://relay.interagentresearchcommons.org';
 const DIRECTORY='/private/tmp/relay-supplied-link-browser';
 const TTL=7*60*1000;

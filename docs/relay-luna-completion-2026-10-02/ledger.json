@@ -32,7 +32,11 @@
       "process_closed": true,
       "native_last_request_at": 1790960128329,
       "native_truncated": 0,
-      "native_choices_truncated": 0
+      "native_choices_truncated": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T09-50-44-01a0fd86-7afd-7b22-8643-6520002eb158.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-token-link-R1-A1",
@@ -56,8 +60,7 @@
       "native_truncated": 0,
       "native_choices_truncated": 0,
       "verification": {
-        "measurement_cutoff_at": "2026-10-03T10:05:14.393Z",
-        "checked_at": "2026-10-03T10:05:15.006Z",
+        "checked_at": "2026-10-02T17:05:48.532Z",
         "http_status": 200,
         "actual_body": "Hi.",
         "exact": true,
@@ -68,7 +71,21 @@
       "client_http_requests": 10,
       "client_requests_scope": "Tester startup home, Token instructions, eight run-associated requests including public receipt. Independent operator verification excluded.",
       "native_first_to_publication_ms": 67143,
-      "native_first_to_receipt_ms": 73636
+      "native_first_to_receipt_ms": 73636,
+      "operator_rechecks": [
+        {
+          "measurement_cutoff_at": "2026-10-03T10:05:14.393Z",
+          "checked_at": "2026-10-03T10:05:15.006Z",
+          "http_status": 200,
+          "actual_body": "Hi.",
+          "exact": true,
+          "body_sha256": "17f4444f3932f8a1c554c7cdea92208dbecb03b0173a2b6a79cc2310a05c5fad"
+        }
+      ],
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-03-16-01a0fd91-f4b1-7550-9c98-df14a34ea4e3.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-chunk-word-R1-A1",
@@ -90,7 +107,11 @@
       "native_observed_requests": 15,
       "native_requests_scope": "Server observations only; CPU-aborted responses may lack an event. Not claimed to equal complete client-spent requests.",
       "native_truncated": 0,
-      "native_choices_truncated": 0
+      "native_choices_truncated": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-48-45-01a0fdbb-98cd-7e51-89f4-d1d9bff7de27.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-short-word-R1-A1",
@@ -110,8 +131,7 @@
       "compliance_evidence": "Fresh Luna used only own restricted process and supplied labels, compared full target at review, published once, read public body, closed Ctrl-D exit 0. No fields/site JS/constructed URLs.",
       "process_closed": true,
       "verification": {
-        "measurement_cutoff_at": "2026-10-03T10:05:15.006Z",
-        "checked_at": "2026-10-03T10:05:15.827Z",
+        "checked_at": "2026-10-02T17:53:16.333Z",
         "http_status": 200,
         "actual_body": "Can you help me with this?",
         "exact": true,
@@ -131,7 +151,21 @@
       "native_repeat_requests": 0,
       "native_truncated": 0,
       "native_choices_truncated": 0,
-      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded."
+      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded.",
+      "operator_rechecks": [
+        {
+          "measurement_cutoff_at": "2026-10-03T10:05:15.006Z",
+          "checked_at": "2026-10-03T10:05:15.827Z",
+          "http_status": 200,
+          "actual_body": "Can you help me with this?",
+          "exact": true,
+          "body_sha256": "935863efbd8ddcfb6710529261cd23d12c1b52a9f7fd9d2bc3fbd622a7765290"
+        }
+      ],
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-48-58-01a0fdbb-cd9d-7cf0-8888-2b3a7f153214.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-frame-R1-A1",
@@ -151,8 +185,7 @@
       "compliance_evidence": "Fresh Luna used only restricted own process and supplied link labels; exact-character Frame route; exact review/body checked, single publication, process exited 0. No field entry, site JavaScript or constructed action URLs.",
       "process_closed": true,
       "verification": {
-        "measurement_cutoff_at": "2026-10-03T10:05:15.827Z",
-        "checked_at": "2026-10-03T10:05:16.209Z",
+        "checked_at": "2026-10-02T17:53:16.679Z",
         "http_status": 200,
         "actual_body": "Can you help me with this?",
         "exact": true,
@@ -172,7 +205,21 @@
       "native_repeat_requests": 0,
       "native_truncated": 0,
       "native_choices_truncated": 0,
-      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded."
+      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded.",
+      "operator_rechecks": [
+        {
+          "measurement_cutoff_at": "2026-10-03T10:05:15.827Z",
+          "checked_at": "2026-10-03T10:05:16.209Z",
+          "http_status": 200,
+          "actual_body": "Can you help me with this?",
+          "exact": true,
+          "body_sha256": "935863efbd8ddcfb6710529261cd23d12c1b52a9f7fd9d2bc3fbd622a7765290"
+        }
+      ],
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-49-12-01a0fdbc-0424-7862-8139-9deb5cdb5900.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-predictive-word-R1-A1",
@@ -195,7 +242,11 @@
       "native_observed_requests": 22,
       "native_requests_scope": "Server observations only; CPU-aborted responses may lack an event. Not claimed to equal complete client-spent requests.",
       "native_truncated": 0,
-      "native_choices_truncated": 0
+      "native_choices_truncated": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-52-48-01a0fdbf-5000-7e91-99bf-1604341a4638.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-prefix-link-R1-A1",
@@ -219,7 +270,11 @@
       "native_observed_requests": 27,
       "native_requests_scope": "Server observations only; CPU-aborted responses may lack an event. Not claimed to equal complete client-spent requests.",
       "native_truncated": 0,
-      "native_choices_truncated": 0
+      "native_choices_truncated": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-53-29-01a0fdbf-efb6-7510-8f54-3bd7845c1e72.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-span-R1-A1",
@@ -243,7 +298,11 @@
       "native_observed_requests": 19,
       "native_requests_scope": "Server observations only; CPU-aborted responses may lack an event. Not claimed to equal complete client-spent requests.",
       "native_truncated": 0,
-      "native_choices_truncated": 0
+      "native_choices_truncated": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T10-53-42-01a0fdc0-2320-7ad0-b36a-3cbc7eabd9e3.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-chunk-word-R1-A2",
@@ -286,7 +345,11 @@
       "native_repeat_requests": 0,
       "native_truncated": 0,
       "native_choices_truncated": 0,
-      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded."
+      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-14-16-01a0fdd2-f710-7c00-b5d4-78b27d3d6cac.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-predictive-word-R1-A2",
@@ -329,7 +392,11 @@
       "native_repeat_requests": 0,
       "native_truncated": 0,
       "native_choices_truncated": 0,
-      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded."
+      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-14-31-01a0fdd3-323c-7b20-9474-a38d5f323f5a.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-span-R1-A2",
@@ -371,7 +438,11 @@
       "native_repeat_requests": 0,
       "native_truncated": 0,
       "native_choices_truncated": 0,
-      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded."
+      "native_metrics_scope": "Run-associated server observations through tester public reads, excluding known independent operator JSON verification GETs after tester completion. Discovery excluded; response bytes uncompressed HTML; links presented are not links inspected; cached client reads/schema rejections excluded.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-14-48-01a0fdd3-74ba-72e3-9828-4195647c8a8f.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-prefix-link-R1-A2",
@@ -389,7 +460,11 @@
       "reason": "Root instructed op/heading instead of actual action/section REPL schema. Validation rejected navigation before any keyboard request; homepage retained. Tester closed; no draft/publication. Not a keyboard failure.",
       "process_closed": true,
       "profile_compliant": true,
-      "spent_run_requests": 0
+      "spent_run_requests": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-18-21-01a0fdd6-b50d-7eb3-bef7-31377dc5f9bd.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-token-link-R1-A3",
@@ -407,7 +482,11 @@
       "reason": "Root instructed op/heading instead of actual action/section REPL schema. Validation rejected navigation before any keyboard request; homepage retained. Tester closed; no draft/publication. Not a keyboard failure.",
       "process_closed": true,
       "profile_compliant": true,
-      "spent_run_requests": 0
+      "spent_run_requests": 0,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-18-38-01a0fdd6-f4b3-7130-b0d5-3c6597cb9c59.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-prefix-link-R1-A3",
@@ -447,7 +526,11 @@
       "native_repeat_requests": 0,
       "native_truncated": 0,
       "native_choices_truncated": 0,
-      "native_metrics_scope": "Run-associated native events through tester public message read, before independent operator verification; discovery/cached client reads/rejected labels excluded; uncompressed bytes, presented links not inspected links."
+      "native_metrics_scope": "Run-associated native events through tester public message read, before independent operator verification; discovery/cached client reads/rejected labels excluded; uncompressed bytes, presented links not inspected links.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-20-05-01a0fdd8-49cc-7072-acad-a2338d19f946.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P02-token-link-R1-A4",
@@ -490,7 +573,11 @@
       "native_truncated": 0,
       "native_choices_truncated": 0,
       "reason": "An initial fallback action returned a client fetch error; explicit read and supplied-link continuation recovered. Native events show one repeat and zero HTTP errors. Exact final publication verified.",
-      "native_metrics_scope": "Complete native run events before independent operator verification. Discovery/cachedreads/clientfetchfailures not observed by server excluded; uncompressed responsebytes/presentedlinks."
+      "native_metrics_scope": "Complete native run events before independent operator verification. Discovery/cachedreads/clientfetchfailures not observed by server excluded; uncompressed responsebytes/presentedlinks.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-20-23-01a0fdd8-9079-7b10-9739-a6a38564397f.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-short-word-R1-A1",
@@ -531,7 +618,11 @@
         "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T11-23-03-01a0fddb-012b-75a1-97ad-72bd842a66c9.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-predictive-word-R1-A1",
@@ -549,7 +640,11 @@
       "startup_review": "Initially rejected as paused; root supplied current active-goal evidence for authorization check and one identical retry.",
       "spent_run_requests": 0,
       "process_closed": true,
-      "reason": "Automatic approval review still classified testing as paused. Child get_goal returns null because goal belongs to root chat; no retry or bypass. Direct owner clarification pending."
+      "reason": "Automatic approval review still classified testing as paused. Child get_goal returns null because goal belongs to root chat; no retry or bypass. Direct owner clarification pending.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T16-40-49-01a0fefd-ee95-7f70-b022-55f34d5225da.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-span-R1-A1",
@@ -587,7 +682,11 @@
       "native_published_at": null,
       "native_message_id": null,
       "reason": "Automatic approval review rejected Publish this message publicly as paused/unassigned despite active root goal and literal manifest assignment. No bypass. Agent cancelled review and closed; native export independently confirms19events,last discard200,reviewedstage35bytes,no publication/messageID. Infrastructure authorization failure, not keyboard transcription failure.",
-      "native_metrics_scope": "19run-associated observed requests, one discovery page outside native run. 20clientpages total; approval-blocked publish made no serverrequest. Private export not part of trial. Exact full review is agent report;35bytes independently observed, no success certificate."
+      "native_metrics_scope": "19run-associated observed requests, one discovery page outside native run. 20clientpages total; approval-blocked publish made no serverrequest. Private export not part of trial. Exact full review is agent report;35bytes independently observed, no success certificate.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T16-41-01-01a0fefe-1b53-7552-838a-994c123dd3b2.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-chunk-word-R1-A1",
@@ -614,7 +713,11 @@
       "verified_success": false,
       "process_closed": true,
       "profile_compliant": true,
-      "context_scope": "Fresh Luna fork with latest owner resumption confirmation; no coached path."
+      "context_scope": "Fresh Luna fork with latest owner resumption confirmation; no coached path.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-02-16-01a0ff48-7e57-7691-bf41-9f873e3955a8.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-predictive-word-R1-A2",
@@ -631,7 +734,11 @@
       "verified_success": false,
       "process_closed": true,
       "profile_compliant": true,
-      "context_scope": "Fresh Luna fork with latest owner resumption confirmation; no coached path."
+      "context_scope": "Fresh Luna fork with latest owner resumption confirmation; no coached path.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-02-31-01a0ff48-bb7b-73b1-8ce6-e414f098b50c.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-chunk-word-R1-A2",
@@ -673,7 +780,11 @@
       "native_events_reconciled": 21,
       "native_published_at": null,
       "native_message_id": null,
-      "native_metrics_scope": "All run-associated native events counted; matching native event_count confirms full run even though global export has older nextpage. Discovery/clienterrors/cachedreads excluded. No publication."
+      "native_metrics_scope": "All run-associated native events counted; matching native event_count confirms full run even though global export has older nextpage. Discovery/clienterrors/cachedreads excluded. No publication.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-18-27-01a0ff57-5117-79e0-a778-b99329000ad3.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-predictive-word-R1-A3",
@@ -713,7 +824,11 @@
       "corrections": [
         "Cleared initial ASCII apostrophe draft",
         "Removed duplicate t with two displayed backspaces"
-      ]
+      ],
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-18-42-01a0ff57-8aa3-7a11-a81e-3c58e6b669f2.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-chunk-word-R1-A1",
@@ -758,7 +873,11 @@
       "native_links_presented": 1388,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Sixrun-associatedrequests includingtesterpublicbodyread, excludes operatorverification beyond frozen measurementcutoff and home discovery. Bytesuncompressed; presentedlinks not inspectedlinks."
+      "native_metrics_scope": "Sixrun-associatedrequests includingtesterpublicbodyread, excludes operatorverification beyond frozen measurementcutoff and home discovery. Bytesuncompressed; presentedlinks not inspectedlinks.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-27-07-01a0ff5f-40bb-7a40-835f-4881c31008ed.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-predictive-word-R1-A1",
@@ -803,7 +922,11 @@
       "native_links_presented": 296,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Sixrun-associatedrequests includingtesterpublicbodyread, excludes operatorverification beyond frozen measurementcutoff and home discovery. Bytesuncompressed; presentedlinks not inspectedlinks."
+      "native_metrics_scope": "Sixrun-associatedrequests includingtesterpublicbodyread, excludes operatorverification beyond frozen measurementcutoff and home discovery. Bytesuncompressed; presentedlinks not inspectedlinks.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-27-21-01a0ff5f-7772-7503-871a-862a65eddc77.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-span-R1-A1",
@@ -866,7 +989,11 @@
       "native_http_errors": 0,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected."
+      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-29-34-01a0ff61-7fb9-7623-8761-59e4d980f6d9.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-prefix-link-R1-A1",
@@ -910,7 +1037,11 @@
       "native_http_errors": 0,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected."
+      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-29-49-01a0ff61-ba75-71f1-950c-594a2245dacd.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-short-word-R1-A1",
@@ -953,7 +1084,11 @@
       "native_http_errors": 0,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected."
+      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-33-06-01a0ff64-b9e3-7a32-a4a3-0628be177941.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P01-frame-R1-A1",
@@ -995,7 +1130,11 @@
       "native_http_errors": 0,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected."
+      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-33-20-01a0ff64-ef2f-70d3-846e-2ee98143e290.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-token-link-R1-A1",
@@ -1015,7 +1154,11 @@
       "process_closed": true,
       "spent_run_requests": 0,
       "spent_requests_scope": "No session-associated native run; clienthome/entry discovery not yet reconciled.",
-      "reason": "Reviewclassified Begin free-generation task asoutsideexactassignedtest despite ownerpreviouslyallowingblankTokenstart. Nobypass,CtrlDclose. Root willverify originalhumanauthorization evidence whileothertesterscontinue."
+      "reason": "Reviewclassified Begin free-generation task asoutsideexactassignedtest despite ownerpreviouslyallowingblankTokenstart. Nobypass,CtrlDclose. Root willverify originalhumanauthorization evidence whileothertesterscontinue.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-36-07-01a0ff67-7e9f-7ca1-9855-08d9bd051607.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-chunk-word-R1-A3",
@@ -1058,7 +1201,11 @@
       "native_http_errors": 0,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected."
+      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-36-22-01a0ff67-b696-7ae0-b216-ffd72a63ef35.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-span-R1-A2",
@@ -1101,7 +1248,11 @@
       "native_http_errors": 0,
       "native_truncated": 0,
       "native_budget_possible_gap": false,
-      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected."
+      "native_metrics_scope": "Complete exported run events before frozen independent-verification cutoff. Includes tester public body read; excludes operator verifier read and home discovery. Bytes uncompressed, links presented rather than inspected.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-38-10-01a0ff69-5f0b-7752-a061-7ca33374784a.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-prefix-link-R1-A1",
@@ -1135,7 +1286,11 @@
       "native_truncated": 0,
       "native_budget_possible_gap": false,
       "native_execution_gap": true,
-      "spent_requests_scope": "45 complete recorded native events, plus at least three client-observed failed review activations missing from logger; discovery outside run. Recorded HTTP-error count zero must not be interpreted as no failures. No message/publication certificate."
+      "spent_requests_scope": "45 complete recorded native events, plus at least three client-observed failed review activations missing from logger; discovery outside run. Recorded HTTP-error count zero must not be interpreted as no failures. No message/publication certificate.",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T18-41-59-01a0ff6c-ddde-7411-97ad-c837edc636ca.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-prefix-link-R1-A2",
@@ -1174,7 +1329,11 @@
         "last_request_at": 1790999197430,
         "published_at": null
       },
-      "unresolved_run_attribution": "739412065df726ecdd65beef27a6b332ca3c4dd7b2e1d16164724df31dbb0219: one-event Prefix run within trial interval"
+      "unresolved_run_attribution": "739412065df726ecdd65beef27a6b332ca3c4dd7b2e1d16164724df31dbb0219: one-event Prefix run within trial interval",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-42-45-01a0ffdb-6cf4-7361-8dee-44f7c7b4fa49.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-token-link-R1-A2",
@@ -1212,7 +1371,11 @@
         "first_request_at": 1790999024423,
         "last_request_at": 1790999093922,
         "published_at": null
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-43-03-01a0ffdb-b34e-7b40-a57a-f3052f09e0d3.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-predictive-word-R1-A4",
@@ -1261,7 +1424,11 @@
         "last_request_at": 1790999472539,
         "published_at": 1790999462976,
         "first_native_to_publication_seconds": 123.902
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-48-20-01a0ffe0-8b41-70f1-9b69-dfe604e17e85.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-frame-R1-A2",
@@ -1298,7 +1465,11 @@
         "first_request_at": 1790999348774,
         "last_request_at": 1790999401852,
         "published_at": null
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-48-37-01a0ffe0-ca3f-7ec0-8469-ffbb59c02892.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P04-short-word-R1-A1",
@@ -1339,7 +1510,11 @@
         "server_ms_max": 1584,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-51-16-01a0ffe3-3872-7bb3-a0ff-c444524a5fb0.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P04-chunk-word-R1-A1",
@@ -1380,7 +1555,11 @@
         "server_ms_max": 137,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-52-18-01a0ffe4-2cd6-75a3-b377-2cc96e03cf21.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-token-link-R1-A2",
@@ -1405,7 +1584,11 @@
       "completed_at": "2026-10-03T03:59:31.720829+00:00",
       "spent_requests_status": "No composition run created: blank-start rejected before execution. Home and Token instructions discovery occurred; no claim zero total HTTP requests.",
       "native_session_created": false,
-      "client_discovery_requests_minimum": 2
+      "client_discovery_requests_minimum": 2,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-57-00-01a0ffe8-7a98-7f53-aee6-9a21f5fcaa46.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-predictive-word-R1-A1",
@@ -1449,7 +1632,11 @@
         "published_at": null,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-58-51-01a0ffea-2a1e-78e2-83b9-21f0d82f2372.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-frame-R1-A1",
@@ -1498,7 +1685,11 @@
         "first_native_to_publication_seconds": 142.885,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T20-59-09-01a0ffea-7133-7c02-8bdc-09eab8180c68.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-short-word-R1-A1",
@@ -1537,7 +1728,11 @@
         "published_at": null,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-06-30-01a0fff1-2a27-7273-bc8f-905efc47c636.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-chunk-word-R1-A1",
@@ -1587,7 +1782,11 @@
         "first_native_to_publication_seconds": 122.93,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-06-46-01a0fff1-6b3a-7bc0-88d7-8f5806969520.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-prefix-link-R1-A1",
@@ -1626,7 +1825,11 @@
         "published_at": null,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-13-45-01a0fff7-cfa9-7482-9e39-6831027a8f55.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P06-span-R1-A1",
@@ -1666,7 +1869,11 @@
         "truncated": false,
         "budget_possible_gap": false
       },
-      "agent_reported_corrections": []
+      "agent_reported_corrections": [],
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-14-00-01a0fff8-0afe-76e0-bf5a-1b909e7ec753.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-short-word-R1-A1",
@@ -1716,7 +1923,11 @@
         "first_native_to_publication_seconds": 187.457,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-24-11-01a10001-5ca5-71e3-a5a9-ebe7fef21eb5.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-chunk-word-R1-A1",
@@ -1761,7 +1972,11 @@
         "published_at": null,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-24-28-01a10001-9e56-7e52-83f2-410ce3d05473.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-token-link-R1-A1",
@@ -1799,7 +2014,11 @@
         "published_at": null,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-29-47-01a10006-7dfd-7741-9bd7-fcb7129b1c3c.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-frame-R1-A1",
@@ -1839,7 +2058,11 @@
         "published_at": null,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-31-44-01a10008-43ab-7471-bf8f-29da1f8dd9f0.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-span-R1-A1",
@@ -1892,7 +2115,11 @@
         "first_native_to_publication_seconds": 234.147,
         "server_processing_ms": 1474,
         "timing_scope": "21 scored native responses summed server_ms; first associated request to publication234.147s. Remainder includes network, tools, model decisions and idle time, not measured thinking alone."
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-37-20-01a1000d-674b-7d70-a968-bf61466cdd6c.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-prefix-link-R1-A1",
@@ -1943,7 +2170,11 @@
         "budget_possible_gap": false,
         "excluded_verifier_requests": 1,
         "first_native_to_publication_seconds": 170.524
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-39-35-01a1000f-76a8-73a2-b3bc-c5e740acb7d7.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P07-predictive-word-R1-A1",
@@ -2194,7 +2425,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-57-49-01a10020-2675-7180-b334-6c5610cb1c7d.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P08-span-R1-A1",
@@ -2235,7 +2470,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T22-00-02-01a10022-2f9f-7e70-acf4-f95f34ce335c.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P08-short-word-R1-A1",
@@ -2284,7 +2523,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T22-02-37-01a10024-8ad3-7563-b4d5-6dc44e900bff.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P10-short-word-R1-A1",
@@ -3115,7 +3358,11 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T00-02-01-01a10091-dabe-7020-b986-fdcab72976ac.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-token-link-R1-A3",
@@ -3155,7 +3402,11 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T00-04-03-01a10093-b9a8-7143-8030-6f712db13997.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-frame-R1-A3",
@@ -5021,13 +5272,32 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:09:35.670826+00:00",
-      "outcome": "in-progress",
+      "outcome": "interrupted-unpublished",
       "verified_success": false,
-      "native_metrics_pending": true,
+      "native_metrics_pending": false,
       "dispatch_note": "Registered but not started: app agent thread limit reached at third tester dispatch. No site action.",
       "registered_release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "usage_version": "relay-keyboard-usage/2.0.1",
-      "agent": "/root/phase4_p05_frame_a1"
+      "agent": "/root/phase4_p05_frame_a1",
+      "process_handle": 63999,
+      "process_closed": true,
+      "reason": "Agent connection reset; OS inspection found no browser process. Matching native run has no publication association; preserved unsuccessful work.",
+      "spent_run_requests": 12,
+      "native_metrics": {
+        "run_id": "960ae7b99eaa9a10a65ce7857938730c47b04f466b391a4b8941e22cf0e18f78",
+        "request_count": 12,
+        "response_bytes": 904096,
+        "links_presented": 1515,
+        "server_ms": 0,
+        "http_errors": 0,
+        "export_complete": true,
+        "truncated": false,
+        "budget_possible_gap": false
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T03-20-55-01a10147-f62e-7dd3-8a87-8c8edf9ef7ac.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P05-prefix-link-R1-A3",
@@ -5043,10 +5313,155 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:20:40.600648+00:00",
+      "outcome": "interrupted-unpublished",
+      "verified_success": false,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p05_prefix_a3",
+      "process_handle": 68178,
+      "process_closed": true,
+      "reason": "Agent connection reset; OS inspection found no browser process. Matching native run has no publication association; preserved unsuccessful work.",
+      "spent_run_requests": 13,
+      "native_metrics": {
+        "run_id": "55821b9ed490ea78d569539a16fc0ebef40e86409bfc98cc58c1fa80491e0358",
+        "request_count": 13,
+        "response_bytes": 744861,
+        "links_presented": 1579,
+        "server_ms": 125,
+        "http_errors": 0,
+        "export_complete": true,
+        "truncated": false,
+        "budget_possible_gap": false
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T03-21-08-01a10148-28fa-70a0-bbb2-496eecc496d1.jsonl",
+      "model_runtime_effort": "medium"
+    },
+    {
+      "attempt_id": "P05-frame-R1-A2",
+      "phrase_id": "P05",
+      "method_id": "frame",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.7",
+      "tester_contract": "relay-luna-tester/1.6",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T17:01:09.367537+00:00",
+      "outcome": "network-no-response-before-composition",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p05_frame_a2",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-01-30-01a102b6-b380-70f3-905b-8205ee29ae73.jsonl",
+      "model_runtime_effort": "medium",
+      "reason": "Two initial read-only startup fetches timed out ETIMEDOUT, no process handle; tool durations approx6.1and3.8seconds.",
+      "process_closed": true,
+      "profile_compliant": true,
+      "network_code": "ETIMEDOUT",
+      "spent_requests_status": "No response for failed connection attempts; missing native work is not zero. Discovery/entry scope unresolved.",
+      "client_startup_attempts": 2,
+      "client_startup_tool_seconds": [
+        6.1,
+        3.8
+      ]
+    },
+    {
+      "attempt_id": "P05-prefix-link-R1-A4",
+      "phrase_id": "P05",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.7",
+      "tester_contract": "relay-luna-tester/1.6",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T17:01:09.367627+00:00",
+      "outcome": "network-no-response-before-composition",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p05_prefix_a4",
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-01-44-01a102b6-e951-74a2-966a-fe7bc2b2ecfb.jsonl",
+      "model_runtime_effort": "medium",
+      "reason": "Initial home fetched; two Prefix entry fetches and one supplied Recovery fetch timed out ETIMEDOUT. No draft/publication; retained reads are local. Closed process33017.",
+      "process_closed": true,
+      "profile_compliant": true,
+      "network_code": "ETIMEDOUT",
+      "spent_requests_status": "No response for failed connection attempts; missing native work is not zero. Discovery/entry scope unresolved.",
+      "process_handle": 33017,
+      "client_countdown_elapsed_seconds": 43,
+      "client_reported_network_failures": 3,
+      "client_reported_successful_home_fetches": 1
+    },
+    {
+      "attempt_id": "P05-frame-R1-A3",
+      "phrase_id": "P05",
+      "method_id": "frame",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.7",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "connection_attempt_timeout_ms": 1500,
+      "registered_at": "2026-10-03T17:10:49.403111+00:00",
       "outcome": "in-progress",
       "verified_success": false,
       "native_metrics_pending": true,
-      "agent": "/root/phase4_p05_prefix_a3"
+      "agent": "/root/phase4_p05_frame_a3",
+      "process_handle": 71081
+    },
+    {
+      "attempt_id": "P05-prefix-link-R1-A5",
+      "phrase_id": "P05",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.7",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "connection_attempt_timeout_ms": 1500,
+      "registered_at": "2026-10-03T17:10:49.403187+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p05_prefix_a5"
+    },
+    {
+      "attempt_id": "P05-token-link-R1-A1",
+      "phrase_id": "P05",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.7",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "usage_version": "relay-keyboard-usage/2.0.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "connection_attempt_timeout_ms": 1500,
+      "registered_at": "2026-10-03T17:10:49.403197+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p05_token_a1"
     }
   ],
   "verified_successes": 57,
@@ -5445,6 +5860,14 @@
       "usage": "recorded",
       "run_id": "d49745d53edbacf0743ff25e1d7c1cc673082ff54c7a22a1635966eb8cf5083a",
       "checked_at": "2026-10-03T10:20:40.600706+00:00"
+    },
+    {
+      "checked_at": "2026-10-03T17:01:09.367631+00:00",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "run_id": "c68bc2cb6a528c4d3391a56ac3d025fbc93e8007f3cfe9de0198a8c1980c17b6",
+      "scope": "Unpublished operator preflight excluded from scored Luna trials",
+      "usage": "recorded",
+      "status": 200
     }
   ]
 }
