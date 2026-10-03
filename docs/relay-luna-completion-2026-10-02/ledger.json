@@ -2232,7 +2232,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-48-11-01a10017-545c-72e2-8cd4-42ab220a1acc.jsonl"
     },
     {
       "attempt_id": "P04-short-word-R1-A2",
@@ -2286,7 +2288,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-48-21-01a10017-7ca5-7951-bbe9-29866485db31.jsonl"
     },
     {
       "attempt_id": "P08-chunk-word-R1-A1",
@@ -2387,7 +2391,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T21-53-22-01a1001c-1582-7100-b6fd-c57328f7b66c.jsonl"
     },
     {
       "attempt_id": "P05-prefix-link-R1-A1",
@@ -2588,7 +2594,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-24-00-01a1006f-0f19-7df2-badb-2245716c4401.jsonl"
     },
     {
       "attempt_id": "P10-chunk-word-R1-A1",
@@ -2646,7 +2654,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-24-11-01a1006f-3760-7773-8671-a4e65d71e808.jsonl"
     },
     {
       "attempt_id": "P09-prefix-link-R1-A1",
@@ -2840,7 +2850,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-35-37-01a10079-aea9-7170-b8c8-6ad859a2bc6a.jsonl"
     },
     {
       "attempt_id": "P05-short-word-R1-A1",
@@ -2894,7 +2906,9 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-39-50-01a1007d-8b76-7400-b7c3-1f3374e01c7f.jsonl"
     },
     {
       "attempt_id": "P04-frame-R1-A1",
@@ -2948,7 +2962,9 @@
         "export_complete": true,
         "excluded_verifier_requests": 1,
         "first_native_to_publication_seconds": 204.372
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-41-49-01a1007f-5f1c-7032-ac68-45baa5bb8e2d.jsonl"
     },
     {
       "attempt_id": "P04-span-R1-A1",
@@ -3000,7 +3016,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-02T23-45-29-01a10082-b81d-7d21-b19c-f148a3911af4.jsonl"
+      "model_runtime_source": "rollout-2026-10-02T23-45-29-01a10082-b81d-7d21-b19c-f148a3911af4.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-45-29-01a10082-b81d-7d21-b19c-f148a3911af4.jsonl"
     },
     {
       "attempt_id": "P04-token-link-R1-A1",
@@ -3099,7 +3117,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-02T23-49-06-01a10086-0946-7941-b45a-cc26972803be.jsonl"
+      "model_runtime_source": "rollout-2026-10-02T23-49-06-01a10086-0946-7941-b45a-cc26972803be.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-49-06-01a10086-0946-7941-b45a-cc26972803be.jsonl"
     },
     {
       "attempt_id": "P08-token-link-R1-A1",
@@ -3154,7 +3174,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-02T23-52-54-01a10089-842a-7cf1-8e0f-7b9b49547fc9.jsonl"
+      "model_runtime_source": "rollout-2026-10-02T23-52-54-01a10089-842a-7cf1-8e0f-7b9b49547fc9.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-52-54-01a10089-842a-7cf1-8e0f-7b9b49547fc9.jsonl"
     },
     {
       "attempt_id": "P06-short-word-R1-A2",
@@ -3207,7 +3229,9 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-55-47-01a1008c-2874-7f80-bfe9-78010df8d773.jsonl"
     },
     {
       "attempt_id": "P06-span-R1-A2",
@@ -3261,7 +3285,9 @@
         "export_complete": true,
         "truncated": false,
         "budget_possible_gap": false
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-57-21-01a1008d-96bb-7443-aba7-ec6045faebad.jsonl"
     },
     {
       "attempt_id": "P06-predictive-word-R1-A2",
@@ -3315,7 +3341,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-02T23-59-02-01a1008f-1f6e-7b13-9ef6-de271d33b6af.jsonl"
+      "model_runtime_source": "rollout-2026-10-02T23-59-02-01a1008f-1f6e-7b13-9ef6-de271d33b6af.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-02T23-59-02-01a1008f-1f6e-7b13-9ef6-de271d33b6af.jsonl"
     },
     {
       "attempt_id": "P06-prefix-link-R1-A2",
@@ -3505,7 +3533,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-03T00-06-13-01a10095-b4a9-73a2-a74d-0567af48e712.jsonl"
+      "model_runtime_source": "rollout-2026-10-03T00-06-13-01a10095-b4a9-73a2-a74d-0567af48e712.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T00-06-13-01a10095-b4a9-73a2-a74d-0567af48e712.jsonl"
     },
     {
       "attempt_id": "P07-chunk-word-R1-A2",
@@ -3560,7 +3590,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-03T00-10-38-01a10099-c090-74c1-84a2-a9ca4525787a.jsonl"
+      "model_runtime_source": "rollout-2026-10-03T00-10-38-01a10099-c090-74c1-84a2-a9ca4525787a.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T00-10-38-01a10099-c090-74c1-84a2-a9ca4525787a.jsonl"
     },
     {
       "attempt_id": "P06-token-link-R1-A3",
@@ -3613,7 +3645,9 @@
       "timing_discrepancy": "Agentapprox53s unsupported bynativeinterval72.515s; use nativeintervalforassociatedrun, discoveryexcluded.",
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-03T00-12-02-01a1009b-0901-74a0-abd5-7c8b260b2526.jsonl"
+      "model_runtime_source": "rollout-2026-10-03T00-12-02-01a1009b-0901-74a0-abd5-7c8b260b2526.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T00-12-02-01a1009b-0901-74a0-abd5-7c8b260b2526.jsonl"
     },
     {
       "attempt_id": "P08-prefix-link-R1-A1",
@@ -3978,7 +4012,7 @@
       "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "registered_at": "2026-10-03T08:39:42.272971+00:00",
-      "outcome": "published-pending-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p08_chunk_a4",
@@ -4024,7 +4058,9 @@
       },
       "model_runtime_verified": true,
       "model_runtime_effort": "medium",
-      "model_runtime_source": "rollout-2026-10-03T01-39-53-01a100eb-7568-7a32-9d1a-f7b2ac8737c5.jsonl"
+      "model_runtime_source": "rollout-2026-10-03T01-39-53-01a100eb-7568-7a32-9d1a-f7b2ac8737c5.jsonl",
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T01-39-53-01a100eb-7568-7a32-9d1a-f7b2ac8737c5.jsonl"
     },
     {
       "attempt_id": "P05-predictive-word-R1-A1",
@@ -4083,7 +4119,7 @@
       "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "registered_at": "2026-10-03T08:40:42.433802+00:00",
-      "outcome": "published-pending-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "deadline_seconds": 360,
@@ -4130,7 +4166,9 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 1
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T01-50-22-01a100f5-0ea8-7e13-8a83-68a1d72a2cda.jsonl"
     },
     {
       "attempt_id": "P05-predictive-word-R1-A2",
@@ -4145,7 +4183,7 @@
       "deadline_seconds": 360,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T08:50:46.503217+00:00",
-      "outcome": "published-pending-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p05_predictive_a2",
@@ -4189,7 +4227,9 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 1
-      }
+      },
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T01-50-57-01a100f5-95d1-7c52-9689-ebf6aec36892.jsonl"
     },
     {
       "attempt_id": "P05-span-R1-A2",
@@ -4204,7 +4244,7 @@
       "deadline_seconds": 360,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T08:50:46.503217+00:00",
-      "outcome": "published-pending-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p05_span_a2",
@@ -4265,7 +4305,7 @@
       "deadline_seconds": 360,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T08:57:49.964327+00:00",
-      "outcome": "published-pending-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p03_token_a5",
@@ -4471,7 +4511,7 @@
       "deadline_seconds": 360,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:05:54.639474+00:00",
-      "outcome": "published-pending-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "authorization": "Owner directly reaffirmed i authorize... everything after exact Frame publication review rejection; fresh attempt, no replay of rejected capability.",
@@ -4680,7 +4720,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:39:50.953837+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p04_chunk_a4",
@@ -4731,7 +4771,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:39:50.953837+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p08_short_a3",
@@ -4782,7 +4822,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:49:09.119977+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p09_chunk_a1",
@@ -4837,7 +4877,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:49:09.120033+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p08_predictive_a3",
@@ -4949,7 +4989,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:55:49.282545+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p07_token_a2",
@@ -5004,7 +5044,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:00:18.912141+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p07_frame_a3",
@@ -5058,7 +5098,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:03:11.789250+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p09_predictive_a2",
@@ -5111,7 +5151,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:05:32.302097+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p08_span_a2",
@@ -5166,7 +5206,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:09:12.007120+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p04_prefix_a4",
@@ -5219,7 +5259,7 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T10:09:35.670761+00:00",
-      "outcome": "verified-success",
+      "outcome": "published-verified",
       "verified_success": true,
       "native_metrics_pending": false,
       "agent": "/root/phase4_p04_token_a2",
@@ -5744,7 +5784,7 @@
       "client": "semantic-link-browser/2.8",
       "tester_contract": "relay-luna-tester/1.8",
       "release": "d0519e27-329d-4216-9e57-278f21d0a930",
-      "outcome": "published-awaiting-independent-verification",
+      "outcome": "published-verified",
       "verified_success": true,
       "agent": "/root/final_p09_frame_a1",
       "process_handle": 89918,
@@ -5806,11 +5846,11 @@
       "tester_contract": "relay-luna-tester/1.8",
       "release": "d0519e27-329d-4216-9e57-278f21d0a930",
       "registered_at": "2026-10-03T17:40:27.267986+00:00",
-      "outcome": "in-progress",
-      "verified_success": false,
+      "outcome": "published-verified",
+      "verified_success": true,
       "agent": "/root/final_p08_prefix_a2",
       "process_handle": 37507,
-      "process_closed": false,
+      "process_closed": true,
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "foundation": "relay-keyboard-foundation/1.5.1",
@@ -5818,7 +5858,45 @@
       "model_runtime_verified": true,
       "model_runtime": "gpt-6-luna",
       "model_runtime_effort": "medium",
-      "model_runtime_evidence_file": "rollout-2026-10-03T10-40-40-01a102da-8ec2-7061-8077-70dcfb106d2f.jsonl"
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-40-40-01a102da-8ec2-7061-8077-70dcfb106d2f.jsonl",
+      "message_id": "IARC-M-aaa823bf-def6-4c2e-948c-53be1e2474cb",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 314,
+      "tester_reported_link_activations": 34,
+      "tester_reported_local_reads": 1,
+      "tester_reported_corrections": [],
+      "tester_reported_errors": [
+        "Delayed response recovered with local read"
+      ],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T17:46:52.402Z",
+        "checked_at": "2026-10-03T17:46:52.971Z",
+        "http_status": 200,
+        "actual_body": "Where should we meet at 3:30?",
+        "exact": true,
+        "body_sha256": "204e11b3a9cc1173919e7ead5787acb697a3fd8ab2b7e8b7d2480ada9f02b326"
+      },
+      "spent_run_requests": 34,
+      "native_first_request_at": 1791049267374,
+      "native_published_at": 1791049564038,
+      "native_last_request_at": 1791049570815,
+      "native_first_to_publication_ms": 296664,
+      "native_first_to_receipt_ms": 303441,
+      "native_metrics": {
+        "run_id": "adfc7df2e9a5854279e0fca3acba06753dfd75c6a1304ea16b478d8785cbb831",
+        "request_count": 34,
+        "response_bytes": 1615483,
+        "links_presented": 4002,
+        "server_ms": 46,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T17:46:52.402Z"
+      }
     },
     {
       "attempt_id": "P10-span-R1-A1",
@@ -5830,15 +5908,53 @@
       "tester_contract": "relay-luna-tester/1.8",
       "release": "d0519e27-329d-4216-9e57-278f21d0a930",
       "registered_at": "2026-10-03T17:42:22.077479+00:00",
-      "outcome": "in-progress",
-      "verified_success": false,
+      "outcome": "published-verified",
+      "verified_success": true,
       "agent": "/root/final_p10_span_a1",
       "process_handle": 65342,
-      "process_closed": false,
+      "process_closed": true,
       "model_runtime_verified": true,
       "model_runtime": "gpt-6-luna",
       "model_runtime_effort": "medium",
-      "model_runtime_evidence_file": "rollout-2026-10-03T10-42-34-01a102dc-4b94-7d80-ba79-2b1b1524f71e.jsonl"
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-42-34-01a102dc-4b94-7d80-ba79-2b1b1524f71e.jsonl",
+      "message_id": "IARC-M-c2a1b6ad-f29a-4f45-b1cf-a5fa88524d46",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 146,
+      "tester_reported_link_activations": 17,
+      "tester_reported_local_reads": 1,
+      "tester_reported_corrections": [],
+      "tester_reported_errors": [
+        "Delayed response recovered with local read"
+      ],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T17:46:20.941Z",
+        "checked_at": "2026-10-03T17:46:21.490Z",
+        "http_status": 200,
+        "actual_body": "Thanks for listening. I appreciate you.",
+        "exact": true,
+        "body_sha256": "646c095f2c0603ca4d1187d40aa2cf35cd03d0c7e02ae7477b1d7337523f4a09"
+      },
+      "spent_run_requests": 17,
+      "native_first_request_at": 1791049392340,
+      "native_published_at": 1791049523559,
+      "native_last_request_at": 1791049531058,
+      "native_first_to_publication_ms": 131219,
+      "native_first_to_receipt_ms": 138718,
+      "native_metrics": {
+        "run_id": "0892f22f9d396069b3c7d5774ba9e799c8dec640c8fc81ec910260aa56e3da4e",
+        "request_count": 17,
+        "response_bytes": 817376,
+        "links_presented": 1784,
+        "server_ms": 951,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T17:46:20.941Z"
+      }
     },
     {
       "attempt_id": "P10-frame-R1-A1",
@@ -5850,22 +5966,434 @@
       "tester_contract": "relay-luna-tester/1.8",
       "release": "d0519e27-329d-4216-9e57-278f21d0a930",
       "registered_at": "2026-10-03T17:43:48.574988+00:00",
-      "outcome": "in-progress",
-      "verified_success": false,
-      "model_runtime_verified": false,
-      "model_runtime": "codex-auto-review",
-      "model_runtime_effort": "low",
-      "model_runtime_evidence_file": "rollout-2026-10-03T02-26-16-01a10115-ee68-7d61-9aba-f625e2097713.jsonl",
+      "outcome": "published-verified",
+      "verified_success": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-44-01-01a102dd-a1e0-7e61-8679-9f13529f2662.jsonl",
       "agent": "/root/final_p10_frame_a1",
       "process_handle": 80812,
-      "process_closed": false
+      "process_closed": true,
+      "message_id": "IARC-M-557c5afe-7e3e-4dd0-8c9e-6668a709c623",
+      "profile_compliant": true,
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T17:48:12.774Z",
+        "checked_at": "2026-10-03T17:48:13.334Z",
+        "http_status": 200,
+        "actual_body": "Thanks for listening. I appreciate you.",
+        "exact": true,
+        "body_sha256": "646c095f2c0603ca4d1187d40aa2cf35cd03d0c7e02ae7477b1d7337523f4a09"
+      },
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 221,
+      "tester_reported_link_activations": 30,
+      "tester_reported_local_reads": 0,
+      "tester_reported_errors": [],
+      "tester_reported_corrections": [
+        "Repaired missing space with Backspace and literal space"
+      ],
+      "spent_run_requests": 29,
+      "native_first_request_at": 1791049480917,
+      "native_published_at": 1791049676840,
+      "native_last_request_at": 1791049685811,
+      "native_first_to_publication_ms": 195923,
+      "native_first_to_receipt_ms": 204894,
+      "native_metrics": {
+        "run_id": "6af679b760ade2668314a8182892bff112d92a32d7a3c01780c733206203dce9",
+        "request_count": 29,
+        "response_bytes": 2005928,
+        "links_presented": 3355,
+        "server_ms": 43,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T17:48:12.774Z"
+      }
+    },
+    {
+      "attempt_id": "P09-token-link-R1-A1",
+      "phrase_id": "P09",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.8",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "registered_at": "2026-10-03T17:45:47.856219+00:00",
+      "outcome": "published-verified",
+      "verified_success": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-52-27-01a102e5-5821-7d01-a8bc-c3350db6c345.jsonl",
+      "agent": "/root/final_p09_token_a1",
+      "process_handle": 87541,
+      "process_closed": true,
+      "message_id": "IARC-M-045ba034-1e3a-448b-95b9-a3bbbcafaaad",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 388,
+      "tester_reported_link_activations": 34,
+      "tester_reported_local_reads": 7,
+      "tester_reported_corrections": [],
+      "tester_reported_errors": [],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T18:00:29.877Z",
+        "checked_at": "2026-10-03T18:00:30.453Z",
+        "http_status": 200,
+        "actual_body": "I’m tired, but I still want to finish this.",
+        "exact": true,
+        "body_sha256": "c10aae130a08e5c03c2fb1f2286a7ac9e608acc67f0a3df884c625e8332b6497"
+      },
+      "spent_run_requests": 34,
+      "native_first_request_at": 1791049998755,
+      "native_published_at": 1791050359369,
+      "native_last_request_at": 1791050366008,
+      "native_first_to_publication_ms": 360614,
+      "native_first_to_receipt_ms": 367253,
+      "native_metrics": {
+        "run_id": "2914532879bb6133537650790c814d9864884a2f8f31dac73238b8d5325c713c",
+        "request_count": 34,
+        "response_bytes": 2079172,
+        "links_presented": 5987,
+        "server_ms": 2439,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T18:00:29.877Z"
+      }
+    },
+    {
+      "attempt_id": "P10-token-link-R1-A1",
+      "phrase_id": "P10",
+      "method_id": "token-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.8",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "registered_at": "2026-10-03T17:45:47.856299+00:00",
+      "outcome": "published-verified",
+      "verified_success": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-54-58-01a102e7-a695-7b70-9d32-09e49ae74535.jsonl",
+      "agent": "/root/final_p10_token_a1",
+      "process_handle": 61705,
+      "process_closed": true,
+      "message_id": "IARC-M-3f86a029-e698-4b67-8077-b3443de4dff5",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 265,
+      "tester_reported_link_activations": 21,
+      "tester_reported_local_reads": 4,
+      "tester_reported_corrections": [],
+      "tester_reported_errors": [
+        "Recovered client-selection-or-protocol app guard"
+      ],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T18:00:46.583Z",
+        "checked_at": "2026-10-03T18:00:47.158Z",
+        "http_status": 200,
+        "actual_body": "Thanks for listening. I appreciate you.",
+        "exact": true,
+        "body_sha256": "646c095f2c0603ca4d1187d40aa2cf35cd03d0c7e02ae7477b1d7337523f4a09"
+      },
+      "spent_run_requests": 24,
+      "native_first_request_at": 1791050146705,
+      "native_published_at": 1791050391087,
+      "native_last_request_at": 1791050397886,
+      "native_first_to_publication_ms": 244382,
+      "native_first_to_receipt_ms": 251181,
+      "native_metrics": {
+        "run_id": "0678a4289439e561445811f7075f7ccc44a87839153868629b9508468347d7f1",
+        "request_count": 24,
+        "response_bytes": 1360206,
+        "links_presented": 3834,
+        "server_ms": 2012,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T18:00:46.583Z"
+      }
+    },
+    {
+      "attempt_id": "P05-prefix-link-R1-A6",
+      "phrase_id": "P05",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.8",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "registered_at": "2026-10-03T17:45:47.856315+00:00",
+      "outcome": "published-verified",
+      "verified_success": true,
+      "agent": "/root/final_p05_prefix_a6",
+      "process_handle": 15947,
+      "process_closed": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-46-33-01a102df-f14b-7483-84f8-be81b14b9f56.jsonl",
+      "message_id": "IARC-M-2b356587-2cac-4104-a068-2b45de3facc8",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 267,
+      "tester_reported_corrections": [
+        "Missing space after what repaired",
+        "Extra a in meant removed"
+      ],
+      "tester_reported_errors": [],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T17:52:13.691Z",
+        "checked_at": "2026-10-03T17:52:14.274Z",
+        "http_status": 200,
+        "actual_body": "That’s not what I meant; try again.",
+        "exact": true,
+        "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
+      },
+      "spent_run_requests": 46,
+      "native_first_request_at": 1791049623335,
+      "native_published_at": 1791049875800,
+      "native_last_request_at": 1791049881122,
+      "native_first_to_publication_ms": 252465,
+      "native_first_to_receipt_ms": 257787,
+      "native_metrics": {
+        "run_id": "867efd33b1e825282110f3993d0e1796074e46f94cd736dbf8dddab7bdffb2b8",
+        "request_count": 46,
+        "response_bytes": 2209423,
+        "links_presented": 5562,
+        "server_ms": 41,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T17:52:13.691Z"
+      }
+    },
+    {
+      "attempt_id": "P09-prefix-link-R1-A2",
+      "phrase_id": "P09",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.8",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "registered_at": "2026-10-03T17:45:47.856326+00:00",
+      "outcome": "deadline-incomplete",
+      "verified_success": false,
+      "agent": "/root/final_p09_prefix_a2",
+      "process_handle": 92483,
+      "process_closed": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-47-04-01a102e0-6d82-7d81-a613-2fd6b9ac4895.jsonl",
+      "client_countdown_elapsed_seconds": 420,
+      "tester_final_draft": "I’m tired but I still want to fi",
+      "tester_reported_errors": [
+        "Recovered network-no-response EHOSTUNREACH; then deadline"
+      ],
+      "profile_compliant": true,
+      "native_metrics_pending": false,
+      "reason": "Hard seven-minute deadline. Exact target unmet; no review/publication. Last draft also omitted comma after tired.",
+      "spent_run_requests": 37,
+      "native_first_request_at": 1791049655742,
+      "native_last_request_at": 1791050059981,
+      "native_metrics": {
+        "run_id": "2b73cdf4fec79cde75f6596647ade39aebba243f72b84e5054e74b7c9e7fd090",
+        "request_count": 37,
+        "response_bytes": 2274195,
+        "links_presented": 4273,
+        "server_ms": 0,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 0,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "scope": "Complete associated server observations; failed network attempt may have unknown additional server work. No publication."
+      }
+    },
+    {
+      "attempt_id": "P10-prefix-link-R1-A1",
+      "phrase_id": "P10",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.8",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "registered_at": "2026-10-03T17:45:47.856335+00:00",
+      "outcome": "published-verified",
+      "verified_success": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-48-44-01a102e1-f13d-7190-bbf0-915333111cc6.jsonl",
+      "agent": "/root/final_p10_prefix_a1",
+      "process_handle": 6120,
+      "process_closed": true,
+      "message_id": "IARC-M-e8107619-bfed-4860-abc8-50d839a6ea17",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_elapsed_seconds": 378,
+      "tester_reported_corrections": [],
+      "tester_reported_errors": [
+        "Recovered network-no-response EHOSTUNREACH"
+      ],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T17:55:58.260Z",
+        "checked_at": "2026-10-03T17:55:58.828Z",
+        "http_status": 200,
+        "actual_body": "Thanks for listening. I appreciate you.",
+        "exact": true,
+        "body_sha256": "646c095f2c0603ca4d1187d40aa2cf35cd03d0c7e02ae7477b1d7337523f4a09"
+      },
+      "spent_run_requests": 42,
+      "native_first_request_at": 1791049757092,
+      "native_published_at": 1791050118248,
+      "native_last_request_at": 1791050124690,
+      "native_first_to_publication_ms": 361156,
+      "native_first_to_receipt_ms": 367598,
+      "native_metrics": {
+        "run_id": "6d8a8a3ac4a9111174e077a1ead4a441e15b71f727ccadf559191e722afb8816",
+        "request_count": 42,
+        "response_bytes": 2203015,
+        "links_presented": 4815,
+        "server_ms": 42,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T17:55:58.260Z",
+        "scope": "Complete logged server observations; failed EHOSTUNREACH attempt may have unknown additional server work."
+      }
+    },
+    {
+      "attempt_id": "P09-prefix-link-R1-A3",
+      "phrase_id": "P09",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.8",
+      "tester_contract": "relay-luna-tester/1.8",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "registered_at": "2026-10-03T17:55:12.412002+00:00",
+      "outcome": "deadline-incomplete",
+      "verified_success": false,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T10-56-10-01a102e8-c1f3-7230-8a87-5acdaef02225.jsonl",
+      "agent": "/root/final_p09_prefix_a3",
+      "process_handle": 54514,
+      "process_closed": true,
+      "profile_compliant": true,
+      "client_countdown_elapsed_seconds": 420,
+      "tester_final_draft": "I’m tired, but I still want to finis",
+      "tester_reported_errors": [
+        "Recovered local selection guard; hard deadline"
+      ],
+      "native_metrics_pending": false,
+      "reason": "Correct unfinished prefix at seven-minute deadline; no review/publication.",
+      "spent_run_requests": 45,
+      "native_first_request_at": 1791050204659,
+      "native_last_request_at": 1791050602185,
+      "native_metrics": {
+        "run_id": "4070e81f21ffb30e803c66aec688d7c6bba4eb88520bffd60d710c8db6800ed3",
+        "request_count": 45,
+        "response_bytes": 2906763,
+        "links_presented": 5027,
+        "server_ms": 0,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 0,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "scope": "Complete associated server observations; deadline before review/publication."
+      }
+    },
+    {
+      "attempt_id": "P09-prefix-link-R1-A4",
+      "phrase_id": "P09",
+      "method_id": "prefix-link",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.9",
+      "tester_contract": "relay-luna-tester/1.9",
+      "release": "d0519e27-329d-4216-9e57-278f21d0a930",
+      "deadline_seconds": 540,
+      "registered_at": "2026-10-03T18:04:43.628258+00:00",
+      "outcome": "published-verified",
+      "verified_success": true,
+      "agent": "/root/final_p09_prefix_a4",
+      "process_handle": 26793,
+      "process_closed": true,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_effort": "medium",
+      "model_runtime_evidence_file": "rollout-2026-10-03T11-05-10-01a102f0-ff73-7002-904f-9c9a9a23566b.jsonl",
+      "message_id": "IARC-M-753b5bc6-83bf-4b25-a3d9-94129b2245dd",
+      "profile_compliant": true,
+      "tester_public_body_read": true,
+      "client_countdown_to_publication_seconds": 443,
+      "tester_reported_errors": [
+        "Recovered local w selection guard"
+      ],
+      "tester_reported_corrections": [],
+      "native_metrics_pending": false,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T18:13:51.503Z",
+        "checked_at": "2026-10-03T18:13:52.083Z",
+        "http_status": 200,
+        "actual_body": "I’m tired, but I still want to finish this.",
+        "exact": true,
+        "body_sha256": "c10aae130a08e5c03c2fb1f2286a7ac9e608acc67f0a3df884c625e8332b6497"
+      },
+      "tester_reported_recorded_site_actions": 52,
+      "spent_run_requests": 52,
+      "native_first_request_at": 1791050745877,
+      "native_published_at": 1791051174001,
+      "native_last_request_at": 1791051180492,
+      "native_first_to_publication_ms": 428124,
+      "native_first_to_receipt_ms": 434615,
+      "native_metrics": {
+        "run_id": "3c846cb032b5c68da74600ba24ac314308c476118769dc7b229f0569da164f1d",
+        "request_count": 52,
+        "response_bytes": 3348779,
+        "links_presented": 5265,
+        "server_ms": 42,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T18:13:51.503Z"
+      }
     }
   ],
-  "verified_successes": 62,
+  "verified_successes": 70,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "active",
-  "updated_at": "2026-10-03T17:43:49.196Z",
+  "status": "complete",
+  "updated_at": "2026-10-03T18:13:52.085Z",
   "next_work": "Phase4: fresh bounded GPT-6 Luna validation on foundation1.5.0/registry2.0.4/client2.5/contract1.3, then remaining Phase1 exact slots to70; preserve all41certificates and release cohorts.",
   "deployed_release": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
   "operational_blocker": {
@@ -6266,5 +6794,25 @@
       "usage": "recorded",
       "status": 200
     }
-  ]
+  ],
+  "completed_at": "2026-10-03T18:13:52.085Z",
+  "completion_boundary": "Phase 1 only: all ten exact manifest phrases on seven keyboards, repetition1. No further scored runs authorized by this phase.",
+  "final_storage_snapshot": {
+    "rows_read": 651789,
+    "rows_written": 49724,
+    "telemetry_paused_at": null,
+    "native_observations": 3293,
+    "daily_observation_cap": 3500,
+    "raw_retention_days": 30,
+    "scope": "Persisted internal daily object meter, not provider account-wide billing. Latest completion export, includes operator work."
+  },
+  "final_audit": {
+    "distinct_success_cells": 70,
+    "distinct_public_messages": 70,
+    "exact_body_and_sha256_checks": 70,
+    "actual_gpt6_luna_runtime_checks": 70,
+    "closed_success_processes": 70,
+    "certificate_problems": [],
+    "active_processes": 0
+  }
 }

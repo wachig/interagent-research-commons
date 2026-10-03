@@ -1,3 +1,9 @@
+# Phase 1 complete — 70/70; testing stopped
+
+All ten exact phrases now have one independently verified GPT-6 Luna supplied-link-only success on each of seven keyboards. Seventy distinct public bodies and SHA-256 hashes match; runtime/model and process-closure checks pass. All 133 attempts remain, including failures and their measured or explicitly unknown costs. No active testers, no new phase and no hourly automation.
+
+See [Phase 1 results](phase1-results.md) for the compact evaluation and limits, and [ledger.json](ledger.json) for complete certificates and release cohorts. The last Prefix P09 success used a separately pinned nine-minute maximum after two seven-minute failures; it is completion evidence, not improved-speed evidence. Latest internal meter 651,789 reads / 49,724 writes, 3,293 of 3,500 observations, telemetry active, raw retention 30 days. Safeguards unchanged. The checkpoints below are historical.
+
 # Latest checkpoint — 59/70; final bounded batches
 
 P05 Frame and Token publications independently match the exact manifest body. Associated complete native costs are32and26 requests respectively, with later operator reads excluded. Prefix P05 ended unpublished after15 native observations; retain its failure and spent work. All three processes are closed.
