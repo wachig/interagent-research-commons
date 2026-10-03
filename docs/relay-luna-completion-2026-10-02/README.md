@@ -1,3 +1,11 @@
+# Latest checkpoint — 49/70, Phase 1 continues
+
+Frame P03, Chunk P04 and Short Word P08 now have independently verified exact public receipts. Chunk P04 and Short Word P08 each used21 associated native requests through the tester receipt; each export is complete, with one later operator verification excluded. All historical failures and software cohorts remain separate. The two current fresh slots are Chunk P09 and Predictive P08.
+
+Fresh trials use client2.7 / contract1.6: the same seven-minute hard maximum for every method,12,000-byte bounded output pages and explicit recovery from local selection guards. Earlier five/six-minute deadline failures remain failures. No site shortcuts or coached method paths were added. Client/evidence tests passed; source5ad84a4 is pushed. Production remains release9b5d8d51 / foundation1.5.1 / registry2.0.5.
+
+Private telemetry remains30-day retention. The latest object meter shows499,743 reads and35,838 writes today, no telemetry pause, and2,408 of3,000 native request observations. These are object observations rather than account billing; remaining daily telemetry capacity needs monitoring as the campaign completes. Stop at70; no repetitions2/3. Earlier checkpoints below are historical.
+
 # Latest checkpoint — 46/70, client2.6 trials continuing
 
 Short Word P09, Predictive P05, Span P05 and Token P03 now have independently verified exact public receipts on the current release/client2.6 cohort. Their associated native counts are23,38,26and20 respectively; historical trials remain separate. Span caught and undid its own extra period. These are completion/path observations on different targets, not a winner ranking. Frame P03 reached an exact review but automatic approval blocked its publication; preserve its20requests and no-publication outcome. The owner explicitly renewed all authorization after that reported rejection (`i authorize... everything`); a fresh Frame attempt is permitted, with no replay of the rejected capability. Chunk P04 is also active. Stop at70; no second or third repetition.

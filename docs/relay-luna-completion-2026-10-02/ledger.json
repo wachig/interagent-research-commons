@@ -525,7 +525,7 @@
         "measurement_cutoff_at": "2026-10-02T18:27:45.777Z",
         "checked_at": "2026-10-02T18:27:46.499Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       }
@@ -566,7 +566,7 @@
       "profile_compliant": true,
       "compliance_evidence": "Fresh Luna reported only own supplied-link-only process,20pages,no fields/siteJS/constructed URLs. Publication command rejected before execution; displayed cancellation followed, then Ctrl-D exit0.",
       "process_closed": true,
-      "agent_reported_review": "I don’t understand what happened.",
+      "agent_reported_review": "I don\u2019t understand what happened.",
       "agent_reported_review_exact": true,
       "native_request_count": 19,
       "spent_run_requests": 19,
@@ -647,7 +647,7 @@
       "startup_note": "Agent typo relay-link-browser failed local module lookup before any request; corrected to documented path.",
       "native_run": "7f686cc7e9ab7ed2abfb6c23fe7be06d77bfaa22c17eb679424db7e4ff35260d",
       "process_closed": true,
-      "agent_reported_review": "I don’t understand what happened.",
+      "agent_reported_review": "I don\u2019t understand what happened.",
       "agent_reported_review_exact": true,
       "client_page_count_at_review": 22,
       "remaining_seconds_at_review": 135,
@@ -703,7 +703,7 @@
       "process_closed": true,
       "profile_compliant": true,
       "native_metrics_scope": "All run-associated native events counted; matching native event_count confirms full run even though global export has older nextpage. Discovery/clienterrors/cachedreads excluded. No publication.",
-      "agent_reported_review": "I don’t understand what happened.",
+      "agent_reported_review": "I don\u2019t understand what happened.",
       "agent_reported_review_exact": true,
       "remaining_seconds_at_review": 7,
       "reason": "Five-minute client deadline expired on publication follow after exact35-byte review. No publication. Initial ASCIIapostrophe draftcleared; duplicate t corrected with supplied backspaces; all52nativeeventsHTTP200.",
@@ -1039,7 +1039,7 @@
         "measurement_cutoff_at": "2026-10-03T01:41:45.985Z",
         "checked_at": "2026-10-03T01:41:46.533Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       },
@@ -1082,7 +1082,7 @@
         "measurement_cutoff_at": "2026-10-03T01:43:07.160Z",
         "checked_at": "2026-10-03T01:43:07.919Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       },
@@ -1117,7 +1117,7 @@
       "process_closed": true,
       "profile_compliant": true,
       "agent_reported_review_failures": 3,
-      "agent_reported_final_draft": "I don’t understand what happened.",
+      "agent_reported_final_draft": "I don\u2019t understand what happened.",
       "reason": "Exact 35-byte draft in restricted client; displayed Review message returned HTTP500 three times, including after explicit read. No publication or public body certificate. Tester closed with102seconds left. Native reconciliation attempted, but protected export returned Worker1101 at2026-10-03T01:46:09UTC, Ray a4484580983a3753; underlying cause not established.",
       "native_metrics_pending": false,
       "native_run": "7b9fa0d3a84ba3b2b10c586bfe24336e1d73b125f708a0d4b3652d52ed6ec917",
@@ -1151,7 +1151,7 @@
       "tester_owned_process": 29653,
       "process_closed": true,
       "message_id": null,
-      "review_body": "I don’t understand what happened.",
+      "review_body": "I don\u2019t understand what happened.",
       "failure_category": "supervisor-dispatch-before-repair-checkpoint-return",
       "failure_reason": "Root stopped the test to honor latest repairs-first steering. Exact reviewed draft was not published. Tester corrected duplicate stand and discarded ASCII apostrophe; no certificate.",
       "spent_requests": 119,
@@ -1239,7 +1239,7 @@
         "measurement_cutoff_at": "2026-10-03T03:52:00.201Z",
         "checked_at": "2026-10-03T03:52:00.888Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       },
@@ -1276,7 +1276,7 @@
       "manifest_verification_before_start": true,
       "tester_owned_process": 86123,
       "process_closed": true,
-      "review_body": "I don’t understand what happened.",
+      "review_body": "I don\u2019t understand what happened.",
       "failure_category": "infrastructure-authorization-evidence",
       "failure_reason": "Automatic review rejected exact public publish because delegated task/manifest permission not accepted as direct trusted authorization. No bypass or receipt.",
       "message_id": null,
@@ -1318,7 +1318,7 @@
       "profile_compliant": true,
       "profile_evidence": "Fresh Luna inspected actual manifest and human approvals before startup; tester-owned supplied-link REPL80585; only displayed links per report. Profile compliance is separate from task failure.",
       "failure_category": "agent-composition-and-time-management",
-      "failure_reason": "Expanded target contraction I’ll to I will; caught mismatch and undid draft, but correction left Please wait. I’ with33seconds. Closed rather than complete. One ambiguous a link corrected using displayed section. No publication or review.",
+      "failure_reason": "Expanded target contraction I\u2019ll to I will; caught mismatch and undid draft, but correction left Please wait. I\u2019 with33seconds. Closed rather than complete. One ambiguous a link corrected using displayed section. No publication or review.",
       "completed_at": "2026-10-03T03:56:44.074123+00:00",
       "spent_requests_status": "complete associated native export; discovery separate",
       "spent_requests": 27,
@@ -1359,7 +1359,7 @@
       "profile_compliant": true,
       "profile_evidence": "Fresh Luna inspected actual manifest and original human approval before startup. Only supplied links per report; process exited at deadline.",
       "failure_category": "agent-composition-and-time-management",
-      "failure_reason": "After correcting Please. via backspace, draft reached Please wait. I’ll be back in a ; next candidate minute selection rejected at fixed five-minute deadline. No review or publication.",
+      "failure_reason": "After correcting Please. via backspace, draft reached Please wait. I\u2019ll be back in a ; next candidate minute selection rejected at fixed five-minute deadline. No review or publication.",
       "completed_at": "2026-10-03T03:59:31.720829+00:00",
       "spent_requests_status": "complete associated native export; discovery separate",
       "spent_requests": 36,
@@ -1780,7 +1780,7 @@
       "process_closed": true,
       "message_id": null,
       "failure_category": "infrastructure-authorization-evidence",
-      "failure_reason": "After authorized blankstart and eight runactions, automaticreview rejected displayed Add ␠it as unrequested freegeneration workflow. No bypass or indirectretry; CtrlDclosed3829. DraftIf you can, send; no review orpub.",
+      "failure_reason": "After authorized blankstart and eight runactions, automaticreview rejected displayed Add \u2420it as unrequested freegeneration workflow. No bypass or indirectretry; CtrlDclosed3829. DraftIf you can, send; no review orpub.",
       "completed_at": "2026-10-03T04:36:12.918591+00:00",
       "spent_requests_status": "Complete native export; independent verification excluded using frozen cutoff; discovery separate.",
       "spent_requests": 10,
@@ -2025,7 +2025,7 @@
         "measurement_cutoff_at": "2026-10-03T04:53:03.436Z",
         "checked_at": "2026-10-03T04:53:03.847Z",
         "http_status": 200,
-        "actual_body": "Please wait. I’ll be back in a minute.",
+        "actual_body": "Please wait. I\u2019ll be back in a minute.",
         "exact": true,
         "body_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6"
       },
@@ -2170,7 +2170,7 @@
       "original_human_authorization_read_before_start": true,
       "process_closed": true,
       "message_id": null,
-      "review_body": "That’s not what I meant; try again.",
+      "review_body": "That\u2019s not what I meant; try again.",
       "profile_compliant": true,
       "failure_category": "infrastructure-authorization-evidence",
       "failure_reason": "Automatic reviewer judged broad testing authorization insufficient for exact public destination/message. Supplied review cancellation then Ctrl-D exit0; no bypass or retry.",
@@ -2421,7 +2421,7 @@
       "model_runtime_source": "rollout-2026-10-02T23-27-56-01a10072-a623-72c3-a937-4d57ccdc428c.jsonl",
       "process_closed": true,
       "message_id": null,
-      "final_draft": "I’m tired but I still want to finish th",
+      "final_draft": "I\u2019m tired but I still want to finish th",
       "failure_category": "agent-composition-and-time-management",
       "failure_reason": "Fixeddeadline, incomplete draft and missing comma after tired. Agent called it exactprefix, but root comparison disproves that. No review/publication; networkfetch failure also reported.",
       "profile_compliant": true,
@@ -2469,7 +2469,7 @@
       "model_runtime_source": "rollout-2026-10-02T23-29-29-01a10074-12a8-70e0-9724-51afbec9d69e.jsonl",
       "process_closed": true,
       "message_id": null,
-      "final_draft": "I’m tired, but I still want to finish this.",
+      "final_draft": "I\u2019m tired, but I still want to finish this.",
       "failure_category": "agent-time-management",
       "failure_reason": "Exactfull draft reached near9sec; supplied Review message hit fixeddeadline; no review/publication.",
       "spent_requests_status": "Complete native export; discovery and reported failedclientfetches separate; verifier cutoffs respected.",
@@ -2566,7 +2566,7 @@
         "measurement_cutoff_at": "2026-10-03T06:41:35.734Z",
         "checked_at": "2026-10-03T06:41:36.289Z",
         "http_status": 200,
-        "actual_body": "That’s not what I meant; try again.",
+        "actual_body": "That\u2019s not what I meant; try again.",
         "exact": true,
         "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
       },
@@ -2622,7 +2622,7 @@
         "measurement_cutoff_at": "2026-10-03T06:45:18.219Z",
         "checked_at": "2026-10-03T06:45:18.784Z",
         "http_status": 200,
-        "actual_body": "That’s not what I meant; try again.",
+        "actual_body": "That\u2019s not what I meant; try again.",
         "exact": true,
         "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
       },
@@ -2676,7 +2676,7 @@
         "measurement_cutoff_at": "2026-10-03T06:46:38.047Z",
         "checked_at": "2026-10-03T06:46:38.646Z",
         "http_status": 200,
-        "actual_body": "Please wait. I’ll be back in a minute.",
+        "actual_body": "Please wait. I\u2019ll be back in a minute.",
         "exact": true,
         "body_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6"
       },
@@ -2726,7 +2726,7 @@
         "measurement_cutoff_at": "2026-10-03T06:48:56.484Z",
         "checked_at": "2026-10-03T06:48:57.046Z",
         "http_status": 200,
-        "actual_body": "Please wait. I’ll be back in a minute.",
+        "actual_body": "Please wait. I\u2019ll be back in a minute.",
         "exact": true,
         "body_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6"
       },
@@ -2769,7 +2769,7 @@
       "registered_at": "2026-10-03T06:48:08.787322+00:00",
       "process_closed": true,
       "message_id": null,
-      "final_draft": "Please wait. I’ll be",
+      "final_draft": "Please wait. I\u2019ll be",
       "failure_category": "agent-composition-and-time-management",
       "failure_reason": "Agent stopped incompletewith25secondsremaining instead of actualdeadline; no review/publication. Omitted be before back then Undocorrected. No approval orHTTPerror.",
       "agent_reported_corrections": [
@@ -2825,7 +2825,7 @@
         "measurement_cutoff_at": "2026-10-03T06:55:25.295Z",
         "checked_at": "2026-10-03T06:55:25.855Z",
         "http_status": 200,
-        "actual_body": "Please wait. I’ll be back in a minute.",
+        "actual_body": "Please wait. I\u2019ll be back in a minute.",
         "exact": true,
         "body_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6"
       },
@@ -3171,7 +3171,7 @@
       "registered_at": "2026-10-03T07:07:18.236500+00:00",
       "process_closed": true,
       "message_id": null,
-      "final_draft": "I don’t understand what happ",
+      "final_draft": "I don\u2019t understand what happ",
       "failure_category": "network-and-agent-completion",
       "failure_reason": "Repeated fetchfailures/readrecovery then fixeddeadline before fulltarget/review/publication. Final e resultunparsed, processgone.",
       "spent_requests_status": "Complete associatednativeexport; repeatedclientfetchfailuresnotHTTP/nativeerrors, discoveryseparate",
@@ -3223,7 +3223,7 @@
         "measurement_cutoff_at": "2026-10-03T07:10:26.793Z",
         "checked_at": "2026-10-03T07:10:27.378Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       },
@@ -3597,10 +3597,10 @@
       "process_closed": true,
       "message_id": null,
       "completed_at": "2026-10-03T08:33:13.469659+00:00",
-      "final_draft": "That’s not what I meant",
+      "final_draft": "That\u2019s not what I meant",
       "agent_reported_errors": [
         "network-no-response ETIMEDOUT",
-        "uninspected n… link; no mutation"
+        "uninspected n\u2026 link; no mutation"
       ],
       "spent_requests": 18,
       "native_metrics": {
@@ -3681,7 +3681,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p03_token_a4",
       "tester_owned_process": 86703,
-      "final_draft": "I don’",
+      "final_draft": "I don\u2019",
       "message_id": null,
       "completed_at": "2026-10-03T08:38:21.567558+00:00",
       "process_closed": true,
@@ -3784,7 +3784,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p05_predictive_a1",
       "tester_owned_process": 98010,
-      "final_draft": "That’s not what I meant; try again.",
+      "final_draft": "That\u2019s not what I meant; try again.",
       "message_id": null,
       "process_closed": true,
       "completed_at": "2026-10-03T08:50:04.107791+00:00",
@@ -3850,7 +3850,7 @@
         "measurement_cutoff_at": "2026-10-03T08:54:18.851Z",
         "checked_at": "2026-10-03T08:54:19.349Z",
         "http_status": 200,
-        "actual_body": "I’m tired, but I still want to finish this.",
+        "actual_body": "I\u2019m tired, but I still want to finish this.",
         "exact": true,
         "body_sha256": "c10aae130a08e5c03c2fb1f2286a7ac9e608acc67f0a3df884c625e8332b6497"
       },
@@ -3912,7 +3912,7 @@
         "measurement_cutoff_at": "2026-10-03T08:56:36.053Z",
         "checked_at": "2026-10-03T08:56:36.557Z",
         "http_status": 200,
-        "actual_body": "That’s not what I meant; try again.",
+        "actual_body": "That\u2019s not what I meant; try again.",
         "exact": true,
         "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
       },
@@ -3969,7 +3969,7 @@
         "measurement_cutoff_at": "2026-10-03T08:59:01.800Z",
         "checked_at": "2026-10-03T08:59:02.313Z",
         "http_status": 200,
-        "actual_body": "That’s not what I meant; try again.",
+        "actual_body": "That\u2019s not what I meant; try again.",
         "exact": true,
         "body_sha256": "8421c536f14b1759b17017afbed028ad733f93205e9c5468680a42f92fe03d03"
       },
@@ -3988,7 +3988,11 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 1
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T01-54-30-01a100f8-d830-78a1-9dab-56d966f5f732.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-token-link-R1-A5",
@@ -4025,7 +4029,7 @@
         "measurement_cutoff_at": "2026-10-03T09:04:32.409Z",
         "checked_at": "2026-10-03T09:04:32.934Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       },
@@ -4044,7 +4048,11 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 1
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T01-58-03-01a100fc-16e8-7452-982e-1f65c3149b51.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-frame-R1-A4",
@@ -4064,7 +4072,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p03_frame_a4",
       "tester_owned_process": 71389,
-      "final_draft": "I don’t understand what happened.",
+      "final_draft": "I don\u2019t understand what happened.",
       "message_id": null,
       "process_closed": true,
       "completed_at": "2026-10-03T09:04:32.383666+00:00",
@@ -4085,7 +4093,11 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 0
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T01-59-14-01a100fd-2c2e-7133-b3f3-36870d88c90a.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P04-chunk-word-R1-A2",
@@ -4105,7 +4117,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p04_chunk_a2",
       "tester_owned_process": 94271,
-      "final_draft": "Please wait I’ll be back in a minute.",
+      "final_draft": "Please wait I\u2019ll be back in a minute.",
       "message_id": null,
       "process_closed": false,
       "process_status": "Closure rejected by approval review; client fixed deadline reached, OS closure check pending",
@@ -4132,7 +4144,11 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 0
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-05-23-01a10102-ced3-7511-ba46-70410c23962f.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P05-prefix-link-R1-A2",
@@ -4152,7 +4168,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p05_prefix_a2",
       "tester_owned_process": 83651,
-      "final_draft": "That’s not what I meant; t",
+      "final_draft": "That\u2019s not what I meant; t",
       "message_id": null,
       "process_closed": false,
       "process_status": "Ctrl-D sent, closure receipt pending; no further actions after approval rejection",
@@ -4178,7 +4194,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-10-55-01a10107-e037-7bb2-875f-0108effec8b8.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P03-frame-R1-A5",
@@ -4215,7 +4235,7 @@
         "measurement_cutoff_at": "2026-10-03T09:10:33.159Z",
         "checked_at": "2026-10-03T09:10:33.696Z",
         "http_status": 200,
-        "actual_body": "I don’t understand what happened.",
+        "actual_body": "I don\u2019t understand what happened.",
         "exact": true,
         "body_sha256": "585fc96e001a3f921d89ac575850f2bfd8caa9ef5c9026f22a871d5b0fd7d661"
       },
@@ -4234,7 +4254,11 @@
         "budget_possible_gap": false,
         "export_complete": true,
         "independent_verification_events_excluded": 1
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-06-06-01a10103-749b-7291-b5f1-94a95e198ea2.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P08-short-word-R1-A2",
@@ -4285,7 +4309,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-13-05-01a10109-d92e-7420-a5eb-b6137bcac93f.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P04-chunk-word-R1-A3",
@@ -4305,7 +4333,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p04_chunk_a3",
       "tester_owned_process": 55698,
-      "final_draft": "Please wait. I’ll be back",
+      "final_draft": "Please wait. I\u2019ll be back",
       "message_id": null,
       "completed_at": "2026-10-03T09:39:50.953837+00:00",
       "process_closed": false,
@@ -4332,7 +4360,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-26-16-01a10115-ee2d-7d02-bbab-3b2c5ee4d634.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P04-prefix-link-R1-A2",
@@ -4352,7 +4384,7 @@
       "native_metrics_pending": false,
       "agent": "/root/phase4_p04_prefix_a2",
       "tester_owned_process": 75019,
-      "final_draft": "Please wait. I’ll be back in a minute.",
+      "final_draft": "Please wait. I\u2019ll be back in a minute.",
       "message_id": null,
       "completed_at": "2026-10-03T09:39:50.953837+00:00",
       "process_closed": true,
@@ -4371,7 +4403,11 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-26-30-01a10116-21cd-79b3-a03f-da44db23413a.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P04-chunk-word-R1-A4",
@@ -4386,10 +4422,43 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:39:50.953837+00:00",
-      "outcome": "in-progress",
-      "verified_success": false,
-      "native_metrics_pending": true,
-      "agent": "/root/phase4_p04_chunk_a4"
+      "outcome": "verified-success",
+      "verified_success": true,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p04_chunk_a4",
+      "message_id": "IARC-M-3be4e8ac-58d7-4d4b-98a1-8b8979e500b9",
+      "process_handle": 41777,
+      "profile_compliant": true,
+      "process_closed": true,
+      "tester_reported_link_activations": 21,
+      "tester_reported_local_reads": 4,
+      "client_countdown_elapsed_seconds": 234,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T09:48:45.267Z",
+        "checked_at": "2026-10-03T09:48:45.929Z",
+        "http_status": 200,
+        "actual_body": "Please wait. I\u2019ll be back in a minute.",
+        "exact": true,
+        "body_sha256": "6d626b1c077a5bf19ea150023d041bb3613d3c05762e4305647c28230b37dec6"
+      },
+      "spent_run_requests": 21,
+      "native_metrics": {
+        "run_id": "9d1f4e5ae7e49e75047f97223fdea4f33d35048d07a26f3b9644c0d99a1e4c04",
+        "request_count": 21,
+        "response_bytes": 1411138,
+        "links_presented": 8827,
+        "server_ms": 41,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T09:48:45.267Z"
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-40-03-01a10122-8bd8-7df1-830e-cefe6494998a.jsonl",
+      "model_runtime_effort": "medium"
     },
     {
       "attempt_id": "P08-short-word-R1-A3",
@@ -4404,17 +4473,96 @@
       "deadline_seconds": 420,
       "output_byte_limit": 12000,
       "registered_at": "2026-10-03T09:39:50.953837+00:00",
+      "outcome": "verified-success",
+      "verified_success": true,
+      "native_metrics_pending": false,
+      "agent": "/root/phase4_p08_short_a3",
+      "message_id": "IARC-M-091f5c8c-0993-484c-9fb9-8b2cdcfdb261",
+      "process_handle": 96756,
+      "profile_compliant": true,
+      "process_closed": true,
+      "tester_reported_link_activations": 21,
+      "tester_reported_local_reads": 1,
+      "client_countdown_elapsed_seconds": 188,
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T09:48:45.929Z",
+        "checked_at": "2026-10-03T09:48:46.327Z",
+        "http_status": 200,
+        "actual_body": "Where should we meet at 3:30?",
+        "exact": true,
+        "body_sha256": "204e11b3a9cc1173919e7ead5787acb697a3fd8ab2b7e8b7d2480ada9f02b326"
+      },
+      "spent_run_requests": 21,
+      "native_metrics": {
+        "run_id": "44a55a91305d6321352983c98ea005ba2c748a09b7383d74363b0b7343674dec",
+        "request_count": 21,
+        "response_bytes": 1471057,
+        "links_presented": 3086,
+        "server_ms": 81,
+        "http_errors": 0,
+        "export_complete": true,
+        "verification_requests_excluded": 1,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "measurement_cutoff_at": "2026-10-03T09:48:45.929Z"
+      },
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-40-18-01a10122-c6af-7cc3-b665-6da4bacb1ac4.jsonl",
+      "model_runtime_effort": "medium"
+    },
+    {
+      "attempt_id": "P09-chunk-word-R1-A1",
+      "phrase_id": "P09",
+      "method_id": "chunk-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.7",
+      "tester_contract": "relay-luna-tester/1.6",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T09:49:09.119977+00:00",
       "outcome": "in-progress",
       "verified_success": false,
       "native_metrics_pending": true,
-      "agent": "/root/phase4_p08_short_a3"
+      "agent": "/root/phase4_p09_chunk_a1",
+      "process_handle": 54859,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-49-24-01a1012b-198c-7b82-a38c-b154e8c3742e.jsonl",
+      "model_runtime_effort": "medium"
+    },
+    {
+      "attempt_id": "P08-predictive-word-R1-A3",
+      "phrase_id": "P08",
+      "method_id": "predictive-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.7",
+      "tester_contract": "relay-luna-tester/1.6",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "deadline_seconds": 420,
+      "output_byte_limit": 12000,
+      "registered_at": "2026-10-03T09:49:09.120033+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p08_predictive_a3",
+      "process_handle": 57500,
+      "model_runtime_verified": true,
+      "model_runtime": "gpt-6-luna",
+      "model_runtime_evidence_file": "rollout-2026-10-03T02-49-37-01a1012b-4beb-7ee2-941a-f9a63fb34b9b.jsonl",
+      "model_runtime_effort": "medium"
     }
   ],
-  "verified_successes": 47,
+  "verified_successes": 49,
   "required_successes": 70,
   "heartbeat_id": null,
   "status": "active",
-  "updated_at": "2026-10-03T09:10:33.697Z",
+  "updated_at": "2026-10-03T09:48:46.329Z",
   "next_work": "Phase4: fresh bounded GPT-6 Luna validation on foundation1.5.0/registry2.0.4/client2.5/contract1.3, then remaining Phase1 exact slots to70; preserve all41certificates and release cohorts.",
   "deployed_release": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
   "operational_blocker": {
@@ -4553,7 +4701,7 @@
     "reason": "Repairs complete and deployed; active user Phase1 goal continuation. Bounded fresh Luna batch after live storage-read verification.",
     "historical_exception_root_cause": "unconfirmed",
     "unpublished_prefix_reproduction": {
-      "exact_body": "I don’t understand what happened.",
+      "exact_body": "I don\u2019t understand what happened.",
       "supplied_link_requests": 42,
       "review_status": 200,
       "cancel_status": 200,
@@ -4611,7 +4759,7 @@
       "supplied_links_only": true,
       "draft": "Yes,",
       "status": 200,
-      "heading": "Find another word · b",
+      "heading": "Find another word \u00b7 b",
       "publication": false
     },
     "root_cause": "unconfirmed; exact live action did not reproduce failure",
