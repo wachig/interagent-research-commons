@@ -1,3 +1,9 @@
+# Latest checkpoint —26/70, all tester processes closed
+
+Manual continuation added six independently certified messages since20: P07 Short Word/Span/Prefix/Predictive, P04 Short Word and P08 Frame. All failed attempts and complete associated native costs are saved. P08 Chunk, P05 Prefix and P08 Short Word reached exact reviews but automatic approval rejected public publication; P07 Token was blocked midcomposition. P08 Span failed after stale selections/draft deviations. No bypass or replay.
+
+A single phasewide confirmation explicitly naming live Relay destination and remaining exact publications is pending because automatic review still rejects despite original authorization. No new tester dispatch while this required input is pending. Goal remains incomplete and active; no hourly automation, Phase2 or Phase3. Raw telemetry stays private for30days. Compiled documentation remains local, no public push. Older sections below are historical.
+
 # Current checkpoint —25/70
 
 P07 Predictive and P04 Short Word are newly independently certified. Both actual tester execution logs confirm GPT-6 Luna at medium effort. Their native totals through receipt are22 and20requests, respectively, excluding independent verification. P08 Chunk and Frame have been dispatched fresh; no phase2/3.
