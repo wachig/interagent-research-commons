@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {auditEvidence} from '../link-browser/audit-evidence.mjs';
+const manifest={model:'gpt-6-luna',methods:['example'],phrases:[{id:'P01',body:'Hi.'}],total_required_successes:1};
+const good={attempt_id:'good',method_id:'example',phrase_id:'P01',repetition:1,model:'gpt-6-luna',profile_compliant:true,verified_success:true,message_id:'message',verification:{exact:true,actual_body:'Hi.'},release:'a',client:'b',tester_contract:'c'};
+const ledger={verified_successes:1,attempts:[good,{attempt_id:'blocked',outcome:'blocked-approval',release:'a',client:'new',tester_contract:'new',native_metrics:{truncated:true}}]};
+const report=auditEvidence(ledger,manifest);
+assert.deepEqual(report.certificate_problems,[]);assert.equal(report.verified,1);
+assert.equal(report.failures.approval_or_approval_output,1);assert.equal(report.cohorts.length,2);
+assert.deepEqual(report.accounting.native_metrics_pending,['good']);assert.deepEqual(report.accounting.known_incomplete_native_metrics,['blocked']);
+assert.ok(auditEvidence({...ledger,attempts:[good,{...good}]},manifest).certificate_problems.some(p=>p.problem==='duplicate-success'));
+assert.ok(auditEvidence({...ledger,attempts:[{...good,verification:{exact:true,actual_body:'HI.'}}]},manifest).certificate_problems.some(p=>p.problem==='invalid-certificate'));
+const legacy=auditEvidence({verified_successes:0,attempts:[{attempt_id:'legacy',spent_run_requests:3,native_response_bytes:120,native_metrics_scope:'saved server observations'},{attempt_id:'partial',native_observed_requests:2}]},manifest);
+assert.deepEqual(legacy.accounting.native_metrics_pending,[]);assert.equal(legacy.accounting.legacy_flat_metrics,1);assert.deepEqual(legacy.accounting.partial_server_observations,['partial']);
+console.log('Evidence audit: exact certificates, duplicate rejection, separate cohorts, approval classification and missing/incomplete accounting passed.');

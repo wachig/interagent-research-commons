@@ -32,7 +32,7 @@
     "test:relay:frame": "node relay/tests/frame-keyboard.mjs",
     "build:relay:span": "python3 relay/semantic/build-span.py",
     "test:relay:usage": "node relay/tests/keyboard-usage.mjs",
-    "test:relay:link-browser": "node relay/tests/link-browser.mjs",
+    "test:relay:link-browser": "node relay/tests/link-browser.mjs && node relay/tests/evidence-audit.mjs",
     "test:relay:punctuation": "node relay/tests/common-punctuation.mjs"
   },
   "devDependencies": {

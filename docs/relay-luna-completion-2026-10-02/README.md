@@ -1,3 +1,11 @@
+# Repair checkpoint — 41/70; reliability phase
+
+The owner approved a four-phase repair plan before further scored testing. All previous testers are closed. P08 Prefix expired without publication; P08 Chunk was blocked by approval review before composition. Both failures and their complete associated native counts are preserved. No new scored runs were dispatched during this repair phase.
+
+The local supplied-link client is now `semantic-link-browser/2.4`, with tester contract `relay-luna-tester/1.3`. It presents bounded local output pages, preserves all emitted links in order, refuses uninspected selections, and distinguishes network/no-response, incomplete response, server HTTP and local selection failures. Reading another output page creates no HTTP request or link activation; its tool/time cost still belongs in the evaluation. Exact target checking and publication safeguards are unchanged. The Worker release, database schema and private 30-day raw retention are unchanged.
+
+See [reliability-repairs.md](reliability-repairs.md). The read-only evidence audit confirms 41 distinct valid certificates and reports historical accounting gaps without treating them as zero cost. Software/prompt cohorts remain separate. Older checkpoints below are historical.
+
 # Current checkpoint —38/70, testing continues
 
 Ownerretainedauthorizationcontinues; P06Short/Span/Predictive/Prefix nowindependentlycertified alongwith earlier34. Nativeexports complete forsuccesses/failures, including TokenP03 newblockedAddI (oneassociatednativeevent, not zero overall cost). No newpermissionquestion or blocker stop; unaffectedFrame/PrefixP03 freshLunarunning. Allruntime modelsverifiedgpt-6-lunamedium. Accountusage ~46,360writes/~405,820reads Oct3UTC; metricslagandobjectmeterdiffer. Rawprivate30daytelemetry, noautomaticpublicationreplay or rawupload. Olderstatuses historical.

@@ -42,16 +42,26 @@ async function save(state){await writeFile(file(state.id)+'.tmp',JSON.stringify(
 async function navigate(state,destination,fetcher=fetch) {
   let url=destination;
   for(let i=0;i<6;i++) {
-    const response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
+    let response,html;
+    try {
+      response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
+    }catch(cause){
+      const error=new Error('Network fetch failed; no HTTP response received. Last supplied page preserved. No automatic action retry.',{cause});
+      error.failureClass='network-no-response';throw error;
+    }
     if([301,302,303,307,308].includes(response.status)){
       const next=new URL(response.headers.get('location'),url);if(next.origin!==new URL(state.home).origin)throw Error('External redirect refused');url=next.href;continue;
     }
-    const html=await response.text();
+    try{html=await response.text();}catch(cause){
+      const error=new Error(`HTTP ${response.status} response body could not be read; last supplied page preserved. No automatic action retry.`,{cause});
+      error.failureClass='network-incomplete-response';throw error;
+    }
     // A server failure must not destroy the supplied draft/recovery links.
     // Retain the last successful page; the caller decides whether to replay.
     if(response.status>=500) {
       const resourceLimit=/1102|Worker exceeded resource limits/i.test(html);
-      throw Error(`HTTP ${response.status}${resourceLimit?' (Cloudflare 1102: Worker exceeded resource limits)':''}; last supplied page preserved. No automatic action retry.`);
+      const error=Error(`HTTP ${response.status}${resourceLimit?' (Cloudflare 1102: Worker exceeded resource limits)':''}; last supplied page preserved. No automatic action retry.`);
+      error.failureClass='server-http-error';throw error;
     }
     state.url=url;state.revision++;
     const rendered=(response.headers.get('content-type')||'').includes('json')?{links:[],view:{title:'JSON response',json:JSON.parse(html),sections:[]}}:render(html,url,state.revision);
@@ -64,7 +74,7 @@ export async function initialize({home=ORIGIN+'/',fetcher=fetch}={}) {
   await mkdir(DIRECTORY,{recursive:true,mode:0o700});
   const state={id:randomUUID(),home,url:home,revision:0,expires:Date.now()+TTL};await navigate(state,home,fetcher);await save(state);return state.id;
 }
-function observedView(state){return {...state.view,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
+function observedView(state){return {...state.view,revision:state.revision,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
 export async function read(id){return observedView(await load(id));}
 export async function follow(id,handle,{fetcher=fetch}={}) {
   const state=await load(id);
