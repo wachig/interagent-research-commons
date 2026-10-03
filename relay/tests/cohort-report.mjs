@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {cohortReport} from '../link-browser/cohort-report.mjs';
+const manifest={phrases:[{id:'synthetic',body:'abc'}],methods:['prefix-link'],profiles:{'prefix-link':'prefix-dropdowns'},model:'gpt-6-luna',release:'release',client:'client',contract:'contract'};
+const base={attempt_id:'a1',method_id:'prefix-link',phrase_id:'synthetic',model:manifest.model,release:'release',client:'client',tester_contract:'contract',profile:'prefix-dropdowns',process_closed:true,failure_category:'network-no-response'};
+const success={...base,attempt_id:'a2',verified_success:true,profile_compliant:true,model_runtime_verified:true,message_id:'public',verification:{http_status:200,actual_body:'abc',body_sha256:createHash('sha256').update('abc').digest('hex'),measurement_cutoff_at:'2026-10-03T00:00:00Z'},native_metrics:{export_complete:true,truncated:false,budget_possible_gap:false,request_count:5}};
+let r=cohortReport(manifest,{attempts:[base,success]});assert.equal(r.issues.length,0);assert.equal(r.methods[0].first_attempt_successes,0);assert.equal(r.methods[0].eventual_success_cells,1);assert.equal(r.methods[0].associated_native_requests_all_attempts,null);assert.equal(r.methods[0].known_associated_native_requests,5);assert.deepEqual(r.methods[0].unknown_or_incomplete_cost_attempts,['a1']);
+r=cohortReport(manifest,{attempts:[{...base,native_metrics:{export_complete:true,request_count:3}},success]});assert.equal(r.methods[0].associated_native_requests_all_attempts,8);
+assert.ok(cohortReport(manifest,{attempts:[{...success,release:'other'}]}).issues.some(i=>i.problem==='condition-mismatch'));
+assert.ok(cohortReport(manifest,{attempts:[{...success,verification:{...success.verification,body_sha256:'false'}}]}).issues.some(i=>i.problem==='invalid-or-duplicate-independent-certificate'));
+assert.ok(cohortReport(manifest,{attempts:[success,{...success,attempt_id:'a3'}]}).issues.some(i=>i.problem==='invalid-or-duplicate-independent-certificate'));
+console.log('Frozen cohort: pins, independent exact body/hash/runtime checks, first attempt vs eventual completion, all-attempt costs and explicit unknowns passed.');

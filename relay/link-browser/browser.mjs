@@ -2,16 +2,17 @@
 import {readFile,writeFile,mkdir,rm,rename} from 'node:fs/promises';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {prefixMenus,selectMenu,suppliedFormDestination,menuSections} from './prefix-menus.mjs';
 import {configureConnectionAttempts} from './connection.mjs';
 configureConnectionAttempts();
-export const CLIENT_VERSION='semantic-link-browser/2.10';
+export const CLIENT_VERSION='semantic-link-browser/2.11';
 export const ORIGIN='https://relay.interagentresearchcommons.org';
 const DIRECTORY='/private/tmp/relay-supplied-link-browser';
-const TTL=9*60*1000;
+const TTL=4*60*1000;
 const decode=s=>s.replace(/&(?:#x([a-f0-9]+)|#(\d+)|(amp|lt|gt|quot|apos|nbsp|#39));/gi,(_,hex,num,named)=>hex||num?String.fromCodePoint(parseInt(hex||num,hex?16:10)):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' ','#39':"'"}[named.toLowerCase()]));
 const plain=s=>decode(s.replace(/<[^>]*>/g,''));
 const compact=s=>plain(s).replace(/\s+/g,' ').trim();
-export function render(html,url,revision) {
+export function render(html,url,revision,profile='supplied-links') {
   // Input controls, scripts and styles never become browser actions.
   const source=html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<!--[\s\S]*?-->/g,'');
   const baseHref=source.match(/<base\b[^>]*href="([^"]*)"/i)?.[1];
@@ -37,7 +38,9 @@ export function render(html,url,revision) {
   const title=compact(source.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]||'Relay');
   // Public-message and confirmation pages use a plain pre instead of class=draft.
   const pre=draft===undefined?source.match(/<pre\b[^>]*>([\s\S]*?)<\/pre>/i)?.[1]:undefined;
-  return {links,view:{title,draft:draft===undefined?null:plain(draft),...(pre!==undefined?{displayedText:plain(pre)}:{}),sections:sections.filter(s=>s.heading!=='Page'||s.text.length||s.links.length)}};
+  const forms=profile==='prefix-dropdowns'?prefixMenus(source,url,revision):[];
+  sections.push(...menuSections(forms));
+  return {links,forms,view:{title,draft:draft===undefined?null:plain(draft),...(pre!==undefined?{displayedText:plain(pre)}:{}),sections:sections.filter(s=>s.heading!=='Page'||s.text.length||s.links.length)}};
 }
 function file(id){if(!/^[a-f0-9-]{36}$/.test(id))throw Error('Invalid browser identifier');return path.join(DIRECTORY,id+'.json');}
 async function load(id){const state=JSON.parse(await readFile(file(id),'utf8'));if(state.expires<=Date.now()){await rm(file(id),{force:true});throw Error('Browser expired; supervisor must close the trial.');}return state;}
@@ -50,6 +53,7 @@ async function navigate(state,destination,fetcher=fetch) {
   for(let i=0;i<6;i++) {
     let response,html;
     try {
+      state.metrics.httpAttempts++;
       response=await fetcher(url,{redirect:'manual',signal:navigationSignal,headers:{Accept:'text/html','User-Agent':'Relay-Supplied-Link-Browser/1.0'}});
     }catch(cause){
       const error=new Error('Network fetch failed; no HTTP response received. Last supplied page preserved. No automatic action retry.',{cause});
@@ -75,19 +79,21 @@ async function navigate(state,destination,fetcher=fetch) {
       const error=Error(`HTTP ${response.status}${resourceLimit?' (Cloudflare 1102: Worker exceeded resource limits)':''}; last supplied page preserved. No automatic action retry.`);
       error.failureClass='server-http-error';throw error;
     }
+    state.metrics.successfulNavigationMs+=Math.round(performance.now()-started);
     state.url=url;state.revision++;
-    const rendered=(response.headers.get('content-type')||'').includes('json')?{links:[],view:{title:'JSON response',json:JSON.parse(html),sections:[]}}:render(html,url,state.revision);
-    state.links=rendered.links;state.view={timing:{headersMs:Math.round(headersMs),bodyMs:Math.round(bodyMs),navigationMs:Math.round(performance.now()-started)},status:response.status,usage:response.headers.get('x-relay-usage'),...rendered.view};
+    const rendered=(response.headers.get('content-type')||'').includes('json')?{links:[],view:{title:'JSON response',json:JSON.parse(html),sections:[]}}:render(html,url,state.revision,state.profile);
+    state.forms=rendered.forms||[];state.links=rendered.links;state.view={timing:{headersMs:Math.round(headersMs),bodyMs:Math.round(bodyMs),navigationMs:Math.round(performance.now()-started)},status:response.status,usage:response.headers.get('x-relay-usage'),...rendered.view};
     return;
   }
   throw Error('Redirect limit exceeded');
 }
-export async function initialize({home=ORIGIN+'/',fetcher=fetch}={}) {
+export async function initialize({home=ORIGIN+'/',fetcher=fetch,profile='supplied-links'}={}) {
+  if(!['supplied-links','prefix-dropdowns'].includes(profile))throw Error('Unknown capability profile');
   await mkdir(DIRECTORY,{recursive:true,mode:0o700});
-  const state={id:randomUUID(),home,url:home,revision:0,expires:Date.now()+TTL};await navigate(state,home,fetcher);await save(state);return state.id;
+  const state={id:randomUUID(),home,url:home,profile,revision:0,expires:Date.now()+TTL,metrics:{httpAttempts:0,linkActivations:0,dropdownSelections:0,formSubmissions:0,localReads:0,successfulNavigationMs:0}};await navigate(state,home,fetcher);await save(state);return state.id;
 }
-function observedView(state){return {client:CLIENT_VERSION,...state.view,revision:state.revision,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
-export async function read(id){return observedView(await load(id));}
+function observedView(state){return {client:CLIENT_VERSION,profile:state.profile,interactionCounts:state.metrics,...state.view,revision:state.revision,remainingSeconds:Math.max(0,Math.floor((state.expires-Date.now())/1000))};}
+export async function read(id,{inspection=true}={}){const state=await load(id);if(inspection){state.metrics.localReads++;await save(state);}return observedView(state);}
 export async function follow(id,handle,{fetcher=fetch}={}) {
   const state=await load(id);
   let candidates;
@@ -98,11 +104,11 @@ export async function follow(id,handle,{fetcher=fetch}={}) {
   // Duplicate anchors to the same URL are equivalent; distinct effects must be disambiguated.
   if(new Set(candidates.map(l=>l.href)).size>1)throw Error('Ambiguous link name; specify its displayed section or unique aria label. Supplied choices: '+JSON.stringify(candidates.slice(0,8).map(l=>({name:l.aria||l.label,section:l.section}))));
   const previousDraft=state.view.draft;
-  const link=candidates[0];
+  const link=candidates[0];state.metrics.linkActivations++;
   const next=new URL(link.href),current=new URL(state.url);
   if(next.origin!==new URL(state.home).origin)throw Error('Only supplied same-origin links are permitted');
   if(next.hash&&next.pathname===current.pathname&&next.search===current.search){state.url=next.href;state.revision++;const old=state.links;state.links=old.map((l,i)=>({...l,id:`${state.revision}.${i+1}`}));for(const s of state.view.sections)s.links=s.links.map(l=>({...l,id:state.links[old.findIndex(x=>x.id===l.id)].id}));}
-  else await navigate(state,link.href,fetcher);
+  else {try{await navigate(state,link.href,fetcher);}catch(error){await save(state);throw error;}}
   if(typeof previousDraft==='string'&&typeof state.view.draft==='string') {
     const before=[...previousDraft],after=[...state.view.draft];let same=0;
     while(same<before.length&&same<after.length&&before[same]===after[same])same++;
@@ -110,6 +116,18 @@ export async function follow(id,handle,{fetcher=fetch}={}) {
     while(suffix<before.length-same&&suffix<after.length-same&&before[before.length-1-suffix]===after[after.length-1-suffix])suffix++;
     state.view.draftChange={commonPrefixCharacters:same,unchangedSuffixCharacters:suffix,removed:before.slice(same,before.length-suffix).join(''),added:after.slice(same,after.length-suffix).join('')};
   }
+  await save(state);return observedView(state);
+}
+export async function select(id,{name,option}) {
+  const state=await load(id);if(state.profile!=='prefix-dropdowns')throw Error('Dropdowns are not permitted by this profile.');
+  selectMenu(state.forms,{name,option});state.metrics.dropdownSelections++;
+  state.view.sections=state.view.sections.filter(s=>s.heading!=='Prefix dropdowns').concat(menuSections(state.forms));
+  await save(state);return observedView(state);
+}
+export async function submit(id,name,{fetcher=fetch}={}) {
+  const state=await load(id);if(state.profile!=='prefix-dropdowns')throw Error('GET menus are not permitted by this profile.');
+  const destination=suppliedFormDestination(state.forms,name);state.metrics.formSubmissions++;
+  try{await navigate(state,destination,fetcher);}catch(error){await save(state);throw error;}
   await save(state);return observedView(state);
 }
 export async function close(id){await rm(file(id),{force:true});await rm(file(id)+'.tmp',{force:true});}

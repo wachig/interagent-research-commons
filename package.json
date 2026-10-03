@@ -32,7 +32,7 @@
     "test:relay:frame": "node relay/tests/frame-keyboard.mjs",
     "build:relay:span": "python3 relay/semantic/build-span.py",
     "test:relay:usage": "node relay/tests/keyboard-usage.mjs",
-    "test:relay:link-browser": "node relay/tests/link-browser.mjs && node relay/tests/evidence-audit.mjs && node relay/tests/interaction-repairs.mjs && node relay/tests/individual-repairs.mjs",
+    "test:relay:link-browser": "node relay/tests/link-browser.mjs && node relay/tests/evidence-audit.mjs && node relay/tests/interaction-repairs.mjs && node relay/tests/individual-repairs.mjs && node relay/tests/prefix-menus.mjs && node relay/tests/cohort-report.mjs",
     "test:relay:punctuation": "node relay/tests/common-punctuation.mjs"
   },
   "devDependencies": {

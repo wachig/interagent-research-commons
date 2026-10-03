@@ -1,0 +1,10 @@
+{
+  "version": "relay-diagnostic-ledger/1.0",
+  "status": "prepared-awaiting-native-recording",
+  "attempts": [],
+  "native_gate": {
+    "checked_at": "2026-10-03T19:27:55Z",
+    "recording_active": false,
+    "reason": "Native telemetry protective daily pause; model-account change does not reset storage allowance."
+  }
+}

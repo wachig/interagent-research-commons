@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {prefixMenus,selectMenu,suppliedFormDestination,menuSections} from '../link-browser/prefix-menus.mjs';
+import {initialize,read,select,submit,follow,close} from '../link-browser/browser.mjs';
+import {Presentation,pages} from '../link-browser/presentation.mjs';
+import {fixture} from '../tools/local-evaluation.mjs';
+const url='https://example.test/predictive-keyboard/html/word-links/state/supplied';
+const form='<button type="submit" form="prefix-filter-form">Find matching words</button><form id="prefix-filter-form" method="get" action="'+url+'"><input type="hidden" name="view" value="prefix"><input type="hidden" name="layout" value="qwerty"><select name="start_r" aria-label="START pair beginning with r"><option value="">2-letter</option><option value="re">re</option><option value="ra" disabled>ra</option></select></form>';
+let forms=prefixMenus(form,url,1);assert.equal(forms.length,1);
+assert.throws(()=>selectMenu(forms,{name:'START pair beginning with r',option:'ra'}));
+assert.throws(()=>selectMenu(forms,{name:'START pair beginning with r',option:'constructed'}));
+selectMenu(forms,{name:'START pair beginning with r',option:'re'});
+const destination=new URL(suppliedFormDestination(forms,'Find matching words'));
+assert.equal(destination.searchParams.get('start_r'),'re');assert.equal(destination.searchParams.get('view'),'prefix');
+for(const bad of [form.replace('method="get"','method="post"'),form.replace('name="start_r"','name="text"'),form.replace('type="hidden"','type="text"'),form.replace('action="'+url,'action="https://external.test/'),form.replace('value="re"','value="made-up"')])assert.equal(prefixMenus(bad,url,1).length,0,'unsupported forms cannot become actions');
+const presentation=new Presentation();const view={revision:1,sections:menuSections(forms)};presentation.show(view,1);presentation.requireMenu({name:'START pair beginning with r',option:'re'});presentation.requireMenu({name:'Find matching words'},true);
+presentation.show({revision:2,sections:[]},2);assert.throws(()=>presentation.requireMenu({name:'START pair beginning with r',option:'re'}));
+assert.ok(pages(view).every(p=>Buffer.byteLength(JSON.stringify(p))<12000));
+const f=await fixture();let id,strict;
+const fetcher=(href,options)=>fetch(href,{...options,headers:{...options.headers,'CF-Connecting-IP':'192.0.2.201'}});
+try {
+ strict=await initialize({home:f.base+'/predictive-keyboard/html/prefix-keyboard/',fetcher});assert.equal((await read(strict)).sections.some(s=>s.controls?.length),false);await assert.rejects(select(strict,{name:'START pair beginning with r',option:'re'}),/not permitted/);
+ id=await initialize({home:f.base+'/predictive-keyboard/html/prefix-keyboard/',fetcher,profile:'prefix-dropdowns'});
+ const initial=await read(id);assert.equal(initial.profile,'prefix-dropdowns');assert.equal(initial.sections.flatMap(s=>s.controls||[]).length,78);
+ let chosen=await select(id,{name:'START pair beginning with r',option:'re'});assert.equal(chosen.draft,initial.draft);assert.equal(chosen.interactionCounts.httpAttempts,initial.interactionCounts.httpAttempts,'menu selection makes no request');assert.equal(chosen.interactionCounts.dropdownSelections,1);
+ const filtered=await submit(id,'Find matching words',{fetcher});assert.equal(filtered.interactionCounts.formSubmissions,1);assert.equal(filtered.interactionCounts.httpAttempts,initial.interactionCounts.httpAttempts+1);assert.equal(filtered.draft,initial.draft);assert.ok(filtered.sections.some(s=>s.heading.includes('Candidates')));
+ const link=filtered.sections.flatMap(s=>s.links).find(l=>l.label==='Review message');assert.equal(link,undefined,'empty filtering does not create a publishable body');
+ const add=filtered.sections.flatMap(s=>s.links.map(l=>({...l,section:s.heading}))).find(l=>l.aria?.startsWith('Add ')&&l.section.includes('Candidates'));assert.ok(add,'filtered words remain supplied links');
+ const added=await follow(id,{name:add.aria,section:add.section},{fetcher});assert.ok(added.draft.length>0);assert.equal(added.interactionCounts.linkActivations,1);
+ const body=await f.request('/poll');assert.equal(body.body.returned_count,0);
+ console.log('Prefix menus: supplied options only, hidden defaults, no-JS GET, separate selection/submission/link counts, stale inspection and strict-profile exclusion passed.');
+}finally{if(id)await close(id);if(strict)await close(strict);await f.close();}

@@ -1,0 +1,87 @@
+{
+  "version": "relay-diagnostic-cohort/1.0",
+  "status": "prepared-awaiting-native-recording",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "release": "37a2e4af-6574-47ab-9c64-bcdef51909a3",
+  "client": "semantic-link-browser/2.11",
+  "contract": "relay-diagnostic-tester/1.0",
+  "phrases": [
+    {
+      "id": "P04",
+      "body": "Please wait. I’ll be back in a minute."
+    },
+    {
+      "id": "P08",
+      "body": "Where should we meet at 3:30?"
+    },
+    {
+      "id": "P10",
+      "body": "Thanks for listening. I appreciate you."
+    }
+  ],
+  "methods": [
+    "chunk-word",
+    "short-word",
+    "predictive-word",
+    "prefix-link",
+    "span",
+    "token-link",
+    "frame"
+  ],
+  "profiles": {
+    "chunk-word": "supplied-links",
+    "short-word": "supplied-links",
+    "predictive-word": "supplied-links",
+    "prefix-link": "prefix-dropdowns",
+    "span": "supplied-links",
+    "token-link": "supplied-links",
+    "frame": "supplied-links"
+  },
+  "trial_ceiling_seconds": 240,
+  "planned_attempts": 21,
+  "attempts_per_cell": 1,
+  "max_concurrency": 3,
+  "automatic_retries": false,
+  "purpose": "Small current-release diagnostic, including Frame fallback/suggestion behavior. Reused phrases are not held-out or a general ranking proof.",
+  "prior_successes_counted": false,
+  "assistance": "No target reminders, coached paths or target-aware comparison feedback during composition. Independent exactness verification after public receipt.",
+  "order_rotation": {
+    "chunk-word": [
+      "P04",
+      "P08",
+      "P10"
+    ],
+    "short-word": [
+      "P08",
+      "P10",
+      "P04"
+    ],
+    "predictive-word": [
+      "P10",
+      "P04",
+      "P08"
+    ],
+    "prefix-link": [
+      "P04",
+      "P08",
+      "P10"
+    ],
+    "span": [
+      "P08",
+      "P10",
+      "P04"
+    ],
+    "token-link": [
+      "P10",
+      "P04",
+      "P08"
+    ],
+    "frame": [
+      "P04",
+      "P08",
+      "P10"
+    ]
+  },
+  "dispatch_gate": "Native recording active with sufficient private meter headroom; release pin and client capability canaries pass. Stop new dispatch on telemetry pause/gap, changed conditions or repeated systemic failure."
+}
