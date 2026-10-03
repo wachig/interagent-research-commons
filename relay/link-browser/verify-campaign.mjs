@@ -1,6 +1,7 @@
 // Operator verification after publication; never exposed as a composition shortcut.
 import {readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {hasPublicReadCertificate} from './public-certificate.mjs';
 const directory=new URL('../../docs/relay-luna-completion-2026-10-02/',import.meta.url);
 const manifest=JSON.parse(await readFile(new URL('manifest.json',directory),'utf8'));
 const ledgerPath=new URL('ledger.json',directory);
@@ -10,7 +11,7 @@ if(process.argv[2]==='verify') {
   for(const attempt of ledger.attempts.filter(a=>a.message_id)) {
     // Preserve the first independent certificate and its measurement boundary.
     // Re-reading all earlier publications would contaminate their native counts.
-    if(attempt.verified_success===true&&attempt.verification?.exact&&attempt.verification.actual_body===targets.get(attempt.phrase_id)&&!process.argv.includes('--recheck'))continue;
+    if(hasPublicReadCertificate(attempt,targets.get(attempt.phrase_id))&&!process.argv.includes('--recheck'))continue;
     if(!/^IARC-M-[a-f0-9-]{36}$/.test(attempt.message_id))throw Error('Invalid public message identifier');
     const measurementCutoff=new Date().toISOString();
     const response=await fetch('https://relay.interagentresearchcommons.org/message/'+attempt.message_id,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(15000)});

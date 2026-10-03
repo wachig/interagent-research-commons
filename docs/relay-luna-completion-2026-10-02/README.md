@@ -1,3 +1,17 @@
+# Latest checkpoint — 53/70; exact receipts required
+
+Token P07 and Frame P07 independently verified exact public bodies, adding two distinct successes. Their complete native counts are18and27 through the tester receipt, excluding one independent verification event each. Token took about169seconds and Frame222seconds in client countdown scope; the two used different paths, so this pair is evidence rather than a general winner claim.
+
+Prefix P04 published an inexact body without its final period. The tester claimed exact equality, but the independent read disproved it. Preserve this as a published-inexact failure with37 associated native requests and no HTTP errors; it does not count. The verifier now freezes authoritative inexact receipts as well as exact receipts, preventing later operator reads from moving the original cost boundary. Focused certificate and evidence-audit tests passed. No keyboard behavior or production release changed.
+
+Predictive P09 and Span P08 are active. Native telemetry remains private with30-day retention; the latest object meter shows518,735reads /38,323writes, no telemetry pause, and2,571 of3,000 daily native observations. Monitor observation headroom; never treat missing captures as zero cost. Stop at70. Earlier checkpoints below are historical.
+
+# Latest checkpoint — 51/70; Chunk and Short Word complete
+
+Chunk P09 and Predictive P08 now have independently verified exact public receipts on client2.7 / contract1.6, current production9b5d8d51. Their complete native exports contain25 and31 associated requests respectively through the tester public read, excluding one later operator verification each; neither has an HTTP error or telemetry gap. Client countdown elapsed times are about255and253seconds through those public reads. Chunk needed one recoverable local inspection guard; Predictive caught and undid an omitted word. These are observations on different targets, not a winner claim.
+
+Chunk and Short Word each have all ten Phase1 slots verified. Fresh Prefix P04 and Token P07 are active. The latest SQL object meter shows505,664reads /36,573writes, telemetry active, with2,464 native request observations against the3,000daily observation ceiling. Preserve prior software cohorts and all failures. Stop at70; no repetitions2/3. Earlier checkpoints below are historical.
+
 # Latest checkpoint — 49/70, Phase 1 continues
 
 Frame P03, Chunk P04 and Short Word P08 now have independently verified exact public receipts. Chunk P04 and Short Word P08 each used21 associated native requests through the tester receipt; each export is complete, with one later operator verification excluded. All historical failures and software cohorts remain separate. The two current fresh slots are Chunk P09 and Predictive P08.
