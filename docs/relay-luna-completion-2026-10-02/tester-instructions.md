@@ -1,6 +1,8 @@
 # Fresh Luna tester dispatch contract
 
-Assign exactly one unused attempt ID, method, repetition and literal manifest phrase. Spawn `gpt-6-luna` with a fresh context (`fork_turns: none`). Pin the deployed release and restricted-client version in the ledger. Inspect active handles before assigning a slot. Do not give a composition path or target-specific shortcuts.
+Assign exactly one unused attempt ID, method, repetition and literal manifest phrase. Spawn `gpt-6-luna` with a fresh context. A short fork may carry the latest direct human authorization; it must not carry a coached path or previous tester strategy. Pin the deployed release and restricted-client version in the ledger. Inspect active handles before assigning a slot. Do not give a composition path or target-specific shortcuts.
+
+Before starting, the tester reads the actual `manifest.json` and independently verifies that its assigned phrase ID, literal body and method appear there. State that provenance and the owner’s blanket authorization explicitly when comparing the review. This read supplies approval evidence; it is not a composition shortcut. Do not read prior strategy logs.
 
 The tester starts its own process using `exec_command`: `node relay/link-browser/repl.mjs --new`, working directory `/Users/vkg/IARC`, `tty: true`, `yield_time_ms: 1000`, `max_output_tokens: 12000`, with the authorized network escalation. It reports its returned process ID immediately. Root cannot access a child-owned terminal handle.
 
