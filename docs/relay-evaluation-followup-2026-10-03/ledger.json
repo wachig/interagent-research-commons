@@ -1,10 +1,16 @@
 {
   "version": "relay-diagnostic-ledger/1.0",
-  "status": "prepared-awaiting-native-recording",
+  "status": "blocked-native-daily-recording",
   "attempts": [],
   "native_gate": {
-    "checked_at": "2026-10-03T19:27:55Z",
+    "checked_at": "2026-10-03T19:31:46Z",
     "recording_active": false,
-    "reason": "Native telemetry protective daily pause; model-account change does not reset storage allowance."
+    "reason": "Native telemetry daily protective pause persists across three work turns. Phase 2 is complete; Phase 3 requires an external UTC-day change and positive recording/headroom verification.",
+    "earliest_reset_eligibility": "2026-10-04T00:00:00Z",
+    "internal_rows_written": 50719,
+    "native_observations_today": 3308,
+    "active_testers": 0,
+    "process_check": "No live relay/link-browser/repl.mjs or relay-luna process; prior agents completed.",
+    "next_action": "After eligibility, inspect private meter once, verify pinned release and a bounded recording canary, then dispatch frozen Luna diagnostics if recording/headroom pass. Do not raise caps or launch uncaptured trials."
   }
 }
