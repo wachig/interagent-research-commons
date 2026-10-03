@@ -1,3 +1,23 @@
+# Current checkpoint —38/70, testing continues
+
+Ownerretainedauthorizationcontinues; P06Short/Span/Predictive/Prefix nowindependentlycertified alongwith earlier34. Nativeexports complete forsuccesses/failures, including TokenP03 newblockedAddI (oneassociatednativeevent, not zero overall cost). No newpermissionquestion or blocker stop; unaffectedFrame/PrefixP03 freshLunarunning. Allruntime modelsverifiedgpt-6-lunamedium. Accountusage ~46,360writes/~405,820reads Oct3UTC; metricslagandobjectmeterdiffer. Rawprivate30daytelemetry, noautomaticpublicationreplay or rawupload. Olderstatuses historical.
+
+# Latest checkpoint —34/70, testing continues
+
+Ownerretainedpublicationauthorization recognized. Eightnewsuccesses since26: P10Chunk/Short,P05Chunk/Short,P04Frame/Span/Predictive,P08Token. Allindependentlypublicreadexact; runtimeGPT-6Lunamediumconfirmed. P10Chunkaccuracyrecoveryhasgenericrootreminder assistance. P05Chunk/P04Predictiveownreceiptreads hitdeadline; rootpublicreadprovesexactness. Allsuccessnativeexportsandfailedrunexports complete. No rawtelemetryupload; private30dayretention. CloudflareChromeexistingloginrestoredexportswithoutcredentialcopy. P06Short/Span freshretriesrunning, no hourlyautomation/Phase2/3. Earlierstatuses historical.
+
+# Current continuation —29/70
+
+Retained ownerauthorization recognized: P10Chunk/P10Short and P05Chunk independently verified; all new testers actualruntime GPT-6Luna medium. P10Chunk accuracy recovery is marked supervisorassisted. P05Chunk published beforedeadline, ownreceiptfollowexpired; rootpublicread independentlyprovedexactness. P09Prefix/Predictive and P08Predictive faileddeadline/correction and are retained. Fresh P05Short/P04Frame inprogress. Newnativeexports pendingcurrentbrowserCloudflaresignin; rawprivate30day retention intact. No claimedzero-cost failures. Earlierblockerstatuses historical.
+
+# Owner retained authorization —testing resumed from26/70
+
+Direct human instruction: retain my authorization, tests continue until done. Remaining assigned exact public Phase1 messages on live Relay are authorized, including Token blankstart; no individual confirmations. Fresh P10 Short Word and Chunk testers running, release365dcf75 unchanged. Live storage health passed06:23:51UTC. Prior blocked checkpoint is historical.
+
+# Goal blocked at26/70
+
+The same automatic publication approval blocker persists for three consecutive goal turns; the phasewide confirmation question is unanswered. No active tester processes or attempts remain. Mark goal blocked to stop automatic continuation costs. Preserve26distinct exact certificates and44remaining slots, all failures/spent work and software cohorts. Resume only after recognized authorization or external approval-state change. Older checkpoint sections below are historical.
+
 # Latest checkpoint —26/70, all tester processes closed
 
 Manual continuation added six independently certified messages since20: P07 Short Word/Span/Prefix/Predictive, P04 Short Word and P08 Frame. All failed attempts and complete associated native costs are saved. P08 Chunk, P05 Prefix and P08 Short Word reached exact reviews but automatic approval rejected public publication; P07 Token was blocked midcomposition. P08 Span failed after stale selections/draft deviations. No bypass or replay.
