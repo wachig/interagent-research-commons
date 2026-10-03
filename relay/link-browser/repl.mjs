@@ -7,7 +7,7 @@ const show=(view,page=0)=>presentation.show(view,view.revision,page);
 const id=process.argv[2]==='--new'?await initialize():process.argv[2];
 const first=await read(id);
 try{console.log(JSON.stringify(show(first)));}catch(error){await close(id);console.log(JSON.stringify({error:error.message,failureClass:error.failureClass||'client-output-overflow'}));process.exit(1);}
-const deadline=setTimeout(async()=>{console.log(JSON.stringify({error:'Five-minute trial deadline reached.',failureClass:'client-deadline'}));await close(id);process.exit(0);},first.remainingSeconds*1000);
+const deadline=setTimeout(async()=>{console.log(JSON.stringify({error:'Six-minute trial deadline reached.',failureClass:'client-deadline'}));await close(id);process.exit(0);},first.remainingSeconds*1000);
 for await(const line of createInterface({input:process.stdin,terminal:false})) {
   try {
     const input=JSON.parse(line);

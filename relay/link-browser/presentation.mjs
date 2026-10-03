@@ -1,5 +1,5 @@
 // Local output pagination only: no navigation, ranking or target-aware filtering.
-export const OUTPUT_BYTE_LIMIT=5000;
+export const OUTPUT_BYTE_LIMIT=12000;
 export function pages(view) {
   const {sections=[],...header}=view;
   const result=[];let current={...header,sections:[]};

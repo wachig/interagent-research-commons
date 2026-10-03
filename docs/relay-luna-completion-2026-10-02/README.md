@@ -1,3 +1,9 @@
+# Latest Phase 4 checkpoint — 42/70
+
+Chunk P08 has a fresh exact publication independently verified on release9b5d8d51, client2.5 / contract1.3: 19 associated native requests, ~4m24s through the tester receipt, 16 local output reads; one later independent verification event is excluded. This is one successful repaired run, not a comparative winner. Predictive P05 reached its exact draft but the five-minute cutoff blocked review. Its30associated requests remain a retained failure.
+
+Fresh runs now use client2.6 / contract1.4: six-minute hard deadline and12,000-byte bounded output pages under the same8,000-token tool allowance. This generic change preserves all links, source order, inspected-choice requirements and no-script/no-field restrictions. It reduces avoidable local paging and gives the review/publication pipeline a modestly longer maximum; it neither adds shortcuts nor changes site traversals. Client and evidence tests passed. Preserve earlier cohorts and failures separately; no earlier success is rerun or reclassified.
+
 # Phase 4 continuation — 41/70 verified
 
 A fresh six-attempt batch produced no exact publications: Chunk/Span/Token were incomplete at the bounded deadline, Frame omitted words and was blocked at review, and Predictive/Prefix encountered approval rejections. All failed attempts and associated native costs are retained. Approval failures remain separate from HTTP/network errors and keyboard behavior.

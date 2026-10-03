@@ -3598,7 +3598,10 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-26-59-01a100df-a4ab-7703-9d82-aaa33caac8a3.jsonl"
     },
     {
       "attempt_id": "P04-prefix-link-R1-A1",
@@ -3639,7 +3642,10 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-27-29-01a100e0-1ca8-7e71-bff3-88cc26157411.jsonl"
     },
     {
       "attempt_id": "P03-token-link-R1-A4",
@@ -3680,7 +3686,10 @@
         "truncated": false,
         "budget_possible_gap": false,
         "export_complete": true
-      }
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-32-03-01a100e4-489f-7d31-9421-4494ca8b9ce4.jsonl"
     },
     {
       "attempt_id": "P08-chunk-word-R1-A4",
@@ -3693,11 +3702,53 @@
       "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "registered_at": "2026-10-03T08:39:42.272971+00:00",
-      "outcome": "in-progress",
-      "verified_success": false,
-      "native_metrics_pending": true,
+      "outcome": "published-pending-independent-verification",
+      "verified_success": true,
+      "native_metrics_pending": false,
       "agent": "/root/phase4_p08_chunk_a4",
-      "tester_owned_process": 70687
+      "tester_owned_process": 70687,
+      "message_id": "IARC-M-ecc200a1-6d47-4106-9bb1-6a96dcf85ca5",
+      "profile_compliant": true,
+      "process_closed": true,
+      "completed_at": "2026-10-03T08:45:34.879426+00:00",
+      "agent_reported_errors": [
+        "ambiguous we, no mutation; section disambiguation",
+        "ambiguous at, no mutation; section disambiguation"
+      ],
+      "agent_reported_link_activations": 19,
+      "agent_reported_local_reads": 16,
+      "agent_reported_timing": {
+        "publication_elapsed_seconds": 258,
+        "receipt_elapsed_seconds": 264,
+        "scope": "five-minute client process including initial home fetch, local reads and tool/agent time"
+      },
+      "verification": {
+        "measurement_cutoff_at": "2026-10-03T08:45:34.902Z",
+        "checked_at": "2026-10-03T08:45:35.603Z",
+        "http_status": 200,
+        "actual_body": "Where should we meet at 3:30?",
+        "exact": true,
+        "body_sha256": "204e11b3a9cc1173919e7ead5787acb697a3fd8ab2b7e8b7d2480ada9f02b326"
+      },
+      "spent_requests": 19,
+      "native_metrics": {
+        "run_id": "685a179f180709bc4f9c2a5450740d497b49d543bc474ee2f4ae8460cd449dfd",
+        "requests": 19,
+        "response_bytes_uncompressed": 1242198,
+        "links_presented": 7505,
+        "server_processing_ms": 86,
+        "http_errors": 0,
+        "first_request_at": 1791016831045,
+        "last_request_at": 1791017085254,
+        "published_at": 1791017079680,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 1
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-39-53-01a100eb-7568-7a32-9d1a-f7b2ac8737c5.jsonl"
     },
     {
       "attempt_id": "P05-predictive-word-R1-A1",
@@ -3710,11 +3761,40 @@
       "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "registered_at": "2026-10-03T08:40:42.433802+00:00",
-      "outcome": "in-progress",
+      "outcome": "failed-deadline-before-review",
       "verified_success": false,
-      "native_metrics_pending": true,
+      "native_metrics_pending": false,
       "agent": "/root/phase4_p05_predictive_a1",
-      "tester_owned_process": 98010
+      "tester_owned_process": 98010,
+      "final_draft": "That’s not what I meant; try again.",
+      "message_id": null,
+      "process_closed": true,
+      "completed_at": "2026-10-03T08:50:04.107791+00:00",
+      "failure_reason": "Exact draft reached at3secondsremaining; subsequent review blocked by fixed five-minute deadline. No publication.",
+      "agent_reported_errors": [
+        "invalid output page2 when only0-1",
+        "ambiguous s selection",
+        "uninspected Undo choice; recovered"
+      ],
+      "spent_requests": 30,
+      "native_metrics": {
+        "run_id": "b12bb42bc51e09acc556c9bf2c6021ed6f9073eae210656a6026c089ce54f4e2",
+        "requests": 30,
+        "response_bytes_uncompressed": 1558832,
+        "links_presented": 2880,
+        "server_processing_ms": 0,
+        "http_errors": 0,
+        "first_request_at": 1791016887682,
+        "last_request_at": 1791017167029,
+        "published_at": null,
+        "truncated": false,
+        "budget_possible_gap": false,
+        "export_complete": true,
+        "independent_verification_events_excluded": 0
+      },
+      "model_runtime_verified": true,
+      "model_runtime_effort": "medium",
+      "model_runtime_source": "rollout-2026-10-03T01-40-52-01a100ec-5d4c-7f71-817e-263fd4a7c861.jsonl"
     },
     {
       "attempt_id": "P09-short-word-R1-A1",
@@ -3722,21 +3802,23 @@
       "method_id": "short-word",
       "repetition": 1,
       "model": "gpt-6-luna",
-      "client": "semantic-link-browser/2.5",
-      "tester_contract": "relay-luna-tester/1.3",
+      "client": "semantic-link-browser/2.6",
+      "tester_contract": "relay-luna-tester/1.4",
       "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
       "foundation": "relay-keyboard-foundation/1.5.1",
       "registered_at": "2026-10-03T08:40:42.433802+00:00",
       "outcome": "registered",
       "verified_success": false,
-      "native_metrics_pending": true
+      "native_metrics_pending": true,
+      "deadline_seconds": 360,
+      "output_byte_limit": 12000
     }
   ],
-  "verified_successes": 41,
+  "verified_successes": 42,
   "required_successes": 70,
   "heartbeat_id": null,
-  "status": "phase4-validation-running",
-  "updated_at": "2026-10-03T08:39:42.272971+00:00",
+  "status": "active",
+  "updated_at": "2026-10-03T08:45:35.605Z",
   "next_work": "Phase4: fresh bounded GPT-6 Luna validation on foundation1.5.0/registry2.0.4/client2.5/contract1.3, then remaining Phase1 exact slots to70; preserve all41certificates and release cohorts.",
   "deployed_release": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
   "operational_blocker": {
@@ -4090,5 +4172,14 @@
     "checked_at": "2026-10-03T08:39:42.272971+00:00",
     "local_checks": "link-browser/evidence/interaction/individual repairs, all-seven publication/reply integration, Frame regression passed",
     "production_checks": "health release/writable/storage-readable, registry current/historical, native telemetry, first-page contextual choices passed; unpublished"
+  },
+  "client2_6_checkpoint": {
+    "checked_at": "2026-10-03T08:50:04.107791+00:00",
+    "scope": "generic supplied-link navigation only, all future methods",
+    "deadline_seconds": 360,
+    "output_byte_limit": 12000,
+    "reason": "5-minute cutoff prevented exact Predictive draft from review; excessive local output read commands seen across methods",
+    "tests": "link-browser and evidence-audit passed",
+    "retained_old_cohorts": true
   }
 }
