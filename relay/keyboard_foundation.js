@@ -1,11 +1,26 @@
 import { captureUsageState } from './keyboard_usage_context.js';
 // Shared lifecycle contracts. Renderers and wire signatures remain interface adapters.
-export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.2.0";
+export const KEYBOARD_FOUNDATION_VERSION = "relay-keyboard-foundation/1.3.0";
 export const MAX_BODY_BYTES = 1200;
 const SESSION_TTL_MS = 30 * 60 * 1000;
 export const MAX_SESSIONS = 32;
 export const MAX_STATES_PER_SESSION = 2400;
 const SNAPSHOT_INTERVAL = 16;
+
+// Compact signed word arguments omit only fixed defaults. Existing object links stay valid.
+export function compactWordArgument(argument) {
+  try {
+    const c=JSON.parse(argument);
+    if(c && !Array.isArray(c) && c.v===undefined && typeof c.text==='string' && c.wrapper==='none' && c.suffix==='' && ['auto','as-is','upper','lower','capitalize'].includes(c.case) && ['next','complete','exact','compose'].includes(c.effect)) return JSON.stringify(['w1',c.text,c.case,c.effect]);
+  } catch {}
+  return argument;
+}
+export function expandWordArgument(argument) {
+  const c=JSON.parse(argument);
+  if(!Array.isArray(c))return c;
+  if(c.length!==4 || c[0]!=='w1' || c.slice(1).some(v=>typeof v!=='string'))throw new Error('The selected word action is malformed.');
+  return {text:c[1],case:c[2],effect:c[3],wrapper:'none',suffix:''};
+}
 
 export function appendDelta(draft, removed, added) {
   if (removed && !draft.endsWith(removed)) throw new Error("This branch no longer matches its parent state.");

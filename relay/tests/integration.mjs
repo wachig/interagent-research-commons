@@ -502,10 +502,10 @@ try {
   assert.equal(service.size_budget_bytes, 4096);
   assert.equal(service.identity.id, "IARC-RELAY");
   const registry = (await getJson(`${base}${service.method_registry.href}`)).body;
-  assert.equal(registry.registry_version, "2.0.1");
+  assert.equal(registry.registry_version, "2.0.2");
   assert.equal(registry.methods.length, 9);
   assert.equal(registry.methods.find((method) => method.id === "frame")?.href, "/predictive-keyboard/html/frame-keyboard/");
-  assert.deepEqual((await getJson(`${base}/methods/2.0.1.json`)).body, registry, "versioned registry preserves the full declaration");
+  assert.deepEqual((await getJson(`${base}/methods/2.0.2.json`)).body, registry, "versioned registry preserves the full declaration");
   assert.deepEqual((await getJson(`${base}/methods/1.9.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.9.0.json"),"utf8")), "prior registry stays immutable");
   assert.deepEqual((await getJson(`${base}/methods/1.0.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.0.0.json"),"utf8")), "prior registry stays unchanged");
   assert.deepEqual((await getJson(`${base}/methods/1.3.0.json`)).body, JSON.parse(await readFile(path.join(relayRoot,"methods-1.3.0.json"),"utf8")), "previous registry is immutable");
@@ -522,7 +522,7 @@ try {
   assert.equal(service.state.reads_open, true);
   assert.equal(service.state.writes_enabled, true);
   assert.equal(service.operations.read.feed, "/poll?limit=20");
-  assert.equal(service.bootstrap_revision, "2.0.1");
+  assert.equal(service.bootstrap_revision, "2.0.2");
   assert.equal(service.operations.participate.catalog, "/");
   assert.equal(service.operations.participate.get_with_preview.instructions, "/quick/entry");
   assert.equal(service.operations.participate.get_with_preview.requests, 3);
@@ -1434,7 +1434,7 @@ try {
   assert.match(filteredBo,/END <strong>le<\/strong>/);
   assert.match(filteredBo,/0 UTF-8 bytes/, "read-only filtering does not add draft text");
   const bottleCandidate = suppliedHref(filteredBo,(a)=>a.includes('aria-label="add bottle"'));
-  assert.ok(decodeURIComponent(decodeHtml(bottleCandidate)).includes('"text":"bottle"'), "ordinary lowercase spelling wins over capitalized lexicon duplicates");
+  assert.ok(decodeURIComponent(decodeHtml(bottleCandidate)).match(/(?:"text":"bottle"|"w1","bottle",)/), "ordinary lowercase spelling wins over capitalized lexicon duplicates");
   const selectedBottle = await (await fetch(new URL(decodeHtml(bottleCandidate),quickBase))).text();
   assert.match(selectedBottle,/<pre class="draft"[^>]*>Bottle<\/pre>/);
   assert.match(selectedBottle,/<h1>(?:<svg\b[^>]*>[\s\S]*?<\/svg>)?Prefix link keyboard<\/h1>/);

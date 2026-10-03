@@ -1119,14 +1119,27 @@
       "agent_reported_review_failures": 3,
       "agent_reported_final_draft": "I don’t understand what happened.",
       "reason": "Exact 35-byte draft in restricted client; displayed Review message returned HTTP500 three times, including after explicit read. No publication or public body certificate. Tester closed with102seconds left. Native reconciliation attempted, but protected export returned Worker1101 at2026-10-03T01:46:09UTC, Ray a4484580983a3753; underlying cause not established.",
-      "native_metrics_pending": true
+      "native_metrics_pending": false,
+      "native_run": "7b9fa0d3a84ba3b2b10c586bfe24336e1d73b125f708a0d4b3652d52ed6ec917",
+      "native_request_count": 45,
+      "spent_run_requests": 45,
+      "native_first_request_at": 1790991755262,
+      "native_last_request_at": 1790991871136,
+      "native_response_bytes": 2192618,
+      "native_links_presented": 5401,
+      "native_http_errors": 0,
+      "native_repeat_requests": 1,
+      "native_truncated": 0,
+      "native_budget_possible_gap": false,
+      "native_execution_gap": true,
+      "spent_requests_scope": "45 complete recorded native events, plus at least three client-observed failed review activations missing from logger; discovery outside run. Recorded HTTP-error count zero must not be interpreted as no failures. No message/publication certificate."
     }
   ],
   "verified_successes": 17,
   "required_successes": 70,
   "heartbeat_id": null,
   "status": "paused-by-owner",
-  "updated_at": "2026-10-03T01:46:38.951511+00:00",
+  "updated_at": "2026-10-03T03:31:00.197764+00:00",
   "next_work": [
     "Investigate demonstrated Prefix Review HTTP500 and private export Worker1101; establish cause rather than assume quota.",
     "Reconcile Prefix failed native work when private export recovers.",
@@ -1264,5 +1277,20 @@
     "telemetry_paused": false,
     "new_choice_rows": 0,
     "scope": "Object SQL counters since deployment, not account totals."
+  },
+  "repair_checkpoint": {
+    "requested_by": "owner",
+    "testing_dispatch_allowed": false,
+    "reason": "Repair first; no new scored tests until validation and deployment.",
+    "historical_exception_root_cause": "unconfirmed",
+    "unpublished_prefix_reproduction": {
+      "exact_body": "I don’t understand what happened.",
+      "supplied_link_requests": 42,
+      "review_status": 200,
+      "cancel_status": 200,
+      "publishes": false,
+      "release": "aeec3798-10d7-4de8-9a17-79d6f046e2d9"
+    },
+    "private_export_recovered": true
   }
 }

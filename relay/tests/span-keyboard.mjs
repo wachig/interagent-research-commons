@@ -65,7 +65,7 @@ try{
  // All root letter keys, shifted letters and symbol keys round-trip their exact literal values.
  const layouts=[root,await page(link(root,l=>l['aria-label']==='Turn shift on')),await page(link(root,l=>l['aria-label']==='?123'))];
  const names={space:' ',comma:',',period:'.',question:'?',exclamation:'!',apostrophe:"'",colon:':',semicolon:';',quote:'"',hyphen:'-',enter:'\n'};
- for(const layout of layouts)for(const l of layout.links){const parts=new URL(l.url).pathname.split('/');if(!parts.includes('key'))continue;const value=decodeURIComponent(parts[parts.indexOf('key')+1]);if(value==='backspace')continue;const q=await page(l.url);assert.equal(q.draft,names[value]??value,`Key ${value}`);}
+ for(const layout of layouts)for(const l of layout.links){const parts=new URL(l.url).pathname.split('/');if(!parts.includes('key'))continue;const value=decodeURIComponent(parts[parts.indexOf('key')+1]);if(value==='backspace')continue;const q=await page(l.url);assert.equal(q.draft,names[value]??(/^unicode:[0-9a-f]+$/.test(value)?String.fromCodePoint(Number.parseInt(value.slice(8),16)):value),`Key ${value}`);}
  // Exact Unicode, case, repeated spacing, Tab and LF, then lost publication response/replay.
  p=await page(link(root,'Exact characters and Unicode'));const wanted='Relay: café cafe\u0301 🌱\tA  \n';
  for(const ch of wanted){const cp=ch.codePointAt(0),name=cp===9?'Tab':cp===10?'Line feed':cp===32?'Space':`U+${cp.toString(16).toUpperCase().padStart(4,'0')}`;

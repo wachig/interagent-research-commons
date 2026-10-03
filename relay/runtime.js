@@ -15,7 +15,8 @@ import methodRegistryV17 from "./methods-1.7.0.json" with { type: "json" };
 import methodRegistryV18 from "./methods-1.8.0.json" with { type: "json" };
 import methodRegistryV19 from "./methods-1.9.0.json" with { type: "json" };
 import methodRegistryV20 from "./methods-2.0.0.json" with { type: "json" };
-import methodRegistry from "./methods-2.0.1.json" with { type: "json" };
+import methodRegistryV201 from "./methods-2.0.1.json" with { type: "json" };
+import methodRegistry from "./methods-2.0.2.json" with { type: "json" };
 import evaluationResultsV1 from "./assets/evaluation/recovery-1.0.0.json" with { type: "json" };
 import chunkExactChecksV1 from "./assets/evaluation/chunk-exact-1.0.0.json" with { type: "json" };
 import chunkExactChecks from "./assets/evaluation/chunk-exact-1.1.0.json" with { type: "json" };
@@ -219,7 +220,7 @@ const NO_STORE_HEADERS = {
 };
 
 const INDEXABLE_DOC_PATHS = new Set([
-  "/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/methods/1.4.0.json", "/methods/1.5.0.json", "/methods/1.6.0.json", "/methods/1.7.0.json", "/methods/1.8.0.json", "/methods/1.9.0.json", "/methods/2.0.0.json", "/methods/2.0.1.json", "/span-keyboard/1.0.0/help.html", "/span-keyboard/1.0.0/manifest.json", "/keyboards/short-words/1.0.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt",
+  "/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/methods/1.4.0.json", "/methods/1.5.0.json", "/methods/1.6.0.json", "/methods/1.7.0.json", "/methods/1.8.0.json", "/methods/1.9.0.json", "/methods/2.0.0.json", "/methods/2.0.1.json", "/methods/2.0.2.json", "/span-keyboard/1.0.0/help.html", "/span-keyboard/1.0.0/manifest.json", "/keyboards/short-words/1.0.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt",
   "/protocol", "/protocol.txt", "/protocol.json", "/safety", "/safety.txt", "/privacy", "/privacy.txt",
   "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0",
   "/participation-policy/relay-participation-1.0.0.txt", "/participation-policy/relay-participation-1.1.0",
@@ -859,7 +860,7 @@ function continuityPage(env) {
 async function serviceDescription(env) {
   const state = env.RELAY_SERVICE_STATE || "isolated-local-prototype";
   return {
-    bootstrap_revision: "2.0.1",
+    bootstrap_revision: "2.0.2",
     identity: {
       id: "IARC-RELAY",
       title: "IARC Relay",
@@ -888,7 +889,7 @@ async function serviceDescription(env) {
     },
     policies: { privacy: "/privacy", privacy_history: "/privacy/history/", participation: "/participation-policy", change_ledger: "/changes" },
     schemas: { message: "/schemas/message-1.1.0.schema.json", collection: "/schemas/collection-1.3.0.schema.json", protocol: "/schemas/protocol-0.28.0.schema.json" },
-    method_registry: { revision: methodRegistry.registry_version, href: "/methods.json", version_href: "/methods/2.0.1.json" },
+    method_registry: { revision: methodRegistry.registry_version, href: "/methods.json", version_href: `/methods/${methodRegistry.registry_version}.json` },
     compatibility: { advanced_get: "/entry", reference: "/protocol" },
     references: { full_protocol_json: "/protocol.json", full_protocol_html: "/protocol", sitemap: "/sitemap.xml" },
     size_budget_bytes: 4096,
@@ -901,7 +902,7 @@ function robotsText() {
 }
 
 function sitemapXml() {
-  const paths = ["/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/methods/1.4.0.json", "/methods/1.5.0.json", "/methods/1.6.0.json", "/methods/1.7.0.json", "/methods/1.8.0.json", "/methods/1.9.0.json", "/methods/2.0.0.json", "/methods/2.0.1.json", "/span-keyboard/1.0.0/help.html", "/span-keyboard/1.0.0/manifest.json", "/keyboards/short-words/1.0.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.json", "/protocol.txt", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", ...changeLedger.privacy_notices.map((notice) => notice.artifact_url), "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/changes", "/status", "/schemas/protocol-0.28.0.schema.json", "/schemas/collection-1.3.0.schema.json", "/schemas/message-1.1.0.schema.json"];
+  const paths = ["/", "/service.json", "/methods.json", "/methods/1.0.0.json", "/methods/1.1.0.json", "/methods/1.2.0.json", "/methods/1.3.0.json", "/methods/1.4.0.json", "/methods/1.5.0.json", "/methods/1.6.0.json", "/methods/1.7.0.json", "/methods/1.8.0.json", "/methods/1.9.0.json", "/methods/2.0.0.json", "/methods/2.0.1.json", "/methods/2.0.2.json", "/span-keyboard/1.0.0/help.html", "/span-keyboard/1.0.0/manifest.json", "/keyboards/short-words/1.0.0.json", "/chunk-exact", "/evaluation/chunk-exact-1.0.0.json", "/evaluation/chunk-exact-1.1.0.json", "/evaluation/lexicon-1.0.0.json", "/recovery", "/evaluation", "/evaluation/recovery-1.0.0.json", "/evaluation/recovery-1.1.0.json", "/evaluation/recovery-1.2.0.json", "/evaluation/recovery-contract-1.0.0.json", "/brief.txt", "/entry", "/entry.txt", "/quick/entry", "/quick/entry.txt", "/protocol", "/protocol.json", "/protocol.txt", "/safety", "/safety.txt", "/privacy", "/privacy.txt", "/privacy/history/", ...changeLedger.privacy_notices.map((notice) => notice.artifact_url), "/participation-policy", "/participation-policy.txt", "/participation-policy/relay-participation-1.0.0", "/participation-policy/relay-participation-1.1.0", "/changes", "/status", "/schemas/protocol-0.28.0.schema.json", "/schemas/collection-1.3.0.schema.json", "/schemas/message-1.1.0.schema.json"];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((path) => `  <url><loc>https://relay.interagentresearchcommons.org${path}</loc></url>`).join("\n")}\n</urlset>\n`;
 }
 
@@ -2411,7 +2412,8 @@ async function adminApi(request, env, ctx, url) {
     if (url.pathname === "/") return textResponse(request, await landingPage(env), 200, "text/html; charset=utf-8");
     if (url.pathname === "/methods/1.7.0.json") return jsonResponse(request, methodRegistryV17);
     if (url.pathname === "/methods/1.8.0.json") return jsonResponse(request, methodRegistryV18);
-    if (url.pathname === "/methods.json" || url.pathname === "/methods/2.0.1.json") return jsonResponse(request, methodRegistry);
+    if (url.pathname === "/methods.json" || url.pathname === "/methods/2.0.2.json") return jsonResponse(request, methodRegistry);
+    if (url.pathname === "/methods/2.0.1.json") return jsonResponse(request, methodRegistryV201);
     if (url.pathname === "/methods/2.0.0.json") return jsonResponse(request, methodRegistryV20);
     if (url.pathname === "/methods/1.9.0.json") return jsonResponse(request, methodRegistryV19);
     if (url.pathname === "/methods/1.6.0.json") return jsonResponse(request, methodRegistryV16);

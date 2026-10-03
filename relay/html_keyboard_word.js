@@ -1,8 +1,9 @@
+import { commonPunctuationLinks } from './common_punctuation.js';
 import {renderSpanKeyboard,spanPredictions} from "./span_keyboard.js";
 import {consumeResolvedPick,completedPick} from "./span_contract.js";
 import {renderShortWordKeyboard,withoutShortWords} from "./short_word_keyboard.js";
 import { renderExactTextLane } from "./keyboard_exact_view.js";
-import { appendDelta, loadDraft, findState, createSession as createTextSession, saveTextChild, reviewTextDraft, keyboardErrorStatus, exactWordEffect, exactKeyText, MAX_BODY_BYTES } from "./keyboard_foundation.js";
+import { compactWordArgument, expandWordArgument, appendDelta, loadDraft, findState, createSession as createTextSession, saveTextChild, reviewTextDraft, keyboardErrorStatus, exactWordEffect, exactKeyText, MAX_BODY_BYTES } from "./keyboard_foundation.js";
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
 import { escapeHtml, predictRanked, response } from "./html_keyboard.js";
 import { isPresentablePhrase } from "./phrase_safety.js";
@@ -70,6 +71,7 @@ function readWord(value) {
 }
 
 function actionHref(state, action, argument = "-", layout = "letters", prefix = "", offset = 0, view = "words") {
+  if (action === "pick") argument = compactWordArgument(argument);
   const query = new URLSearchParams();
   if (layout === "symbols") query.set("layout", "symbols");
   if (prefix) query.set("prefix", prefix);
@@ -379,8 +381,8 @@ async function makeChild(env, request, parent, action, argument, childId, issued
     removed = insertion.removed; added = insertion.added;
   } else if (action === "pick") {
     let choice = { text: argument, case: "as-is", wrapper: "none", suffix: "" };
-    if (argument.startsWith("{")) {
-      try { choice = JSON.parse(argument); }
+    if (argument.startsWith("{") || argument.startsWith("[")) {
+      try { choice = expandWordArgument(argument); }
       catch { throw new Error("The selected word action is malformed."); }
     }
     if (choice?.v !== undefined) throw new Error("Unsupported insertion version.");
@@ -562,13 +564,14 @@ async function renderKeyboard(request, env, state, url) {
   const symbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "("].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([" )", "_", "!", "?", "'", ":", ";", '"', "/"].map((value) => key(value.trim())))).join("")} ${await key("backspace", "⌫")}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
   const prefixInputKeys = `<div class="keyrow bottom">${mode("?123", "symbols", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("backspace", "⌫", "prefix-backspace")}</div>`;
   const prefixSymbols = `<div class="keyrow">${(await Promise.all("1234567890".split("").map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all(["@", "#", "$", "%", "&", "-", "*", "+", "(", "/"].map((value) => key(value)))).join("")}</div><div class="keyrow symbols">${(await Promise.all([")", "_", "!", "?", "'", ":", ";", '"'].map((value) => key(value)))).join("")}${await key("backspace", "⌫", "prefix-backspace")}</div><div class="keyrow bottom">${mode("ABC", "letters", false, "wide")} ${await key("comma", ",")} ${await key("space", "Space", "space")} ${await key("period", ".")} ${await key("enter", "↵", "wide")}</div>`;
+  const typography = await commonPunctuationLinks(cp=>makeLink('key', `unicode:${cp.toString(16)}`), escapeHtml);
   const reviewHref = draft ? `${PREFIX}/review/${word(state.state_id)}${view !== "words" ? `?view=${encodeURIComponent(view)}` : ""}` : "";
   const reply = state.reply_to ? `<p class="notice">Reply to ${escapeHtml(state.reply_to)}</p>` : "";
   const undoHref = state.parent_state_id ? stateHref(state.parent_state_id, layout, shifted, "", 0, view) : "";
   const clearHref = draft ? await makeLink("clear", "-") : "";
   const controls = `${undoHref ? `<a ${view === "span" ? 'data-relay-action="undo"' : ""} href="${escapeHtml(undoHref)}">Undo last addition</a>` : ""}${clearHref ? `<a ${view === "span" ? 'data-relay-action="clear"' : ""} rel="nofollow" href="${escapeHtml(clearHref)}">Clear draft</a>` : ""}${reviewHref ? `<a ${view === "span" ? 'data-relay-action="review"' : ""} rel="nofollow" href="${escapeHtml(reviewHref)}">Review message</a>` : ""}`;
-  if(view === "span") return renderSpanKeyboard({env,request,state,draft,layout,shifted,prefix,predictions,predictionUnavailable,keyboard:layout === "symbols" ? symbols : letters,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,effect:modeParams.get("span_effect") || "next"});
-  if(view === "short") return renderShortWordKeyboard({env,request,state,draft,layout,shifted,offset,predictions,keyboard:layout === "symbols" ? symbols : letters,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,dictionaryWords});
+  if(view === "span") return renderSpanKeyboard({env,request,state,draft,layout,shifted,prefix,predictions,predictionUnavailable,keyboard:layout === "symbols" ? symbols : letters,typography,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,effect:modeParams.get("span_effect") || "next"});
+  if(view === "short") return renderShortWordKeyboard({env,request,state,draft,layout,shifted,offset,predictions,keyboard:layout === "symbols" ? symbols : letters,typography,controls,PREFIX,word,stateHref,actionHref,page,escapeHtml,autoCase,keyArgument,dictionaryWords});
   const moreSection = moreWords.length
     ? `<label for="more-words">More words</label><div class="more-row"><select id="more-words" name="more" aria-label="More words">${moreOptions}</select><button type="submit" name="action" value="more">Add selected word</button></div>`
     : `<p>No additional model suggestions are available for this context.</p>`;
@@ -686,7 +689,7 @@ async function renderKeyboard(request, env, state, url) {
     const className = label === "Space" ? " space-key" : value === "backspace" ? " backspace-key" : value === "enter" ? " enter-key" : "";
     return `<a class="typing-key${className}" rel="nofollow" href="${escapeHtml(href)}" aria-label="${escapeHtml(accessible)}">${escapeHtml(label)}</a>`;
   }));
-  const prefixTypingKeyboard = `<section id="keyboard"><h2>Numbers, symbols, and space</h2><div class="typing-keyboard" aria-label="Numbers and special character keys"><div class="typing-row">${prefixTypingKeys.slice(0, 10).join("")}</div><div class="typing-row">${prefixTypingKeys.slice(10, 19).join("")}</div><div class="typing-row">${prefixTypingKeys.slice(19, 28).join("")}</div><div class="typing-row bottom-row">${prefixTypingKeys.slice(28).join("")}</div></div></section>`;
+  const prefixTypingKeyboard = `<section id="keyboard"><h2>Numbers, symbols, and space</h2><div class="typing-keyboard" aria-label="Numbers and special character keys"><div class="typing-row">${prefixTypingKeys.slice(0, 10).join("")}</div><div class="typing-row">${prefixTypingKeys.slice(10, 19).join("")}</div><div class="typing-row">${prefixTypingKeys.slice(19, 28).join("")}</div><div class="typing-row bottom-row">${prefixTypingKeys.slice(28).join("")}</div></div>${typography}</section>`;
   const prefixTopWords = draft ? predictions.slice(0, 18) : PREFIX_KEYBOARD_INITIAL_WORDS.map((text) => ({ text }));
   const prefixTopWordLinks = await Promise.all(prefixTopWords.map(async (candidate) => {
     const choice = JSON.stringify({ text: candidate.text, case: "auto", wrapper: "none", suffix: "", effect: "next" });
@@ -703,7 +706,7 @@ async function renderKeyboard(request, env, state, url) {
   const completionSection = completionLinks.length ? `<section><h2>Complete current word</h2><p class="hint">These choices replace only the typed ending ${escapeHtml(typedEnding)}.</p><div class="choices">${completionLinks.join(' ')}</div></section>` : '';
   const keyboardSection = view === "prefix"
     ? `<section id="keyboard"><h2>${layout === "symbols" ? "Numbers and special characters" : "Space, punctuation, and editing"}</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Numbers and symbols" : "Space punctuation and editing"} controls">${layout === "symbols" ? prefixSymbols : prefixInputKeys}</nav></section><p class="hint"><a href="${PREFIX}/">Open Predictive Word Keyboard</a></p>`
-    : `<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav><p class="hint"><a href="${PREFIX_KEYBOARD}/">Open Prefix Link Keyboard</a></p></section>`;
+    : `<section id="keyboard"><h2>Keyboard</h2><nav class="key-grid" aria-label="${layout === "symbols" ? "Symbols" : "Letters"} keyboard">${layout === "symbols" ? symbols : letters}</nav>${typography}<p class="hint"><a href="${PREFIX_KEYBOARD}/">Open Prefix Link Keyboard</a></p></section>`;
   const pageTitle = view === "prefix" ? "Prefix link keyboard" : "Predictive Word Keyboard";
   const notice = `<p class="notice">Model suggestions can change when a draft is reopened and are not verified facts. Word suggestions are unfiltered; phrase suggestions omit a limited list of known unsuitable terms. Following a word or key link, or submitting a form, saves a private step. <strong>Some crawlers and prefetchers follow links automatically.</strong> Requests may be visible to Relay, Cloudflare, and your surrounding system. Never enter secrets. <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></p>`;
   const prefixHelp = `<nav class="prefix-home" aria-label="Keyboard links"><a href="/">Return to Relay home</a> · <a href="/privacy">Privacy</a> · <a href="/participation-policy">Policy</a></nav><details class="help"><summary>About this keyboard</summary><p>The word-discovery menus require GET form submission. Link-only clients can use Top Words and the full Exact characters and Unicode lane.</p><p>START, INSIDE, and END choices filter the filtered spelling lexicon. The word matches are deterministic and are not ranked by model prediction. Some valid spellings may be absent from the lexicon. Top Words are separate contextual model suggestions and may be wrong.</p>${notice}</details><details class="instructions"><summary>Instructions</summary><p>Select one two-letter pair from START to choose the first two letters. Optionally choose one INSIDE pair; it must occur after the first two letters and may overlap the ending pair. Optionally choose an END pair to match the final two letters. Press “Find matching words” to apply the selections.</p><p>Choose a candidate word to add it to the draft. Number and symbol keys append exactly their displayed character without inserting a separator. Space adds one space on every activation, ↵ adds a line break, and ⌫ deletes exactly one character. “Undo last addition” reverses the previous action. The draft limit is 1200 UTF-8 bytes.</p></details>`;

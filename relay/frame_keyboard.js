@@ -1,3 +1,4 @@
+import { COMMON_PUNCTUATION } from './common_punctuation.js';
 import { appendFrame, appendFrameSlotText, backspaceFrameSlot, changeLastFrame, convertFrameToPlainText, createFrameDocument, fillFrameSlot, frameIsComplete, renderFrameDocument, validateFrameDocument, FRAME_CATALOGUE, FRAME_CATALOGUE_VERSION } from "./frame_document.js";
 import { appendDelta, createSession, findState, keyboardErrorStatus, loadDraft, MAX_BODY_BYTES, retainedReply, reviewTextDraft, saveTextChild, unicodeChoices } from "./keyboard_foundation.js";
 import { decodeCommonWordRouteToken, encodeCommonWordRouteToken, signCommonWordRoute } from "./token_composer.js";
@@ -14,7 +15,7 @@ const SLOT_CHOICES = Object.freeze({
   correction: ["the smaller connector", "the final paragraph", "the lower setting", "the blue marker", "the second diagram", "the older attachment"],
   event: ["checking the readings", "reviewing the diagram", "sending the archive copy", "printing the labels", "updating the device", "testing the new layout"],
 });
-const ASCII_KEYS = [..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,?!'’\"-_:;()/@#$%&+=[]{}<>\\|~` ", "\t", "\n", "\r"];
+const ASCII_KEYS = [...COMMON_PUNCTUATION.map(([cp])=>String.fromCodePoint(cp)).filter(ch=>ch!=="’"), ..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,?!'’\"-_:;()/@#$%&+=[]{}<>\\|~` ", "\t", "\n", "\r"];
 const MANIFEST_URL = "/semantic-lexicon/manifest.json";
 const SHARD_CACHE = new Map();
 let manifestPromise;

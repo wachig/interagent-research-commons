@@ -3,7 +3,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {fixture,parse} from '../tools/local-evaluation.mjs';
 import {readFile} from 'node:fs/promises';
 // Stub only the rendering runtime's WASM import; execute the actual storage/alarm source.
-const storageSource=(await readFile(new URL('../worker.js',import.meta.url),'utf8')).replace('import protocolRuntime from "./runtime.js";', 'const protocolRuntime = {};').replace('from "./schema.js"', 'from '+JSON.stringify(new URL('../schema.js',import.meta.url).href));
+const storageSource=(await readFile(new URL('../worker.js',import.meta.url),'utf8')).replace("from './execution_recovery.js'", 'from '+JSON.stringify(new URL('../execution_recovery.js',import.meta.url).href)).replace('import protocolRuntime from "./runtime.js";', 'const protocolRuntime = {};').replace('from "./schema.js"', 'from '+JSON.stringify(new URL('../schema.js',import.meta.url).href));
 const {RelayStore}=await import('data:text/javascript;base64,'+Buffer.from(storageSource).toString('base64'));
 import {USAGE_RETENTION_MS,MAX_REQUESTS_PER_DAY,usageExport} from '../keyboard_usage.js';
 const f=await fixture();const overhead=[];

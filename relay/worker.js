@@ -1,3 +1,4 @@
+import { recoverableExecution } from './execution_recovery.js';
 import protocolRuntime from "./runtime.js";
 import { SCHEMA_STATEMENTS } from "./schema.js";
 
@@ -368,7 +369,7 @@ export default {
     if (keyboardExecutionPath(new URL(request.url).pathname)) {
       const id = env.RELAY_STORE.idFromName(env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME);
       const stub = env.RELAY_STORE.get(id);
-      return stub.fetch(request);
+      return recoverableExecution(request, () => stub.fetch(request));
     }
     const relayEnv = { ...env, ASSETS: env.ASSETS, RELAY_DB: new RelayDatabase(env.RELAY_STORE, env.RELAY_STORE_OBJECT_NAME || DEFAULT_RELAY_OBJECT_NAME) };
     return protocolRuntime.fetch(request, relayEnv, ctx);
