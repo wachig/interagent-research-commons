@@ -12,21 +12,46 @@ All 70 required success slots are independently certified: ten exact phrases on 
 | token-link | 10/10 |
 | frame | 10/10 |
 
-This is completion after retries, not a70-for-70 first-attempt success rate. The ledger preserves all 133 attempt records, including 63 unsuccessful/infrastructure records. Twenty-three records are categorized by the evidence auditor as approval-related. That classification can overlap with draft errors and is not a keyboard-only failure count. No failures were replaced by successes or deleted.
+This is completion after retries, not a 70-for-70 first-attempt success rate. The ledger preserves all 133 attempt records, including 63 unsuccessful/infrastructure records. Twenty-three records are categorized by the evidence auditor as approval-related. That classification can overlap with draft errors and is not a keyboard-only failure count. No failures were replaced by successes or deleted.
 
-## What the final unchanged-keyboard cohort shows
+## All seven P10 observations
 
-The following P10 observations share production d0519e27, client 2.8 and contract 1.8. They are single fresh-agent observations, not counterbalanced replicated estimates or shortest-path proofs. No Chunk/Short result exists in this cohort, so the table cannot rank all seven keyboards.
+Every keyboard has a verified P10 result. The previous report omitted Chunk and Short from this table because their runs used earlier conditions; that omission obscured the completed coverage. All seven results are shown below, with conditions visible.
 
-| P10 method | Associated native requests | Client time to public receipt |
-| --- | ---: | ---: |
-| predictive-word | 17 | 126s |
-| span | 17 | 146s |
-| frame | 29 | 221s |
-| token-link | 24 | 265s |
-| prefix-link | 42 | 378s |
+**The campaign completed the transcription criterion, but did not deliver a clean seven-way performance comparison.** Keyboard releases and client instructions changed during the campaign, and earlier successful cells were not rerun under the final conditions. These observations can identify costs and failure modes, but do not establish a controlled overall winner.
 
-Native counts include the associated run through tester public receipt and exclude later independent operator verification. Home/deep discovery and local output reads are separate; native requests are not the full owner link-activation budget. Client times include model/tool/inspection overhead in the process countdown scope. Do not pool different releases/client contracts into a speed winner.
+P10: “Thanks for listening. I appreciate you.”
+
+| Keyboard | Associated native requests | First associated request to public receipt | Client / contract | Release |
+| --- | ---: | ---: | --- | --- |
+| chunk-word | 21 | 145.472s | 2.3 / 1.2 | 365dcf75 |
+| short-word | 32 | 268.455s | 2.3 / 1.2 | 365dcf75 |
+| predictive-word | 17 | 117.513s | 2.8 / 1.8 | d0519e27 |
+| prefix-link | 42 | 367.598s | 2.8 / 1.8 | d0519e27 |
+| span | 17 | 138.718s | 2.8 / 1.8 | d0519e27 |
+| token-link | 24 | 251.181s | 2.8 / 1.8 | d0519e27 |
+| frame | 29 | 204.894s | 2.8 / 1.8 | d0519e27 |
+
+The time column now uses the same server-observed start/end boundary for all seven rows. It includes intervening model/tool/inspection time but excludes pre-session discovery, startup and work after the receipt. It is neither Worker CPU time nor complete task wall time. Native counts include the associated run through tester public receipt and exclude later independent operator verification. Local reads and any unobserved network attempts are separate. These counts are not the complete owner link-activation budget.
+
+Chunk and Short used release 365dcf75 / client 2.3 / contract 1.2; the other five used release d0519e27 / client 2.8 / contract 1.8. Keep that difference when interpreting the rows.
+
+## All 70 successful cells: recorded associated request counts
+
+This matrix exposes the full saved coverage, not a pooled ranking. Release/client pins and individual accounting scopes are retained in the ledger. A dash would mean an unavailable count, not zero. Failed attempts and their additional costs are separate from these successful-run counts.
+
+| Phrase | Chunk | Short | Predictive | Prefix | Span | Token | Frame |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| P01 | 6 | 6 | 6 | 6 | 8 | 8 | 9 |
+| P02 | 25 | 12 | 14 | 27 | 41 | 24 | 33 |
+| P03 | 31 | 25 | 45 | 40 | 29 | 20 | 22 |
+| P04 | 21 | 20 | 31 | 42 | 24 | 39 | 66 |
+| P05 | 35 | 32 | 38 | 46 | 26 | 26 | 32 |
+| P06 | 15 | 13 | 15 | 26 | 13 | 14 | 29 |
+| P07 | 31 | 26 | 22 | 33 | 21 | 18 | 27 |
+| P08 | 19 | 21 | 31 | 34 | 20 | 24 | 61 |
+| P09 | 25 | 23 | 31 | 52 | 30 | 34 | 37 |
+| P10 | 21 | 32 | 17 | 42 | 17 | 24 | 29 |
 
 Prefix P09 required two additional seven-minute deadline failures, followed by a separately pinned client 2.9 / contract 1.9 retry with a nine-minute maximum. Its exact successful run used 52 associated native requests, about 443 seconds from client startup to publication; associated server first-request-to-receipt time was 434.615 seconds. The cutoff change establishes completion, not an efficiency improvement.
 
