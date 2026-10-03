@@ -1,3 +1,9 @@
+# Phase 4 continuation — 41/70 verified
+
+A fresh six-attempt batch produced no exact publications: Chunk/Span/Token were incomplete at the bounded deadline, Frame omitted words and was blocked at review, and Predictive/Prefix encountered approval rejections. All failed attempts and associated native costs are retained. Approval failures remain separate from HTTP/network errors and keyboard behavior.
+
+Chunk document reading order is repaired and live: source `7d5e066`, release `9b5d8d51-e32e-44f1-a485-157cc8f285f7`, foundation1.5.1 / registry2.0.5. Desktop visual columns and literal-controls-first layout remain; contextual words and controls are earlier in extraction order. Local client/evidence/interaction/individual tests, all-seven publication/reply integration, Frame regressions and focused live health/registry/telemetry/first-output-page checks passed. Current fresh Chunk and Predictive canaries use that release, client2.5 and contract1.3. Short Word’s next attempt is registered but not started while the app thread limit is occupied. Historical checkpoints below remain historical.
+
 # Individual repair checkpoint — 41/70; Phase 3
 
 Chunk's repeated default settings and action path prefixes are reduced while retaining its full search interaction and spelling coverage. Frame has distinct contextual completion and next-word links in its slot and character fallback views. See [individual-repairs.md](individual-repairs.md) for measured payload samples, exact effects and limits. Other keyboards were checked against recorded errors; Phase 2 already addressed their demonstrated shared issues.

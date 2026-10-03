@@ -3660,8 +3660,8 @@
       "final_draft": "I don’",
       "message_id": null,
       "completed_at": "2026-10-03T08:38:21.567558+00:00",
-      "process_closed": false,
-      "process_status": "tester completed; Ctrl-D closure rejected by approval review; fixed browser deadline elapsed",
+      "process_closed": true,
+      "process_status": "No live repl process remained in independent OS inspection after fixed deadline; no alternative closure action performed.",
       "agent_reported_errors": [
         "stale-page selection: no mutation",
         "approval rejection of Ctrl-D close"
@@ -3681,13 +3681,62 @@
         "budget_possible_gap": false,
         "export_complete": true
       }
+    },
+    {
+      "attempt_id": "P08-chunk-word-R1-A4",
+      "phrase_id": "P08",
+      "method_id": "chunk-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.5",
+      "tester_contract": "relay-luna-tester/1.3",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "registered_at": "2026-10-03T08:39:42.272971+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p08_chunk_a4",
+      "tester_owned_process": 70687
+    },
+    {
+      "attempt_id": "P05-predictive-word-R1-A1",
+      "phrase_id": "P05",
+      "method_id": "predictive-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.5",
+      "tester_contract": "relay-luna-tester/1.3",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "registered_at": "2026-10-03T08:40:42.433802+00:00",
+      "outcome": "in-progress",
+      "verified_success": false,
+      "native_metrics_pending": true,
+      "agent": "/root/phase4_p05_predictive_a1",
+      "tester_owned_process": 98010
+    },
+    {
+      "attempt_id": "P09-short-word-R1-A1",
+      "phrase_id": "P09",
+      "method_id": "short-word",
+      "repetition": 1,
+      "model": "gpt-6-luna",
+      "client": "semantic-link-browser/2.5",
+      "tester_contract": "relay-luna-tester/1.3",
+      "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+      "foundation": "relay-keyboard-foundation/1.5.1",
+      "registered_at": "2026-10-03T08:40:42.433802+00:00",
+      "outcome": "registered",
+      "verified_success": false,
+      "native_metrics_pending": true
     }
   ],
   "verified_successes": 41,
   "required_successes": 70,
   "heartbeat_id": null,
   "status": "phase4-validation-running",
-  "updated_at": "2026-10-03T08:38:21.567650+00:00",
+  "updated_at": "2026-10-03T08:39:42.272971+00:00",
   "next_work": "Phase4: fresh bounded GPT-6 Luna validation on foundation1.5.0/registry2.0.4/client2.5/contract1.3, then remaining Phase1 exact slots to70; preserve all41certificates and release cohorts.",
   "deployed_release": "653d6941-c2ae-4796-b41c-7e9e3ed97331",
   "operational_blocker": {
@@ -4032,5 +4081,14 @@
     "site_requests": 0,
     "native_spawn_recovered": true,
     "scope": "No model substitution, no site/browser trial started"
+  },
+  "phase4_reading_order_release": {
+    "source": "7d5e066",
+    "release": "9b5d8d51-e32e-44f1-a485-157cc8f285f7",
+    "registry": "2.0.5",
+    "foundation": "1.5.1",
+    "checked_at": "2026-10-03T08:39:42.272971+00:00",
+    "local_checks": "link-browser/evidence/interaction/individual repairs, all-seven publication/reply integration, Frame regression passed",
+    "production_checks": "health release/writable/storage-readable, registry current/historical, native telemetry, first-page contextual choices passed; unpublished"
   }
 }
